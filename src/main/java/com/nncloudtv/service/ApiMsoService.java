@@ -7,8 +7,9 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
@@ -30,13 +31,14 @@ public class ApiMsoService {
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
+    private MsoConfigManager msoConfigMngr;
     
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
                             SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
                             NnChannelManager channelMngr, StoreService storeService,
                             StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            CategoryService categoryService) {
+                            CategoryService categoryService, MsoConfigManager msoConfigMngr) {
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
@@ -46,27 +48,7 @@ public class ApiMsoService {
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
-    }
-    
-    /** format supportedRegion of Mso to response format, ex : "en,zh,other" */
-    private String formatSupportedRegion(String input) {
-        
-        if (input == null) {
-            return null;
-        }
-        
-        List<String> spheres = MsoConfigManager.parseSupportedRegion(input);
-        String supportedRegion = "";
-        for (String sphere : spheres) {
-            supportedRegion = supportedRegion + "," + sphere;
-        }
-        supportedRegion = supportedRegion.replaceFirst(",", "");
-        
-        String output = supportedRegion;
-        if (output.equals("")) {
-            return null;
-        }
-        return output;
+        this.msoConfigMngr = msoConfigMngr;
     }
     
     /** service for ApiMso.msoSets
@@ -91,6 +73,44 @@ public class ApiMsoService {
             return new ArrayList<Set>();
         }
         return results;
+    }
+    
+    public Set msoSetCreate(Long msoId, Short seq, String tag, String name, Short sortingType) {
+        
+        if (msoId == null) {
+            return null;
+        }
+        Mso mso = msoMngr.findById(msoId);
+        if (mso == null) {
+            return null;
+        }
+        
+        Set newSet = new Set();
+        newSet.setMsoId(msoId);
+        newSet.setName(name);
+        if (seq != null) {
+            newSet.setSeq(seq);
+        }
+        if (sortingType != null) {
+            newSet.setSortingType(sortingType);
+        }
+        if (tag != null) {
+            newSet.setTag(tag);
+        }
+        
+        String lang = LangTable.LANG_EN; // default
+        MsoConfig supportedRegion = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        if (supportedRegion != null && supportedRegion.getValue() != null) {
+            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+            if (spheres != null && spheres.isEmpty() == false) {
+                lang = spheres.get(0);
+            }
+        }
+        newSet.setLang(lang);
+        
+        Set savedSet = setService.create(newSet);
+        
+        return savedSet;
     }
     
     /** service for ApiMso.set
@@ -151,6 +171,15 @@ public class ApiMsoService {
         setMeta = sysTagDisplayMngr.save(setMeta);
         
         return setService.composeSet(set, setMeta);
+    }
+    
+    public void setDelete(Long setId) {
+        
+        if (setId == null) {
+            return ;
+        }
+        
+        setService.delete(setId);
     }
     
     /** service for ApiMso.setChannels
@@ -229,7 +258,12 @@ public class ApiMsoService {
      *  @param sortedChannels required, the Channel Ids from Set to be sorted */
     public void setChannelsSorting(Long setId, List<Long> sortedChannels) {
         
-        if (setId == null || sortedChannels == null) {
+        if (setId == null) {
+            return ;
+        }
+        
+        if (sortedChannels == null) {
+            sysTagMapMngr.reorderSysTagMaps(setId);
             return ;
         }
         
@@ -330,16 +364,30 @@ public class ApiMsoService {
             return null;
         }
         
-        Mso result = msoMngr.findByIdWithSupportedRegion(msoId);
-        if (result == null) {
+        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        if (mso == null) {
             return null;
         }
         
-        result.setTitle(NnStringUtil.revertHtml(result.getTitle()));
-        result.setIntro(NnStringUtil.revertHtml(result.getIntro()));
-        result.setSupportedRegion(formatSupportedRegion(result.getSupportedRegion()));
+        mso.setMaxSets(Mso.MAXSETS_DEFAULT);
+        MsoConfig maxSets = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
+            try {
+                mso.setMaxSets(Short.valueOf(maxSets.getValue()));
+            } catch (NumberFormatException e) {
+            }
+        }
         
-        return result;
+        mso.setMaxChPerSet(Mso.MAXCHPERSET_DEFAULT);
+        MsoConfig maxChPerSet = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
+            try {
+                mso.setMaxChPerSet(Short.valueOf(maxChPerSet.getValue()));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
+        return mso;
     }
     
     /** service for ApiMso.msoUpdate
@@ -354,7 +402,7 @@ public class ApiMsoService {
             return null;
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        Mso mso = msoMngr.findById(msoId);
         if (mso == null) {
             return null;
         }
@@ -366,18 +414,12 @@ public class ApiMsoService {
             mso.setLogoUrl(logoUrl);
         }
         
-        Mso result = null;
         if (title != null || logoUrl != null) {
             Mso savedMso = msoMngr.save(mso);
-            result = savedMso;
+            return savedMso;
         } else {
-            result = mso;
+            return mso;
         }
-        result.setTitle(NnStringUtil.revertHtml(result.getTitle()));
-        result.setIntro(NnStringUtil.revertHtml(result.getIntro()));
-        result.setSupportedRegion(formatSupportedRegion(mso.getSupportedRegion()));
-        
-        return result;
     }
     
     /**

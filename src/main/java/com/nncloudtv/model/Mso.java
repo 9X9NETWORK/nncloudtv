@@ -52,6 +52,7 @@ public class Mso implements Serializable {
     public static final short TYPE_TCO = 4; // for Generic CMS
     public static final short TYPE_ENTERPRISE = 5; // brand, US only
     public static final short TYPE_DEPRECATED = 6; // the mso that no longer used
+    public static final short TYPE_FANAPP = 7;
 
     
     @Persistent
@@ -67,6 +68,16 @@ public class Mso implements Serializable {
     // the value comes from MsoConfig's SUPPORTED_REGION
     @NotPersistent
     private String supportedRegion;
+    
+    // The value of maximum number of sets each MSO
+    @NotPersistent
+    private short maxSets;
+    public static short MAXSETS_DEFAULT = 3;
+    
+    // The maximum number of channels per set
+    @NotPersistent
+    private short maxChPerSet;
+    public static short MAXCHPERSET_DEFAULT = 27;
 
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
@@ -169,6 +180,22 @@ public class Mso implements Serializable {
 
     public void setSupportedRegion(String supportedRegion) {
         this.supportedRegion = supportedRegion;
+    }
+
+    public short getMaxSets() {
+        return maxSets;
+    }
+
+    public void setMaxSets(short maxSets) {
+        this.maxSets = maxSets;
+    }
+
+    public short getMaxChPerSet() {
+        return maxChPerSet;
+    }
+
+    public void setMaxChPerSet(short maxChPerSet) {
+        this.maxChPerSet = maxChPerSet;
     }
 
 }
