@@ -1,13 +1,18 @@
 package com.nncloudtv.service;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.NnChannel;
 
 @Service
@@ -17,11 +22,16 @@ public class ApiContentService {
     
     private NnChannelManager channelMngr;
     private MsoManager msoMngr;
+    private StoreService storeService;
+    private NnChannelPrefManager channelPrefMngr;
     
     @Autowired
-    public ApiContentService(NnChannelManager channelMngr, MsoManager msoMngr) {
+    public ApiContentService(NnChannelManager channelMngr, MsoManager msoMngr, StoreService storeService,
+                NnChannelPrefManager channelPrefMngr) {
         this.channelMngr = channelMngr;
         this.msoMngr = msoMngr;
+        this.storeService = storeService;
+        this.channelPrefMngr = channelPrefMngr;
     }
     
     public List<NnChannel> channelsSearch(Long msoId, String ytPlaylistId, String ytUserId) {
@@ -62,6 +72,83 @@ public class ApiContentService {
         }
         
         return results;
+    }
+    
+    public NnChannel channelUpdate(Long channelId, String name, String intro, String lang, String sphere, Boolean isPublic,
+            String tag, String imageUrl, Long categoryId, Date updateDate, Boolean autoSync) {
+        
+        if (channelId == null) {
+            return null;
+        }
+        NnChannel channel = channelMngr.findById(channelId);
+        if (channel == null) {
+            return null;
+        }
+        
+        if (name != null) {
+            channel.setName(name);
+        }
+        if (intro != null) {
+            channel.setIntro(intro);
+        }
+        if (lang != null) {
+            channel.setLang(lang);
+        }
+        if (sphere != null) {
+            channel.setSphere(sphere);
+        }
+        if (isPublic != null) {
+            channel.setPublic(isPublic);
+        }
+        if (tag != null) {
+            channel.setTag(tag);
+        }
+        if (imageUrl != null) {
+            channel.setImageUrl(imageUrl);
+        }
+        if (updateDate != null) {
+            channel.setUpdateDate(updateDate);
+        }
+        
+        NnChannel savedChannel = channelMngr.save(channel);
+        
+        if (categoryId != null) {
+            storeService.setupChannelCategory(categoryId, channel.getId());
+        }
+        
+        if (autoSync != null) {
+            channelPrefMngr.setAutoSync(savedChannel.getId(), autoSync);
+        }
+        
+        return savedChannel;
+    }
+    
+    public void channelYoutubeDataSync(Long channelId) {
+        
+        if (channelId == null) {
+            return ;
+        }
+        NnChannel channel = channelMngr.findById(channelId);
+        if (channel == null) {
+            return ;
+        }
+        
+        channel.setReadonly(true);
+        channel = channelMngr.save(channel);
+        
+        Map<String, String> obj = new HashMap<String, String>();
+        obj.put("id", channel.getIdStr());
+        obj.put("sourceUrl", channel.getSourceUrl());
+        obj.put("contentType", String.valueOf(channel.getContentType()));
+        obj.put("isRealtime", "true");
+        
+        int httpStatusCode = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
+        
+        // roll back
+        if (httpStatusCode != HttpURLConnection.HTTP_OK) {
+            channel.setReadonly(false);
+            channelMngr.save(channel);
+        }
     }
 
 }
