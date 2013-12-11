@@ -55,7 +55,7 @@ public class QueueFactory {
             Object[] obj = new Object[4];
             String root = "http://localhost:8080";
             if (!server.equals("localhost")) {
-                root = "http://" + MsoConfigManager.getFacebookServerDomain(); // configurable
+                root = "http://" + MsoConfigManager.getServerDomain(); // configurable
             }
             log.info("queue root:" + root);
             String msgUrl = root.concat(url);
@@ -91,7 +91,7 @@ public class QueueFactory {
             Object[] obj = new Object[4];
             String root = "http://localhost:8080";
             if (!server.equals("localhost")) {
-                root = "http://" + MsoConfigManager.getFacebookServerDomain(); // configurable
+                root = "http://" + MsoConfigManager.getServerDomain(); // configurable
             }
             log.info("queue root:" + root);
             String msg = root.concat(url);

@@ -56,7 +56,7 @@ public class PiwikLib {
             }
         }
         
-        String urlRoot = "http://" + MsoConfigManager.getFacebookServerDomain() + "/";
+        String urlRoot = "http://" + MsoConfigManager.getServerDomain() + "/";
         String piwikHost = "http://" + MsoConfigManager.getPiwikDomain();
         String contentUrl = urlRoot + "?";
         String siteName = "";

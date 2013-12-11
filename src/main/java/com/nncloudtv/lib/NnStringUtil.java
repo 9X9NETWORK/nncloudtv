@@ -212,7 +212,7 @@ public class NnStringUtil {
     
     public static String getProgramPlaybackUrl(String channelIdStr, String programIdStr) {
     
-        return "http://" + MsoConfigManager.getFacebookServerDomain() + "/view?ch="
+        return "http://" + MsoConfigManager.getServerDomain() + "/view?ch="
                 + channelIdStr + "&ep=" + programIdStr;
     }
     
@@ -221,7 +221,7 @@ public class NnStringUtil {
         NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
         NnChannelPref channelPref = channelPrefMngr.getBrand(channelId);
         
-        String url = "http://" + MsoConfigManager.getFacebookServerDomain() + "/view?mso="
+        String url = "http://" + MsoConfigManager.getServerDomain() + "/view?mso="
                    + (mso == null ? channelPref.getValue() : mso) + "&ch=" + channelId
                    + (episodeId == null ? "" : "&ep=e" + episodeId);
         

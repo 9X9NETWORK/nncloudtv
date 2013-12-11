@@ -51,7 +51,7 @@ public class MsoConfigManager {
         return getProperty("piwik.properties", "piwik_server");
     }
     
-    static public String getFacebookServerDomain() {
+    static public String getServerDomain() {
         
         return getProperty("facebook.properties", "server_domain");
     }
