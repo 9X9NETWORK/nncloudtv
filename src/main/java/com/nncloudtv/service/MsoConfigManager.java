@@ -51,13 +51,13 @@ public class MsoConfigManager {
         return getProperty("piwik.properties", "piwik_server");
     }
     
-    static public String getServerDomain() {
+    static public String getFacebookServerDomain() {
         
-        return getProperty("sns.properties", "server_domain");
+        return getProperty("facebook.properties", "server_domain");
     }
         
-    static public String getFacebookAppToken() {        
-        return getProperty("sns.properties", "facebook_app_token");
+    static public String getDefaultFacebookAppToken() {        
+        return getProperty("facebook.properties", "facebook_apptoken");
     }
     
     static public String getCrawlerDomain() {
@@ -73,21 +73,21 @@ public class MsoConfigManager {
     		return config.getValue(); 
     	}
     	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("sns.properties", "facebook_client_id");
+    		return getProperty("facebook.properties", "facebook_clientid");
     	if (type == MsoConfig.FACEBOOK_APPTOKEN)
     		return getProperty("aws.properties", "static_file_root_path");
     	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-    		return getProperty("sns.properties", "facebook_client_secret");
+    		return getProperty("facebook.properties", "facebook_client_secret");
     	return null;
     }
     
-    static public String getFacebookClientId() {        
-        return getProperty("sns.properties", "facebook_client_id");
+    static public String getDefaultFacebookClientId() {        
+        return getProperty("facebook.properties", "facebook_clientid");
     }
     
-    static public String getFacebookClientSecret() {
+    static public String getDefaultFacebookClientSecret() {
         
-        return getProperty("sns.properties", "facebook_client_secret");
+        return getProperty("facebook.properties", "facebook_client_secret");
     }
     
     static public String getExternalRootPath() {
