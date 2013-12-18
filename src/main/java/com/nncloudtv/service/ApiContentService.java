@@ -129,7 +129,7 @@ public class ApiContentService {
             return ;
         }
         NnChannel channel = channelMngr.findById(channelId);
-        if (channel == null) {
+        if (channel == null || channel.isReadonly()) { // channel is in sync process
             return ;
         }
         
