@@ -1,3 +1,5 @@
+counter
+counter_shard
 mso
 mso_config
 nnchannel
@@ -7,11 +9,12 @@ nnprogram
 poi
 poi_campaign
 poi_event
-poi_point
 poi_map
+poi_point
 systag
 systag_display
 systag_map
 tag
 tag_map
 title_card
+ytprogram
