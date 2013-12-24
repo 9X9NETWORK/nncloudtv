@@ -1,0 +1,17 @@
+mso
+mso_config
+nnchannel
+nnchannel_pref
+nnepisode
+nnprogram
+poi
+poi_campaign
+poi_event
+poi_point
+poi_map
+systag
+systag_display
+systag_map
+tag
+tag_map
+title_card
