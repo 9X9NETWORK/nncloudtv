@@ -69,7 +69,6 @@ public class NnProgramManager {
             SysTagDisplayManager displayMngr = new SysTagDisplayManager();
             displayMngr.addChannelCounter(channel);
         }
-        this.autoShare(program);
     } 
 
     /**
@@ -367,61 +366,6 @@ public class NnProgramManager {
     
     public List<NnProgram> list(int page, int limit, String sidx, String sord, String filter) {
         return dao.list(page, limit, sidx, sord, filter);
-    }
-    
-    // hook, auto share to facebook
-    private void autoShare(NnProgram program) {
-        /*
-        AutosharingService sharingService = new AutosharingService();
-        FBPost fbPost = new FBPost(program.getName(), program.getIntro(), program.getImageUrl());
-        MsoManager msoMngr = new MsoManager();
-        String url = "http://" + MsoConfigManager.getServerDomain() + "/view?channel=" + channel.getId() + "&episode=" + program.getId();
-        fbPost.setLink(url);
-        log.info("share link: " + url);
-        if (program.getComment() != null) {
-            fbPost.setMessage(program.getComment());
-        }
-        
-        log.info("FB autosharing count = " + channelAutosharings.size());
-        for (NnChannelAutosharing autosharing : channelAutosharings) {
-            Mso mso = msoMngr.findById(autosharing.getMsoId());
-            if (mso.getLang() != null && mso.getLang().equals("en")) {
-                fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.ENGLISH));
-            } else {
-                fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.TRADITIONAL_CHINESE));
-            }
-            if (snsAuth != null && snsAuth.isEnabled()) {
-                if (autosharing.getTarget() != null && autosharing.getParameter() != null) {
-                    fbPost.setFacebookId(autosharing.getTarget());
-                    fbPost.setAccessToken(autosharing.getParameter());
-                } else {
-                    fbPost.setFacebookId(snsAuth.getToken());
-                    fbPost.setAccessToken(snsAuth.getSecret());
-                }
-                QueueFactory.add("/CMSAPI/postToFacebook", fbPost);
-            }
-        }
-        
-        // hook, auto share to twitter
-        channelAutosharings = sharingService.findByChannelAndType(channel.getId(), SnsAuth.TYPE_TWITTER);
-        log.info("twitter autosharing count = " + channelAutosharings.size());
-        for (NnChannelAutosharing autosharing : channelAutosharings) {
-            SnsAuth snsAuth = snsMngr.findTitterAuthByMsoId(autosharing.getMsoId());
-            Mso mso = msoMngr.findById(autosharing.getMsoId());
-            if (mso.getLang() != null && mso.getLang().equals("en")) {
-                fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.ENGLISH));
-            } else {
-                fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.TRADITIONAL_CHINESE));
-            }
-            if (snsAuth != null && snsAuth.isEnabled()) {
-                
-                fbPost.setFacebookId(snsAuth.getToken());
-                fbPost.setAccessToken(snsAuth.getSecret());
-                
-                QueueFactory.add("/CMSAPI/postToTwitter", fbPost);
-            }
-        }
-       */
     }
     
     public List<NnProgram> findByEpisodeId(long episodeId) {
