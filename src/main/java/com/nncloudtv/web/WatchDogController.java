@@ -15,7 +15,6 @@ import net.spy.memcached.OperationTimeoutException;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -289,7 +288,7 @@ public class WatchDogController {
                             String jsonstr = URLDecoder.decode(json[3], "utf-8");
                             ObjectMapper mapper = new ObjectMapper();
                             JsonFactory factory = mapper.getJsonFactory(); 
-                            JsonParser jp = factory.createJsonParser(jsonstr); //to test valid json
+                            factory.createJsonParser(jsonstr); //to test valid json
                             output += "\n" + URLDecoder.decode(json[3], "utf-8") + "\n--\n";
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
