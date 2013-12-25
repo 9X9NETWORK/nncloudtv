@@ -63,17 +63,13 @@ Detail for each step can be found in the following sections.
 
 -   Basic tests,
 
-    > http://localhost:8080/hello/world
-    (test your servlet and spring dispatcher)
-
-    > http://localhost:8080/hello/pdr
-    (write a db record)
-
-    > http://localhost:8080/hello/cache_set
-    (test memcache component)
-
-    > http://localhost:8080/hello/fanout?exchange_name=hello
-    (test rabbitq, nnqueue should output a hello message)
+    > http://localhost:8080/hello/world                      (test your servlet and spring dispatcher)
+    >
+    > http://localhost:8080/hello/pdr                        (write a db record)
+    >
+    > http://localhost:8080/hello/cache_set                  (test memcache component)
+    >
+    > http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
     go to http://localhost:8080/admin/index, click on initialize link
@@ -99,7 +95,7 @@ mvn
         :::bash
         mvn --version
 
--   read pom.xml
+-   read pom.xml  
 
 -   generate javadoc
 
