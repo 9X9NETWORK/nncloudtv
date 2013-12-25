@@ -411,10 +411,10 @@ Running the app on EC2
         :::bash
         wget http://localhost:8080/hello/world # (local test)
 
-        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world     (basic web server test)
-        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr       (write to db test)
-        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set (test memcache component)
-        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get (test memcache component)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world                      (basic web server test)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr                        (write to db test)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set                  (test memcache component)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get                  (test memcache component)
         # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/fanout?exchange_name=hello (rabbit queue client test)
 
 -   run on port 80 (port 80 might be closed, check ec2 console setting)
