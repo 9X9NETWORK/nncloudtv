@@ -57,6 +57,7 @@ Detail for each step can be found in the following sections.
 -   Run nncloudtv on Jetty:  
     Go to project root folder,
 
+        :::bash
         mvn jetty:run
         nohup mvn jetty:run > ~/jetty.log 2>&1
 
@@ -97,7 +98,7 @@ mvn
         :::bash
         mvn --version
 
--   read pom.xml
+-   read **pom.xml**
 
 -   generate javadoc
 
@@ -146,7 +147,7 @@ RabbitMQ
 -   installation quick guide
 
     1.  unzip the package
-    2.  install erlang 5.7.4 using 'otp_win32_R13B03.exe'
+    2.  install erlang 5.7.4 using **otp_win32_R13B03.exe**
     3.  set ERLANG_HOME in environment variable  
         (move folder rabbitmq-server-windows-1.7.2 to program files)
 
@@ -462,14 +463,14 @@ SSH
 
     > /usr/share/jetty/keys
 
-3.  edit **jetty-ssl.xml**
+4.  edit **jetty-ssl.xml**
 
         :::bash
         vi /etc/jetty/jetty-ssl.xml
 
     edit keystore location and password, you can reference the file on alpha or it's checked in here,
 
-4.  edit **jetty.conf**
+5.  edit **jetty.conf**
 
         :::bash
         vi /etc/jetty/jetty.conf
@@ -478,7 +479,7 @@ SSH
 
     > /etc/jetty/jetty-ssl.xml
 
-5.  modify iptables
+6.  modify iptables
 
         :::bash
         sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
@@ -495,7 +496,7 @@ SSH
         # REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 redir ports 8080
         #
 
-5.  modify **/etc/iptables.rules**
+7.  modify **/etc/iptables.rules**
 
 ps. jetty configuration files are also checked in here,  
 ***https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/***
