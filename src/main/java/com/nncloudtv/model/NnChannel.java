@@ -101,6 +101,7 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_YOUTUBE_SPECIAL_SORTING = 10;
     public static final short CONTENTTYPE_FAVORITE = 11;
     public static final short CONTENTTYPE_FAKE_FAVORITE = 12;
+    public static final short CONTENTTYPE_YOUTUBE_LIVE = 13;
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
