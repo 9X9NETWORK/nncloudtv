@@ -116,7 +116,7 @@ datanucleus commands:
         :::bash
         mvn datanucleus:schema-create
 
-Note: 
+Note:
 
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
 2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
@@ -140,17 +140,18 @@ RabbitMQ
 
 -   installation quick guide
 
-    > unzip the package
-    > install erlang 5.7.4 using otp_win32_R13B03.exe
-    > set ERLANG_HOME in environment variable
-    > (move folder rabbitmq-server-windows-1.7.2 to program files)
+    1.  unzip the package
+    2.  install erlang 5.7.4 using otp_win32_R13B03.exe
+    3.  set ERLANG_HOME in environment variable  
+        (move folder rabbitmq-server-windows-1.7.2 to program files)
 
 -   commands examples:
 
-    > cd C:\Program Files (x86)\RabbitMQ\rabbitmq_server-1.7.2\sbin
-    > double click "rabbitmq-server.bat" to start the server
-    > rabbitmqctl list_exchanges
-    > rabbitmqctl list_queues
+        :::bash
+        cd "C:\Program Files (x86)\RabbitMQ\rabbitmq_server-1.7.2\sbin"
+        # double click "rabbitmq-server.bat" to start the server
+        rabbitmqctl list_exchanges
+        rabbitmqctl list_queues
 
 MySql
 --------------------------------
@@ -219,9 +220,10 @@ EC2
 ================================
 
 -   to restart the instance
+
     > http://channelwatch.9x9.tv/ec2/
 
-Jetty 
+Jetty
 --------------------------------
 
 -   installation
@@ -233,9 +235,9 @@ Jetty
 
 -   configuration
 
-    > modify /etc/default/jetty
-    > change value of "NO_START" to "NO_START=0" 
-    > change value of "JETTY_HOST" TO "JETTY_HOST=0.0.0.0"
+    1.  modify /etc/default/jetty
+    2.  change value of "NO_START" to "NO_START=0"
+    3.  change value of "JETTY_HOST" TO "JETTY_HOST=0.0.0.0"
 
 -   start/stop jetty
 
@@ -254,17 +256,18 @@ Jetty
         :::bash
         vi /etc/init.d/jetty
 
-replace
+    replace
 
-    :::bash
-    CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[:space:]*#" | tr "\n" " ")
+        :::bash
+        CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[:space:]*#" | tr "\n" " ")
 
-with this one:
+    with this one:
 
-    :::bash
-    CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[[:space:]]*#" | tr "\n" " ")
+        :::bash
+        CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[[:space:]]*#" | tr "\n" " ")
 
 -   deploy app: deploy your war to webapps under jetty 
+
     > /usr/share/jetty/webapps
 
 -   remove 'root' folder if default has one
@@ -272,7 +275,7 @@ with this one:
 MySql
 --------------------------------
 
--   installation 
+-   installation
 
         :::bash
         apt-get install mysql-server-5.1
