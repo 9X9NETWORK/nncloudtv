@@ -1,4 +1,0 @@
-nncloudtv_analytics
-nncloudtv_content
-nncloudtv_nnuser1
-nncloudtv_nnuser2
