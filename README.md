@@ -38,7 +38,7 @@ Detail for each step can be found in the following sections.
 -   Start RabbitMQ server
 
 -   Create databases and tables  
-    Reference *mysql/README.md*
+    Reference **mysql/README.md**
 
 -   Modify datanucleus.properties files,  
     there are four, this is to make sure your db connection is setup correctly
@@ -74,7 +74,7 @@ Detail for each step can be found in the following sections.
         # http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
-    go to http://localhost:8080/admin/index, click on initialize link
+    go to ***http://localhost:8080/admin/index***, click on initialize link
 
 mvn
 --------------------------------
@@ -92,7 +92,7 @@ mvn
         sudo cp -R apache-maven-3.0.5 /usr/local/apache-maven/
         export PATH=/usr/local/apache-maven/apache-maven-3.0.5/bin:$PATH
 
-    ps. add this line to the end of /home/ubuntu/.bashrc
+    ps. add this line to the end of **/home/ubuntu/.bashrc**
 
         :::bash
         mvn --version
@@ -124,8 +124,8 @@ datanucleus commands:
 Note:
 
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
-2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
-3.  Alternatively, reference *mysql/README.rd* file
+2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in **pom.xml** before you run **schema-create**
+3.  Alternatively, reference **mysql/README.rd** file
 
 Jetty
 --------------------------------
@@ -174,7 +174,7 @@ MySql
         mysql nncloudtv_nnuser2 -h localhost -u root -p
         mysql --default-character-set=utf8 -u root -p
 
--   please reference *mysql/README.md* file
+-   please reference **mysql/README.md** file
 
 -   dump data example
 
@@ -241,8 +241,8 @@ Jetty
 -   configuration
 
     1.  modify /etc/default/jetty
-    2.  change value of ***NO_START*** to ***NO_START=0***
-    3.  change value of ***JETTY_HOST*** TO **JETTY_HOST=0.0.0.0**
+    2.  change value of "**NO_START**" to "**NO_START=0**"
+    3.  change value of "**JETTY_HOST**" to "**JETTY_HOST=0.0.0.0**"
 
 -   start/stop jetty
 
@@ -341,14 +341,14 @@ Mail server
 -   jetty6 is loading wrong gnumail.jar, fixes:
 
     1.  edit **/etc/jetty/start.config**:  
-        comment out the use of gnumail and activation.jar  
+        comment out the use of gnumail and **activation.jar**  
         doesn't actually take effect, but just to be sure for future use.
 
-    2.  remove following files(gnumail*.jar) under /usr/share/java/:
+    2.  remove following files(gnumail*.jar) under **/usr/share/java/**:
 
         > gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
 
-    3.  copy following files to /usr/share/jetty/lib:
+    3.  copy following files to **/usr/share/jetty/lib**:
 
         > mail-1.4.jar, activation-1.1.jar
 
@@ -498,7 +498,7 @@ SSH
 5.  modify **/etc/iptables.rules**
 
 ps. jetty configuration files are also checked in here,  
-https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/
+***https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/***
 
 Others
 --------------------------------
