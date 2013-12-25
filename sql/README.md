@@ -5,7 +5,7 @@ Sections in this document,
 - tables: table listing, and sql commands
 - truncate commands: devel shortcut
 
-<strike>ps. some of them should be migrated to .sql file in the future.</strike>
+<del>ps. some of them should be migrated to .sql file in the future.</del>
 
 db
 --------------------------------
