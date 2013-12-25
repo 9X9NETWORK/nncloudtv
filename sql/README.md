@@ -1,11 +1,9 @@
-Sections in this document,
+References in this document,
 
 - db, current databases
 - tables on dbs: table distribution
 - tables: table listing, and sql commands
 - truncate commands: devel shortcut
-
-<s>ps. some of them should be migrated to .sql file in the future.</s>
 
 db
 --------------------------------
@@ -22,7 +20,7 @@ tables (schema)
 
 Please see 'schema/*.sql'
 
-truncate
+truncate commands
 --------------------------------
 
 Please see 'truncate_databases.sql'
