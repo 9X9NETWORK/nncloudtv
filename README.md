@@ -26,7 +26,7 @@ Detail for each step can be found in the following sections.
 
 -   zh_TW.UTF-8 locale support
 
-        :::shell
+        :::bash
         locale-gen --lang zh_TW.UTF-8
 
 -   Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3  
@@ -50,7 +50,7 @@ Detail for each step can be found in the following sections.
 -   datanucleus jdo enhance:  
     Go to project root folder, 
 
-        :::shell
+        :::bash
         mvn datanucleus:enhance (it might not be necessary)
 
 -   Run nncloudtv on Jetty:  
@@ -80,7 +80,7 @@ mvn
 
 -   ubuntu 
 
-        :::shell
+        :::bash
         wget http://linux-files.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
         tar -xzvf apache-maven-3.0.4-bin.tar.gz
         sudo mkdir /usr/local/apache-maven
@@ -89,14 +89,14 @@ mvn
 
     ps. add this line to the end of /home/ubuntu/.bashrc
 
-        :::shell
+        :::bash
         mvn --version
 
 -   read pom.xml
 
 -   generate javadoc
 
-        :::shell
+        :::bash
         mvn javadoc:javadoc
         sudo rm -rf /var/www/9x9/apidocs
         sudo mv ~/files/nncloudtv/doc/apidocs /var/www/9x9/
@@ -108,15 +108,16 @@ datanucleus commands:
 
 -   enhance
 
-        :::sehll
+        :::bash
         mvn datanucleus:enhance
 
 -   Schema tool
 
-        :::shell
+        :::bash
         mvn datanucleus:schema-create
 
 Note: 
+
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
 2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
 3.  Alternatively, reference MySql file
@@ -125,8 +126,8 @@ Jetty
 --------------------------------
 
 -   Run your application on jetty
-    1)  go to project root folder, 
-    2)  mvn jetty:run
+    1.  go to project root folder, 
+        mvn jetty:run
 
 ================================
 RabbitMQ
