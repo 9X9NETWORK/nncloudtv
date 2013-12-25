@@ -123,16 +123,16 @@ Note:
 
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
 2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
-3.  Alternatively, reference ''mysql/README.rd'' file
+3.  Alternatively, reference 'mysql/README.rd' file
 
 Jetty
 --------------------------------
 
 -   Run your application on jetty
-    1.  go to project root folder,
+    go to project root folder,  
 
-            :::bash
-            mvn jetty:run
+        :::bash
+        mvn jetty:run
 
 RabbitMQ
 --------------------------------
@@ -144,7 +144,7 @@ RabbitMQ
 -   installation quick guide
 
     1.  unzip the package
-    2.  install erlang 5.7.4 using otp_win32_R13B03.exe
+    2.  install erlang 5.7.4 using 'otp_win32_R13B03.exe'
     3.  set ERLANG_HOME in environment variable  
         (move folder rabbitmq-server-windows-1.7.2 to program files)
 
@@ -217,7 +217,7 @@ Note
 --------------------------------
 
 -   javascript and image resources should be placed on amazon s3.  
-    use account nncloudtv@gmail.com to access
+    use account **nncloudtv@gmail.com** to access
 
 EC2
 ================================
@@ -252,7 +252,8 @@ Jetty
 
         :::bash
         cd /usr/share/jetty 
-        java -jar start.jar --version # null 6.1.22
+        java -jar start.jar --version
+        # null 6.1.22
 
 -   if v=6.1.24, bug fix
 
@@ -302,14 +303,14 @@ RabbitMQ
 
 -   installation
 
-    :::bash
-    apt-cache search rabbitmq
-    apt-get install rabbitmq-server
+        :::bash
+        apt-cache search rabbitmq
+        apt-get install rabbitmq-server
 
--   commands: 
+-   commands:
 
-    :::bash
-    rabbitmqctl status
+        :::bash
+        rabbitmqctl status
 
 Memcached
 --------------------------------
@@ -319,6 +320,7 @@ Memcached
     service memcached start
     telnet localhost 11211
 
+    #
     # Trying 127.0.0.1...
     # Connected to localhost.
     # Escape character is '^]'.
@@ -334,121 +336,171 @@ Mail server
     :::bash
     apt-get install postfix
 
-- jetty6 is loading wrong gnumail.jar, fixes:
+-   jetty6 is loading wrong gnumail.jar, fixes:
 
-a.  edit /etc/jetty/start.config:  
-    comment out the use of gnumail and activation.jar  
-    doesn't actually take effect, but just to be sure for future use.  
+    a.  edit /etc/jetty/start.config:  
+        comment out the use of gnumail and activation.jar  
+        doesn't actually take effect, but just to be sure for future use.
 
-b.  remove following files(gnumail*.jar) under /usr/share/java/:  
+    b.  remove following files(gnumail*.jar) under /usr/share/java/:
 
-    gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
+        gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
 
-c.  copy following files to /usr/share/jetty/lib:
+    c.  copy following files to /usr/share/jetty/lib:
 
-    mail-1.4.jar, activation-1.1.jar
- 
-d. upgrade to jetty 7 should be able to solve the problem as well.
- 
-================================
+        mail-1.4.jar, activation-1.1.jar
+
+    d. upgrade to jetty 7 should be able to solve the problem as well.
+
 Running the app on EC2
-================================  
-- build war
-a. change datanucleus property files if necessary
-b. check port setting on server if ncessary 
-> netstat -vatn
+--------------------------------
 
-- upload the war and the jar: use SCP with your private key, and upload to the server
-pscp -i awsdev.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-174-129-141-179.compute-1.amazonaws.com:/home/ubuntu/files
-pscp -i prod-west2.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-50-112-111-245.us-west-2.compute.amazonaws.com:/home/ubuntu/files
+-   build war
 
-- login name: ubuntu
+    a.  change datanucleus property files if necessary
+    b.  check port setting on server if ncessary
 
-- change hostname if necessary 
-> hostname devel 
-> /etc/hostname
+            :::bash
+            netstat -vatn
 
-- commands: 
-sudo su
-cd /usr/share/jetty/webapps
-service jetty stop
-rm root.war
-cp /home/ubuntu/files/nncloudtv-0.0.1-SNAPSHOT.war .
-mv nncloudtv-0.0.1-SNAPSHOT.war root.war
-service jetty start
+-   upload the war and the jar: use SCP with your private key, and upload to the server
 
-> sudo su
-> cd /usr/share/jetty/webapps && service jetty stop && rm root.war && cp /home/ubuntu/files/nncloudtv-0.0.1-SNAPSHOT.war . && mv nncloudtv-0.0.1-SNAPSHOT.war root.war && service jetty start
+        :::bash
+        pscp -i awsdev.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-174-129-141-179.compute-1.amazonaws.com:/home/ubuntu/files
+        pscp -i prod-west2.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-50-112-111-245.us-west-2.compute.amazonaws.com:/home/ubuntu/files
 
-> bash -x ./install.sh
+-   login name: *** ubuntu ***
 
-java -jar nnqueue.jar hello
-java -jar nnqueue.jar brand_counter
-java -jar nnqueue.jar category_create
-java -jar nnqueue.jar channel_create_related
+-   change hostname if necessary
 
-- testing on java02, 
-wget http://localhost:8080/hello/world (local test)
-http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world (basic web server test)
-http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr (write to db test)
-http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set (test memcache component)
-http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get (test memcache component)
-http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/fanout?exchange_name=hello (rabbit queue client test)
+        :::bash
+        sudo hostname devel # /etc/hostname
 
-- run on port 80 (port 80 might be closed, check ec2 console setting)
- 
-test
-> sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+-   commands:
 
-permanent
-(create a new file iptables.rules)
-> vi /etc/iptables.rules
+        :::bash
+        # EX1
+        sudo su
+        cd /usr/share/jetty/webapps
+        service jetty stop
+        rm root.war
+        cp /home/ubuntu/files/nncloudtv-0.0.1-SNAPSHOT.war .
+        mv nncloudtv-0.0.1-SNAPSHOT.war root.war
+        service jetty start
 
-(add one line to interfaces file)
-> vi /etc/network/interfaces
-pre-up iptables-restore < /etc/iptables.rules
+        # EX2
+        sudo su
+        cd /usr/share/jetty/webapps && service jetty stop && rm root.war && cp /home/ubuntu/files/nncloudtv-0.0.1-SNAPSHOT.war . && mv nncloudtv-0.0.1-SNAPSHOT.war root.war && service jetty start
 
-- stop apache2 (if u ever need it)
-> sudo /etc/init.d/apache2 stop
+        # EX3
+        bash -x ./installer/installer.sh
 
-- for server with monit, stop monit before manually restart your server
-service monit stop
+    Both EX1, EX2, EX3 are equavalent, but EX3 is recommended.
 
-================================
+        # test RabbitMQ
+        java -jar nnqueue.jar hello
+        java -jar nnqueue.jar brand_counter
+        java -jar nnqueue.jar category_create
+        java -jar nnqueue.jar channel_create_related
+
+-   testing on java02,
+
+        :::bash
+        wget http://localhost:8080/hello/world # (local test)
+
+    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world (basic web server test)
+    >
+    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr (write to db test)
+    >
+    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set (test memcache component)
+    >
+    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get (test memcache component)
+    >
+    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/fanout?exchange_name=hello (rabbit queue client test)
+
+-   run on port 80 (port 80 might be closed, check ec2 console setting)
+
+    +   test
+
+            :::bash
+            sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+
+    +   permanent
+
+            :::bash
+            # (create a new file iptables.rules)
+            vi /etc/iptables.rules
+
+            # (add one line to interfaces file)
+            vi /etc/network/interfaces
+
+            pre-up iptables-restore < /etc/iptables.rules
+
+-   stop apache2 (if u ever need it)
+
+        :::bash
+        sudo /etc/init.d/apache2 stop
+
+-   for server with monit, stop monit before manually restart your server
+
+        :::bash
+        service monit stop
+
 SSH
-================================  
-1. combine key and cert file into PKCS12 format
-$ openssl pkcs12 -inkey alpha.9x9.tv_private.key -in alpha.9x9.tv_ssl.cert -export -out jetty.pkcs12
+--------------------------------
 
-2. Generate keystore file (Java Keytool stores the keys and certificates in what is called a keystore)
-$ keytool -importkeystore -srckeystore jetty.pkcs12 -srcstoretype PKCS12 -destkeystore keystore
+1.  combine key and cert file into PKCS12 format
 
-3. copy all the key files to the directory
-/usr/share/jetty/keys
+        :::bash
+        openssl pkcs12 -inkey alpha.9x9.tv_private.key -in alpha.9x9.tv_ssl.cert -export -out jetty.pkcs12
 
-3. edit jetty-ssl.xml
-$ vi /etc/jetty/jetty-ssl.xml
-edit keystore location and password, you can reference the file on alpha or it's checked in here,
+2.  Generate keystore file (Java Keytool stores the keys and certificates in what is called a keystore)
 
-4. edit jetty.conf
-$ vi /etc/jetty/jetty.conf
-add line, /etc/jetty/jetty-ssl.xml
+        :::bash
+        keytool -importkeystore -srckeystore jetty.pkcs12 -srcstoretype PKCS12 -destkeystore keystore
 
-5. modify iptables
-$ sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
+3.  copy all the key files to the directory
 
-make sure there are only two ruls in iptables
-$ sudo iptables -t nat -n -L
-Chain PREROUTING (policy ACCEPT)
-target prot opt source destination
-REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:443 redir ports 8443
-REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 redir ports 8080
+    > /usr/share/jetty/keys
 
-5. modify /etc/iptables.rules
+3.  edit jetty-ssl.xml
 
-ps. jetty configuration files are also checked in here,
-http://everest.teltel.com:8080/repos/misc/web/nnvmso-moveout/nncloudtv/installer/jetty/  
+        :::bash
+        vi /etc/jetty/jetty-ssl.xml
 
-================================
+    edit keystore location and password, you can reference the file on alpha or it's checked in here,
+
+4.  edit jetty.conf
+
+        :::bash
+        vi /etc/jetty/jetty.conf
+
+    add line, /etc/jetty/jetty-ssl.xml
+
+5.  modify iptables
+
+        :::bash
+        sudo /sbin/iptables -t nat -I PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8443
+
+    make sure there are only two ruls in iptables
+
+        :::bash
+        sudo iptables -t nat -n -L
+
+        #
+        # Chain PREROUTING (policy ACCEPT)
+        # target prot opt source destination
+        # REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:443 redir ports 8443
+        # REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 redir ports 8080
+        #
+
+5.  modify /etc/iptables.rules
+
+ps. jetty configuration files are also checked in here,  
+https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/
+
 Others
-================================  
+--------------------------------
+
+*(no content here)*
+
