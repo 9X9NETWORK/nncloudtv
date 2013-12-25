@@ -1,20 +1,20 @@
 About this document,
 
 Three sections,
-- Project intro
-- Devel environment and tool: more for Windows
-- EC2: i.e. Ubuntu on EC2
+-   Project intro
+-   Devel environment and tool: more for Windows
+-   EC2: i.e. Ubuntu on EC2
 
- ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+--------------------------------
 
 Project intro
 ================================
 
-- This project is based on java spring framework.
-- Installer folder is not part of the main project. It's intended for installation and data migration. 
-  a. tools, tools for installer script
-  b. maintenance, maintenance page when system is not available
-  c. migration, data migration tools to port data from gae to mysql
+-   This project is based on java spring framework.
+-   Installer folder is not part of the main project. It's intended for installation and data migration. 
+    1.  tools, tools for installer script
+    2.  maintenance, maintenance page when system is not available
+    3.  migration, data migration tools to port data from gae to mysql
 
 Devel environment and tool
 ================================
@@ -26,90 +26,107 @@ Detail for each step can be found in the following sections.
 
 -   zh_TW.UTF-8 locale support
 
-        :::bash
+        :::shell
         locale-gen --lang zh_TW.UTF-8
 
-- Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3 
-Details can be found in the following sections
+-   Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3  
+    Details can be found in the following sections
   
-- Start MySql server
+-   Start MySql server
 
-- Start RabbitMQ server
+-   Start RabbitMQ server
 
-- Create databases and tables
-Reference MySql file
+-   Create databases and tables  
+    Reference MySql file
 
-- Modify datanucleus.properties files, 
-there are four, this is to make sure your db connection is setup correctly
+-   Modify datanucleus.properties files,  
+    there are four, this is to make sure your db connection is setup correctly
 
-- Run nnqueue client 
-Reference README in nnqueue project
+-   Run nnqueue client  
+    Reference README in nnqueue project
 
-- Run memcache server 
+-   Run memcache server 
 
-- datanucleus jdo enhance:
-Go to project root folder, 
-> mvn datanucleus:enhance (it might not be necessary)
+-   datanucleus jdo enhance:  
+    Go to project root folder, 
 
-- Run nncloudtv on Jetty: 
-Go to project root folder, 
-> mvn jetty:run
-> nohup mvn jetty:run > ~/jetty.log 2>&1
-(c:\Java\projects\nncloudtv>mvn -Dslf4j=false -Dlog4j.configuration=file:./target/classes/log4j.properties jetty:run)
+        :::shell
+        mvn datanucleus:enhance (it might not be necessary)
 
-- Basic tests,
-http://localhost:8080/hello/world (test your servlet and spring dispatcher)
-http://localhost:8080/hello/pdr (write a db record)
-http://localhost:8080/hello/cache_set (test memcache component)
-http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
+-   Run nncloudtv on Jetty:  
+    Go to project root folder, 
 
-- ready to go,
-go to http://localhost:8080/admin/index, click on initialize link
+        mvn jetty:run
+        nohup mvn jetty:run > ~/jetty.log 2>&1
 
-================================
+    (c:\Java\projects\nncloudtv>mvn -Dslf4j=false -Dlog4j.configuration=file:./target/classes/log4j.properties jetty:run)
+
+-   Basic tests,
+
+        http://localhost:8080/hello/world (test your servlet and spring dispatcher)
+        http://localhost:8080/hello/pdr (write a db record)
+        http://localhost:8080/hello/cache_set (test memcache component)
+        http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
+
+-   ready to go,  
+    go to http://localhost:8080/admin/index, click on initialize link
+
 mvn 
-================================
-- Download 3.0.3
-http://maven.apache.org/download.html 
+--------------------------------
 
-- ubuntu 
-> wget http://linux-files.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
-> tar -xzvf apache-maven-3.0.4-bin.tar.gz
-> sudo mkdir /usr/local/apache-maven
-> sudo cp -R apache-maven-3.0.4 /usr/local/apache-maven/
-> export PATH=/usr/local/apache-maven/apache-maven-3.0.4/bin:$PATH
-ps. add this line to the end of /home/ubuntu/.bashrc
-> mvn --version
+-   Download 3.0.3
 
-- read pom.xml
+    > http://maven.apache.org/download.html 
 
-- generate javadoc
-mvn javadoc:javadoc
-sudo rm -rf /var/www/9x9/apidocs
-sudo mv ~/files/nncloudtv/doc/apidocs /var/www/9x9/
+-   ubuntu 
 
-================================
+        :::shell
+        wget http://linux-files.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
+        tar -xzvf apache-maven-3.0.4-bin.tar.gz
+        sudo mkdir /usr/local/apache-maven
+        sudo cp -R apache-maven-3.0.4 /usr/local/apache-maven/
+        export PATH=/usr/local/apache-maven/apache-maven-3.0.4/bin:$PATH
+
+    ps. add this line to the end of /home/ubuntu/.bashrc
+
+        :::shell
+        mvn --version
+
+-   read pom.xml
+
+-   generate javadoc
+
+        :::shell
+        mvn javadoc:javadoc
+        sudo rm -rf /var/www/9x9/apidocs
+        sudo mv ~/files/nncloudtv/doc/apidocs /var/www/9x9/
+
 Datanucleus tool
-================================
+--------------------------------
+
 datanucleus commands:
 
-- enhance
-mvn datanucleus:enhance
+-   enhance
 
-- Schema tool
-mvn datanucleus:schema-create
+        :::sehll
+        mvn datanucleus:enhance
+
+-   Schema tool
+
+        :::shell
+        mvn datanucleus:schema-create
 
 Note: 
-1. You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
-2. Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
-3. Alternatively, reference MySql file
+1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
+2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
+3.  Alternatively, reference MySql file
 
-================================
 Jetty
-================================
-- Run your application on jetty
-1) go to project root folder, 
-2) mvn jetty:run
+--------------------------------
+
+-   Run your application on jetty
+    1)  go to project root folder, 
+    2)  mvn jetty:run
 
 ================================
 RabbitMQ
