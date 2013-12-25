@@ -1,6 +1,7 @@
 About this document,
 
 Three sections,
+
 -   Project intro
 -   Devel environment and tool: more for Windows
 -   EC2: i.e. Ubuntu on EC2
@@ -12,9 +13,9 @@ Project intro
 
 -   This project is based on java spring framework.
 -   Installer folder is not part of the main project. It's intended for installation and data migration. 
-    1.  tools, tools for installer script
-    2.  maintenance, maintenance page when system is not available
-    3.  migration, data migration tools to port data from gae to mysql
+    1.  *tools*, tools for installer script
+    2.  *maintenance*, maintenance page when system is not available
+    3.  *migration*, data migration tools to port data from gae to mysql
 
 Devel environment and tool
 ================================
@@ -37,7 +38,7 @@ Detail for each step can be found in the following sections.
 -   Start RabbitMQ server
 
 -   Create databases and tables  
-    Reference 'mysql/README.md'
+    Reference *mysql/README.md*
 
 -   Modify datanucleus.properties files,  
     there are four, this is to make sure your db connection is setup correctly
@@ -63,13 +64,14 @@ Detail for each step can be found in the following sections.
 
 -   Basic tests,
 
-    > http://localhost:8080/hello/world                      (test your servlet and spring dispatcher)
-    >
-    > http://localhost:8080/hello/pdr                        (write a db record)
-    >
-    > http://localhost:8080/hello/cache_set                  (test memcache component)
-    >
-    > http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
+        :::bash
+        # http://localhost:8080/hello/world                      (test your servlet and spring dispatcher)
+        #
+        # http://localhost:8080/hello/pdr                        (write a db record)
+        #
+        # http://localhost:8080/hello/cache_set                  (test memcache component)
+        #
+        # http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
     go to http://localhost:8080/admin/index, click on initialize link
@@ -123,7 +125,7 @@ Note:
 
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
 2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
-3.  Alternatively, reference 'mysql/README.rd' file
+3.  Alternatively, reference *mysql/README.rd* file
 
 Jetty
 --------------------------------
@@ -172,7 +174,7 @@ MySql
         mysql nncloudtv_nnuser2 -h localhost -u root -p
         mysql --default-character-set=utf8 -u root -p
 
--   please reference 'mysql/README.md' file
+-   please reference *mysql/README.md* file
 
 -   dump data example
 
@@ -274,7 +276,7 @@ Jetty
 
     > /usr/share/jetty/webapps
 
--   remove 'root' folder if default has one
+-   remove "root/" folder if default has one
 
 MySql
 --------------------------------
@@ -338,27 +340,27 @@ Mail server
 
 -   jetty6 is loading wrong gnumail.jar, fixes:
 
-    a.  edit /etc/jetty/start.config:  
+    1.  edit /etc/jetty/start.config:  
         comment out the use of gnumail and activation.jar  
         doesn't actually take effect, but just to be sure for future use.
 
-    b.  remove following files(gnumail*.jar) under /usr/share/java/:
+    2.  remove following files(gnumail*.jar) under /usr/share/java/:
 
         gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
 
-    c.  copy following files to /usr/share/jetty/lib:
+    3.  copy following files to /usr/share/jetty/lib:
 
         mail-1.4.jar, activation-1.1.jar
 
-    d. upgrade to jetty 7 should be able to solve the problem as well.
+    4. upgrade to jetty 7 should be able to solve the problem as well.
 
 Running the app on EC2
 --------------------------------
 
 -   build war
 
-    a.  change datanucleus property files if necessary
-    b.  check port setting on server if ncessary
+    1.  change datanucleus property files if necessary
+    2.  check port setting on server if ncessary
 
             :::bash
             netstat -vatn
@@ -366,8 +368,8 @@ Running the app on EC2
 -   upload the war and the jar: use SCP with your private key, and upload to the server
 
         :::bash
-        pscp -i awsdev.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-174-129-141-179.compute-1.amazonaws.com:/home/ubuntu/files
-        pscp -i prod-west2.ppk nncloudtv-0.0.1-SNAPSHOT.war ubuntu@ec2-50-112-111-245.us-west-2.compute.amazonaws.com:/home/ubuntu/files
+        pscp -i awsdev.ppk nncloudtv-0.0.1-SNAPSHOT.war "ubuntu@ec2-174-129-141-179.compute-1.amazonaws.com:/home/ubuntu/files"
+        pscp -i prod-west2.ppk nncloudtv-0.0.1-SNAPSHOT.war "ubuntu@ec2-50-112-111-245.us-west-2.compute.amazonaws.com:/home/ubuntu/files"
 
 -   login name: *** ubuntu ***
 
@@ -395,8 +397,9 @@ Running the app on EC2
         # EX3
         bash -x ./installer/installer.sh
 
-    Both EX1, EX2, EX3 are equavalent, but EX3 is recommended.
+    EX1, EX2, and EX3 are equavalent, but EX3 is recommended.
 
+        :::bash
         # test RabbitMQ
         java -jar nnqueue.jar hello
         java -jar nnqueue.jar brand_counter
@@ -408,15 +411,11 @@ Running the app on EC2
         :::bash
         wget http://localhost:8080/hello/world # (local test)
 
-    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world (basic web server test)
-    >
-    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr (write to db test)
-    >
-    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set (test memcache component)
-    >
-    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get (test memcache component)
-    >
-    > http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/fanout?exchange_name=hello (rabbit queue client test)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/world     (basic web server test)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/pdr       (write to db test)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_set (test memcache component)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/cache_get (test memcache component)
+        # http://ec2-174-129-141-179.compute-1.amazonaws.com:8080/hello/fanout?exchange_name=hello (rabbit queue client test)
 
 -   run on port 80 (port 80 might be closed, check ec2 console setting)
 
