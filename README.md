@@ -168,7 +168,7 @@ MySql
         mysql nncloudtv_nnuser2 -h localhost -u root -p
         mysql --default-character-set=utf8 -u root -p
 
--   please reference "sql/READM.md" file
+-   please reference 'sql/READM.md' file
 
 -   dump data example
 
@@ -185,93 +185,111 @@ Package
 
 -   packaging nncloudtv war procedures:
 
-    a.  modify datanucleus.properties files, there are four.
+    1.  modify datanucleus.properties files, there are four.
 
-    b.  packaging:
+    2.  packaging:
 
-        :::bash
-        mvn clean:clean
-        mvn compile
-        mvn datanucleus:enhance
-        mvn compile war:war
+            :::bash
+            mvn clean:clean
+            mvn compile
+            mvn datanucleus:enhance
+            mvn compile war:war
 
-    c.  test the packaged war with jetty plugin:
+    3.  test the packaged war with jetty plugin:
 
-        :::bash
-        mvn jetty:deploy-war
+            :::bash
+            mvn jetty:deploy-war
 
         packaging and run jetty with jetty plugin:
 
-        :::bash
-        mvn jetty:run-war
+            :::bash
+            mvn jetty:run-war
 
 -   packaging nnqueue jar:
 
     reference nnqueue.README
 
-================================
 Note
-================================
-- javascript and image resources should be placed on amazon s3.
-use account nncloudtv@gmail.com to access
+--------------------------------
 
-=============================================================================================================
+-   javascript and image resources should be placed on amazon s3.  
+    use account nncloudtv@gmail.com to access
+
 EC2
-=============================================================================================================
-- to restart the instance
-http://channelwatch.9x9.tv/ec2/
-
 ================================
+
+-   to restart the instance
+    > http://channelwatch.9x9.tv/ec2/
+
 Jetty 
-================================
-- installation
-> apt-get install jetty
-> apt-get install libjetty-extra
-> apt-get install openjdk-6-jdk
+--------------------------------
 
-- configuration
-> modify /etc/default/jetty
-> change value of "NO_START" to "NO_START=0" 
-> change value of "JETTY_HOST" TO "JETTY_HOST=0.0.0.0"
+-   installation
 
-- start/stop jetty
-> service jetty start
-> service jetty stop
+        :::bash
+        apt-get install jetty
+        apt-get install libjetty-extra
+        apt-get install openjdk-6-jdk
 
-- jetty version
-> cd /usr/share/jetty 
-> java -jar start.jar --version
-null 6.1.22
+-   configuration
 
-- if v=6.1.24, bug fix
-vi /etc/init.d/jetty
+    > modify /etc/default/jetty
+    > change value of "NO_START" to "NO_START=0" 
+    > change value of "JETTY_HOST" TO "JETTY_HOST=0.0.0.0"
+
+-   start/stop jetty
+
+        :::bash
+        service jetty start
+        service jetty stop
+
+-   jetty version
+
+        :::bash
+        cd /usr/share/jetty 
+        java -jar start.jar --version # null 6.1.22
+
+-   if v=6.1.24, bug fix
+
+        :::bash
+        vi /etc/init.d/jetty
 
 replace
-CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[:space:]*#" | tr "\n" " ")
+
+    :::bash
+    CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[:space:]*#" | tr "\n" " ")
 
 with this one:
-CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[[:space:]]*#" | tr "\n" " ")
 
-- deploy app: deploy your war to webapps under jetty 
-> /usr/share/jetty/webapps
+    :::bash
+    CONFIG_LINES=$(cat /etc/jetty/jetty.conf | grep -v "^[[:space:]]*#" | tr "\n" " ")
 
-- remove 'root' folder if default has one
+-   deploy app: deploy your war to webapps under jetty 
+    > /usr/share/jetty/webapps
 
-================================
+-   remove 'root' folder if default has one
+
 MySql
-================================
-- installation 
-apt-get install mysql-server-5.1
-apt-get install mysql-server-5.5
+--------------------------------
 
-- commands
-> service mysql start
+-   installation 
 
-- permission
-Grant permission for remote application access if application server is on a different machine
+        :::bash
+        apt-get install mysql-server-5.1
+        apt-get install mysql-server-5.5
 
-> CREATE USER 'root'@'%.compute.internal' IDENTIFIED BY 'password';
-> GRANT ALL ON *.* TO 'root'@'%.compute.internal';
+-   commands
+
+        :::bash
+        service mysql start
+
+-   permission
+
+    Grant permission for remote application access if application server is on a different machine
+
+        :::sql
+        CREATE USER 'root'@'%.compute.internal' IDENTIFIED BY 'password';
+        GRANT ALL ON *.* TO 'root'@'%.compute.internal';
  
 ================================
 RabbitMQ
