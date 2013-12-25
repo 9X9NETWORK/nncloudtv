@@ -24,51 +24,58 @@ First time setup procedures
 
 Detail for each step can be found in the following sections.
 
--   zh_TW.UTF-8 locale support
+#   zh_TW.UTF-8 locale support
 
         :::bash
         locale-gen --lang zh_TW.UTF-8
 
--   Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3  
+#   Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3  
     Details can be found in the following sections
-  
--   Start MySql server
 
--   Start RabbitMQ server
+#   Start MySql server
 
--   Create databases and tables  
+#   Start RabbitMQ server
+
+#   Create databases and tables  
     Reference MySql file
 
--   Modify datanucleus.properties files,  
+#   Modify datanucleus.properties files,  
     there are four, this is to make sure your db connection is setup correctly
 
--   Run nnqueue client  
+#   Run nnqueue client  
     Reference README in nnqueue project
 
--   Run memcache server 
+#   Run memcache server
 
--   datanucleus jdo enhance:  
-    Go to project root folder, 
+#   datanucleus jdo enhance:  
+    Go to project root folder,
 
         :::bash
-        mvn datanucleus:enhance (it might not be necessary)
+        mvn datanucleus:enhance # (it might not be necessary)
 
--   Run nncloudtv on Jetty:  
-    Go to project root folder, 
+#   Run nncloudtv on Jetty:  
+    Go to project root folder,
 
         mvn jetty:run
         nohup mvn jetty:run > ~/jetty.log 2>&1
 
     (c:\Java\projects\nncloudtv>mvn -Dslf4j=false -Dlog4j.configuration=file:./target/classes/log4j.properties jetty:run)
 
--   Basic tests,
+#   Basic tests,
 
-    > http://localhost:8080/hello/world (test your servlet and spring dispatcher)
-    > http://localhost:8080/hello/pdr (write a db record)
-    > http://localhost:8080/hello/cache_set (test memcache component)
-    > http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
+    > http://localhost:8080/hello/world
+    (test your servlet and spring dispatcher)
 
--   ready to go,  
+    > http://localhost:8080/hello/pdr
+    (write a db record)
+
+    > http://localhost:8080/hello/cache_set
+    (test memcache component)
+
+    > http://localhost:8080/hello/fanout?exchange_name=hello
+    (test rabbitq, nnqueue should output a hello message)
+
+#   ready to go,  
     go to http://localhost:8080/admin/index, click on initialize link
 
 mvn 
