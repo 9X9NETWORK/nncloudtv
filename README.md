@@ -77,7 +77,7 @@ Detail for each step can be found in the following sections.
 mvn 
 --------------------------------
 
--   Download 3.0.3
+-   Download 3.0.4
 
     > http://maven.apache.org/download.html 
 
@@ -95,7 +95,7 @@ mvn
         :::bash
         mvn --version
 
--   read pom.xml  
+-   read pom.xml
 
 -   generate javadoc
 
@@ -297,43 +297,56 @@ MySql
         CREATE USER 'root'@'%.compute.internal' IDENTIFIED BY 'password';
         GRANT ALL ON *.* TO 'root'@'%.compute.internal';
  
-================================
 RabbitMQ
-================================
-- installation
-> apt-cache search rabbitmq
-> apt-get install rabbitmq-server
+--------------------------------
 
-- commands: 
-rabbitmqctl status
+-   installation
 
-================================
+    :::bash
+    apt-cache search rabbitmq
+    apt-get install rabbitmq-server
+
+-   commands: 
+
+    :::bash
+    rabbitmqctl status
+
 Memcached
-================================
-> apt-get install memcached
-> service memcached start
-> telnet localhost 11211
-Trying 127.0.0.1...
-Connected to localhost.
-Escape character is '^]'.
-stats
->  vi /etc/memcached.conf 
+--------------------------------
 
-================================
+    :::bash
+    apt-get install memcached
+    service memcached start
+    telnet localhost 11211
+
+    # Trying 127.0.0.1...
+    # Connected to localhost.
+    # Escape character is '^]'.
+    #
+    # stats
+    #
+
+    vi /etc/memcached.conf 
+
 Mail server
-================================
-> apt-get install postfix
+--------------------------------
+
+    :::bash
+    apt-get install postfix
 
 - jetty6 is loading wrong gnumail.jar, fixes:
-a. edit /etc/jetty/start.config:
-comment out the use of gnumail and activation.jar
-doesn't actually take effect, but just to be sure for future use.
 
-b. remove following files(gnumail*.jar) under /usr/share/java/:
-gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
+a.  edit /etc/jetty/start.config:  
+    comment out the use of gnumail and activation.jar  
+    doesn't actually take effect, but just to be sure for future use.  
 
-(c). copy following files to /usr/share/jetty/lib:
-mail-1.4.jar, activation-1.1.jar
+b.  remove following files(gnumail*.jar) under /usr/share/java/:  
+
+    gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
+
+c.  copy following files to /usr/share/jetty/lib:
+
+    mail-1.4.jar, activation-1.1.jar
  
 d. upgrade to jetty 7 should be able to solve the problem as well.
  
