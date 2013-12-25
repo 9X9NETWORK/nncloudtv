@@ -63,10 +63,10 @@ Detail for each step can be found in the following sections.
 
 -   Basic tests,
 
-        http://localhost:8080/hello/world (test your servlet and spring dispatcher)
-        http://localhost:8080/hello/pdr (write a db record)
-        http://localhost:8080/hello/cache_set (test memcache component)
-        http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
+    > http://localhost:8080/hello/world (test your servlet and spring dispatcher)
+    > http://localhost:8080/hello/pdr (write a db record)
+    > http://localhost:8080/hello/cache_set (test memcache component)
+    > http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
     go to http://localhost:8080/admin/index, click on initialize link
@@ -127,25 +127,27 @@ Jetty
 
 -   Run your application on jetty
     1.  go to project root folder, 
+
+        :::bash
         mvn jetty:run
 
-================================
 RabbitMQ
-================================
-- Windows download
-http://www.rabbitmq.com/releases/bundles/v1.7.2/
+--------------------------------
 
-- installation quick guide 
-> unzip the package
-> install erlang 5.7.4 using otp_win32_R13B03.exe
-> set ERLANG_HOME in environment variable
-> (move folder rabbitmq-server-windows-1.7.2 to program files)
+-   Windows download
+    > http://www.rabbitmq.com/releases/bundles/v1.7.2/
 
-- commands examples: 
-> cd C:\Program Files (x86)\RabbitMQ\rabbitmq_server-1.7.2\sbin
-> double click "rabbitmq-server.bat" to start the server
-> rabbitmqctl list_exchanges 
-> rabbitmqctl list_queues
+-   installation quick guide 
+    > unzip the package
+    > install erlang 5.7.4 using otp_win32_R13B03.exe
+    > set ERLANG_HOME in environment variable
+    > (move folder rabbitmq-server-windows-1.7.2 to program files)
+
+-   commands examples: 
+    > cd C:\Program Files (x86)\RabbitMQ\rabbitmq_server-1.7.2\sbin
+    > double click "rabbitmq-server.bat" to start the server
+    > rabbitmqctl list_exchanges 
+    > rabbitmqctl list_queues
 
 ================================
 MySql
