@@ -29,7 +29,7 @@ Detail for each step can be found in the following sections.
         :::bash
         locale-gen --lang zh_TW.UTF-8
 
--   Download JDK 1.6.0, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.3  
+-   Download JDK 1.6.x, MySql 5.5.10, RabbitMQ 1.8, Maven 3.0.5  
     Details can be found in the following sections
 
 -   Start MySql server
@@ -37,7 +37,7 @@ Detail for each step can be found in the following sections.
 -   Start RabbitMQ server
 
 -   Create databases and tables  
-    Reference MySql file
+    Reference 'mysql/README.md'
 
 -   Modify datanucleus.properties files,  
     there are four, this is to make sure your db connection is setup correctly
@@ -59,7 +59,7 @@ Detail for each step can be found in the following sections.
         mvn jetty:run
         nohup mvn jetty:run > ~/jetty.log 2>&1
 
-    (c:\Java\projects\nncloudtv>mvn -Dslf4j=false -Dlog4j.configuration=file:./target/classes/log4j.properties jetty:run)
+        # c:\Java\projects\nncloudtv> mvn -Dslf4j=false -Dlog4j.configuration=file:./target/classes/log4j.properties jetty:run
 
 -   Basic tests,
 
@@ -74,21 +74,21 @@ Detail for each step can be found in the following sections.
 -   ready to go,  
     go to http://localhost:8080/admin/index, click on initialize link
 
-mvn 
+mvn
 --------------------------------
 
--   Download 3.0.4
+-   Download 3.0.5
 
     > http://maven.apache.org/download.html 
 
 -   ubuntu 
 
         :::bash
-        wget http://linux-files.com/maven/binaries/apache-maven-3.0.4-bin.tar.gz
-        tar -xzvf apache-maven-3.0.4-bin.tar.gz
+        wget http://linux-files.com/maven/binaries/apache-maven-3.0.5-bin.tar.gz
+        tar -xzvf apache-maven-3.0.5-bin.tar.gz
         sudo mkdir /usr/local/apache-maven
-        sudo cp -R apache-maven-3.0.4 /usr/local/apache-maven/
-        export PATH=/usr/local/apache-maven/apache-maven-3.0.4/bin:$PATH
+        sudo cp -R apache-maven-3.0.5 /usr/local/apache-maven/
+        export PATH=/usr/local/apache-maven/apache-maven-3.0.5/bin:$PATH
 
     ps. add this line to the end of /home/ubuntu/.bashrc
 
@@ -123,7 +123,7 @@ Note:
 
 1.  You might run into command length limitation error if running on Windows. Remove everything under java except model folder if it's the case.
 2.  Currently there is four databases need to be initiated. Depending on the db you are going to initiate, change configuration in datanucleus plugin section in pom.xml before you run schema-create
-3.  Alternatively, reference MySql file
+3.  Alternatively, reference ''mysql/README.rd'' file
 
 Jetty
 --------------------------------
@@ -172,7 +172,7 @@ MySql
         mysql nncloudtv_nnuser2 -h localhost -u root -p
         mysql --default-character-set=utf8 -u root -p
 
--   please reference 'sql/READM.md' file
+-   please reference 'mysql/README.md' file
 
 -   dump data example
 
