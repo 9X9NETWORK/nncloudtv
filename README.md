@@ -13,9 +13,9 @@ Project intro
 
 -   This project is based on java spring framework.
 -   Installer folder is not part of the main project. It's intended for installation and data migration. 
-    1.  *tools*, tools for installer script
-    2.  *maintenance*, maintenance page when system is not available
-    3.  *migration*, data migration tools to port data from gae to mysql
+    1.  ***tools/***, tools for installer script
+    2.  ***maintenance/***, maintenance page when system is not available
+    3.  ***migration/***, data migration tools to port data from gae to mysql
 
 Devel environment and tool
 ================================
@@ -241,8 +241,8 @@ Jetty
 -   configuration
 
     1.  modify /etc/default/jetty
-    2.  change value of "NO_START" to "NO_START=0"
-    3.  change value of "JETTY_HOST" TO "JETTY_HOST=0.0.0.0"
+    2.  change value of ***NO_START*** to ***NO_START=0***
+    3.  change value of ***JETTY_HOST*** TO **JETTY_HOST=0.0.0.0**
 
 -   start/stop jetty
 
@@ -276,7 +276,7 @@ Jetty
 
     > /usr/share/jetty/webapps
 
--   remove "root/" folder if default has one
+-   remove **root/** folder if default has one
 
 MySql
 --------------------------------
@@ -340,7 +340,7 @@ Mail server
 
 -   jetty6 is loading wrong gnumail.jar, fixes:
 
-    1.  edit /etc/jetty/start.config:  
+    1.  edit **/etc/jetty/start.config**:  
         comment out the use of gnumail and activation.jar  
         doesn't actually take effect, but just to be sure for future use.
 
@@ -462,19 +462,21 @@ SSH
 
     > /usr/share/jetty/keys
 
-3.  edit jetty-ssl.xml
+3.  edit **jetty-ssl.xml**
 
         :::bash
         vi /etc/jetty/jetty-ssl.xml
 
     edit keystore location and password, you can reference the file on alpha or it's checked in here,
 
-4.  edit jetty.conf
+4.  edit **jetty.conf**
 
         :::bash
         vi /etc/jetty/jetty.conf
 
-    add line, /etc/jetty/jetty-ssl.xml
+    add line,
+
+    > /etc/jetty/jetty-ssl.xml
 
 5.  modify iptables
 
@@ -493,7 +495,7 @@ SSH
         # REDIRECT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 redir ports 8080
         #
 
-5.  modify /etc/iptables.rules
+5.  modify **/etc/iptables.rules**
 
 ps. jetty configuration files are also checked in here,  
 https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/
@@ -501,5 +503,5 @@ https://bitbucket.org/9x9group/nncloudtv/src/master/installer/jetty/
 Others
 --------------------------------
 
-*(no content here)*
+*(no contents here)*
 
