@@ -346,11 +346,11 @@ Mail server
 
     2.  remove following files(gnumail*.jar) under /usr/share/java/:
 
-        gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
+        > gnumail.jar, gnumail-1.1.2.jar, gnumail-providers.jar, gnumail-providers-1.1.2.jar
 
     3.  copy following files to /usr/share/jetty/lib:
 
-        mail-1.4.jar, activation-1.1.jar
+        > mail-1.4.jar, activation-1.1.jar
 
     4. upgrade to jetty 7 should be able to solve the problem as well.
 
