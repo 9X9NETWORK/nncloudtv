@@ -126,67 +126,88 @@ Jetty
 --------------------------------
 
 -   Run your application on jetty
-    1.  go to project root folder, 
+    1.  go to project root folder,
 
-        :::bash
-        mvn jetty:run
+            :::bash
+            mvn jetty:run
 
 RabbitMQ
 --------------------------------
 
 -   Windows download
+
     > http://www.rabbitmq.com/releases/bundles/v1.7.2/
 
--   installation quick guide 
+-   installation quick guide
+
     > unzip the package
     > install erlang 5.7.4 using otp_win32_R13B03.exe
     > set ERLANG_HOME in environment variable
     > (move folder rabbitmq-server-windows-1.7.2 to program files)
 
--   commands examples: 
+-   commands examples:
+
     > cd C:\Program Files (x86)\RabbitMQ\rabbitmq_server-1.7.2\sbin
     > double click "rabbitmq-server.bat" to start the server
-    > rabbitmqctl list_exchanges 
+    > rabbitmqctl list_exchanges
     > rabbitmqctl list_queues
 
-================================
 MySql
-================================
-- Download MySQL Server 5.5
+--------------------------------
 
-- example commands on Windows: 
-> cd c:\Program Files\MySQL\MySQL Server 5.5\bin
-> mysqld
-> mysql nncloudtv_analytics -h localhost -u root -p
-> mysql nncloudtv_content -h localhost -u root -p
-> mysql nncloudtv_nnuser1 -h localhost -u root -p
-> mysql nncloudtv_nnuser2 -h localhost -u root -p
-> mysql --default-character-set=utf8 -u root -p
+-   Download MySQL Server 5.5
 
-- please reference MySql file
+-   example commands on Windows:
 
-- dump data example
-> mysqldump --user=root nncloudtv_analytics > nnanalytics.sql
+        :::bash
+        cd "c:\Program Files\MySQL\MySQL Server 5.5\bin"
+        mysqld
+        mysql nncloudtv_analytics -h localhost -u root -p
+        mysql nncloudtv_content -h localhost -u root -p
+        mysql nncloudtv_nnuser1 -h localhost -u root -p
+        mysql nncloudtv_nnuser2 -h localhost -u root -p
+        mysql --default-character-set=utf8 -u root -p
 
-- import data example
-> cat nnanalytics.sql | mysql nncloudtv_analytics -h localhost -u root -p
- ================================
+-   please reference "sql/READM.md" file
+
+-   dump data example
+
+        :::bash
+        mysqldump --user=root nncloudtv_analytics > nnanalytics.sql
+
+-   import data example
+
+        :::bash
+        cat nnanalytics.sql | mysql nncloudtv_analytics -h localhost -u root -p
+
 Package
-================================
-- packaging nncloudtv war procedures:
-  a) modify datanucleus.properties files, there are four.
-  b) packaging: 
-     mvn clean:clean
-     mvn compile
-     mvn datanucleus:enhance 
-     mvn compile war:war
-  c) test the packaged war with jetty plugin:    
-     mvn jetty:deploy-war
-     packaging and run jetty with jetty plugin: 
-     mvn jetty:run-war 
+--------------------------------
 
-- packaging nnqueue jar:
-  reference nnqueue.README 
+-   packaging nncloudtv war procedures:
+
+    a.  modify datanucleus.properties files, there are four.
+
+    b.  packaging:
+
+        :::bash
+        mvn clean:clean
+        mvn compile
+        mvn datanucleus:enhance
+        mvn compile war:war
+
+    c.  test the packaged war with jetty plugin:
+
+        :::bash
+        mvn jetty:deploy-war
+
+        packaging and run jetty with jetty plugin:
+
+        :::bash
+        mvn jetty:run-war
+
+-   packaging nnqueue jar:
+
+    reference nnqueue.README
 
 ================================
 Note
