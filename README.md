@@ -25,7 +25,7 @@ First time setup procedures
 
 Detail for each step can be found in the following sections.
 
--   zh_TW.UTF-8 locale support
+-   **zh_TW.UTF-8** locale support
 
         :::bash
         locale-gen --lang zh_TW.UTF-8
