@@ -1,13 +1,3 @@
-About this document,
-
-Three sections,
-
--   **Project intro**
--   **Devel environment and tool**: more for Windows
--   **EC2**: i.e. Ubuntu on EC2
-
---------------------------------
-
 Project intro (nncloudtv)
 ================================
 
@@ -20,6 +10,18 @@ It is also designed to be fast and scalable by using *Memcached*, *Load-balancin
     1.  ***tools/***, tools for installer script
     2.  ***maintenance/***, maintenance page when system is not available
     3.  ***migration/***, data migration tools to port data from gae to mysql
+
+--------------------------------
+
+About this document,
+
+Three sections,
+
+-   **Project intro**: above
+-   **Devel environment and tool**: more for Windows
+-   **EC2**: i.e. Ubuntu on EC2
+
+--------------------------------
 
 Devel environment and tool
 ================================
