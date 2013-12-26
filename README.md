@@ -6,10 +6,11 @@ providing them as data service interface, with authentication control mechanism.
 It is also designed to be fast and scalable by using *Memcached*, *Load-balancing* technology etc. in architechture.
 
 -   This project is based on java spring framework.
--   Installer folder is not part of the main project. It's intended for installation and data migration. 
+-   ***Installer/*** folder is not part of the main project. It's intended for installation and data migration. 
     1.  ***tools/***, tools for installer script
     2.  ***maintenance/***, maintenance page when system is not available
     3.  ***migration/***, data migration tools to port data from gae to mysql
+-   ***mysql/*** folder is for database table/schema snapshot.
 
 --------------------------------
 
