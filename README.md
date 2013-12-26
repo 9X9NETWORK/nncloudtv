@@ -3,7 +3,7 @@ Project intro (nncloudtv)
 
 **nncloudtv** is an API server. It connects and integrates 9x9.tv&trade; back-end service components,
 providing them as data service interface, with authentication control mechanism.
-It is also designed to be fast and scalable by using *Memcached*, *Load-balancing* technology etc. in architechyre.
+It is also designed to be fast and scalable by using *Memcached*, *Load-balancing* technology etc. in architechture.
 
 -   This project is based on java spring framework.
 -   Installer folder is not part of the main project. It's intended for installation and data migration. 
