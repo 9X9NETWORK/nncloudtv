@@ -74,11 +74,8 @@ Detail for each step can be found in the following sections.
 
         :::bash
         # http://localhost:8080/hello/world                      (test your servlet and spring dispatcher)
-        #
         # http://localhost:8080/hello/pdr                        (write a db record)
-        #
         # http://localhost:8080/hello/cache_set                  (test memcache component)
-        #
         # http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
