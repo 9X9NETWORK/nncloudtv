@@ -13,25 +13,45 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.mock.service.MockMsoConfigManager;
+import com.nncloudtv.mock.service.MockMsoManager;
+import com.nncloudtv.mock.service.MockNnChannelManager;
+import com.nncloudtv.mock.service.MockNnUserManager;
+import com.nncloudtv.mock.service.MockNnUserPrefManager;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.web.api.ApiContext;
 
 public class PlayerApiServiceTest {
 
 	private PlayerApiService service;
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;    
-	
+    private MockNnUserManager mockUserMngr;    
+    private MockMsoManager mockMsoMngr;
+    private MockNnChannelManager mockChMngr;
+    private MockMsoConfigManager mockConfigMngr;
+    private MockNnUserPrefManager mockPrefMngr;
+
     @Before
     public void setUp() {
+        
+        CacheFactory.isEnabled = false;
+        
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();
+        mockUserMngr = new MockNnUserManager();
+        mockMsoMngr = new MockMsoManager();
+        mockChMngr = new MockNnChannelManager();
+        mockConfigMngr = new MockMsoConfigManager();
+        mockPrefMngr = new MockNnUserPrefManager();
         
+        req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.findNNMso();
+        Mso mso = mockMsoMngr.findNNMso();
         Locale locale = Locale.ENGLISH;
-        service = new PlayerApiService();
+        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr);
         service.setLocale(locale);
         service.setMso(mso);
         //String version = (req.getParameter("v") == null) ? "31" : req.getParameter("v");       
@@ -48,7 +68,7 @@ public class PlayerApiServiceTest {
 
 	@Test
 	public void testSetProfile() {	    
-        String email = req.getParameter("email");	    
+//        String email = req.getParameter("email");	    
 	}
 	
 	@Test

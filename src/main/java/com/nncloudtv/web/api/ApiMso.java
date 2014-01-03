@@ -47,11 +47,12 @@ public class ApiMso extends ApiGeneric {
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
+    private NnUserManager userMngr;
     
     @Autowired
     public ApiMso(MsoManager msoMngr, NnChannelManager channelMngr, StoreService storeService,
             NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
-            CategoryService categoryService) {
+            CategoryService categoryService, NnUserManager userMngr) {
         this.msoMngr = msoMngr;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
@@ -59,6 +60,7 @@ public class ApiMso extends ApiGeneric {
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
+        this.userMngr = userMngr;
     }
     
     /** indicate logging user has access right to target mso in PCS API
@@ -1048,10 +1050,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         List<Category> results = apiMsoService.msoCategories(mso.getId());
@@ -1137,10 +1139,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.msoCategoryCreate(mso.getId(), seq, zhName, enName);
@@ -1202,10 +1204,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.category(category.getId());
@@ -1292,10 +1294,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.categoryUpdate(category.getId(), seq, zhName, enName);

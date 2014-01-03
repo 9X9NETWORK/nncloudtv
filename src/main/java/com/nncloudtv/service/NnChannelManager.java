@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
@@ -42,6 +43,18 @@ public class NnChannelManager {
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
     private NnChannelDao dao = new NnChannelDao();
+    private MsoConfigManager configMngr;
+    
+    @Autowired
+    public NnChannelManager(MsoConfigManager configMngr) {
+        
+        this.configMngr = configMngr;
+    }
+    
+    public NnChannelManager() {
+        
+        this.configMngr = new MsoConfigManager();
+    }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {
         if (sourceUrl == null) 
@@ -340,7 +353,7 @@ public class NnChannelManager {
         channel = dao.save(channel);
         
         NnChannel[] channels = {original, channel};
-        if (MsoConfigManager.isQueueEnabled(true)) {
+        if (configMngr.isQueueEnabled(true)) {
             //new QueueMessage().fanout("localhost",QueueMessage.CHANNEL_CUD_RELATED, channels);
         } else {
             this.processChannelRelatedCounter(channels);

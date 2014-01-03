@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -76,14 +77,36 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());    
     
-    private NnUserManager userMngr = new NnUserManager();    
-    private MsoManager msoMngr = new MsoManager();
-    private NnChannelManager chMngr = new NnChannelManager();
+    private MsoConfigManager configMngr;
+    private NnUserManager userMngr;    
+    private MsoManager msoMngr;
+    private NnChannelManager chMngr;
+    private NnUserPrefManager prefMngr;
     private Locale locale = Locale.ENGLISH;
     private Mso mso;
     private int version = 32;    
     
-    public int prepService(HttpServletRequest req, boolean tolog) {        
+    public PlayerApiService() {
+        configMngr = new MsoConfigManager();
+        userMngr = new NnUserManager();
+        msoMngr = new MsoManager();
+        chMngr = new NnChannelManager();
+        prefMngr = new NnUserPrefManager();
+    }
+
+    @Autowired
+    public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
+            NnChannelManager chMngr, MsoConfigManager configMngr,
+            NnUserPrefManager prefMngr) {
+        
+        this.prefMngr = prefMngr;
+        this.configMngr = configMngr;
+        this.userMngr = userMngr;
+        this.msoMngr = msoMngr;
+        this.chMngr = chMngr;
+    }
+
+    public int prepService(HttpServletRequest req, boolean tolog) {
         /*
         String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
         if ((userAgent.indexOf("CFNetwork") > -1) && (userAgent.indexOf("Darwin") > -1))     {
@@ -156,7 +179,7 @@ public class PlayerApiService {
 
     public long addMsoInfoVisitCounter(boolean readOnly) {
         if (!readOnly) {
-            if (MsoConfigManager.isQueueEnabled(true)) {
+            if (configMngr.isQueueEnabled(true)) {
                 //new QueueMessage().fanout("localhost",QueueMessage.VISITOR_COUNTER, null);
             } else {
                 log.info("quque not enabled");
@@ -210,7 +233,7 @@ public class PlayerApiService {
             //sphere
             String sphere = profile.getSphere(); 
             if (profile.getSphere() == null)
-                sphere = NnUserManager.findLocaleByHttpRequest(req);
+                sphere = userMngr.findLocaleByHttpRequest(req);
             output += assembleKeyValue("sphere", sphere);
             //ui-lang
             String lang = profile.getLang();
@@ -228,7 +251,6 @@ public class PlayerApiService {
             if (user.isFbUser())
                 fbUser = "1";
             output += assembleKeyValue("fbUser", fbUser);
-            NnUserPrefManager prefMngr = new NnUserPrefManager();
             List<NnUserPref> list = prefMngr.findByUser(user);
             for (NnUserPref pref : list) {
                 output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
@@ -237,7 +259,7 @@ public class PlayerApiService {
             output += assembleKeyValue("token", guest.getToken());
             output += assembleKeyValue("name", NnUser.GUEST_NAME);
             output += assembleKeyValue("lastLogin", "");            
-            String sphere = NnUserManager.findLocaleByHttpRequest(req);
+            String sphere = userMngr.findLocaleByHttpRequest(req);
             output += assembleKeyValue("sphere", sphere);
         }
             
@@ -402,7 +424,7 @@ public class PlayerApiService {
         mngr.save(guest, req);        
         
         String[] result = {""};
-        String sphere = NnUserManager.findLocaleByHttpRequest(req);
+        String sphere = userMngr.findLocaleByHttpRequest(req);
         result[0] += assembleKeyValue("token", guest.getToken());
         result[0] += assembleKeyValue("name", NnUser.GUEST_NAME);
         result[0] += assembleKeyValue("sphere", sphere);
@@ -531,7 +553,7 @@ public class PlayerApiService {
     		os = "ios";
     	}
         String[] result = msoMngr.getBrandInfoCache(mso, os);
-        boolean readOnly = MsoConfigManager.isInReadonlyMode(false);
+        boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         result[0] += PlayerApiService.assembleKeyValue("locale", locale);
@@ -548,7 +570,7 @@ public class PlayerApiService {
     }    
 
     public String findLocaleByHttpRequest(HttpServletRequest req) {
-        String locale = NnUserManager.findLocaleByHttpRequest(req);
+        String locale = userMngr.findLocaleByHttpRequest(req);
         return locale;
     }
     

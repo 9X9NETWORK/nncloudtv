@@ -49,7 +49,7 @@ public class NnUserManager {
             profile.setName(profile.getName().replaceAll("\\s", " "));
         user.setEmail(user.getEmail().toLowerCase());
         if (shard == 0)
-            shard= NnUserManager.getShardByLocale(req);
+            shard= getShardByLocale(req);
         if (user.getToken() == null)
             user.setToken(NnUserManager.generateToken(shard));
         user.setShard(shard);
@@ -153,8 +153,8 @@ public class NnUserManager {
     }
     
     //Default is 1; Asia (tw, cn, hk) is 2
-    public static short getShardByLocale(HttpServletRequest req) {
-        String locale = NnUserManager.findLocaleByHttpRequest(req);
+    public short getShardByLocale(HttpServletRequest req) {
+        String locale = findLocaleByHttpRequest(req);
         short shard = NnUser.SHARD_DEFAULT;
         if (locale.equals("tw") || locale.equals("cn") || locale.equals("hk")) {
             shard = NnUser.SHARD_CHINESE;
@@ -162,7 +162,7 @@ public class NnUserManager {
         return shard;
     }
     
-    public static String findLocaleByHttpRequest(HttpServletRequest req) {
+    public String findLocaleByHttpRequest(HttpServletRequest req) {
         String ip = req.getRemoteAddr();
         log.info("findLocaleByHttpRequest() ip is " + ip);
         ip = NnNetUtil.getIp(req);
@@ -270,7 +270,7 @@ public class NnUserManager {
     //TODO able to assign shard
     //find by email means find by unique id
     public NnUser findByEmail(String email, long msoId, HttpServletRequest req) {
-        short shard= NnUserManager.getShardByLocale(req);
+        short shard= getShardByLocale(req);
         log.info("find by email:" + email.toLowerCase());
         NnUser user = dao.findByEmail(email.toLowerCase(), shard);
         if (user != null) {
@@ -281,7 +281,7 @@ public class NnUserManager {
     }        
     
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
-        short shard= NnUserManager.getShardByLocale(req); 
+        short shard= getShardByLocale(req); 
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
         if (user != null) {
             user.setMsoId(msoId);

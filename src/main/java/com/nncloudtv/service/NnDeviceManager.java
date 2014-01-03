@@ -18,7 +18,15 @@ public class NnDeviceManager {
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     private HttpServletRequest req;
+    private NnUserManager userMngr;
             
+    public NnDeviceManager() {
+        this.userMngr = new NnUserManager();
+    }
+    public NnDeviceManager(NnUserManager userMngr) {
+        
+        this.userMngr = userMngr;
+    }
     public HttpServletRequest getReq() { return req; }
     public void setReq(HttpServletRequest req) { this.req = req;}
 
@@ -39,7 +47,7 @@ public class NnDeviceManager {
         if (device == null)
             device = new NnDevice();
         if (device.getToken() == null)
-            device.setToken(NnUserManager.generateToken(NnUserManager.getShardByLocale(req)));
+            device.setToken(NnUserManager.generateToken(userMngr.getShardByLocale(req)));
         if (user != null) {
             device.setUserId(user.getId());
             device.setShard(user.getShard()); //for future reference

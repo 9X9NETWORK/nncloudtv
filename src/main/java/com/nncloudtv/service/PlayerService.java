@@ -40,6 +40,18 @@ public class PlayerService {
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
     public static final String META_FAVICON = "favicon";
     
+    private NnUserManager userMngr;
+    
+    public PlayerService(NnUserManager userMngr) {
+        
+        this.userMngr = userMngr;
+    }
+    
+    public PlayerService() {
+        
+        this.userMngr = new NnUserManager();
+    }
+    
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
         if (msoName != null) {
             msoName = msoName.toLowerCase();
@@ -317,7 +329,7 @@ public class PlayerService {
         if (jsp != null && jsp.length() > 0) {
             log.info("alternate is enabled: " + jsp);
         }
-        model.addAttribute("locale", NnUserManager.findLocaleByHttpRequest(req));
+        model.addAttribute("locale", userMngr.findLocaleByHttpRequest(req));
         return model;
     }
 

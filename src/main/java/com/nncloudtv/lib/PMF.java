@@ -8,20 +8,16 @@ import com.nncloudtv.model.Pdr;
 public final class PMF {
 
     //non-asia    
-    private static final PersistenceManagerFactory pmfInstanceNnUser1 = 
-        JDOHelper.getPersistenceManagerFactory("datanucleus_nnuser1.properties");
+    private static PersistenceManagerFactory pmfInstanceNnUser1 = null;
     //asia
-    private static final PersistenceManagerFactory pmfInstanceNnUser2 = 
-        JDOHelper.getPersistenceManagerFactory("datanucleus_nnuser2.properties");
+    private static PersistenceManagerFactory pmfInstanceNnUser2 = null;
     //others
-    private static final PersistenceManagerFactory pmfInstanceContent = 
-        JDOHelper.getPersistenceManagerFactory("datanucleus_content.properties");        
-    private static final PersistenceManagerFactory pmfInstanceAnalytics = 
-        JDOHelper.getPersistenceManagerFactory("datanucleus_analytics.properties");                                                    
-    private static final PersistenceManagerFactory pmfInstanceRecommend = 
-        JDOHelper.getPersistenceManagerFactory("datanucleus_recommend.properties");                                                    
+    private static PersistenceManagerFactory pmfInstanceContent = null;
+    private static PersistenceManagerFactory pmfInstanceAnalytics = null;
+    private static PersistenceManagerFactory pmfInstanceRecommend = null;
     
-    private PMF() {}
+    public PMF() {
+    }
     
     public static PersistenceManagerFactory get(@SuppressWarnings("rawtypes") Class c) {
         if (c.equals(Pdr.class)) {
@@ -32,22 +28,33 @@ public final class PMF {
     }
     
     public static PersistenceManagerFactory getNnUser1() {
+        if (pmfInstanceNnUser1 == null) {
+            pmfInstanceNnUser1 = JDOHelper.getPersistenceManagerFactory("datanucleus_nnuser1.properties");
+        }
         return pmfInstanceNnUser1;
     }
 
     public static PersistenceManagerFactory getNnUser2() {
+        if (pmfInstanceNnUser2 == null)
+            pmfInstanceNnUser2 = JDOHelper.getPersistenceManagerFactory("datanucleus_nnuser2.properties");
         return pmfInstanceNnUser2;
     }
 
     public static PersistenceManagerFactory getContent() {
+        if (pmfInstanceContent == null)
+            pmfInstanceContent = JDOHelper.getPersistenceManagerFactory("datanucleus_content.properties");
         return pmfInstanceContent;
     }
     
     public static PersistenceManagerFactory getAnalytics() {
+        if (pmfInstanceAnalytics == null)
+            pmfInstanceAnalytics = JDOHelper.getPersistenceManagerFactory("datanucleus_analytics.properties");
         return pmfInstanceAnalytics;
     }
 
     public static PersistenceManagerFactory getRecommend() {
+        if (pmfInstanceRecommend == null)
+            pmfInstanceRecommend = JDOHelper.getPersistenceManagerFactory("datanucleus_recommend.properties");
         return pmfInstanceRecommend;
     }
     
