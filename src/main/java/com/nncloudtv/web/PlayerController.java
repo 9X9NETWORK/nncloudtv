@@ -49,8 +49,9 @@ public class PlayerController {
             @RequestParam(value="js",required=false) String js) {
         try {
         	PlayerService service = new PlayerService();
+            ApiContext context = new ApiContext(req);
             if (escaped != null) {
-                model = service.prepareCrawled(model, escaped);
+                model = service.prepareCrawled(model, escaped, context);
                 return "player/crawled";
             }
         	if (service.isAndroid(req) || service.isIos(req)) {
@@ -79,7 +80,6 @@ public class PlayerController {
 	        	model.addAttribute("brandName", brand.getName());
 	        	return "player/fanapp";
         	}
-            ApiContext context = new ApiContext(req);
             model = service.prepareBrand(model, context.getMso().getName(), resp);
             model = service.preparePlayer(model, js, jsp, req);
             if (jsp != null && jsp.length() > 0) {
@@ -222,14 +222,10 @@ public class PlayerController {
             model = service.prepareChannel(model, cid, mso.getName(), resp);
             model = service.prepareEpisode(model, pid, mso.getName(), resp);
             
-            String playerPromotionUrl = "http://" + context.getAppDomain()
-                                      + "/tv#/promotion/" + cid
-                                      + (pid == null ? "" : "/" + pid);
+            String playerPromotionUrl = NnStringUtil.getPlyaerPromotionUrl(context, cid, pid);
             log.info("player promotion url = " + playerPromotionUrl);
             
-            String brandSharingUrl = "http://" + context.getAppDomain() + "/view?mso="
-                    + context.getMso().getName() + "&ch=" + cid
-                    + (pid == null ? "" : "&ep=" + pid);
+            String brandSharingUrl = NnStringUtil.getProgramPlaybackUrl(context, cid, pid);
             log.info("brand sharing url = " + brandSharingUrl);
             
             model.addAttribute("playerPromotionUrl", NnStringUtil.htmlSafeChars(playerPromotionUrl));
