@@ -37,9 +37,10 @@ public class PlayerController {
         return "error/exception";                
     }        
     
-    @RequestMapping({"tv","10ft"})
+    @RequestMapping({"", "tv","10ft"})
     public String tv(@RequestParam(value="mso",required=false) String mso, 
             HttpServletRequest req, HttpServletResponse resp, Model model,
+            @RequestParam(value="_escaped_fragment_", required=false) String escaped,
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="episode", required=false) String episode,
             @RequestParam(value="ch", required=false) String ch,
@@ -48,6 +49,10 @@ public class PlayerController {
             @RequestParam(value="js",required=false) String js) {
         try {
         	PlayerService service = new PlayerService();
+            if (escaped != null) {
+                model = service.prepareCrawled(model, escaped);
+                return "player/crawled";
+            }
         	if (service.isAndroid(req) || service.isIos(req)) {
         	    return "redirect:/mobile/";
         	}
@@ -84,32 +89,6 @@ public class PlayerController {
             NnLogUtil.logThrowable(t);            
         }
         return "player/mini";
-    }    
-    
-    //?_escaped_fragment_=ch=2%26ep=3
-    @RequestMapping("/")
-    public String index(
-            @RequestParam(value="name",required=false) String name,
-            @RequestParam(value="jsp",required=false) String jsp,
-            @RequestParam(value="js",required=false) String js,
-            @RequestParam(value="mso",required=false) String mso,            
-            @RequestParam(value="_escaped_fragment_", required=false) String escaped,
-            HttpServletRequest req, HttpServletResponse resp, Model model) {
-        try {
-            PlayerService service = new PlayerService();
-            model = service.prepareBrand(model, mso, resp);
-            if (escaped != null) {
-                model = service.prepareCrawled(model, escaped);
-                return "player/crawled";
-            }
-            model = service.preparePlayer(model, js, jsp, req);
-            if (jsp != null && jsp.length() > 0) {
-                return "player/" + jsp;
-            }        
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return "player/zooatomics";
     }    
     
     /**

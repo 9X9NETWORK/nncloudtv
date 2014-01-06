@@ -361,8 +361,23 @@ public class PlayerService {
         //-- determine channel and episode and set --
         String ch=null, ep=null, youtubeEp=null, landing=null;
         boolean episodeShare = false;
-        Pattern pattern = Pattern.compile("(ch=)(\\d+)");
+        Pattern pattern = Pattern.compile("^/playback/(\\d+)/(\\w+)");
         Matcher m = pattern.matcher(escaped);
+        if (m.find()) {
+            ch = m.group(1);
+            youtubeEp = m.group(2);
+            episodeShare = true;
+        }
+        pattern = Pattern.compile("^/playback/(\\d+)/(e?\\d+)");
+        m = pattern.matcher(escaped);
+        if (m.find()) {
+            ch = m.group(1);
+            ep = m.group(2);
+            episodeShare = true;
+            youtubeEp = null;
+        }
+        pattern = Pattern.compile("(ch=)(\\d+)");
+        m = pattern.matcher(escaped);
         if (m.find()) {            
             ch = m.group(2);
         }
