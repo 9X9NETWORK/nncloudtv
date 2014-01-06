@@ -226,7 +226,7 @@ public class NnStringUtil {
         
         return "http://"
                 + (context == null ? MsoConfigManager.getServerDomain()
-                        : context.getAppDomain()) + "/view?ch="
+                        : context.getAppDomain()) + "/view?ch=" + channelIdStr
                 + (programIdStr == null ? "" : "&ep=" + programIdStr);
     }
     
