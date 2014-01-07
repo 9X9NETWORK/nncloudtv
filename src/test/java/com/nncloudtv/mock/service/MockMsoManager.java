@@ -28,4 +28,15 @@ public class MockMsoManager extends MsoManager {
         return new Mso(Mso.NAME_9X9, "mock 9x9 mso", "mso@9x9.tv", Mso.TYPE_NN);
     }
     
+    @Override
+    public Mso findByName(String name) {
+        
+        if (name == Mso.NAME_9X9) {
+            
+            return findNNMso();
+        }
+        
+        return null;
+    }
+
 }

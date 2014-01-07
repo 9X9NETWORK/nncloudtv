@@ -25,6 +25,7 @@ import com.nncloudtv.web.api.ApiContext;
 public class PlayerApiServiceTest {
 
 	private PlayerApiService service;
+	
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;    
     private MockNnUserManager mockUserMngr;    
