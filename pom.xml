@@ -1,32 +1,32 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
     <version>4.0.1.2-release</version>
-    <name>nncloudtv</name> 
-    <reporting>    
+    <name>nncloudtv</name>
+    <reporting>
         <outputDirectory>doc</outputDirectory>
     </reporting>
-  
-    <!-- 
-        packaging commands 
+
+    <!--
+        packaging commands
         packaging:
-            mvn datanucleus:enhance 
-            mvn war:war    
-        test the packaged war with jetty plugin: 
+            mvn datanucleus:enhance
+            mvn war:war
+        test the packaged war with jetty plugin:
             mvn jetty:deploy-war
-        packaging and run jetty with jetty plugin: 
-            mvn jetty:run-war 
+        packaging and run jetty with jetty plugin:
+            mvn jetty:run-war
     -->
 
     <build>
         <!-- ====================================================================== -->
         <!-- Plugins                                                                -->
-        <!-- ====================================================================== -->       
+        <!-- ====================================================================== -->
         <plugins>
             <plugin>
                 <!-- mvn javadoc:javadoc -->
@@ -35,11 +35,11 @@
                 <version>2.8.1</version>
                 <configuration>
                     <show>public</show>
-                    <sourcepath>${basedir}/src/main/java/com/nncloudtv/web/api</sourcepath> 
+                    <sourcepath>${basedir}/src/main/java/com/nncloudtv/web/api</sourcepath>
                 </configuration>
-            </plugin>     
+            </plugin>
             <!-- command: mvn jetty:run -->
-            <plugin>        
+            <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>maven-jetty-plugin</artifactId>
                 <version>6.1.22</version>
@@ -51,7 +51,7 @@
                         </connector>
                         <connector implementation="org.mortbay.jetty.security.SslSocketConnector">
                             <port>8443</port>
-                            <maxIdleTime>60000</maxIdleTime> 
+                            <maxIdleTime>60000</maxIdleTime>
                             <keystore>.keystore</keystore>
                             <password>nncloudtv</password>
                             <keyPassword>nncloudtv</keyPassword>
@@ -60,7 +60,7 @@
                     <webAppConfig>
                         <contextPath>/</contextPath>
                     </webAppConfig>
-                    <reload>manual</reload> 
+                    <reload>manual</reload>
                     <!--
                     <scanIntervalSeconds>5</scanIntervalSeconds>
                     -->
@@ -75,17 +75,17 @@
                         </systemProperty>
                         <systemProperty>
                             <name>log4j.configuration</name>
-                            <value>file:./target/classes/log4j.properties</value>                   
-                        </systemProperty>                
-                    </systemProperties>                        
-                </configuration>  
+                            <value>file:./target/classes/log4j.properties</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
                 <dependencies>
                     <!-- http://docs.codehaus.org/display/JETTY/Maven+Jetty+Plugin -->
                     <dependency>
                         <groupId>commons-logging</groupId>
                         <artifactId>commons-logging</artifactId>
                         <version>1.1.1</version>
-                        <type>jar</type>              
+                        <type>jar</type>
                     </dependency>
                     <dependency>
                         <groupId>org.slf4j</groupId>
@@ -98,33 +98,33 @@
                         <artifactId>log4j</artifactId>
                         <version>1.2.16</version>
                         <type>jar</type>
-                    </dependency>                            
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
-                <!-- 
-                    commands: 
+                <!--
+                    commands:
                     mvn datanucleus:enhance
                     mvn datanucleus:schema-create
-                -->     
-                <!-- 
+                -->
+                <!--
                     Reference
                     http://repo1.maven.org/maven2/org/datanucleus/maven-datanucleus-plugin/3.0.0-m1/
-                    http://www.datanucleus.org/products/accessplatform_3_0/guides/maven2/index.html 
+                    http://www.datanucleus.org/products/accessplatform_3_0/guides/maven2/index.html
                 -->
-                <groupId>org.datanucleus</groupId>           
-                <artifactId>maven-datanucleus-plugin</artifactId>           
-                <version>3.0.1</version>                      
+                <groupId>org.datanucleus</groupId>
+                <artifactId>maven-datanucleus-plugin</artifactId>
+                <version>3.0.1</version>
                 <configuration>
                     <verbose>true</verbose>
                     <fork>false</fork>
-                    <!-- the last props takes effect, this section is for schema-create -->              
-                    <!-- 
-                        <props>file:./target/classes/datanucleus_nnuser1.properties</props>               
+                    <!-- the last props takes effect, this section is for schema-create -->
+                    <!--
+                        <props>file:./target/classes/datanucleus_nnuser1.properties</props>
                         <props>${basedir}/src/main/resources/datanucleus_analytics.properties</props>
                         <props>${basedir}/src/main/resources/datanucleus_content.properties</props>
                     -->
-                </configuration>    
+                </configuration>
                 <!-- define dependency specifically here otherwise it'll always pick up the latest version -->
                 <dependencies>
                     <dependency>
@@ -136,38 +136,38 @@
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-enhancer</artifactId>
                         <version>3.0.1</version>
-                    </dependency> 
+                    </dependency>
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
                         <version>5.1.15</version>
                         <scope>compile</scope>
-                    </dependency>                        
+                    </dependency>
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-rdbms</artifactId>
                         <version>3.0.1</version>
-                    </dependency>                                  
-                </dependencies>      
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <phase>process-classes</phase>
                         <goals>
                             <goal>enhance</goal>
                         </goals>
-                    </execution>            
+                    </execution>
                 </executions>
-            </plugin>  
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <warName>root</warName>             
+                    <warName>root</warName>
                     <warSourceExcludes>player/, videos/, installer/, ios/</warSourceExcludes>
                 </configuration>
-            </plugin>        
-        </plugins>     
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
                 <!-- For eclipse to ignore datanucleus enhance checking -->
@@ -198,22 +198,22 @@
             </plugins>
         </pluginManagement>
     </build>
-  
+
     <!-- ====================================================================== -->
     <!-- Dependencies                                                           -->
-    <!-- ====================================================================== -->    
+    <!-- ====================================================================== -->
     <properties>
         <!-- versions -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.springframework.version>3.1.2.RELEASE</org.springframework.version>
-        <servlet.version>2.5</servlet.version>               
+        <servlet.version>2.5</servlet.version>
     </properties>
-   
+
     <!--
-        Repository: 
+        Repository:
         mvn repository: http://mvnrepository.com
-        local on windows, it's default at to C:\Users\{user name}\.m2\repository 
-    --> 
+        local on windows, it's default at to C:\Users\{user name}\.m2\repository
+    -->
     <dependencies>
     <!--
         Spring MVC for Servlet Environments (depends on spring-core, spring-beans, spring-context, spring-web)
@@ -248,7 +248,7 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
             <version>${org.springframework.version}</version>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
@@ -259,7 +259,7 @@
             <artifactId>spring-test</artifactId>
             <version>${org.springframework.version}</version>
         </dependency>
-        <!-- logging -->         
+        <!-- logging -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -269,26 +269,26 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
-        </dependency>   
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
             <version>1.6.1</version>
             <type>jar</type>
-        </dependency>                     
+        </dependency>
         <!-- servlet -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>${servlet.version}</version>
             <scope>provided</scope>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
             <version>1.2</version>
         </dependency>
-        <!-- jackson -->      
+        <!-- jackson -->
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -301,7 +301,7 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.15</version>
             <!-- <scope>runtime</scope> --> <!-- runtime fails -->
-        </dependency>                        
+        </dependency>
         <!-- datanucleus jdo -->
         <dependency>
             <groupId>javax.jdo</groupId>
@@ -311,11 +311,11 @@
         </dependency>
         <dependency>
         <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-api-jdo</artifactId>                            
+            <artifactId>datanucleus-api-jdo</artifactId>
             <version>3.0.1</version>
             <type>jar</type>
             <scope>compile</scope>
-        </dependency>                                                           
+        </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-core</artifactId>
@@ -326,7 +326,7 @@
             <artifactId>datanucleus-jdo-query</artifactId>
             <version>3.0.1</version>
             <scope>runtime</scope>
-        </dependency> 
+        </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-enhancer</artifactId>
@@ -339,17 +339,17 @@
             <version>3.0.1</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- dbcp -->  
+        <!-- dbcp -->
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
-        </dependency>      
+        </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
             <version>1.5.5</version>
-        </dependency>       
+        </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -360,49 +360,49 @@
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>2.7.1</version>
-        </dependency>            
+        </dependency>
         <!-- Others -->
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.3</version>
         </dependency>
-        <!-- Google -->      
+        <!-- Google -->
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
             <version>1.5.1-beta</version>
-        </dependency>      
-        <!-- spring transaction dependent -->      
+        </dependency>
+        <!-- spring transaction dependent -->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
             <version>2.2.2</version>
-        </dependency>                  
-        <!-- memcache -->      
+        </dependency>
+        <!-- memcache -->
         <dependency>
             <groupId>net.spy</groupId>
             <artifactId>spymemcached</artifactId>
             <version>2.9.1</version>
         </dependency>
-        <!-- Apache POI -->        
+        <!-- Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>3.7</version>
-        </dependency>    
+        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>3.7</version>
         </dependency>
-        <!-- JavaMail -->     
+        <!-- JavaMail -->
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
             <version>1.4</version>
-        </dependency>    
-        <!-- Twitter --> 
+        </dependency>
+        <!-- Twitter -->
         <dependency>
             <groupId>org.twitter4j</groupId>
             <artifactId>twitter4j-core</artifactId>
@@ -423,26 +423,26 @@
             <groupId>com.google.android.gcm</groupId>
             <artifactId>gcm-server</artifactId>
             <version>1.0.2</version>
-        </dependency>        
+        </dependency>
     </dependencies>
 
     <!-- ====================================================================== -->
     <!-- Maven Repositories                                                     -->
-    <!-- ====================================================================== -->  
+    <!-- ====================================================================== -->
     <repositories>
         <repository>
             <id>gcm-server-repository</id>
             <url>https://raw.github.com/slorber/gcm-server-repository/master/releases/</url>
-        </repository>      
+        </repository>
         <repository>
             <id>spy</id>
             <name>Spy Repository</name>
             <layout>default</layout>
             <url>http://files.couchbase.com/maven2/</url>
-            <snapshots> 
-                <enabled>false</enabled>          
+            <snapshots>
+                <enabled>false</enabled>
             </snapshots>
-        </repository>     
+        </repository>
         <repository>
             <id>repository.springframework.maven.release</id>
             <name>Spring Framework Maven Release Repository</name>
