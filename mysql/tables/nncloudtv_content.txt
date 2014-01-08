@@ -5,6 +5,7 @@ mso
 mso_config
 nnchannel
 nnchannel_pref
+nndevice
 nnepisode
 nnprogram
 poi
