@@ -93,7 +93,7 @@ public class PlayerApiService {
         chMngr = new NnChannelManager();
         prefMngr = new NnUserPrefManager();
     }
-
+    
     @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,

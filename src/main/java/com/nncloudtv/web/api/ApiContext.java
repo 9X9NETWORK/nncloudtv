@@ -13,8 +13,6 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnUserManager;
 
 
 public class ApiContext {
@@ -29,8 +27,6 @@ public class ApiContext {
     public final static String PARAM_SPHERE = "shpere";
     public final static String PARAM_VERSION = "v";
     
-    NnChannelManager channelMngr;
-    NnUserManager userMngr;
     MsoManager msoMngr;
     
     HttpServletRequest httpReqest;
@@ -52,8 +48,6 @@ public class ApiContext {
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         NnNetUtil.logUrl(req);
         
-        channelMngr = new NnChannelManager();
-        userMngr = new NnUserManager();
         msoMngr = new MsoManager();
         
         String lang = httpReqest.getParameter(ApiContext.PARAM_LANG);
