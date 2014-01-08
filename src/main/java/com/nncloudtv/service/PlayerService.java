@@ -430,7 +430,7 @@ public class PlayerService {
                 model.addAttribute(META_NAME, this.prepareFb(c.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
                 model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));  
-
+                
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
                     NnEpisodeManager episodeMngr = new NnEpisodeManager(); 
