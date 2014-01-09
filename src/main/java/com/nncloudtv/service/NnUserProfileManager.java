@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnUserProfileDao;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.web.json.player.PlayerUserProfile;
 
 @Service
 public class NnUserProfileManager {
@@ -82,6 +83,47 @@ public class NnUserProfileManager {
         }
         
         return target;
+    }
+
+    public Object getPlayerProfile(NnUser user, short format) {
+        NnUserProfile profile = user.getProfile();
+        String name = profile.getName();
+        String email = user.getUserEmail();
+        String intro = profile.getIntro();
+        String imageUrl = profile.getImageUrl();
+        String gender = "";
+        if (profile.getGender() != 2)
+        	gender = String.valueOf(profile.getGender());
+        String year = String.valueOf(profile.getDob());
+        String sphere = profile.getSphere();
+        String uiLang = profile.getLang();
+        String phone = profile.getPhoneNumber();
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            String[] result = {""};     
+	        result[0] += PlayerApiService.assembleKeyValue("name", name);
+	        result[0] += PlayerApiService.assembleKeyValue("email", email);
+	        result[0] += PlayerApiService.assembleKeyValue("description", intro);
+	        result[0] += PlayerApiService.assembleKeyValue("image", imageUrl);
+	        result[0] += PlayerApiService.assembleKeyValue("gender", gender);
+	        result[0] += PlayerApiService.assembleKeyValue("year", year);
+	        result[0] += PlayerApiService.assembleKeyValue("sphere", sphere);
+	        result[0] += PlayerApiService.assembleKeyValue("ui-lang", uiLang);
+	        result[0] += PlayerApiService.assembleKeyValue("phone", phone);
+	        return result;
+        } else {
+        	PlayerUserProfile json = new PlayerUserProfile();
+        	json.setName(name);
+        	json.setEmail(email);
+        	json.setDescription(intro);
+        	json.setImage(imageUrl);
+        	json.setGender(gender);
+        	json.setYear(year);
+        	json.setSphere(sphere);
+        	json.setUiLang(uiLang);
+        	json.setPhone(phone);
+        	return json;
+        }
+        
     }
     
 }
