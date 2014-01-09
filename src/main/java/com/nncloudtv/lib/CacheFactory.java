@@ -12,12 +12,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nncloudtv.service.MsoConfigManager;
-
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.internal.CheckedOperationTimeoutException;
+
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.PlayerApiService;
 
 public class CacheFactory {
     
@@ -243,4 +245,55 @@ public class CacheFactory {
             log.info("cache [" + key + "] --> not deleted");
         }
     }
+            
+	//example: brandInfo(9x9)[json]
+    public static String getBrandInfoKey(Mso mso, short format) {
+    	if (format == PlayerApiService.FORMAT_PLAIN)
+    		return "brandInfo(" + mso.getName() + ")";
+    	return "brandInfo(" + mso.getName() + ")[json]";
+    }
+
+    //nnprogram(1)[json]
+    public static String getProgramInfoKey(long channelId, int version, short format) {
+    	if (version == 31) {
+            return "nnprogram-v31(" + channelId + ")"; 
+    	}
+        String str = "nnprogram(" + channelId + ")"; 
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	str += "[json]";
+        }
+        return str;
+    }
+    
+    //cache the 1st program of channel    
+    public static String getLatestProgramInfoKey(long channelId, short format) {
+        String str = "nnprogram-info(" + channelId + ")";
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	str += "[json]";
+        }
+        return str;
+    }
+    
+    
+    //example: nnchannel(1)[json]
+    public static String getChannelLineupKey(long channelId, int version, short format) {
+    	String key = "";
+    	if (version == 32) {
+    		//nnchannel-v32(1)
+    		key = "nnchannel-v32(" + channelId + ")";
+    	} else if (version < 32) {
+    		//nnchannel-v31(1)
+        	key = "nnchannel-v31(" + channelId + ")";
+    	} else {			
+    		//nnchannel(1)
+            key = "nnchannel(" + channelId + ")";
+    	}
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	//nnchnanel(1)[json]
+        	//nnchannel-v31(1)[json]
+        	return key += "[json]";
+        }    	
+        return key;
+    }
+        
 }
