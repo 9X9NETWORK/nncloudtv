@@ -27,9 +27,11 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
+import com.nncloudtv.web.json.player.UserInfo;
 
 @Service
 public class NnUserManager {
@@ -484,7 +486,7 @@ public class NnUserManager {
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, version);
+        result += chMngr.composeChannelLineup(curatorChannels, version, PlayerApiService.FORMAT_PLAIN);
         return result;
     }
     
@@ -545,9 +547,73 @@ public class NnUserManager {
         return user;
     }
 
-    public List<NnUser> findAllByIds(Set<Long> userIdSet) {
-    
+    public List<NnUser> findAllByIds(Set<Long> userIdSet) {    
         return dao.findAllByIds(userIdSet);
     }
+    
+    //UserInfo or String
+    public Object getPlayerUserInfo(NnUser user, NnGuest guest, HttpServletRequest req, boolean login, short format) {
+    	if (user != null) {
+    		//prepare all the values
+    		String token = user.getToken();
+    		String userIdStr = user.getIdStr();
+            NnUserProfile profile = user.getProfile();
+            String name = profile.getName();
+            if (name == null) 
+                name = user.getEmail();
+            String lastLogin = String.valueOf(profile.getUpdateDate().getTime());
+            String sphere = profile.getSphere(); 
+            if (profile.getSphere() == null)
+                sphere = NnUserManager.findLocaleByHttpRequest(req);
+            String lang = profile.getLang();
+            if (profile.getLang() == null)
+                lang = sphere;
+            String curator = String.valueOf(profile.getProfileUrl());
+            String created = "0";
+            if (login)
+            	created = "1";
+            String fbUser = "0";
+            if (user.isFbUser())
+                fbUser = "1";
+            //format
+            if (format == PlayerApiService.FORMAT_JSON) {
+        		UserInfo json = new UserInfo();
+                json.setToken(token);
+                json.setUserIdStr(userIdStr);
+                json.setName(name);
+                json.setLastLogin(lastLogin);
+                json.setSphere(sphere);
+                json.setUiLang(lang);
+                json.setCurator(curator);
+                json.setCreated(Boolean.parseBoolean(created));
+                json.setFbUser(Boolean.parseBoolean(fbUser));
+	            NnUserPrefManager prefMngr = new NnUserPrefManager();
+	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            for (NnUserPref pref : list) {
+	                json.getPrefs().add(pref.getItem() + pref.getValue());
+	            }
+	            return json;
+            } else {
+	            String output = PlayerApiService.assembleKeyValue("token", token);
+	            output += PlayerApiService.assembleKeyValue("userid", userIdStr);
+	            output += PlayerApiService.assembleKeyValue("name", name);
+	            output += PlayerApiService.assembleKeyValue("lastLogin", lastLogin);
+	            output += PlayerApiService.assembleKeyValue("sphere", sphere);
+	            output += PlayerApiService.assembleKeyValue("ui-lang", lang);
+	            output += PlayerApiService.assembleKeyValue("curator", curator);
+                output += PlayerApiService.assembleKeyValue("created",created);
+	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
+	            NnUserPrefManager prefMngr = new NnUserPrefManager();
+	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            for (NnUserPref pref : list) {
+	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
+	            }
+	            return output;
+            }
+    	} else {
+    		return new NnGuestManager().getPlayerGuestRegister(guest, format, req);
+    	}    	
+    }
+    
     
 }
