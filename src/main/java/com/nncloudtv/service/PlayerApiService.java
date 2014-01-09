@@ -77,6 +77,7 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());    
     
+    private NnUserProfileManager profileMngr;
     private MsoConfigManager configMngr;
     private NnUserManager userMngr;    
     private MsoManager msoMngr;
@@ -93,18 +94,20 @@ public class PlayerApiService {
         msoMngr = new MsoManager();
         chMngr = new NnChannelManager();
         prefMngr = new NnUserPrefManager();
+        profileMngr = new NnUserProfileManager();
     }
     
     @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
-            NnUserPrefManager prefMngr) {
+            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr) {
         
         this.prefMngr = prefMngr;
         this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
         this.chMngr = chMngr;
+        this.profileMngr = profileMngr;
     }
     
     public int prepService(HttpServletRequest req) {
@@ -1518,7 +1521,6 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);        
         if (user.getUserEmail().equals(NnUser.GUEST_EMAIL))
             return this.assembleMsgs(NnStatusCode.USER_PERMISSION_ERROR, null);
-        NnUserProfileManager profileMngr = new NnUserProfileManager();
         NnUserProfile profile = profileMngr.findByUser(user);
         if (profile == null) profile = new NnUserProfile(user.getId(), mso.getId());
         String[] key = items.split(",");

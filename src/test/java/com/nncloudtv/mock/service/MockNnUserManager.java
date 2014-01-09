@@ -24,7 +24,7 @@ public class MockNnUserManager extends NnUserManager {
         
         return LangTable.LANG_EN;
     }
-
+    
     @Override
     public NnUser findAuthenticatedUser(String email, String password,
             long msoId, HttpServletRequest req) {
@@ -34,6 +34,12 @@ public class MockNnUserManager extends NnUserManager {
         mockUser.setProfile(mockProfile);
         
         return mockUser;
+    }
+    
+    @Override
+    public NnUser findByToken(String token, long msoId) {
+        
+        return new NnUser("_mock_@9x9.tv", "_password_", NnUser.TYPE_USER);
     }
     
 }

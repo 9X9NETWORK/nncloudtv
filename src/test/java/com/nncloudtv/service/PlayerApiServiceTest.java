@@ -19,6 +19,7 @@ import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
+import com.nncloudtv.mock.service.MockNnUserProfileManager;
 import com.nncloudtv.web.api.ApiContext;
 
 public class PlayerApiServiceTest {
@@ -34,6 +35,7 @@ public class PlayerApiServiceTest {
     private MockNnChannelManager mockChMngr;
     private MockMsoConfigManager mockConfigMngr;
     private MockNnUserPrefManager mockPrefMngr;
+    private MockNnUserProfileManager mockProfileMngr;
 
     @Before
     public void setUp() {
@@ -47,24 +49,30 @@ public class PlayerApiServiceTest {
         mockChMngr = new MockNnChannelManager();
         mockConfigMngr = new MockMsoConfigManager();
         mockPrefMngr = new MockNnUserPrefManager();
+        mockProfileMngr = new MockNnUserProfileManager();
         
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr);
+        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr, mockProfileMngr);
         service.prepService(req);
         System.out.println("@Before - setUp");
     }
 	 	 	
 	@Test
 	public void testBrandInfo() {
-	    String brandInfo = service.brandInfo(req);
-		Assert.assertTrue(brandInfo.contains("SUCCESS")); 
+	    
+	    String result = service.brandInfo(req);
+	    
+		Assert.assertTrue(result.contains("SUCCESS")); 
 	}
 
 	@Test
-	public void testSetProfile() {	    
-//        String email = req.getParameter("email");	    
+	public void testSetProfile() {
+	    
+	    String result = service.setUserProfile("mock-user-token-xxoo", "name,phone", "MockUser,7777777", req);
+	    
+	    Assert.assertTrue(result.contains("SUCCESS")); 
 	}
 	
 	@Test
