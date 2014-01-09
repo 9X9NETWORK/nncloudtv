@@ -101,7 +101,6 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_YOUTUBE_SPECIAL_SORTING = 10;
     public static final short CONTENTTYPE_FAVORITE = 11;
     public static final short CONTENTTYPE_FAKE_FAVORITE = 12;
-    public static final short CONTENTTYPE_YOUTUBE_LIVE = 13;
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
@@ -402,6 +401,23 @@ public class NnChannel implements Serializable {
 
     public String getTranscodingUpdateDate() {
         return transcodingUpdateDate;
+    }
+    
+    public Date getSyncDate() {
+        
+        if (transcodingUpdateDate == null) {
+            return null;
+        }
+        
+        Long syncDate = null;
+        try {
+            syncDate = Long.valueOf(transcodingUpdateDate);
+        } catch (NumberFormatException e) {
+            log.info("String value \"" + transcodingUpdateDate + "\" can't evaluate to type Long.");
+            return null;
+        }
+        
+        return new Date (syncDate*1000);
     }
 
     public String getOriName() {
