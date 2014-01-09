@@ -22,13 +22,11 @@ if server == "dev":
 
 #---- write version info ----
 version = raw_input('Enter version number : ')
-source = open(".svn//entries", "rU")
-cnt = 0
+os.system("git log --pretty=format:\"%H\" -n 1 > version")
+source = open("version", "rU")
 for line in source:
-  cnt = cnt + 1
-  if cnt == 4:
-    rev =  line.rstrip()
-    break
+   rev =  line.rstrip()
+   break
 source.close
 print "Revision number:" + rev
 now = datetime.datetime.utcnow()
@@ -39,8 +37,8 @@ new_file = open("..//src//main//java//com//nncloudtv//web//VersionController.jav
 for line in old_file:
   if (line.find("String appVersion") > 0):
      line = "        String appVersion = \"" + version + "\";\n"
-  if (line.find("String svn") > 0):
-     line = "        String svn = \"" + rev + "\";\n"
+  if (line.find("String hash") > 0):
+     line = "        String hash = \"" + rev + "\";\n"
   if (line.find("String packagedTime") > 0):
      line = "        String packagedTime = \"" + str(now) + "\";\n"
      
