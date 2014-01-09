@@ -35,14 +35,14 @@ public class IosService {
                 String url = urlRoot + filename;
                 String result = NnNetUtil.urlGet(url);
                 if (result == null)
-                    return new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);
+                    return (String) new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);
                 return result;                
             }            
         }
         PlayerApiService api = new PlayerApiService();
         lang = api.checkLang(lang);    
         if (lang == null)
-            return api.assembleMsgs(NnStatusCode.INPUT_BAD, null);             
+            return (String) api.assembleMsgs(NnStatusCode.INPUT_BAD, null);             
         NnSetManager setMngr = new NnSetManager();
         List<NnSet> sets = setMngr.findFeatured(lang, msoId);
         String[] result = {""};
@@ -56,7 +56,7 @@ public class IosService {
             };
             result[0] += NnStringUtil.getDelimitedStr(obj) + "\n";          
         }
-        return api.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
     public String category(String id, String lang, boolean flatten, Mso mso) {
@@ -74,14 +74,14 @@ public class IosService {
             String url = urlRoot + filename;
             String result = NnNetUtil.urlGet(url);            
             if (result == null)
-                return new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);
+                return (String) new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);
             else
                 return result;
         }
         PlayerApiService api = new PlayerApiService();
         lang = api.checkLang(lang);    
         if (lang == null) {
-            return api.assembleMsgs(NnStatusCode.INPUT_BAD, null);
+            return (String) api.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         }
         if (id == null) {
             id = "0";
@@ -101,7 +101,7 @@ public class IosService {
                 c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
             }
             result[2] = this.composeChannelLineup(channels);
-            return api.assembleMsgs(NnStatusCode.SUCCESS, result);
+            return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
         }        
         
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
@@ -117,16 +117,16 @@ public class IosService {
                             subItemHint};               
             result[1] += NnStringUtil.getDelimitedStr(str) + "\n";
         }
-        return api.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
     public String setInfo(String id, String name, Mso mso) {
         PlayerApiService api = new PlayerApiService();
         if (id == null && name == null) {
-            return api.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+            return (String) api.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         if (mso == null) {
-            return api.assembleMsgs(NnStatusCode.INPUT_BAD, null);
+            return (String) api.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         }
         
         if (mso.getId() == 1) {                        
@@ -137,7 +137,7 @@ public class IosService {
                 String url = urlRoot + "s" + filename;
                 String result = NnNetUtil.urlGet(url);
                 if (result == null)
-                    return new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);        
+                    return (String) new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);        
                 return result;
             }
         }
@@ -150,7 +150,7 @@ public class IosService {
             set = setMngr.findByName(name, mso.getId());
         }
         if (set == null)
-            return api.assembleMsgs(NnStatusCode.SET_INVALID, null);            
+            return (String) api.assembleMsgs(NnStatusCode.SET_INVALID, null);            
         
         List<NnChannel> channels = setMngr.findChannels(set, mso);
         String result[] = {"", "", ""};
@@ -170,7 +170,7 @@ public class IosService {
                 c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
         }   
         result[2] = this.composeChannelLineup(channels);
-        return api.assembleMsgs(NnStatusCode.SUCCESS, result);        
+        return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
     
     public String composeChannelLineup(List<NnChannel> channels) {
@@ -247,7 +247,7 @@ public class IosService {
         String result = null;
         NnProgramManager programMngr = new NnProgramManager();
         try {
-            result = (String)CacheFactory.get(programMngr.getV31CacheKey(channelId));            
+            result = (String)CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 31, PlayerApiService.FORMAT_PLAIN));
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -258,8 +258,7 @@ public class IosService {
         List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(channelId);
         log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());        
         String str = this.composeProgramInfoStr(programs);
-        CacheFactory.set(programMngr.getV31CacheKey(channelId), str);
-        
+        CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 21, PlayerApiService.FORMAT_PLAIN), str);
         return str;
     }    
 
@@ -267,7 +266,7 @@ public class IosService {
 		List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
 		String[] result = {""};
 		result[0] = this.composeChannelLineup(searchResults);
-		return new PlayerApiService().assembleMsgs(NnStatusCode.SUCCESS, result);
+		return (String) new PlayerApiService().assembleMsgs(NnStatusCode.SUCCESS, result);
 	}
     
     public String composeProgramInfoStr(List<NnProgram> programs) {        
