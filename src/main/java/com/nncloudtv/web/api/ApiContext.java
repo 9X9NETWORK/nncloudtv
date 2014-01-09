@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
@@ -30,10 +32,20 @@ public class ApiContext {
     MsoManager msoMngr;
     
     HttpServletRequest httpReqest;
-    Locale language;
-    Long version;
+    Locale locale;
+    Integer version;
     String root;
     Mso mso;
+    
+    public Integer getVersion() {
+        
+        return version;
+    }
+    
+    public Locale getLocale() {
+        
+        return locale;
+    }
     
     public Mso getMso() {
     
@@ -42,26 +54,36 @@ public class ApiContext {
     
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
     
+    @Autowired
     public ApiContext(HttpServletRequest req) {
+        
+        init(req, new MsoManager());
+    }
     
+    @Autowired
+    public ApiContext(HttpServletRequest req, MsoManager mngr) {
+        
+        init(req, mngr);
+    }
+    
+    private void init(HttpServletRequest req, MsoManager mngr) {
+        
+        msoMngr = (mngr == null) ? new MsoManager() : mngr;
         httpReqest = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
-        NnNetUtil.logUrl(req);
-        
-        msoMngr = new MsoManager();
         
         String lang = httpReqest.getParameter(ApiContext.PARAM_LANG);
         if (LangTable.isValidLanguage(lang)) {
-            language = LangTable.getLocale(lang);
+            locale = LangTable.getLocale(lang);
         } else {
-            language = Locale.ENGLISH; // TODO: from http request
+            locale = Locale.ENGLISH; // TODO: from http request
         }
         
-        version = Long.parseLong(ApiContext.DEFAULT_VERSION);
+        version = Integer.parseInt(ApiContext.DEFAULT_VERSION);
         String versionStr = httpReqest.getParameter(PARAM_VERSION);
         if (versionStr != null) {
             try {
-                version = Long.parseLong(versionStr);
+                version = Integer.parseInt(versionStr);
             } catch (NumberFormatException e) {
             }
         }
@@ -80,7 +102,7 @@ public class ApiContext {
                 mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);
         }
         
-        log.info("language = " + language.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);
+        log.info("language = " + locale.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);
     }
     
     public Boolean isProductionSite() {

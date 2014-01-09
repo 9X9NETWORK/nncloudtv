@@ -38,5 +38,11 @@ public class MockMsoManager extends MsoManager {
         
         return null;
     }
-
+    
+    @Override
+    public Mso getByNameFromCache(String name) {
+        
+        return findByName(name);
+    }
+    
 }

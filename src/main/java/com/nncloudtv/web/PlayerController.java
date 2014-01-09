@@ -51,8 +51,8 @@ public class PlayerController {
         	if (service.isAndroid(req) || service.isIos(req)) {
         	    return "redirect:/mobile/";
         	}
-        	String name = service.getBrandNameByUrl(req, mso);
-        	Mso brand = new MsoManager().findOneByName(name);
+        	ApiContext context = new ApiContext(req);
+        	Mso brand = context.getMso();
         	if (brand.getType() == Mso.TYPE_FANAPP) {
         		//below, merge with view
 	            log.info("Fan app sharing");
@@ -74,7 +74,6 @@ public class PlayerController {
 	        	model.addAttribute("brandName", brand.getName());
 	        	return "player/fanapp";
         	}
-            ApiContext context = new ApiContext(req);
             model = service.prepareBrand(model, context.getMso().getName(), resp);
             model = service.preparePlayer(model, js, jsp, req);
             if (jsp != null && jsp.length() > 0) {

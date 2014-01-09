@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.web.api.ApiContext;
 
 public class MockMsoConfigManager extends MsoConfigManager {
     
@@ -33,12 +34,38 @@ public class MockMsoConfigManager extends MsoConfigManager {
     @Override
     public MsoConfig findByMsoAndItem(Mso mso, String item) {
         
+        MsoConfig config = new MsoConfig();
+        
         if (mso.getName() == Mso.NAME_9X9 && item == MsoConfig.FAVICON_URL) {
             
-            MsoConfig config = new MsoConfig();
             config.setItem(MsoConfig.FAVICON_URL);
             config.setValue("http://www.mock.com/favicon.ico");
-            log.info("mock favicon url = " + config.getValue());
+            log.info("[MOCK] favicon url = " + config.getValue());
+            
+            return config;
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public MsoConfig findByItem(String item) {
+        
+        MsoConfig config = new MsoConfig();
+        
+        if (item == MsoConfig.API_MINIMAL) {
+            
+            config.setItem(MsoConfig.API_MINIMAL);
+            config.setValue("" + ApiContext.DEFAULT_VERSION);
+            log.info("[MOCK] default version = " + config.getValue());
+            
+            return config;
+            
+        } else if (item == MsoConfig.RO) {
+            
+            config.setItem(MsoConfig.RO);
+            config.setValue("0");
+            log.info("[MOCK] RO = 0");
             
             return config;
         }

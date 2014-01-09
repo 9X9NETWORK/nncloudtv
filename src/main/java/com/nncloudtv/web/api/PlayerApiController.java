@@ -162,7 +162,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }            
@@ -213,7 +213,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }            
@@ -258,7 +258,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }            
@@ -290,7 +290,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            playerApiService.prepService(req, true);
+            playerApiService.prepService(req);
             output = playerApiService.userTokenVerify(token, req, resp);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -313,7 +313,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            playerApiService.prepService(req, true);
+            playerApiService.prepService(req);
             CookieHelper.deleteCookie(resp, CookieHelper.USER);
             CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
             output = NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS, locale);
@@ -354,7 +354,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                    
@@ -395,7 +395,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                        
@@ -449,9 +449,8 @@ public class PlayerApiController {
         String path = "/playerAPI/pdrServer";
         PlayerApiService playerApiService = new PlayerApiService();
         playerApiService.prepService(req, false);
-        ApiContext ctx = new ApiContext(req);
         
-        if (ctx.isProductionSite()) {
+        if (playerApiService.isProductionSite()) {
             
             try {
                 String urlStr = pdrServer + path;
@@ -461,7 +460,7 @@ public class PlayerApiController {
                  "&session=" + session +
                  "&pdr=" + URLEncoder.encode("" + pdr, "UTF-8") +                     
                  "&rx=" + rx +
-                 "&mso=" + ctx.getMso().getName();
+                 "&mso=" + playerApiService.getMso().getName();
                 //log.info(urlStr + "?" + params);
                 
                 URL url = new URL(urlStr);
@@ -552,7 +551,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);        	
+            int status = playerApiService.prepService(req);        	
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                    	
@@ -603,7 +602,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                
@@ -653,7 +652,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }
@@ -694,7 +693,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                
@@ -736,7 +735,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
@@ -773,7 +772,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -808,7 +807,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {             
                 return playerApiService.assembleMsgs(status, null);
             }                                 
@@ -926,7 +925,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
@@ -958,7 +957,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            playerApiService.prepService(req, true);
+            playerApiService.prepService(req);
             output = playerApiService.subscriberLineup(userToken, curatorIdStr);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -1029,7 +1028,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {        	
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }         
@@ -1073,7 +1072,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }
@@ -1117,7 +1116,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                
@@ -1151,7 +1150,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }
@@ -1184,7 +1183,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {            	
                 return playerApiService.assembleMsgs(status, null);
             }
@@ -1214,7 +1213,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }            
@@ -1244,7 +1243,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }
@@ -1273,7 +1272,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
@@ -1302,7 +1301,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
@@ -1333,7 +1332,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }
@@ -1364,7 +1363,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);            
             output = playerApiService.deviceRemoveUser(deviceToken, userToken, req);
@@ -1405,7 +1404,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1458,7 +1457,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1494,7 +1493,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }
@@ -1526,7 +1525,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }
@@ -1556,7 +1555,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1597,7 +1596,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1628,7 +1627,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1662,7 +1661,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);        
             output = playerApiService.saveSorting(userToken, channelId, sorting);
@@ -1760,7 +1759,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1796,7 +1795,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -1831,7 +1830,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);
             output = playerApiService.copyChannel(userToken, channelId, grid);
@@ -1864,7 +1863,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);
             output = playerApiService.moveChannel(userToken, grid1, grid2);
@@ -1912,7 +1911,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);        
             }            
@@ -1945,7 +1944,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int systemStatus = playerApiService.prepService(req, true);
+            int systemStatus = playerApiService.prepService(req);
             if (systemStatus != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(systemStatus, null);
             output = playerApiService.programRemove(programId, ytVideoId, userToken, secret, status);
@@ -1980,7 +1979,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);    
             boolean isTemp= Boolean.parseBoolean(temp);        
@@ -2021,7 +2020,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);    
             boolean isTemp= Boolean.parseBoolean(temp);        
@@ -2054,7 +2053,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);                        
             output = playerApiService.setProgramProperty(program, property, value);
@@ -2086,7 +2085,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);                        
             output = playerApiService.setChannelProperty(channel, property, value);
@@ -2121,7 +2120,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);                        
             output = playerApiService.quickLogin(token, email, password, req, resp);
@@ -2156,7 +2155,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);                        
             output = playerApiService.auxLogin(token, email, password, req, resp);
@@ -2188,7 +2187,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE)
                 return playerApiService.assembleMsgs(status, null);                        
             output = playerApiService.sphereData(token, email, password, req, resp);
@@ -2216,7 +2215,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -2249,7 +2248,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);        
             }            
@@ -2276,7 +2275,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status,  null);        
             }            
@@ -2307,7 +2306,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);        
+            int status = playerApiService.prepService(req);        
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status,  null);        
             }                        
@@ -2336,7 +2335,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status,  null);        
             }                        
@@ -2380,7 +2379,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status,  null);        
             }                        
@@ -2427,7 +2426,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             boolean del = Boolean.parseBoolean(delete);
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status,  null);        
             }                        
@@ -2446,7 +2445,8 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        String appDomain = (req.isSecure() ? "https://" : "http://") + new ApiContext(req).getAppDomain();
+        ApiContext context = new ApiContext(req);
+        String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("uri:" + referrer);
         
@@ -2520,7 +2520,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);                        
             }
@@ -2542,7 +2542,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2577,7 +2577,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2610,7 +2610,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2634,7 +2634,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2659,7 +2659,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2686,7 +2686,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 playerApiService.assembleMsgs(status, null);                        
             }
@@ -2720,7 +2720,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);        
             output = playerApiService.obtainAccount(email, password, name, req, resp);
@@ -2752,7 +2752,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.assembleMsgs(status, null);    
             boolean isQueued = Boolean.parseBoolean(queued);
@@ -2782,7 +2782,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }
@@ -2810,7 +2810,7 @@ public class PlayerApiController {
         String output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, true);
+            int status = playerApiService.prepService(req);
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.assembleMsgs(status, null);                        
             }

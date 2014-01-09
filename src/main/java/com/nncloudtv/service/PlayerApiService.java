@@ -85,6 +85,7 @@ public class PlayerApiService {
     private Locale locale = Locale.ENGLISH;
     private Mso mso;
     private int version = 32;    
+    private ApiContext context = null;
     
     public PlayerApiService() {
         configMngr = new MsoConfigManager();
@@ -105,59 +106,36 @@ public class PlayerApiService {
         this.msoMngr = msoMngr;
         this.chMngr = chMngr;
     }
-
-    public int prepService(HttpServletRequest req, boolean tolog) {
-        /*
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        if ((userAgent.indexOf("CFNetwork") > -1) && (userAgent.indexOf("Darwin") > -1))     {
-            playerApiService.setUserAgent(PlayerApiService.PLAYER_IOS);
-            log.info("from iOS");
-        }
-        */
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        log.info("user agent:" + userAgent);
+    
+    public int prepService(HttpServletRequest req) {
         
-        String msoName = req.getParameter("mso");
-        if (tolog) 
+        return prepService(req, true);
+    }
+    
+    public int prepService(HttpServletRequest req, boolean tolog) {
+        
+        if (tolog)
             NnNetUtil.logUrl(req);
+        
+        context = new ApiContext(req, msoMngr);
+        
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.getByNameFromCache(msoName);
-        if (mso == null) {
-            mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);;
-           //mso = msoMngr.findNNMso();
-        }
-        log.info("mso entrance:" + mso.getId());
-        Locale locale = Locale.ENGLISH;
-        setLocale(locale);
-        setMso(mso);
-        int status = checkRO();
-        String version = (req.getParameter("v") == null) ? "31" : req.getParameter("v");
-        int intVersion = Integer.parseInt(version);
-        log.info("version = " + intVersion);
-        int minimal = checkApiMinimal();        
-        setVersion(Integer.parseInt(version));
-        if (intVersion < minimal)
-            status = NnStatusCode.API_FORCE_UPGRADE;
-        this.locale = locale;
-        return status;                
+        
+        locale  = context.getLocale();
+        mso     = context.getMso();
+        version = context.getVersion();
+        
+        log.info("mso entrance: " + mso.getId());
+        
+        if (version < checkApiMinimal())
+            return NnStatusCode.API_FORCE_UPGRADE;
+        else
+            return checkRO();                
     }
     
     public int getVersion() {
         return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public void setLocale(Locale locale) {
-        this.locale = locale;
-    }
-    
-    public void setMso(Mso mso) {
-        this.mso = mso;
     }
     
     public Mso getMso() {
@@ -402,7 +380,7 @@ public class PlayerApiService {
     }
     
     public int checkRO() {
-        MsoConfigManager configMngr = new MsoConfigManager();
+        
         MsoConfig config = configMngr.findByItem(MsoConfig.RO);
         if (config != null && config.getValue().equals("1"))            
             return NnStatusCode.DATABASE_READONLY;
@@ -410,7 +388,7 @@ public class PlayerApiService {
     }
     
     public int checkApiMinimal() {
-        MsoConfigManager configMngr = new MsoConfigManager();
+        
         MsoConfig config = configMngr.findByItem(MsoConfig.API_MINIMAL);  
         if (config == null)
         	return 0;
@@ -3222,6 +3200,22 @@ public class PlayerApiService {
         String programStr = programMngr.findLatestProgramInfoByChannels(channels);
         result[3] = programStr;        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
+    }
+    
+    public String getAppDomain() {
+        
+        if (context == null)
+            return null;
+        
+        return context.getAppDomain();
+    }
+    
+    public Boolean isProductionSite() {
+        
+        if (context == null)
+            return null;
+        
+        return context.isProductionSite();
     }
     
     /*

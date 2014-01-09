@@ -25,9 +25,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnEmail;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.Pdr;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -117,8 +115,6 @@ public class HelloController {
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="program", required=false) String program) { 
         PlayerApiService apiservice = new PlayerApiService();
-        Mso mso = new MsoManager().findNNMso();
-        apiservice.setMso(mso);
         String detail = " w\t" + channel + "\t" + program;
         System.out.println("detail:" + detail);
         String result = apiservice.pdr(userToken, null, "1", detail, req);       

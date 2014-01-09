@@ -16,8 +16,6 @@ import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.model.Mso;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -49,9 +47,9 @@ public class FacebookController {
                             ";errorDescription:" + errorDescription + 
                             ";accessToken:" + accessToken + ";stage:" + stage);
         if (code != null && accessToken == null) {
-            Mso brand = new MsoManager().findOneByName(mso);
-            String fbLoginUri = (req.isSecure() ? "https://" : "http://") + new ApiContext(req).getAppDomain() + "/fb/login";
-            String[] data = new FacebookLib().getOAuthAccessToken(code, uri, fbLoginUri, brand);
+            ApiContext context = new ApiContext(req);
+            String fbLoginUri = (req.isSecure() ? "https://" : "http://") + context.getAppDomain() + "/fb/login";
+            String[] data = new FacebookLib().getOAuthAccessToken(code, uri, fbLoginUri, context.getMso());
             log.info("FACEBOOK: (login) back from access token request");
             if (data[0] != null) {               
                 log.info("FACEBOOK: (login) going to use data from facebook");

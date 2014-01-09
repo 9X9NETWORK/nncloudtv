@@ -1,6 +1,6 @@
 package com.nncloudtv.service;
 
-import java.util.Locale;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,11 +19,12 @@ import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.web.api.ApiContext;
 
 public class PlayerApiServiceTest {
 
+    protected static final Logger log = Logger.getLogger(PlayerApiServiceTest.class.getName());
+    
 	private PlayerApiService service;
 	
     private MockHttpServletRequest req;
@@ -50,21 +51,15 @@ public class PlayerApiServiceTest {
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        Mso mso = mockMsoMngr.findNNMso();
-        Locale locale = Locale.ENGLISH;
         service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr);
-        service.setLocale(locale);
-        service.setMso(mso);
-        //String version = (req.getParameter("v") == null) ? "31" : req.getParameter("v");       
-        String version = "32";
-        System.out.println("version:" + version);
-        service.setVersion(Integer.parseInt(version));        
+        service.prepService(req);
         System.out.println("@Before - setUp");
     }
 	 	 	
 	@Test
 	public void testBrandInfo() {
-		Assert.assertTrue(service.brandInfo(req).contains("SUCCESS")); 
+	    String brandInfo = service.brandInfo(req);
+		Assert.assertTrue(brandInfo.contains("SUCCESS")); 
 	}
 
 	@Test
