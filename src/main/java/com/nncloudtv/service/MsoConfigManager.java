@@ -40,6 +40,10 @@ public class MsoConfigManager {
         }
         return result;
     }
+
+    static public String getSearchServer() {
+    	return getProperty("services.properties", "search");
+    }
     
     static public String getS3UploadBucket() {
         
@@ -53,11 +57,11 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("facebook.properties", "server_domain");
+        return getProperty("sns.properties", "server_domain");
     }
         
-    static public String getDefaultFacebookAppToken() {        
-        return getProperty("facebook.properties", "facebook_apptoken");
+    static public String getFacebookAppToken() {        
+        return getProperty("sns.properties", "facebook_app_token");
     }
     
     static public String getCrawlerDomain() {
@@ -73,21 +77,21 @@ public class MsoConfigManager {
     		return config.getValue(); 
     	}
     	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("facebook.properties", "facebook_clientid");
+    		return getProperty("sns.properties", "facebook_client_id");
     	if (type == MsoConfig.FACEBOOK_APPTOKEN)
-    		return getProperty("facebook.properties", "facebook_apptoken");
+    		return getProperty("sns.properties", "facebook_app_token");
     	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-    		return getProperty("facebook.properties", "facebook_client_secret");
+    		return getProperty("sns.properties", "facebook_client_secret");
     	return null;
     }
     
-    static public String getDefaultFacebookClientId() {        
-        return getProperty("facebook.properties", "facebook_clientid");
+    static public String getFacebookClientId() {        
+        return getProperty("sns.properties", "facebook_client_id");
     }
     
-    static public String getDefaultFacebookClientSecret() {
+    static public String getFacebookClientSecret() {
         
-        return getProperty("facebook.properties", "facebook_client_secret");
+        return getProperty("sns.properties", "facebook_client_secret");
     }
     
     static public String getExternalRootPath() {
