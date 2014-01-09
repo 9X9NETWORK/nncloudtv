@@ -135,7 +135,6 @@ public class NnEpisodeManager {
     }
     
     public Comparator<NnEpisode> getEpisodeSeqComparator() {
-        
         class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
             
             public int compare(NnEpisode episode1, NnEpisode episode2) {
