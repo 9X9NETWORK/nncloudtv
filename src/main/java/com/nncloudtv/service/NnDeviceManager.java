@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.json.player.PlayerDevice;
 
 @Service
 public class NnDeviceManager {
@@ -97,6 +98,28 @@ public class NnDeviceManager {
     
     public void delete(NnDevice device) {
         deviceDao.delete(device);
+    }
+
+    public Object getPlayerDeviceInfo(NnDevice device, short format, List<NnUser> users) {
+    	String token = device.getToken();
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            String[] result = {token};
+        	if (users != null) {
+                for (NnUser u : users) {
+                    result[0] += u.getToken() + "\t" + u.getProfile().getName() + "\t" + u.getUserEmail() + "\n";
+                }    		
+        	}
+            return result;
+        } else {
+        	PlayerDevice json = new PlayerDevice();
+        	json.setToken(token);
+        	if (users != null) {
+                for (NnUser u : users) {
+                    json.getUsers().add(u.getToken() + "\t" + u.getProfile().getName() + "\t" + u.getUserEmail());
+                }    		
+        	}        	
+        	return json;
+        }    	
     }
     
     public boolean removeUser(String token, NnUser user) {
