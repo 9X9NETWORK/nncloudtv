@@ -52,17 +52,17 @@ public class PdrController {
         }
         NnUser u = userMngr.findByToken(user, brand.getId());
         if (u == null)
-            return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
+            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
         List<NnDevice> devices = deviceMngr.findByUser(u);
         
         if (devices.size() == 0)
-            return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.SUCCESS, null));
+            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, null));
 
         String[] result = {""};
         for (NnDevice d : devices) {
             result[0] += d.getToken() + "\t" + d.getType() + "\n";
         }
-        return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
+        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
     }    
     
     /**
@@ -98,16 +98,16 @@ public class PdrController {
         if (user != null) {
             u = userMngr.findByToken(user, brand.getId());
             if (u == null)
-                return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
+                return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
         }
         if (device!= null) {
             ds = deviceMngr.findByToken(device);
             if (ds.size() == 0)
-                return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.DEVICE_INVALID, null));
+                return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.DEVICE_INVALID, null));
             d = ds.get(0);
         }
         if ((ip != null && since == null) || (ip == null && since != null)) 
-            return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.INPUT_MISSING, null));
+            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.INPUT_MISSING, null));
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");        
         Date sinceDate = null;
@@ -127,7 +127,7 @@ public class PdrController {
             result[0] += token + "\t" + r.getSession() + "\t" + r.getIp() + "\n" +  
                          r.getDetail() + "\n\n";
         }
-        return NnNetUtil.textReturn(pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
+        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
     }
 
     /**
