@@ -23,8 +23,7 @@ if test $? -eq 1; then
 fi
 
 cd ..
-mvn -DskipTests \
-    clean \
+mvn clean \
     compile \
     datanucleus:enhance \
     install war:war \
