@@ -37,8 +37,8 @@ new_file = open("..//src//main//java//com//nncloudtv//web//VersionController.jav
 for line in old_file:
   if (line.find("String appVersion") > 0):
      line = "        String appVersion = \"" + version + "\";\n"
-  if (line.find("String svn") > 0):
-     line = "        String svn = \"" + rev + "\";\n"
+  if (line.find("String hash") > 0):
+     line = "        String hash = \"" + rev + "\";\n"
   if (line.find("String packagedTime") > 0):
      line = "        String packagedTime = \"" + str(now) + "\";\n"
      
