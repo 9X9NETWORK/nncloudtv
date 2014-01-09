@@ -451,6 +451,17 @@
       <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
+    <!-- http://wiki.apache.org/solr/Solrj -->
+    <dependency>
+      <groupId>org.apache.solr</groupId>
+      <artifactId>solr-solrj</artifactId>
+      <version>4.5.0</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.json</groupId>
+	  <artifactId>json</artifactId>
+	  <version>20131018</version>
+    </dependency>
     <dependency>
       <groupId>com.google.android.gcm</groupId>
       <artifactId>gcm-server</artifactId>
