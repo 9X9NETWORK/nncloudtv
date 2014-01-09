@@ -22,13 +22,11 @@ if server == "dev":
 
 #---- write version info ----
 version = raw_input('Enter version number : ')
-source = open(".svn//entries", "rU")
-cnt = 0
+os.system("git log --pretty=format:\"%H\" -n 1 > version")
+source = open("version", "rU")
 for line in source:
-  cnt = cnt + 1
-  if cnt == 4:
-    rev =  line.rstrip()
-    break
+   rev =  line.rstrip()
+   break
 source.close
 print "Revision number:" + rev
 now = datetime.datetime.utcnow()
