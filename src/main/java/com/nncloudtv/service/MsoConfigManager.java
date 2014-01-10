@@ -57,11 +57,11 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("sns.properties", "server_domain");
+        return getProperty("facebook.properties", "server_domain");
     }
         
     static public String getFacebookAppToken() {        
-        return getProperty("sns.properties", "facebook_app_token");
+        return getProperty("facebook.properties", "facebook_app_token");
     }
     
     static public String getCrawlerDomain() {
@@ -77,21 +77,21 @@ public class MsoConfigManager {
     		return config.getValue(); 
     	}
     	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("sns.properties", "facebook_client_id");
+    		return getProperty("facebook.properties", "facebook_client_id");
     	if (type == MsoConfig.FACEBOOK_APPTOKEN)
-    		return getProperty("sns.properties", "facebook_app_token");
+    		return getProperty("facebook.properties", "facebook_app_token");
     	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-    		return getProperty("sns.properties", "facebook_client_secret");
+    		return getProperty("facebook.properties", "facebook_client_secret");
     	return null;
     }
     
     static public String getFacebookClientId() {        
-        return getProperty("sns.properties", "facebook_client_id");
+        return getProperty("facebook.properties", "facebook_client_id");
     }
     
     static public String getFacebookClientSecret() {
         
-        return getProperty("sns.properties", "facebook_client_secret");
+        return getProperty("facebook.properties", "facebook_client_secret");
     }
     
     static public String getExternalRootPath() {
