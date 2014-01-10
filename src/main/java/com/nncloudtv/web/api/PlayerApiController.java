@@ -3,7 +3,6 @@ package com.nncloudtv.web.api;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -25,6 +24,7 @@ import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
@@ -494,7 +494,7 @@ public class PlayerApiController {
                 String params = "user=" + userToken + 
                  "&device=" + deviceToken + 
                  "&session=" + session +
-                 "&pdr=" + URLEncoder.encode("" + pdr, "UTF-8") +                     
+                 "&pdr=" + NnStringUtil.urlencode("" + pdr) +
                  "&rx=" + rx +
                  "&mso=" + playerApiService.getMso().getName();
                 //log.info(urlStr + "?" + params);

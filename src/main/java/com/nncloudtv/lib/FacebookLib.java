@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -68,14 +67,14 @@ public class FacebookLib {
     
     public FacebookMe getFbMe(String accessToken) {
         try {
-            URL url = new URL("https://graph.facebook.com/me?access_token=" + URLEncoder.encode(accessToken, "ascii"));
+            URL url = new URL("https://graph.facebook.com/me?access_token=" + NnStringUtil.urlencode(accessToken, NnStringUtil.ASCII));
             log.info("FACEBOOK:(me)-query:" + url.toString());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), NnStringUtil.UTF8));
                 String line = reader.readLine();
                 reader.close();
                 log.info(line);                        
@@ -111,11 +110,11 @@ public class FacebookLib {
         try {
             URL url = new URL(urlBase);
             log.info("uri using for token:" + uri);
-            String modifiedRedirectUri = fbLoginUri + "?uri=" + URLEncoder.encode(uri, "ascii");
+            String modifiedRedirectUri = fbLoginUri + "?uri=" + NnStringUtil.urlencode(uri, NnStringUtil.ASCII);
             String params = "client_id=" + clientId +             
                             "&code=" + code + 
                             "&client_secret=" + secret +
-                            "&redirect_uri=" + URLEncoder.encode(modifiedRedirectUri, "ascii");
+                            "&redirect_uri=" + NnStringUtil.urlencode(modifiedRedirectUri, NnStringUtil.ASCII);
             log.info("FACEBOOK: (oauth) params:" + params);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
@@ -207,21 +206,19 @@ public class FacebookLib {
     public static String getDialogOAuthPath(String referrer, String fbLoginUri, Mso mso) {
         MsoConfigManager configMngr = new MsoConfigManager();
         String clientId = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
-
+        
         String url = "http://www.facebook.com/dialog/oauth?" +
                      "client_id=" + clientId +
                      "&scope=user_likes,user_location,user_interests,email,user_birthday" +
                      "&state=" + FacebookLib.generateState();
-        try {
-            String modifiedRedirectUri = fbLoginUri + "?uri=" + URLEncoder.encode(referrer, "ascii");
-            url += "&redirect_uri=" + URLEncoder.encode(modifiedRedirectUri, "ascii");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        
+        String modifiedRedirectUri = fbLoginUri + "?uri=" + NnStringUtil.urlencode(referrer, NnStringUtil.ASCII);
+        url += "&redirect_uri=" + NnStringUtil.urlencode(modifiedRedirectUri, NnStringUtil.ASCII);
         log.info("url = " + url);
+        
         return url;
     }
-
+    
     public String[] getFanpageInfo(String urlStr) {
         String query = urlStr.replace("www.facebook.com", "graph.facebook.com");
         query = query.replace("https", "http");
@@ -289,14 +286,14 @@ public class FacebookLib {
         
         URL url = new URL("https://graph.facebook.com/" + fbPost.getFacebookId() + "/feed");
         String post =
-            "access_token=" + URLEncoder.encode(accessToken, "US-ASCII") +
-            "&picture=" + URLEncoder.encode(fbPost.getPicture(), "US-ASCII") +
-            "&name=" + URLEncoder.encode(fbPost.getName(), "UTF-8") +
-            "&link=" + URLEncoder.encode(fbPost.getLink(), "US-ASCII")+
-            "&caption=" + URLEncoder.encode(fbPost.getCaption(), "UTF-8") +
-            "&description=" + URLEncoder.encode(fbPost.getDescription(), "UTF-8");
+            "access_token=" + NnStringUtil.urlencode(accessToken, NnStringUtil.ASCII) +
+            "&picture=" + NnStringUtil.urlencode(fbPost.getPicture(), NnStringUtil.ASCII) +
+            "&name=" + NnStringUtil.urlencode(fbPost.getName()) +
+            "&link=" + NnStringUtil.urlencode(fbPost.getLink(), NnStringUtil.ASCII)+
+            "&caption=" + NnStringUtil.urlencode(fbPost.getCaption()) +
+            "&description=" + NnStringUtil.urlencode(fbPost.getDescription());
         if (fbPost.getMessage() != null && !fbPost.getMessage().isEmpty()) {
-            post += "&message=" + URLEncoder.encode(fbPost.getMessage(), "UTF-8");
+            post += "&message=" + NnStringUtil.urlencode(fbPost.getMessage());
         }
         log.info(post);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -343,7 +340,7 @@ public class FacebookLib {
         try {
             String fullpath = 
                     "https://graph.facebook.com/" + fbUserId + 
-                    "/accounts?type=page&access_token=" + URLEncoder.encode(accessToken, "US-ASCII");
+                    "/accounts?type=page&access_token=" + NnStringUtil.urlencode(accessToken, NnStringUtil.ASCII);
             log.info(fullpath);
             URL url = new URL(fullpath);
             ObjectMapper mapper = new ObjectMapper();
