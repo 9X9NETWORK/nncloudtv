@@ -71,6 +71,7 @@ import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.ApiStatus;
+import com.nncloudtv.web.json.player.Category;
 import com.nncloudtv.web.json.player.ChannelLineup;
 import com.nncloudtv.web.json.player.PlayerChannelLineup;
 import com.nncloudtv.web.json.player.PlayerProgramInfo;
@@ -457,18 +458,30 @@ public class PlayerApiService {
         		}
         	}
          }
-        
+
+        List<Category> playerCategories = new ArrayList<Category>();
         for (SysTagDisplay display : categories) {
+        	String cId = String.valueOf(display.getId());
+        	String name = display.getName();
+        	int cntChannel = display.getCntChannel();
             String subItemHint = "ch"; //what's under this level
-            String[] str = {String.valueOf(display.getId()), 
-                            display.getName(), 
-                            String.valueOf(display.getCntChannel()), 
-                            subItemHint};                
-            result[1] += NnStringUtil.getDelimitedStr(str) + "\n";
+        	if (format == PlayerApiService.FORMAT_PLAIN) {
+	            String[] str = {cId, 
+	                            name, 
+	                            String.valueOf(cntChannel), 
+	                            subItemHint};                
+	            result[1] += NnStringUtil.getDelimitedStr(str) + "\n";
+        	} else {
+        		Category playerCategory = new Category();
+        		playerCategory.setId(id);
+        		playerCategory.setName(name);
+        		playerCategory.setNextLevel(subItemHint);
+        		playerCategories.add(playerCategory);
+        	}
         }
                          
         //flatten result process
-        if (id.equals("0") && flatten) {
+        if (id.equals("0") && flatten && format == PlayerApiService.FORMAT_PLAIN) {
         	log.info("return flatten data");
             List<String> flattenResult = new ArrayList<String>();
             flattenResult.add(result[0]);
@@ -476,7 +489,10 @@ public class PlayerApiService {
             String size[] = new String[flattenResult.size()];
             return this.assembleMsgs(NnStatusCode.SUCCESS, flattenResult.toArray(size));
         } else {
-            return this.assembleMsgs(NnStatusCode.SUCCESS, result);            
+        	if (format == PlayerApiService.FORMAT_PLAIN)
+        		return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        	else
+        		return this.assembleMsgs(NnStatusCode.SUCCESS, playerCategories);
         }
     }
      
