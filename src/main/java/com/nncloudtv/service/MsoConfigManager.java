@@ -119,7 +119,7 @@ public class MsoConfigManager {
         isQueueEnabled(true);
     }
 
-    public static boolean getBooleanValueFromCache(String key, boolean cacheReset) {
+    public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
         try {        
             String result = (String)CacheFactory.get(cacheKey);        
@@ -139,12 +139,12 @@ public class MsoConfigManager {
         return value;
     }
         
-    public static boolean isInReadonlyMode(boolean cacheReset) {
-        return MsoConfigManager.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
+    public boolean isInReadonlyMode(boolean cacheReset) {
+        return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
     }
         
-    public static boolean isQueueEnabled(boolean cacheReset) {
-        boolean status = MsoConfigManager.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
+    public boolean isQueueEnabled(boolean cacheReset) {
+        boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
         return status;     
     }
     

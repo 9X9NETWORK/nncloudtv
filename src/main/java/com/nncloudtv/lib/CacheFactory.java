@@ -31,6 +31,7 @@ public class CacheFactory {
     public static final int HEALTH_CHECK_INTERVAL = 100000; // milliseconds
     public static final String ERROR = "ERROR";
     
+    public static boolean isEnabled = true;
     public static boolean isRunning = true;
     private static long lastCheck = 0;
     private static List<InetSocketAddress> memcacheServers = null;
@@ -80,7 +81,7 @@ public class CacheFactory {
     public static MemcachedClient getClient() {
         
         try {
-            if (isRunning) {
+            if (isRunning && isEnabled) {
                 
                 return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
             }
@@ -144,7 +145,8 @@ public class CacheFactory {
     
     public static Object get(String key) {
         
-        if (key == null || key.isEmpty()) return null;
+        if (!isEnabled || key == null || key.isEmpty()) return null;
+        
         long now = new Date().getTime();
         if (now - lastCheck > HEALTH_CHECK_INTERVAL) {
             lastCheck = now;
@@ -182,7 +184,8 @@ public class CacheFactory {
     
     public static Object set(String key, Object obj) {
         
-        if (!isRunning || key == null || key.isEmpty()) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
+        
         long now = new Date().getTime();
         MemcachedClient cache = getClient();
         if (cache == null) return null;
@@ -217,8 +220,9 @@ public class CacheFactory {
     
     public static void delete(String key) {
         
+        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
+        
         boolean isDeleted = false;
-        if (!isRunning || key == null || key.isEmpty()) return;
         long now = new Date().getTime();
         MemcachedClient cache = getClient();
         if (cache == null) return;

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -23,6 +24,18 @@ public class MsoManager {
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
     private MsoDao msoDao = new MsoDao();    
+    private MsoConfigManager configMngr;
+    
+    @Autowired
+    public MsoManager(MsoConfigManager configMngr) {
+        
+        this.configMngr = configMngr;
+    }
+    
+    public MsoManager() {
+        
+        this.configMngr = new MsoConfigManager();
+    }
 
     public Mso findOneByName(String name) {
         if (name == null)
@@ -83,7 +96,6 @@ public class MsoManager {
     }
     
     private String composeBrandInfoStr(Mso mso) {
-        MsoConfigManager configMngr = new MsoConfigManager();
         
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));

@@ -485,9 +485,8 @@ public class PlayerApiController {
         String path = "/playerAPI/pdrServer";
         PlayerApiService playerApiService = new PlayerApiService();
         playerApiService.prepService(req, resp, false);
-        ApiContext ctx = new ApiContext(req);
         
-        if (ctx.isProductionSite()) {
+        if (playerApiService.isProductionSite()) {
             
             try {
                 String urlStr = pdrServer + path;
@@ -497,7 +496,7 @@ public class PlayerApiController {
                  "&session=" + session +
                  "&pdr=" + URLEncoder.encode("" + pdr, "UTF-8") +                     
                  "&rx=" + rx +
-                 "&mso=" + ctx.getMso().getName();
+                 "&mso=" + playerApiService.getMso().getName();
                 //log.info(urlStr + "?" + params);
                 
                 URL url = new URL(urlStr);
@@ -2157,7 +2156,7 @@ public class PlayerApiController {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerapiservice.prepservice(req, resp, true);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
             output = playerApiService.quickLogin(token, email, password, req, resp);
@@ -2482,7 +2481,8 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        String appDomain = (req.isSecure() ? "https://" : "http://") + new ApiContext(req).getAppDomain();
+        ApiContext context = new ApiContext(req);
+        String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("uri:" + referrer);
         

@@ -70,14 +70,16 @@ public class ApiContent extends ApiGeneric {
     private NnChannelManager channelMngr;
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
+    private NnUserManager userMngr;
     
     @Autowired
     public ApiContent(ApiContentService apiContentService, NnChannelManager channelMngr, StoreService storeService,
-                NnChannelPrefManager channelPrefMngr) {
+                NnChannelPrefManager channelPrefMngr, NnUserManager userMngr) {
         this.apiContentService = apiContentService;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
+        this.userMngr = userMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -1271,7 +1273,7 @@ public class ApiContent extends ApiGeneric {
         }
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Long categoryId = null;
@@ -1308,7 +1310,7 @@ public class ApiContent extends ApiGeneric {
         
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         StoreService storeServ = new StoreService();

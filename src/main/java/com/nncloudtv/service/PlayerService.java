@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
 import com.nncloudtv.lib.CookieHelper;
@@ -40,6 +41,25 @@ public class PlayerService {
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
     public static final String META_FAVICON = "favicon";
     
+    private NnUserManager userMngr;
+    private MsoConfigManager configMngr;
+    private MsoManager msoMngr;
+    
+    @Autowired
+    public PlayerService(NnUserManager userMngr, MsoConfigManager configMngr, MsoManager msoMngr) {
+        
+        this.userMngr = userMngr;
+        this.configMngr = configMngr;
+        this.msoMngr = msoMngr;
+    }
+    
+    public PlayerService() {
+        
+        this.userMngr = new NnUserManager();
+        this.configMngr = new MsoConfigManager();
+        this.msoMngr = new MsoManager();
+    }
+    
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
         if (msoName != null) {
             msoName = msoName.toLowerCase();
@@ -48,10 +68,8 @@ public class PlayerService {
         }
         
         // bind favicon
-        MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.findByName(msoName);
-        MsoConfigManager msoConfigMngr = new MsoConfigManager();
-        MsoConfig item = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        MsoConfig item = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (item != null && item.getValue() != null && item.getValue().isEmpty() == false) {
             model.addAttribute(META_FAVICON, "<link rel=\"icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>" +
                 "<link rel=\"shortcut icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>");
@@ -317,7 +335,7 @@ public class PlayerService {
         if (jsp != null && jsp.length() > 0) {
             log.info("alternate is enabled: " + jsp);
         }
-        model.addAttribute("locale", NnUserManager.findLocaleByHttpRequest(req));
+        model.addAttribute("locale", userMngr.findLocaleByHttpRequest(req));
         return model;
     }
 
@@ -412,7 +430,7 @@ public class PlayerService {
                 model.addAttribute(META_NAME, this.prepareFb(c.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
                 model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));  
-
+                
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
                     NnEpisodeManager episodeMngr = new NnEpisodeManager(); 

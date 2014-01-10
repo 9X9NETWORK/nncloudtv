@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -85,9 +86,12 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());    
     
-    private NnUserManager userMngr = new NnUserManager();    
-    private MsoManager msoMngr = new MsoManager();
-    private NnChannelManager chMngr = new NnChannelManager();
+    private NnUserProfileManager profileMngr;
+    private MsoConfigManager configMngr;
+    private NnUserManager userMngr;    
+    private MsoManager msoMngr;
+    private NnChannelManager chMngr;
+    private NnUserPrefManager prefMngr;
     private Locale locale = Locale.ENGLISH;
     private Mso mso;
     private int version = 32;
@@ -96,39 +100,64 @@ public class PlayerApiService {
     private short format = FORMAT_JSON;
     private HttpServletRequest req;
     private HttpServletResponse resp;
+    private ApiContext context = null;
+    
+    public PlayerApiService() {
+        configMngr = new MsoConfigManager();
+        userMngr = new NnUserManager();
+        msoMngr = new MsoManager();
+        chMngr = new NnChannelManager();
+        prefMngr = new NnUserPrefManager();
+        profileMngr = new NnUserProfileManager();
+    }
+    
+    @Autowired
+    public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
+            NnChannelManager chMngr, MsoConfigManager configMngr,
+            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr) {
+        
+        this.prefMngr = prefMngr;
+        this.configMngr = configMngr;
+        this.userMngr = userMngr;
+        this.msoMngr = msoMngr;
+        this.chMngr = chMngr;
+        this.profileMngr = profileMngr;
+    }
+    
+    public int prepService(HttpServletRequest req, HttpServletResponse resp) {
+        
+        return prepService(req, resp, true);
+    }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp, boolean toLog) {
+
 		this.req = req;
 		this.resp = resp;
-        String returnFormat = req.getParameter("format");
+        String returnFormat = this.req.getParameter("format");
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
         	this.format = FORMAT_PLAIN;
         }
-        String msoName = this.req.getParameter("mso");
-        if (toLog) 
-            NnNetUtil.logUrl(this.req);
         HttpSession session = this.req.getSession();
         session.setMaxInactiveInterval(60);
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.getByNameFromCache(msoName);
-        if (mso == null) {
-            mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);;
-        }
-        log.info("mso entrance:" + mso.getId());
-        Locale locale = Locale.ENGLISH; //??
-        this.locale = locale; //??
-        this.mso = mso;
-        int status = checkRO();
-        String version = (this.req.getParameter("v") == null) ? "31" : this.req.getParameter("v");
-        int intVersion = Integer.parseInt(version);
-        log.info("version = " + intVersion);
-        int minimal = checkApiMinimal();
-        this.version = Integer.parseInt(version);
-        if (intVersion < minimal)
-            status = NnStatusCode.API_FORCE_UPGRADE;
-        return status;                
+
+        if (toLog) 
+            NnNetUtil.logUrl(this.req);
+
+        context = new ApiContext(this.req, msoMngr);
+        this.locale  = context.getLocale();
+        this.mso     = context.getMso();
+        this.version = context.getVersion();
+        log.info("mso entrance: " + mso.getId());
+
+        if (this.version < checkApiMinimal())
+            return NnStatusCode.API_FORCE_UPGRADE;
+        else
+            return checkRO();                
     }
     
+    public int getVersion() {
+        return version;
+    }
     public Object response(Object output) {
     	if (this.format == FORMAT_PLAIN) {
             try {
@@ -156,7 +185,7 @@ public class PlayerApiService {
 
     public long addMsoInfoVisitCounter(boolean readOnly) {
         if (!readOnly) {
-            if (MsoConfigManager.isQueueEnabled(true)) {
+            if (configMngr.isQueueEnabled(true)) {
                 //new QueueMessage().fanout("localhost",QueueMessage.VISITOR_COUNTER, null);
             } else {
                 log.info("quque not enabled");
@@ -344,7 +373,7 @@ public class PlayerApiService {
     }
     
     public int checkRO() {
-        MsoConfigManager configMngr = new MsoConfigManager();
+        
         MsoConfig config = configMngr.findByItem(MsoConfig.RO);
         if (config != null && config.getValue().equals("1"))            
             return NnStatusCode.DATABASE_READONLY;
@@ -352,7 +381,7 @@ public class PlayerApiService {
     }
     
     public int checkApiMinimal() {
-        MsoConfigManager configMngr = new MsoConfigManager();
+        
         MsoConfig config = configMngr.findByItem(MsoConfig.API_MINIMAL);  
         if (config == null)
         	return 0;
@@ -518,7 +547,7 @@ public class PlayerApiService {
     }    
 
     public String findLocaleByHttpRequest(HttpServletRequest req) {
-        String locale = NnUserManager.findLocaleByHttpRequest(req);
+        String locale = userMngr.findLocaleByHttpRequest(req);
         return locale;
     }
     
@@ -1474,7 +1503,6 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);        
         if (user.getUserEmail().equals(NnUser.GUEST_EMAIL))
             return this.assembleMsgs(NnStatusCode.USER_PERMISSION_ERROR, null);
-        NnUserProfileManager profileMngr = new NnUserProfileManager();
         NnUserProfile profile = profileMngr.findByUser(user);
         if (profile == null) profile = new NnUserProfile(user.getId(), mso.getId());
         String[] key = items.split(",");
@@ -3102,6 +3130,22 @@ public class PlayerApiService {
         String programStr = (String)programMngr.findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
         result[3] = programStr;        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
+    }
+    
+    public String getAppDomain() {
+        
+        if (context == null)
+            return null;
+        
+        return context.getAppDomain();
+    }
+    
+    public Boolean isProductionSite() {
+        
+        if (context == null)
+            return null;
+        
+        return context.isProductionSite();
     }
     
     /*

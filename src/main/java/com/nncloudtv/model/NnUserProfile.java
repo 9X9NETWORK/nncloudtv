@@ -7,9 +7,6 @@ import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
-import javax.servlet.http.HttpServletRequest;
-
-import com.nncloudtv.service.NnUserManager;
 
 @PersistenceCapable(table="nnuser_profile", detachable="true")
 public class NnUserProfile implements Serializable {
@@ -103,13 +100,6 @@ public class NnUserProfile implements Serializable {
     public NnUserProfile() {       
     }
     
-    public NnUserProfile(HttpServletRequest req) {
-        String sphere = NnUserManager.findLocaleByHttpRequest(req);
-        this.sphere = sphere;
-        this.lang = sphere;
-        this.updateDate = new Date();
-    }
-
     public NnUserProfile(long userId, long msoId) {
         this.userId = userId;
         this.msoId = msoId;
