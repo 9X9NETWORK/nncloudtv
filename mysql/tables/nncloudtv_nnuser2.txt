@@ -1,0 +1,6 @@
+nnguest
+nnuser
+nnuser_pref
+nnuser_profile
+nnuser_subscribe
+nnuser_watched
