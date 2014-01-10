@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NnStringUtil;
@@ -22,6 +23,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.web.json.facebook.FBPost;
 
+@Service
 public class NnEpisodeManager {
     
     protected static final Logger log = Logger.getLogger(NnEpisodeManager.class.getName());
@@ -148,6 +150,20 @@ public class NnEpisodeManager {
         return new NnEpisodeSeqComparator();
     }
     
+    public Comparator<NnEpisode> getEpisodeReverseSeqComparator() {
+        
+        class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
+            
+            public int compare(NnEpisode episode1, NnEpisode episode2) {
+                
+                return (episode2.getSeq() - episode1.getSeq());
+                
+            }
+        }
+        
+        return new NnEpisodeSeqComparator();
+    }
+    
     public void reorderChannelEpisodes(long channelId) {
         
         List<NnEpisode> episodes = findByChannelId(channelId);
@@ -229,19 +245,12 @@ public class NnEpisodeManager {
             return ;
         }
         
-        MessageSource messageSource = new ClassPathXmlApplicationContext("locale.xml");
-        if (user.getProfile().getLang() != null && user.getProfile().getLang().equals("zh")) {
-            //fbPost.setCaption("Published an episode on 9x9.tv");
-            fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.TRADITIONAL_CHINESE));
-        } else {
-            //fbPost.setCaption("已在9x9.tv發佈節目");
-            fbPost.setCaption(messageSource.getMessage("cms.autosharing.episode_added", null, Locale.US));
-        }
-        
         NnChannelPrefManager prefMngr = new NnChannelPrefManager();
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;
+	
+	fbPost.setCaption(" ");
         
         for (NnChannelPref pref : prefList) {
             parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
@@ -258,6 +267,23 @@ public class NnEpisodeManager {
         log.info("episode.getName():"+episode.getName());
         log.info("fbPost.getName():"+fbPost.getName());
         log.info(fbPost.toString());
+    }
+    
+    /** adapt NnEpisode to format that CMS API required */
+    public void normalize(NnEpisode episode) {
+        if (episode != null) {
+            episode.setName(NnStringUtil.revertHtml(episode.getName()));
+            episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
+        }
+    }
+    
+    /** adapt NnEpisode to format that CMS API required */
+    public void normalize(List<NnEpisode> episodes) {
+        if (episodes != null) {
+            for (NnEpisode episode : episodes) {
+                normalize(episode);
+            }
+        }
     }
     
 }
