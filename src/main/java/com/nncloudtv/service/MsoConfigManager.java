@@ -27,6 +27,8 @@ public class MsoConfigManager {
     static MsoConfigDao configDao = new MsoConfigDao();
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
+    protected static String serverDomain = null; 
+    
     static String getProperty(String propertyFile, String propertyName) {
         
         Properties properties = new Properties();
@@ -40,7 +42,7 @@ public class MsoConfigManager {
         }
         return result;
     }
-
+    
     static public String getSearchServer() {
     	return getProperty("services.properties", "search");
     }
@@ -57,7 +59,10 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("facebook.properties", "server_domain");
+        if (serverDomain == null) {
+            serverDomain = getProperty("facebook.properties", "server_domain");
+        }
+        return serverDomain;
     }
         
     static public String getFacebookAppToken() {        
@@ -131,7 +136,7 @@ public class MsoConfigManager {
             log.info("memcache error");
         }
         boolean value = false;
-        MsoConfig config = new MsoConfigDao().findByItem(key);
+        MsoConfig config = configDao.findByItem(key);
         if (config != null) {
             CacheFactory.set(cacheKey, config.getValue());
             value = NnStringUtil.stringToBool(config.getValue());
@@ -210,8 +215,7 @@ public class MsoConfigManager {
             return "";
         }
         
-        String systemCategoryMask = StringUtils.join(systemCategoryLocks, ",");
-        return systemCategoryMask;
+        return StringUtils.join(systemCategoryLocks, ",");
     }
     
     public static List<String> verifySystemCategoryLocks(List<String> systemCategoryLocks) {

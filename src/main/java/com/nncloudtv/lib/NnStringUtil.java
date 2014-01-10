@@ -151,14 +151,13 @@ public class NnStringUtil {
         if (str == null || str.length() == 0) {
             return str;
         }
-        log.info("max length = " + length);
         
         for (int i = length; i > 0; i--) {
             String truncated = truncateUTF8(str, i);
             String htmlSafe = htmlSafeChars(truncated);
             Integer bytelen = htmlSafe.getBytes(Charset.forName("UTF-8")).length;
             if (bytelen <= length) {
-                log.info("truncated length = " + bytelen);
+                log.info("truncated length = " + bytelen + " bytes (limit is " + length + ")");
                 return htmlSafe;
             }
         }
