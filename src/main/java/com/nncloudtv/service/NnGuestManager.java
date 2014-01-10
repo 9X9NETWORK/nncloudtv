@@ -46,7 +46,7 @@ public class NnGuestManager {
     }
     
     public Object getPlayerGuestRegister(NnGuest guest, short format, HttpServletRequest req) {
-        String sphere = NnUserManager.findLocaleByHttpRequest(req);
+        String sphere = userMngr.findLocaleByHttpRequest(req);
     	if (format == PlayerApiService.FORMAT_PLAIN) {
             String[] result = {""};
             result[0] += PlayerApiService.assembleKeyValue("token", guest.getToken());

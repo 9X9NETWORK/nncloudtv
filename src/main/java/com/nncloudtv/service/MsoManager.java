@@ -76,11 +76,6 @@ public class MsoManager {
             */
         return mso;
     }
-    /*
-    public void processCache() {
-        this.getBrandInfoCache(true);
-    }
-    */
     
     public Mso findNNMso() {
         List<Mso> list = this.findByType(Mso.TYPE_NN);

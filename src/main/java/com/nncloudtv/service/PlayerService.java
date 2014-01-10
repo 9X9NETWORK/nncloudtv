@@ -23,7 +23,6 @@ import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
-import com.nncloudtv.web.api.ApiContext;
 
 public class PlayerService {
     
@@ -122,45 +121,6 @@ public class PlayerService {
         return "player/ios";
     }
     
-    //name has to be processed by getBrandName first    
-    public Model getTransitionModel(Model model, String name, HttpServletRequest req) {
-    	boolean isIos = this.isIos(req);    	
-    	boolean isAndroid = this.isAndroid(req);
-    	if (!isIos && !isAndroid)
-    		return null;
-    	String androidNnStoreUrl = "market://details?id=tv.tv9x9.player";
-    	String androidCtsStoreUrl = "market://details?id=tw.com.cts.player";
-    	String iosNnStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";
-    	String iosCtsStoreUrl = "https://itunes.apple.com/app/hua-shi-yun-duan-dian-shi-wang/id623085456?mt=8";    	
-    	String storeUrl = androidNnStoreUrl;
-    	String ch = "0";
-    	String ep = "0";
-    	//report url
-    	String reportUrl = this.getGAReportUrl(ch, ep, name);
-    	log.info("reportUrl:" + reportUrl); 
-    	//flipr url
-        String fliprStr = "flipr://";
-        if (name.equals(Mso.NAME_CTS))
-        	fliprStr = "flipr-cts://";
-        //store url
-        if (isIos) {
-        	storeUrl = iosNnStoreUrl;
-	    	if (name.equals(Mso.NAME_CTS)) {
-	    		storeUrl = iosCtsStoreUrl;
-	    	}
-        }
-        if (isAndroid) {
-        	storeUrl = androidNnStoreUrl;
-	    	if (name.equals(Mso.NAME_CTS)) {
-	    		storeUrl = androidCtsStoreUrl;
-	    	}
-        }
-    	model.addAttribute("name", name);
-        model.addAttribute("fliprUrl", fliprStr);    	
-    	model.addAttribute("reportUrl", reportUrl);
-    	model.addAttribute("storeUrl", storeUrl);
-    	return model;
-    }
     //http://www.9x9.tv/flview?ch=572&ep=pVf0dc15igo&fb_action_ids=10151150850017515%2C10151148373067515%2C10151148049832515%2C10151148017797515%2C10151140220097515&fb_action_types=og.likes&fb_source=other_multiline&action_object_map=%7B%2210151150850017515%22%3A369099836508025%2C%2210151148373067515%22%3A518842601477880%2C%2210151148049832515%22%3A486192988067672%2C%2210151148017797515%22%3A374063942680087%2C%2210151140220097515%22%3A209326199200849%2C%2210151140216042515%22%3A361904300567180%7D
     //to flipr://www.9x9.tv/view?ch=572&ep=pVf0dc15igo                    
     public String getFliprUrl(String cid, String pid, String mso, HttpServletRequest req) {
@@ -176,7 +136,7 @@ public class PlayerService {
         log.info("flipr url:" + iosStr);
         return iosStr;
     }
-
+    
     public String getGAReportUrl(String ch, String ep, String mso) {
     	String reportUrl = "/promotion";
     	if (ch != null) {
@@ -212,26 +172,6 @@ public class PlayerService {
         return url;
     }
     
-    public boolean isIos(HttpServletRequest req) {
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        log.info("user agent:" + userAgent);
-        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
-            log.info("request from ios");
-            return true;            
-        }        
-        return false;
-    }
-
-    public boolean isAndroid(HttpServletRequest req) {
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        log.info("user agent:" + userAgent);
-        if (userAgent.contains("Android")) {
-            log.info("request from Android");
-            return true;            
-        }        
-        return false;
-    }
-        
     //it is likely for old ios app who doesn't know about episdoe
     public String findFirstSubepisodeId(String eId) {
         if (eId != null && eId.matches("e[0-9]+")) {

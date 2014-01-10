@@ -69,6 +69,7 @@ import com.nncloudtv.model.UserInvite;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.validation.BasicValidator;
 import com.nncloudtv.validation.NnUserValidator;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.ApiStatus;
@@ -91,10 +92,9 @@ public class PlayerApiService {
     private NnUserManager userMngr;    
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
-    private NnUserPrefManager prefMngr;
-    private Locale locale = Locale.ENGLISH;
     private Mso mso;
     private int version = 32;
+    private Locale locale = Locale.ENGLISH;
     public static short FORMAT_JSON = 1;
     public static short FORMAT_PLAIN = 2;
     private short format = FORMAT_JSON;
@@ -107,8 +107,6 @@ public class PlayerApiService {
         userMngr = new NnUserManager();
         msoMngr = new MsoManager();
         chMngr = new NnChannelManager();
-        prefMngr = new NnUserPrefManager();
-        profileMngr = new NnUserProfileManager();
     }
     
     @Autowired
@@ -116,7 +114,6 @@ public class PlayerApiService {
             NnChannelManager chMngr, MsoConfigManager configMngr,
             NnUserPrefManager prefMngr, NnUserProfileManager profileMngr) {
         
-        this.prefMngr = prefMngr;
         this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
@@ -133,7 +130,7 @@ public class PlayerApiService {
 
 		this.req = req;
 		this.resp = resp;
-        String returnFormat = this.req.getParameter("format");
+        String returnFormat = req.getParameter("format");
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
         	this.format = FORMAT_PLAIN;
         }
@@ -155,9 +152,10 @@ public class PlayerApiService {
             return checkRO();                
     }
     
-    public int getVersion() {
-        return version;
+    public Mso getMso() {
+        return mso;
     }
+    
     public Object response(Object output) {
     	if (this.format == FORMAT_PLAIN) {
             try {
@@ -525,16 +523,15 @@ public class PlayerApiService {
         }
     }
      
-    public Object brandInfo(HttpServletRequest req) {
-    	PlayerService service = new PlayerService();
+    public Object brandInfo() {
     	String os = "";
-    	if (service.isAndroid(req)) {
+    	if (context.isAndroid()) {
     		os = "android";
     	}
-    	if (service.isIos(req)) {
+    	if (context.isIos()) {
     		os = "ios";
     	}
-        boolean readOnly = MsoConfigManager.isInReadonlyMode(false);
+        boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
@@ -1102,7 +1099,7 @@ public class PlayerApiService {
     @SuppressWarnings("unchecked")
 	public Object programInfo(String channelIds, String episodeIds, 
                                   String userToken, String ipgId,
-                                  boolean userInfo, String sidx, String limit, HttpServletRequest req) {
+                                  boolean userInfo, String sidx, String limit) {
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {           
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
@@ -1144,7 +1141,7 @@ public class PlayerApiService {
         } else {
             if (version < 32) {                
                 programInfoStr = new IosService().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), sidxL, limitL);
-                if (programInfoStr != null && new PlayerService().isIos(req)) {
+                if (programInfoStr != null && context.isIos()) {
                     String[] lines = programInfoStr.split("\n");
                     String debugStr = "";
                     if (lines.length > 0) {
@@ -1609,14 +1606,13 @@ public class PlayerApiService {
     
     public Object shareByEmail(String userToken, String toEmail, String toName, 
             String subject, String content, 
-            String captcha, String text,
-            HttpServletRequest req) {        
+            String captcha, String text) {        
         @SuppressWarnings("rawtypes")
         HashMap map = this.checkUser(userToken, false);
         if ((Integer)map.get("s") != NnStatusCode.SUCCESS) {
             return this.assembleMsgs((Integer)map.get("s"), null);
         }
-        boolean isIos = new PlayerService().isIos(req);
+        boolean isIos = context.isIos();
         if (!isIos) {
         	if (captcha == null || text == null)
         		return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);

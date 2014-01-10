@@ -47,11 +47,11 @@ public class PlayerController {
             @RequestParam(value="jsp",required=false) String jsp,
             @RequestParam(value="js",required=false) String js) {
         try {
-        	PlayerService service = new PlayerService();
-        	if (service.isAndroid(req) || service.isIos(req)) {
+            ApiContext context = new ApiContext(req);
+        	if (context.isAndroid() || context.isIos()) {
         	    return "redirect:/mobile/";
         	}
-        	ApiContext context = new ApiContext(req);
+        	PlayerService service = new PlayerService();
         	Mso brand = context.getMso();
         	if (brand.getType() == Mso.TYPE_FANAPP) {
         		//below, merge with view
@@ -213,7 +213,7 @@ public class PlayerController {
         String cid = channel != null ? channel : ch;
         String pid = episode != null ? episode : ep;
                 
-        if (service.isAndroid(req) || service.isIos(req)) {
+        if (context.isAndroid() || context.isIos()) {
             String mobilePromotionUrl = "http://" + context.getAppDomain()
                                       + "/mobile/#/playback/" + cid
                                       + (pid == null ? "" : "/" + pid);
@@ -276,13 +276,14 @@ public class PlayerController {
                        @RequestParam(value="ep", required=false) String ep) {
         PlayerService service = new PlayerService();
         try {
+            ApiContext context = new ApiContext(req);
             String queryStr = req.getQueryString();
             log.info("query str:" + queryStr);
             if (queryStr != null && queryStr.contains("fb")) {
                 log.info("extra stuff from fb" + queryStr);
                 String cid = channel != null ? channel : ch;
                 String pid = episode != null ? episode : ep;
-                boolean isIos = service.isIos(req);
+                boolean isIos = context.isIos();
                 if (isIos) {
                     //pid = service.findFirstSubepisodeId(pid);
                     String iosStr = service.getFliprUrl(cid, pid, mso, req);

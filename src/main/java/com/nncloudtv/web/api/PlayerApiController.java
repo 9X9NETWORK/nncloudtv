@@ -361,7 +361,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                    
-            output = playerApiService.brandInfo(req);
+            output = playerApiService.brandInfo();
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1069,7 +1069,7 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }         
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, req);
+            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1636,7 +1636,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));       
             }            
-            output = playerApiService.shareByEmail(userToken, toEmail, toName, subject, content, captcha, text, req);
+            output = playerApiService.shareByEmail(userToken, toEmail, toName, subject, content, captcha, text);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -2156,7 +2156,7 @@ public class PlayerApiController {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerapiservice.prepservice(req, resp, true);
+            int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
             output = playerApiService.quickLogin(token, email, password, req, resp);

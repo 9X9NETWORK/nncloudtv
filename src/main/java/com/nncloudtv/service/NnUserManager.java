@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserDao;
@@ -37,10 +38,22 @@ import com.nncloudtv.web.json.player.UserInfo;
 public class NnUserManager {
     
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
-        
+    
+    protected NnUserPrefManager prefMngr;
     private NnUserDao dao = new NnUserDao();
     private NnUserProfileManager profileMngr = new NnUserProfileManager();
     public static short MSO_DEFAULT = 1; 
+    
+    public NnUserManager() {
+        
+        this.prefMngr = new NnUserPrefManager();
+    }
+    
+    @Autowired
+    public NnUserManager(NnUserPrefManager prefMngr) {
+        
+        this.prefMngr = prefMngr;
+    }
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {
@@ -564,7 +577,7 @@ public class NnUserManager {
             String lastLogin = String.valueOf(profile.getUpdateDate().getTime());
             String sphere = profile.getSphere(); 
             if (profile.getSphere() == null)
-                sphere = NnUserManager.findLocaleByHttpRequest(req);
+                sphere = findLocaleByHttpRequest(req);
             String lang = profile.getLang();
             if (profile.getLang() == null)
                 lang = sphere;
@@ -603,7 +616,6 @@ public class NnUserManager {
 	            output += PlayerApiService.assembleKeyValue("curator", curator);
                 output += PlayerApiService.assembleKeyValue("created",created);
 	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
-	            NnUserPrefManager prefMngr = new NnUserPrefManager();
 	            List<NnUserPref> list = prefMngr.findByUser(user);
 	            for (NnUserPref pref : list) {
 	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());

@@ -1,9 +1,6 @@
 package com.nncloudtv.service;
 
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.servlet.http.HttpSession;
 
 import junit.framework.Assert;
@@ -44,59 +41,54 @@ public class PlayerApiServiceTest {
         
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();
-        mockUserMngr = new MockNnUserManager();
+        mockPrefMngr = new MockNnUserPrefManager();
+        mockUserMngr = new MockNnUserManager(mockPrefMngr);
         mockMsoMngr = new MockMsoManager();
         mockChMngr = new MockNnChannelManager();
         mockConfigMngr = new MockMsoConfigManager();
-        mockPrefMngr = new MockNnUserPrefManager();
         mockProfileMngr = new MockNnUserProfileManager();
         
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
         service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr, mockProfileMngr);
-        service.prepService(req);
+        service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }
 	 	 	
 	@Test
 	public void testBrandInfo() {
 	    
-	    String result = service.brandInfo(req);
+	    Object result = service.brandInfo();
 	    
-		Assert.assertTrue(result.contains("SUCCESS")); 
+		Assert.assertNotNull(result); 
 	}
 
 	@Test
 	public void testSetProfile() {
 	    
-	    String result = service.setUserProfile("mock-user-token-xxoo", "name,phone", "MockUser,7777777", req);
+	    Object result = service.setUserProfile("mock-user-token-xxoo", "name,phone", "MockUser,7777777", req);
 	    
-	    Assert.assertTrue(result.contains("SUCCESS")); 
+	    Assert.assertNotNull(result); 
 	}
 	
 	@Test
 	public void testLogin() {
 		String email = "a@a.com";
 		String password = "123456";
-		String loginStr = service.login(email, password, req, resp);
-		Assert.assertTrue(loginStr.contains("SUCCESS")); 
+		Object loginObj = service.login(email, password, req, resp);
+		
+		Assert.assertNotNull(loginObj); 
 	}
 
     @Test
     public void testQuickLogin() {
         String email = "a@a.com";
         String password = "123456";        
-        String userInfo = service.login(email, password, req, resp);
+        Object userInfo = service.login(email, password, req, resp);
         System.out.println(userInfo);
-        userInfo = "";
-        Pattern pattern = Pattern.compile(".*sphere\t((en|zh)).*", Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(userInfo);
-        if (matcher.matches()) {
-            System.out.println(matcher.group(1));
-        } else {
-            System.out.println("not Valid");
-        }
+        
+        Assert.assertNotNull(userInfo);
     }
 	
 }

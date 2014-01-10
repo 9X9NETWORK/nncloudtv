@@ -31,7 +31,7 @@ public class ApiContext {
     
     MsoManager msoMngr;
     
-    HttpServletRequest httpReqest;
+    HttpServletRequest httpReq;
     Locale locale;
     Integer version;
     String root;
@@ -69,10 +69,10 @@ public class ApiContext {
     private void init(HttpServletRequest req, MsoManager mngr) {
         
         msoMngr = (mngr == null) ? new MsoManager() : mngr;
-        httpReqest = req;
+        httpReq = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         
-        String lang = httpReqest.getParameter(ApiContext.PARAM_LANG);
+        String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
         if (LangTable.isValidLanguage(lang)) {
             locale = LangTable.getLocale(lang);
         } else {
@@ -80,7 +80,7 @@ public class ApiContext {
         }
         
         version = Integer.parseInt(ApiContext.DEFAULT_VERSION);
-        String versionStr = httpReqest.getParameter(PARAM_VERSION);
+        String versionStr = httpReq.getParameter(PARAM_VERSION);
         if (versionStr != null) {
             try {
                 version = Integer.parseInt(versionStr);
@@ -88,9 +88,9 @@ public class ApiContext {
             }
         }
         
-        root = NnNetUtil.getUrlRoot(httpReqest);
+        root = NnNetUtil.getUrlRoot(httpReq);
         
-        mso = msoMngr.getByNameFromCache(httpReqest.getParameter(ApiContext.PARAM_MSO));
+        mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
         if (mso == null) {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");
             String[] split = domain.split("\\.");
@@ -147,5 +147,25 @@ public class ApiContext {
         String remain = Joiner.on(".").join(splits);
         
         return MsoManager.isNNMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
+    }
+    
+    public boolean isAndroid() {
+        
+        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent.contains("Android")) {
+            log.info("request from Android");
+            return true;            
+        }        
+        return false;
+    }
+    
+    public boolean isIos() {
+        
+        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
+            log.info("request from ios");
+            return true;            
+        }        
+        return false;
     }
 }
