@@ -1,5 +1,6 @@
 package com.nncloudtv.lib;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -9,7 +10,9 @@ import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,8 +33,7 @@ public class SearchLib {
 	 * @return list of channel ids
 	 */
 	public static List<Long> search(String keyword, String content, String extra, boolean all, int start, int limit) {
-        String host = MsoConfigManager.getSearchServer();
-		SolrServer server = new HttpSolrServer(host);
+		SolrServer server = getSolrServer();
 		SolrQuery query = new SolrQuery();
 		String queryStr = "\"" + keyword + "\"";
 		query.set("defType", "edismax");
@@ -75,5 +77,27 @@ public class SearchLib {
 			e.printStackTrace();
 		}
 		return ids;		
+	}
+
+	private static SolrServer getSolrServer() {
+        String host = MsoConfigManager.getSearchServer();
+		SolrServer server = new HttpSolrServer(host);
+		return server;
+	}
+	
+	public static void solrUpdate(NnChannel c) {
+		SolrServer server = getSolrServer();		
+		SolrInputDocument doc = new SolrInputDocument();		
+		doc.addField("id", c.getId());
+		doc.addField("name", c.getName());		
+		try {
+			server.add(doc);
+			UpdateResponse upres = server.commit();
+			System.out.println(upres.getResponse());
+		} catch (SolrServerException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 }
