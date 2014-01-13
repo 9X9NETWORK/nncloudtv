@@ -265,7 +265,7 @@ public class PlayerService {
                 model.addAttribute(META_NAME, this.prepareFb(program.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(program.getIntro(), 1));
                 model.addAttribute(META_IMAGE, this.prepareFb(program.getImageUrl(), 2));
-                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getProgramPlaybackUrl("" + program.getChannelId(), pid), 3));
+                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getProgramPlaybackUrl(null, "" + program.getChannelId(), pid), 3));
             }
         } else if (pid.matches("e[0-9]+")){
             String eid = pid.replace("e", "");
@@ -350,7 +350,7 @@ public class PlayerService {
         return "";
     }
     
-    public Model prepareCrawled(Model model, String escaped) {
+    public Model prepareCrawled(Model model, String escaped, ApiContext context) {
         try {
             escaped = URLDecoder.decode(escaped, "UTF-8");
         } catch (UnsupportedEncodingException e) {
@@ -361,8 +361,28 @@ public class PlayerService {
         //-- determine channel and episode and set --
         String ch=null, ep=null, youtubeEp=null, landing=null;
         boolean episodeShare = false;
-        Pattern pattern = Pattern.compile("(ch=)(\\d+)");
+        Pattern pattern = Pattern.compile("^/playback/(\\d+)");
         Matcher m = pattern.matcher(escaped);
+        if (m.find()) {
+            ch = m.group(1);
+        }
+        pattern = Pattern.compile("^/playback/(\\d+)/(\\w+)");
+        m = pattern.matcher(escaped);
+        if (m.find()) {
+            ch = m.group(1);
+            youtubeEp = m.group(2);
+            episodeShare = true;
+        }
+        pattern = Pattern.compile("^/playback/(\\d+)/(e?\\d+)");
+        m = pattern.matcher(escaped);
+        if (m.find()) {
+            ch = m.group(1);
+            ep = m.group(2);
+            episodeShare = true;
+            youtubeEp = null;
+        }
+        pattern = Pattern.compile("(ch=)(\\d+)");
+        m = pattern.matcher(escaped);
         if (m.find()) {            
             ch = m.group(2);
         }
@@ -404,6 +424,8 @@ public class PlayerService {
             NnChannelManager channelMngr = new NnChannelManager();        
             NnChannel c = channelMngr.findById(Long.parseLong(ch));
             if (c != null) {
+                String sharingUrl = NnStringUtil.getProgramPlaybackUrl(context, ch, (ep == null ? youtubeEp : ep));
+                model.addAttribute(META_URL, this.prepareFb(sharingUrl, 3));
                 model.addAttribute(META_CHANNEL_TITLE, c.getName());
                 //in case not enough episode data, use channel for default  
                 model.addAttribute(META_EPISODE_TITLE, c.getName());
@@ -411,8 +433,7 @@ public class PlayerService {
                 model.addAttribute("crawlEpThumb1", c.getOneImageUrl());                
                 model.addAttribute(META_NAME, this.prepareFb(c.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
-                model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));  
-
+                model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
                     NnEpisodeManager episodeMngr = new NnEpisodeManager(); 

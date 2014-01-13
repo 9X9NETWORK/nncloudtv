@@ -11,6 +11,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelPrefManager;
+import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
@@ -210,10 +211,23 @@ public class NnStringUtil {
         return String.format("%08d", seq);
     }
     
-    public static String getProgramPlaybackUrl(String channelIdStr, String programIdStr) {
+    public static String getPlyaerPromotionUrl(ApiContext context,
+            String channelIdStr, String programIdStr) {
+        
+        return "http://"
+                + (context == null ? MsoConfigManager.getServerDomain()
+                        : context.getAppDomain()) + "/tv#/promotion/"
+                + channelIdStr
+                + (programIdStr == null ? "" : "/" + programIdStr);
+    }
     
-        return "http://" + MsoConfigManager.getServerDomain() + "/view?ch="
-                + channelIdStr + "&ep=" + programIdStr;
+    public static String getProgramPlaybackUrl(ApiContext context,
+            String channelIdStr, String programIdStr) {
+        
+        return "http://"
+                + (context == null ? MsoConfigManager.getServerDomain()
+                        : context.getAppDomain()) + "/view?ch=" + channelIdStr
+                + (programIdStr == null ? "" : "&ep=" + programIdStr);
     }
     
     public static String getSharingUrl(Long channelId, Long episodeId, String mso) {

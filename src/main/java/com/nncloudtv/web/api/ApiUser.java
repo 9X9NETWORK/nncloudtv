@@ -287,6 +287,7 @@ public class ApiUser extends ApiGeneric {
                 favorite.setCntView(program.getCntView());
                 favorite.setPublic(program.isPublic());
                 favorite.setPlaybackUrl(NnStringUtil.getProgramPlaybackUrl(
+                        null,
                         program.getStorageId(),
                         YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
                 
