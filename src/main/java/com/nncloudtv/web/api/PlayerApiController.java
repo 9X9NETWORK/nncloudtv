@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -139,6 +140,18 @@ public class PlayerApiController {
     protected static final Logger log = Logger.getLogger(PlayerApiController.class.getName());
     
     private Locale locale = Locale.ENGLISH;
+    private MsoManager msoMngr;
+    
+    public PlayerApiController() {
+        
+        this.msoMngr = new MsoManager();
+    }
+    
+    @Autowired
+    public PlayerApiController(MsoManager msoMngr) {
+        
+        this.msoMngr = msoMngr;
+    }
     
     /**
      * To be ignored  
@@ -2481,7 +2494,7 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        ApiContext context = new ApiContext(req);
+        ApiContext context = new ApiContext(req, msoMngr);
         String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("uri:" + referrer);
@@ -2492,7 +2505,7 @@ public class PlayerApiController {
         
         String fbLoginUri = appDomain + "/fb/login";
         String mso = req.getParameter("mso");
-        Mso brand = new MsoManager().findOneByName(mso);   
+        Mso brand = msoMngr.findOneByName(mso);   
         String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, brand);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);

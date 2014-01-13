@@ -57,18 +57,19 @@ public class ApiContext {
     @Autowired
     public ApiContext(HttpServletRequest req) {
         
-        init(req, new MsoManager());
+        msoMngr = new MsoManager();
+        init(req);
     }
     
     @Autowired
     public ApiContext(HttpServletRequest req, MsoManager mngr) {
         
-        init(req, mngr);
+        msoMngr = mngr;
+        init(req);
     }
     
-    private void init(HttpServletRequest req, MsoManager mngr) {
+    private void init(HttpServletRequest req) {
         
-        msoMngr = (mngr == null) ? new MsoManager() : mngr;
         httpReq = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         
@@ -89,7 +90,6 @@ public class ApiContext {
         }
         
         root = NnNetUtil.getUrlRoot(httpReq);
-        
         mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
         if (mso == null) {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");
@@ -98,8 +98,9 @@ public class ApiContext {
                 log.info("sub-domain = " + split[0]);
                 mso = msoMngr.findByName(split[0]);
             }
-            if (mso == null)
+            if (mso == null) {
                 mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);
+            }
         }
         
         log.info("language = " + locale.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);

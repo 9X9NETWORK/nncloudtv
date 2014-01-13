@@ -29,7 +29,7 @@ public class MsoConfigManager {
     
     protected static String serverDomain = null; 
     
-    static String getProperty(String propertyFile, String propertyName) {
+    protected static String getProperty(String propertyFile, String propertyName) {
         
         Properties properties = new Properties();
         String result = null;
@@ -66,7 +66,7 @@ public class MsoConfigManager {
     }
         
     static public String getFacebookAppToken() {        
-        return getProperty("facebook.properties", "facebook_app_token");
+        return getProperty("facebook.properties", "facebook_apptoken");
     }
     
     static public String getCrawlerDomain() {
@@ -82,16 +82,16 @@ public class MsoConfigManager {
     		return config.getValue(); 
     	}
     	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("facebook.properties", "facebook_client_id");
+    		return getProperty("facebook.properties", "facebook_clientid");
     	if (type == MsoConfig.FACEBOOK_APPTOKEN)
-    		return getProperty("facebook.properties", "facebook_app_token");
+    		return getProperty("facebook.properties", "facebook_apptoken");
     	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
     		return getProperty("facebook.properties", "facebook_client_secret");
     	return null;
     }
     
     static public String getFacebookClientId() {        
-        return getProperty("facebook.properties", "facebook_client_id");
+        return getProperty("facebook.properties", "facebook_clientid");
     }
     
     static public String getFacebookClientSecret() {

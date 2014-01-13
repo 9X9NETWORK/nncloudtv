@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -30,6 +31,13 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 public class FacebookLib {
     
     protected static final Logger log = Logger.getLogger(FacebookLib.class.getName());
+    
+    @Autowired
+    private static MsoConfigManager configMngr;
+    
+    public static void setConfigMngr(MsoConfigManager configMngr) {
+        FacebookLib.configMngr = configMngr;
+    }
     
     private static String generateState() {
         String time = String.valueOf(new Date().getTime());
@@ -204,7 +212,7 @@ public class FacebookLib {
     }
     
     public static String getDialogOAuthPath(String referrer, String fbLoginUri, Mso mso) {
-        MsoConfigManager configMngr = new MsoConfigManager();
+        
         String clientId = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
         
         String url = "http://www.facebook.com/dialog/oauth?" +

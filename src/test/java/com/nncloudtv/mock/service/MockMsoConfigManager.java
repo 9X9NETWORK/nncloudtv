@@ -73,4 +73,19 @@ public class MockMsoConfigManager extends MsoConfigManager {
         return null;
     }
     
+    @Override
+    public String getFacebookInfo(String type, Mso mso) {
+        
+        if (mso == null || type == null) {
+            return null;
+        }
+        if (type == MsoConfig.FACEBOOK_CLIENTID)
+            return getProperty("facebook.properties", "facebook_clientid");
+        if (type == MsoConfig.FACEBOOK_APPTOKEN)
+            return getProperty("facebook.properties", "facebook_apptoken");
+        if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
+            return getProperty("facebook.properties", "facebook_client_secret");
+        return null;
+    }
+    
 }

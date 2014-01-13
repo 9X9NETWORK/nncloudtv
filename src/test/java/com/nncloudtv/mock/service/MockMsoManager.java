@@ -19,7 +19,10 @@ public class MockMsoManager extends MsoManager {
     @Override
     public Mso findNNMso() {
         
-        return new Mso(Mso.NAME_9X9, "mock 9x9 mso", "mso@9x9.tv", Mso.TYPE_NN);
+        Mso nnMso = new Mso(Mso.NAME_9X9, "mock 9x9 mso", "mso@9x9.tv", Mso.TYPE_NN);
+        nnMso.setId(1);
+        
+        return nnMso;
     }
     
     @Override
@@ -33,6 +36,12 @@ public class MockMsoManager extends MsoManager {
         return null;
     }
     
+    @Override
+    public Mso findOneByName(String name) {
+        
+        return findNNMso();
+    }
+
     @Override
     public Mso getByNameFromCache(String name) {
         
