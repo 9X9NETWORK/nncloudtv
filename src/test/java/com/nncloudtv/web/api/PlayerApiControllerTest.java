@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.apache.http.NameValuePair;
@@ -49,7 +48,7 @@ public class PlayerApiControllerTest {
     @Test
     public void testFbLogin() {
         
-        String referrer = "http:www.mock.com/signin";
+        String referrer = "http://www.mock.com/signin";
         req.setRequestURI("/playerAPI/fbLogin");
         req.addHeader(ApiContext.HEADER_REFERRER, referrer);
         String result = playerAPI.fbLogin(req);
