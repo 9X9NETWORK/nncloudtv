@@ -33,7 +33,7 @@ public class FacebookLib {
     protected static final Logger log = Logger.getLogger(FacebookLib.class.getName());
     
     @Autowired
-    private static MsoConfigManager configMngr;
+    private static MsoConfigManager configMngr = new MsoConfigManager();
     
     public static void setConfigMngr(MsoConfigManager configMngr) {
         FacebookLib.configMngr = configMngr;
