@@ -1,3 +1,4 @@
+package com.nncloudtv.lib;
 import java.util.logging.Logger;
 
 import org.junit.Assert;
