@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -27,7 +26,6 @@ public class MsoManager {
     protected MsoConfigManager configMngr;
     protected NnChannelManager channelMngr;
     
-    @Autowired
     public MsoManager(MsoConfigManager configMngr,
             NnChannelManager channelMngr, MsoDao msoDao) {
         
