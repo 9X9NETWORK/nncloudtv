@@ -296,7 +296,7 @@ public class NnUserManager {
     }        
     
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
-        short shard= getShardByLocale(req); 
+        short shard = getShardByLocale(req);
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
         if (user != null) {
             user.setMsoId(msoId);
@@ -304,63 +304,13 @@ public class NnUserManager {
         }
         return user;
     }
-
-    public NnUser findAuthenticatedMsoUser(String email, String password, long msoId) {
-        NnUser user = dao.findAuthenticatedMsoUser(email.toLowerCase(), password, msoId);
-        user.setMsoId(msoId);
-        return dao.findAuthenticatedMsoUser(email.toLowerCase(), password, msoId);
-    }
     
-    public NnUser findMsoUser(Mso mso) {        
-        if (mso.getType() == Mso.TYPE_NN) {
-            return this.findNNUser();
-        } else if (mso.getType() == Mso.TYPE_MSO) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_TBC);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_MSO");
-                    return user;
-                }
-            }
-        } else if (mso.getType() == Mso.TYPE_3X3) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_3X3);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_3X3");
-                    return user;
-                }
-            }
-        } else if (mso.getType() == Mso.TYPE_ENTERPRISE) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_ENTERPRISE);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_ENTERPRISE");
-                    return user;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public NnUser findTcoUser(Mso mso, short shard) {
-        List<NnUser> users = dao.findTcoUser(mso, shard);
-        if (users.size() > 0) {
-            log.info("found TYPE_TCO");
-            return users.get(0);
-        }
-        return null;
-    }
-
     public NnUser resetPassword(NnUser user) {
         user.setPassword(user.getPassword());
         user.setSalt(AuthLib.generateSalt());
         user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
         this.save(user);
         return user;
-    }
-    
-    public NnUser findNNUser() {
-        return dao.findNNUser();
     }
      
     public void subscibeDefaultChannels(NnUser user) {

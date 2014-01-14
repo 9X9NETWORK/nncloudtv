@@ -337,28 +337,6 @@ public class NnProgramManager {
         CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_JSON));        
     }
     
-    /*
-    public void processCache(long channelId) {
-        String cacheKey = this.getCacheKey(channelId);        
-        NnChannel c = new NnChannelManager().findById(channelId);
-        if (c == null)
-            return;
-        log.info("re-assemble program info cache:" + channelId);
-        String output = this.assembleProgramInfo(c);
-        if (CacheFactory.isRunning) { 
-            CacheFactory.set(cacheKey, output);
-        }
-    } 
-    */   
-    
-    /*
-    public String retrieveCache(String key) {
-        log.info("cache key:" + key);
-        String value = (String)CacheFactory.get(key);
-        return value;
-    }
-    */
-        
     public int total() {
         return dao.total();
     }
