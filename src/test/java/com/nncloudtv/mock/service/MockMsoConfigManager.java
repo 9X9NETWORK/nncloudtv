@@ -35,12 +35,20 @@ public class MockMsoConfigManager extends MsoConfigManager {
     public MsoConfig findByMsoAndItem(Mso mso, String item) {
         
         MsoConfig config = new MsoConfig();
+        config.setItem(item);
         
         if (mso.getName() == Mso.NAME_9X9 && item == MsoConfig.FAVICON_URL) {
             
-            config.setItem(MsoConfig.FAVICON_URL);
             config.setValue("http://www.mock.com/favicon.ico");
             log.info("[MOCK] favicon url = " + config.getValue());
+            
+            return config;
+            
+        } else if (mso.getName() == Mso.NAME_CTS && item == MsoConfig.SUPPORTED_REGION) {
+            
+            String supportedRegion = "zh 中文";
+            config.setValue(supportedRegion);
+            log.info("[MOCK] supported region = " + supportedRegion);
             
             return config;
         }

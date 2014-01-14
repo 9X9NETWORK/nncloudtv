@@ -211,9 +211,6 @@ public class NnChannel implements Serializable {
     private boolean autoSync;
 
     protected static final Logger log = Logger.getLogger(NnChannel.class.getName());    
-
-    public NnChannel() {        
-    }
     
     public NnChannel(String name, String intro, String imageUrl) {
         this.name = name;

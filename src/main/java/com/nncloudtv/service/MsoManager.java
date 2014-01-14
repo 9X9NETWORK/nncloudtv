@@ -23,18 +23,24 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
-    private MsoDao msoDao = new MsoDao();    
-    private MsoConfigManager configMngr;
+    private MsoDao msoDao;
+    protected MsoConfigManager configMngr;
+    protected NnChannelManager channelMngr;
     
     @Autowired
-    public MsoManager(MsoConfigManager configMngr) {
+    public MsoManager(MsoConfigManager configMngr,
+            NnChannelManager channelMngr, MsoDao msoDao) {
         
         this.configMngr = configMngr;
+        this.channelMngr = channelMngr;
+        this.msoDao = msoDao;
     }
-    
+
     public MsoManager() {
         
         this.configMngr = new MsoConfigManager();
+        this.channelMngr = new NnChannelManager();
+        this.msoDao = new MsoDao();
     }
 
     public Mso findOneByName(String name) {
@@ -139,7 +145,6 @@ public class MsoManager {
     }
     
     private Object composeBrandInfoJson(Mso mso) {
-        MsoConfigManager configMngr = new MsoConfigManager();
         BrandInfo info = new BrandInfo();
         
         //general setting
@@ -246,7 +251,6 @@ public class MsoManager {
             return null;
         }
         
-        MsoConfigManager configMngr = new MsoConfigManager();
         MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
             mso.setSupportedRegion(null);
@@ -283,7 +287,6 @@ public class MsoManager {
         if (channelId == null) {
             return new ArrayList<Mso>();
         }
-        NnChannelManager channelMngr = new NnChannelManager();
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             return new ArrayList<Mso>();
@@ -300,7 +303,6 @@ public class MsoManager {
             return validMsos;
         }
         
-        MsoConfigManager configMngr = new MsoConfigManager();
         MsoConfig supportedRegion = null;
         List<String> spheres = null;
         List<Mso> msos = findByType(Mso.TYPE_MSO);
@@ -325,23 +327,6 @@ public class MsoManager {
         return validMsos;
     }
     
-    /* indicate channel can or can't play on target brand
-    public boolean isValidBrand(Long channelId, Mso mso) {
-        
-        if (channelId == null || mso == null) {
-            return false;
-        }
-        
-        List<Mso> validMsos = getValidBrands(channelId);
-        for (Mso validMso : validMsos) {
-            if (validMso.getName().equals(mso.getName())) {
-                return true;
-            }
-        }
-        
-        return false;
-    } */
-    
     /** indicate channel can or can't set brand for target MSO,
      *  9x9 is always a valid brand for auto-sharing even channel is not playable */
     public boolean isValidBrand(Long channelId, Mso mso) {
@@ -350,7 +335,6 @@ public class MsoManager {
             return false;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             return false;
@@ -371,7 +355,6 @@ public class MsoManager {
         }
         
         // support region check
-        MsoConfigManager configMngr = new MsoConfigManager();
         MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion == null) {
             return true; // Mso's region support all sphere
@@ -380,6 +363,7 @@ public class MsoManager {
             spheres.add(LangTable.OTHER);
             for (String sphere : spheres) {
                 if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
+                    log.info(mso.getName() + " is the valid brand of " + channel.getName());
                     return true;
                 }
             }
@@ -408,7 +392,6 @@ public class MsoManager {
             supportSpheres.add(LangTable.OTHER);
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
         List<NnChannel> channels = channelMngr.findByIds(channelIds);
         if (channels == null || channels.size() < 1) {
             return new ArrayList<Long>();
