@@ -3,11 +3,13 @@ package com.nncloudtv.web;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import javax.jdo.JDOFatalDataStoreException;
 import javax.jdo.PersistenceManager;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
@@ -24,11 +26,13 @@ import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
-import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnEmail;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.Pdr;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.EmailService;
+import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -46,12 +50,29 @@ public class HelloController {
     //basic test
     @RequestMapping("world")
     public ModelAndView world(HttpServletRequest req) throws Exception {
+    	Mso mso = new MsoManager().findNNMso();
+    	List<NnUser> users = new NnUserManager().search(null, null, "hello", mso.getId());
+    	for (NnUser user : users) {
+    		log.info("user id:" + user.getId());
+    	}
+    	/*
+    	SysTagMapDao dao = new SysTagMapDao();
+    	List<SysTagMap> list = dao.findCategoryMapsByChannelId(1);
+    	for (SysTagMap m : list) {
+    		System.out.println(m.getId());
+    	}
+    	*/
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(1);
         String message = "Hello NnCloudTv";
         return new ModelAndView("hello/hello", "message", message);
     }    
 
+    @RequestMapping("redirect")
+    public String redirect(HttpServletRequest req) throws Exception {
+        return "redirect:http://www.google.com";
+    }    
+    
     //log test
     @RequestMapping("log")
     public ModelAndView log()  {
@@ -112,16 +133,16 @@ public class HelloController {
     }                
 
     @RequestMapping("pdr_process")
-    public @ResponseBody String pdr_process(HttpServletRequest req, 
+    public @ResponseBody String pdr_process(HttpServletRequest req, HttpServletResponse resp, 
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="channel", required=false) String channel,
+            @RequestParam(value="mso", required=false) String msoName,
             @RequestParam(value="program", required=false) String program) { 
         PlayerApiService apiservice = new PlayerApiService();
-        Mso mso = new MsoManager().findNNMso();
-        apiservice.setMso(mso);
+        apiservice.prepService(req, resp, true);
         String detail = " w\t" + channel + "\t" + program;
         System.out.println("detail:" + detail);
-        String result = apiservice.pdr(userToken, null, "1", detail, req);       
+        String result = (String) apiservice.pdr(userToken, null, "1", detail, req);       
         return result;
     }                
     

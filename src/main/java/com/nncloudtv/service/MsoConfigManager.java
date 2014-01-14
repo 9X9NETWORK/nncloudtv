@@ -27,7 +27,9 @@ public class MsoConfigManager {
     static MsoConfigDao configDao = new MsoConfigDao();
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
-    static String getProperty(String propertyFile, String propertyName) {
+    protected static String serverDomain = null; 
+    
+    protected static String getProperty(String propertyFile, String propertyName) {
         
         Properties properties = new Properties();
         String result = null;
@@ -57,10 +59,13 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("facebook.properties", "server_domain");
+        if (serverDomain == null) {
+            serverDomain = getProperty("facebook.properties", "server_domain");
+        }
+        return serverDomain;
     }
         
-    static public String getDefaultFacebookAppToken() {        
+    static public String getFacebookAppToken() {        
         return getProperty("facebook.properties", "facebook_apptoken");
     }
     
@@ -85,11 +90,11 @@ public class MsoConfigManager {
     	return null;
     }
     
-    static public String getDefaultFacebookClientId() {        
+    static public String getFacebookClientId() {        
         return getProperty("facebook.properties", "facebook_clientid");
     }
     
-    static public String getDefaultFacebookClientSecret() {
+    static public String getFacebookClientSecret() {
         
         return getProperty("facebook.properties", "facebook_client_secret");
     }
@@ -119,7 +124,7 @@ public class MsoConfigManager {
         isQueueEnabled(true);
     }
 
-    public static boolean getBooleanValueFromCache(String key, boolean cacheReset) {
+    public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
         try {        
             String result = (String)CacheFactory.get(cacheKey);        
@@ -131,7 +136,7 @@ public class MsoConfigManager {
             log.info("memcache error");
         }
         boolean value = false;
-        MsoConfig config = new MsoConfigDao().findByItem(key);
+        MsoConfig config = configDao.findByItem(key);
         if (config != null) {
             CacheFactory.set(cacheKey, config.getValue());
             value = NnStringUtil.stringToBool(config.getValue());
@@ -139,12 +144,12 @@ public class MsoConfigManager {
         return value;
     }
         
-    public static boolean isInReadonlyMode(boolean cacheReset) {
-        return MsoConfigManager.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
+    public boolean isInReadonlyMode(boolean cacheReset) {
+        return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
     }
         
-    public static boolean isQueueEnabled(boolean cacheReset) {
-        boolean status = MsoConfigManager.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
+    public boolean isQueueEnabled(boolean cacheReset) {
+        boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
         return status;     
     }
     
@@ -210,8 +215,7 @@ public class MsoConfigManager {
             return "";
         }
         
-        String systemCategoryMask = StringUtils.join(systemCategoryLocks, ",");
-        return systemCategoryMask;
+        return StringUtils.join(systemCategoryLocks, ",");
     }
     
     public static List<String> verifySystemCategoryLocks(List<String> systemCategoryLocks) {

@@ -14,6 +14,10 @@ import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
+    
+    public static final String UTF8 = "UTF-8";
+    public static final String ASCII = "US-ASCII";
+    
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
     public static final int MAX_JDO_STRING_LENGTH = 255;
 
@@ -24,18 +28,23 @@ public class NnStringUtil {
         return false;
       throw new IllegalArgumentException(s +" is not a bool");
     }
-
+    
     public static String urlencode(String text) {
-    	if (text == null)
-    		return null;
-    	String str = "";
-	    try {
-	        str = URLEncoder.encode(text, "utf-8");
-	        str = str.replace("+", "%20");                    
-	    } catch (UnsupportedEncodingException e) {
-	        e.printStackTrace();
-	    }
-	    return str;
+        
+        return urlencode(text, UTF8);
+    }
+    
+    public static String urlencode(String text, String charset) {
+        
+        if (text == null)
+            return null;
+        String str = "";
+        try {
+            str = URLEncoder.encode(text, charset).replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return str;
     }
     
     public static String capitalize(String str) {
@@ -55,7 +64,7 @@ public class NnStringUtil {
      */
     public static String truncateUTF8(String str, int maxBytes) {
         if (str == null) { return null; }
-        Charset utf8 = Charset.forName("UTF-8");
+        Charset utf8 = Charset.forName(UTF8);
         int totalBytes = str.getBytes(utf8).length;
         if (totalBytes <= maxBytes) { return str; }
         for (int i = 0, b = 0; i < str.length(); i++) {
@@ -152,14 +161,13 @@ public class NnStringUtil {
         if (str == null || str.length() == 0) {
             return str;
         }
-        log.info("max length = " + length);
         
         for (int i = length; i > 0; i--) {
             String truncated = truncateUTF8(str, i);
             String htmlSafe = htmlSafeChars(truncated);
-            Integer bytelen = htmlSafe.getBytes(Charset.forName("UTF-8")).length;
+            Integer bytelen = htmlSafe.getBytes(Charset.forName(UTF8)).length;
             if (bytelen <= length) {
-                log.info("truncated length = " + bytelen);
+                log.info("truncated length = " + bytelen + " bytes (limit is " + length + ")");
                 return htmlSafe;
             }
         }

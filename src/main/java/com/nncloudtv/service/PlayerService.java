@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
 import com.nncloudtv.lib.CookieHelper;
@@ -40,6 +41,25 @@ public class PlayerService {
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
     public static final String META_FAVICON = "favicon";
     
+    private NnUserManager userMngr;
+    private MsoConfigManager configMngr;
+    private MsoManager msoMngr;
+    
+    @Autowired
+    public PlayerService(NnUserManager userMngr, MsoConfigManager configMngr, MsoManager msoMngr) {
+        
+        this.userMngr = userMngr;
+        this.configMngr = configMngr;
+        this.msoMngr = msoMngr;
+    }
+    
+    public PlayerService() {
+        
+        this.userMngr = new NnUserManager();
+        this.configMngr = new MsoConfigManager();
+        this.msoMngr = new MsoManager();
+    }
+    
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
         if (msoName != null) {
             msoName = msoName.toLowerCase();
@@ -48,10 +68,8 @@ public class PlayerService {
         }
         
         // bind favicon
-        MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.findByName(msoName);
-        MsoConfigManager msoConfigMngr = new MsoConfigManager();
-        MsoConfig item = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        MsoConfig item = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (item != null && item.getValue() != null && item.getValue().isEmpty() == false) {
             model.addAttribute(META_FAVICON, "<link rel=\"icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>" +
                 "<link rel=\"shortcut icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>");
@@ -104,45 +122,6 @@ public class PlayerService {
         return "player/ios";
     }
     
-    //name has to be processed by getBrandName first    
-    public Model getTransitionModel(Model model, String name, HttpServletRequest req) {
-    	boolean isIos = this.isIos(req);    	
-    	boolean isAndroid = this.isAndroid(req);
-    	if (!isIos && !isAndroid)
-    		return null;
-    	String androidNnStoreUrl = "market://details?id=tv.tv9x9.player";
-    	String androidCtsStoreUrl = "market://details?id=tw.com.cts.player";
-    	String iosNnStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";
-    	String iosCtsStoreUrl = "https://itunes.apple.com/app/hua-shi-yun-duan-dian-shi-wang/id623085456?mt=8";    	
-    	String storeUrl = androidNnStoreUrl;
-    	String ch = "0";
-    	String ep = "0";
-    	//report url
-    	String reportUrl = this.getGAReportUrl(ch, ep, name);
-    	log.info("reportUrl:" + reportUrl); 
-    	//flipr url
-        String fliprStr = "flipr://";
-        if (name.equals(Mso.NAME_CTS))
-        	fliprStr = "flipr-cts://";
-        //store url
-        if (isIos) {
-        	storeUrl = iosNnStoreUrl;
-	    	if (name.equals(Mso.NAME_CTS)) {
-	    		storeUrl = iosCtsStoreUrl;
-	    	}
-        }
-        if (isAndroid) {
-        	storeUrl = androidNnStoreUrl;
-	    	if (name.equals(Mso.NAME_CTS)) {
-	    		storeUrl = androidCtsStoreUrl;
-	    	}
-        }
-    	model.addAttribute("name", name);
-        model.addAttribute("fliprUrl", fliprStr);    	
-    	model.addAttribute("reportUrl", reportUrl);
-    	model.addAttribute("storeUrl", storeUrl);
-    	return model;
-    }
     //http://www.9x9.tv/flview?ch=572&ep=pVf0dc15igo&fb_action_ids=10151150850017515%2C10151148373067515%2C10151148049832515%2C10151148017797515%2C10151140220097515&fb_action_types=og.likes&fb_source=other_multiline&action_object_map=%7B%2210151150850017515%22%3A369099836508025%2C%2210151148373067515%22%3A518842601477880%2C%2210151148049832515%22%3A486192988067672%2C%2210151148017797515%22%3A374063942680087%2C%2210151140220097515%22%3A209326199200849%2C%2210151140216042515%22%3A361904300567180%7D
     //to flipr://www.9x9.tv/view?ch=572&ep=pVf0dc15igo                    
     public String getFliprUrl(String cid, String pid, String mso, HttpServletRequest req) {
@@ -158,7 +137,7 @@ public class PlayerService {
         log.info("flipr url:" + iosStr);
         return iosStr;
     }
-
+    
     public String getGAReportUrl(String ch, String ep, String mso) {
     	String reportUrl = "/promotion";
     	if (ch != null) {
@@ -194,26 +173,6 @@ public class PlayerService {
         return url;
     }
     
-    public boolean isIos(HttpServletRequest req) {
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        log.info("user agent:" + userAgent);
-        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
-            log.info("request from ios");
-            return true;            
-        }        
-        return false;
-    }
-
-    public boolean isAndroid(HttpServletRequest req) {
-        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
-        log.info("user agent:" + userAgent);
-        if (userAgent.contains("Android")) {
-            log.info("request from Android");
-            return true;            
-        }        
-        return false;
-    }
-        
     //it is likely for old ios app who doesn't know about episdoe
     public String findFirstSubepisodeId(String eId) {
         if (eId != null && eId.matches("e[0-9]+")) {
@@ -317,7 +276,7 @@ public class PlayerService {
         if (jsp != null && jsp.length() > 0) {
             log.info("alternate is enabled: " + jsp);
         }
-        model.addAttribute("locale", NnUserManager.findLocaleByHttpRequest(req));
+        model.addAttribute("locale", userMngr.findLocaleByHttpRequest(req));
         return model;
     }
 
@@ -433,7 +392,8 @@ public class PlayerService {
                 model.addAttribute("crawlEpThumb1", c.getOneImageUrl());                
                 model.addAttribute(META_NAME, this.prepareFb(c.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
-                model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));
+                model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));  
+                
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
                     NnEpisodeManager episodeMngr = new NnEpisodeManager(); 

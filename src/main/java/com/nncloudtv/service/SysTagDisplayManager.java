@@ -8,9 +8,18 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagDisplayDao;
+import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.web.json.player.CategoryInfo;
+import com.nncloudtv.web.json.player.ChannelLineup;
+import com.nncloudtv.web.json.player.PlayerSetInfo;
+import com.nncloudtv.web.json.player.Portal;
+import com.nncloudtv.web.json.player.ProgramInfo;
+import com.nncloudtv.web.json.player.SetInfo;
 
 @Service
 public class SysTagDisplayManager {
@@ -137,4 +146,196 @@ public class SysTagDisplayManager {
         
     }
 
+    @SuppressWarnings("unchecked")
+	public Object getPlayerCategoryInfo(SysTagDisplay display, boolean programInfo, List<NnChannel> channels, long start, long limit, long total, int version, short format) {
+    	String id = String.valueOf(display.getId());
+    	String name = display.getName();    	
+        NnChannelManager chMngr = new NnChannelManager();
+    	NnProgramManager programMngr = new NnProgramManager();        
+        //1. category info            	
+    	if (format == PlayerApiService.FORMAT_PLAIN) {
+	        List<String> result = new ArrayList<String>();	        
+	        String categoryInfo = "";
+	        categoryInfo += PlayerApiService.assembleKeyValue("id", id);
+	        categoryInfo += PlayerApiService.assembleKeyValue("name", name);
+	        categoryInfo += PlayerApiService.assembleKeyValue("start", String.valueOf(start));        
+	        categoryInfo += PlayerApiService.assembleKeyValue("count", String.valueOf(limit));
+	        categoryInfo += PlayerApiService.assembleKeyValue("total", String.valueOf(total));
+	        result.add(categoryInfo);
+	        //2. category tag
+	        String tagInfo = "";
+	        String tags = display.getPopularTag();
+	        if (tags != null) {
+	            String[] tag = tags.split(",");
+	            for (String t : tag) {
+	                tagInfo += t + "\n";
+	            }
+	        }
+	        result.add(tagInfo);
+	        // 3. channelInfo
+	        String channelInfo = (String) chMngr.composeChannelLineup(channels, version, format); 
+	        result.add(channelInfo);
+	        // 4. programInfo
+	        if (programInfo) {
+	        	String programInfoStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+	        	result.add(programInfoStr);
+	        }
+	        String size[] = new String[result.size()];	        
+	        return result.toArray(size);
+    	} else {
+    		CategoryInfo categoryInfo = new CategoryInfo();
+    		categoryInfo.setId(id);
+    		categoryInfo.setName(name);
+    		categoryInfo.setStart(start);
+    		categoryInfo.setCount(limit);
+    		categoryInfo.setTotal(total);
+	        String tags = display.getPopularTag();
+	        if (tags != null) {
+	            String[] tag = tags.split(",");
+	            for (String t : tag) {
+	                categoryInfo.getTags().add(t);
+	            }
+	        }
+    		categoryInfo.setChannelLineup((List<ChannelLineup>) chMngr.composeChannelLineup(channels, version, format));
+    		categoryInfo.setProgramInfo((List<ProgramInfo>) programMngr.findLatestProgramInfoByChannels(channels, format));
+    		return categoryInfo;
+    	}
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Object getPlayerPortal(List<SysTagDisplay>displays, String lang, boolean minimal, int version, short format) {
+        String setStr = "";
+    	List<SetInfo> setInfo = new ArrayList<SetInfo>();
+        for (SysTagDisplay display : displays) {
+        	String id = display.getId() + "-" + display.getSystagId();
+        	String name = display.getName();
+        	String intro = "";
+        	String imageUrl = display.getImageUrl();
+        	int cntChannel = display.getCntChannel();
+        	String imageUrl2 = display.getImageUrl2();
+        	if (format == PlayerApiService.FORMAT_PLAIN) {
+	            String[] obj = {
+	                id,
+	                name,
+	                intro, //description
+	                imageUrl,
+	                String.valueOf(cntChannel),
+	                imageUrl2,
+	            };
+	            setStr += NnStringUtil.getDelimitedStr(obj) + "\n";
+        	} else {
+        		SetInfo info = new SetInfo();
+        		info.setId(id);
+        		info.setName(name);
+        		info.setThumbnail(imageUrl);
+        		info.setNumberOfChannels(cntChannel);
+        		info.setThumbnail2(imageUrl2);
+        		setInfo.add(info);
+        	}
+        }
+        SysTagManager systagMngr = new SysTagManager();
+        NnChannelManager chMngr = new NnChannelManager();
+        String channelStr = "";
+        String programStr = "";
+        List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
+        List<ProgramInfo> programInfo = new ArrayList<ProgramInfo>();
+        if (!minimal) {
+	        //2: list of channel's channelInfo of every set
+	        List<NnChannel> channels = new ArrayList<NnChannel>();
+	        if (displays.size() > 0) {
+	        	SysTag systag = systagMngr.findById(displays.get(0).getSystagId());
+	        	short sort = SysTag.SORT_DATE;
+	        	if (systag.getType() == SysTag.TYPE_SET) {
+	        		sort = systag.getSorting();
+	        	}
+	            channels.addAll(systagMngr.findPlayerChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
+	        }
+	        if (format == PlayerApiService.FORMAT_PLAIN) {
+	        	channelStr = (String)chMngr.composeChannelLineup(channels, version, format);
+	        } else {
+	        	channelLineup = (List<ChannelLineup>)chMngr.composeChannelLineup(channels, version, format);
+	        }
+	        //3. list of the latest episode of each channel of the first set
+	        NnProgramManager programMngr = new NnProgramManager();
+	        if (format == PlayerApiService.FORMAT_PLAIN) {
+	        	programStr = (String)programMngr.findLatestProgramInfoByChannels(channels, format);
+	        } else {
+	        	programInfo = (List<ProgramInfo>)programMngr.findLatestProgramInfoByChannels(channels, format);
+	        }
+        }
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+	        if (minimal) {
+	            String result[] = {""};
+	            result[0] = setStr;
+	            return result;
+	        } else {
+	        	String result[] = {"", "", ""};
+	            result[0] = setStr;        	
+		        result[1] = channelStr;
+		        result[2] = programStr;
+	            return result;	        
+	        }	        
+        } else {
+        	Portal portal = new Portal();
+        	portal.setSetInfo(setInfo);
+        	if (minimal) {
+            	return portal;
+        	} else {
+        		portal.setChannelLineup(channelLineup);
+        		portal.setProgramInfo(programInfo);
+        		return portal;
+        	}
+        }     	
+    }       
+    
+    public Object getPlayerSetInfo(Mso mso, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format) {
+    	String name = mso.getName();
+    	String imageUrl = mso.getLogoUrl();
+    	String intro = mso.getIntro();
+    	String setId = String.valueOf(display.getId());
+    	String setName = display.getName();
+    	String setImageUrl = display.getImageUrl();
+        NnProgramManager programMngr = new NnProgramManager();
+        for (NnChannel c : channels) {
+            if (c.getStatus() == NnChannel.STATUS_SUCCESS && c.isPublic())
+                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
+        }
+    	if (format == PlayerApiService.FORMAT_PLAIN) {
+	        String result[] = {"", "", "", ""};
+	        //mso info
+	        result[0] += PlayerApiService.assembleKeyValue("name", name);
+	        result[0] += PlayerApiService.assembleKeyValue("imageUrl", imageUrl); 
+	        result[0] += PlayerApiService.assembleKeyValue("intro", intro);            
+	        //set info
+	        result[1] += PlayerApiService.assembleKeyValue("id", setId);
+	        result[1] += PlayerApiService.assembleKeyValue("name", setName);
+	        result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
+	        //channel info
+	        result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
+	        //program info
+	        String programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+	        result[3] = programStr;
+	        return result;
+    	} else {
+    		PlayerSetInfo json = new PlayerSetInfo();
+    		json.setMsoName(name);
+    		json.setMsoImageUrl(imageUrl);
+    		json.setMsoDescription(intro);
+    		SetInfo setInfo = new SetInfo();
+    		setInfo.setId(setId);
+    		setInfo.setName(setName);
+    		setInfo.setThumbnail(setImageUrl);
+    		List<SetInfo> setInfoList = new ArrayList<SetInfo>();
+    		setInfoList.add(setInfo);
+    		json.setSetInfo(setInfoList);
+    		@SuppressWarnings("unchecked")
+			List<ChannelLineup> lineups = (List<ChannelLineup>)new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_JSON);
+    		json.setChannels(lineups);    		
+    		@SuppressWarnings("unchecked")
+    		List<ProgramInfo> programInfo = (List<ProgramInfo>) programMngr.findLatestProgramInfoByChannels(channels, format);
+    		json.setPrograms(programInfo);
+    		return json; 
+    	}
+    }
+    
 }

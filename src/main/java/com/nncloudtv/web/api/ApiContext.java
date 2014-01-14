@@ -8,13 +8,13 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnUserManager;
 
 
 public class ApiContext {
@@ -29,15 +29,23 @@ public class ApiContext {
     public final static String PARAM_SPHERE = "shpere";
     public final static String PARAM_VERSION = "v";
     
-    NnChannelManager channelMngr;
-    NnUserManager userMngr;
     MsoManager msoMngr;
     
-    HttpServletRequest httpReqest;
-    Locale language;
-    Long version;
+    HttpServletRequest httpReq;
+    Locale locale;
+    Integer version;
     String root;
     Mso mso;
+    
+    public Integer getVersion() {
+        
+        return version;
+    }
+    
+    public Locale getLocale() {
+        
+        return locale;
+    }
     
     public Mso getMso() {
     
@@ -46,35 +54,43 @@ public class ApiContext {
     
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
     
+    @Autowired
     public ApiContext(HttpServletRequest req) {
-    
-        httpReqest = req;
-        log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
-        NnNetUtil.logUrl(req);
         
-        channelMngr = new NnChannelManager();
-        userMngr = new NnUserManager();
         msoMngr = new MsoManager();
+        init(req);
+    }
+    
+    @Autowired
+    public ApiContext(HttpServletRequest req, MsoManager mngr) {
         
-        String lang = httpReqest.getParameter(ApiContext.PARAM_LANG);
+        msoMngr = mngr;
+        init(req);
+    }
+    
+    private void init(HttpServletRequest req) {
+        
+        httpReq = req;
+        log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
+        
+        String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
         if (LangTable.isValidLanguage(lang)) {
-            language = LangTable.getLocale(lang);
+            locale = LangTable.getLocale(lang);
         } else {
-            language = Locale.ENGLISH; // TODO: from http request
+            locale = Locale.ENGLISH; // TODO: from http request
         }
         
-        version = Long.parseLong(ApiContext.DEFAULT_VERSION);
-        String versionStr = httpReqest.getParameter(PARAM_VERSION);
+        version = Integer.parseInt(ApiContext.DEFAULT_VERSION);
+        String versionStr = httpReq.getParameter(PARAM_VERSION);
         if (versionStr != null) {
             try {
-                version = Long.parseLong(versionStr);
+                version = Integer.parseInt(versionStr);
             } catch (NumberFormatException e) {
             }
         }
         
-        root = NnNetUtil.getUrlRoot(httpReqest);
-        
-        mso = msoMngr.getByNameFromCache(httpReqest.getParameter(ApiContext.PARAM_MSO));
+        root = NnNetUtil.getUrlRoot(httpReq);
+        mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
         if (mso == null) {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");
             String[] split = domain.split("\\.");
@@ -82,11 +98,12 @@ public class ApiContext {
                 log.info("sub-domain = " + split[0]);
                 mso = msoMngr.findByName(split[0]);
             }
-            if (mso == null)
+            if (mso == null) {
                 mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);
+            }
         }
         
-        log.info("language = " + language.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);
+        log.info("language = " + locale.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);
     }
     
     public Boolean isProductionSite() {
@@ -131,5 +148,25 @@ public class ApiContext {
         String remain = Joiner.on(".").join(splits);
         
         return MsoManager.isNNMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
+    }
+    
+    public boolean isAndroid() {
+        
+        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent.contains("Android")) {
+            log.info("request from Android");
+            return true;            
+        }        
+        return false;
+    }
+    
+    public boolean isIos() {
+        
+        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
+            log.info("request from ios");
+            return true;            
+        }        
+        return false;
     }
 }

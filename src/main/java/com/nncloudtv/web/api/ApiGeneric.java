@@ -260,6 +260,7 @@ public class ApiGeneric {
 	/** log the enter state
 	 *  @param now the enter time
 	 *  */
+	@SuppressWarnings("unchecked")
 	public String printEnterState(Date now, HttpServletRequest req) {
 	    
 	    if (now == null || req == null) {
@@ -270,7 +271,7 @@ public class ApiGeneric {
 	    String parameterPairs = "";
 	    
 	    try {
-	        Map<String, String[]> map = (Map<String, String[]>) req.getParameterMap();
+			Map<String, String[]> map = (Map<String, String[]>) req.getParameterMap();
 	        Enumeration<String> names = (Enumeration<String>) req.getParameterNames();
         
 	        while(names.hasMoreElements()) {

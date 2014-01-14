@@ -27,6 +27,10 @@ import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
+import com.nncloudtv.web.json.player.PlayerPoi;
+import com.nncloudtv.web.json.player.PlayerTitleCard;
+import com.nncloudtv.web.json.player.ProgramInfo;
+import com.nncloudtv.web.json.player.SubEpisode;
 
 @Service
 public class NnProgramManager {
@@ -202,20 +206,25 @@ public class NnProgramManager {
         return dao.findByChannelAndFileUrl(channelId, fileUrl);
     }
     
-    public String findLatestProgramInfoByChannels(List<NnChannel> channels) {
-        
+    @SuppressWarnings("unchecked")
+	public Object findLatestProgramInfoByChannels(List<NnChannel> channels, short format) {        
         YtProgramDao ytDao = new YtProgramDao();
         String output = "";
-        
-        for (NnChannel c : channels) {
-            
-            String cacheKey = this.getProgramInfoCacheKey(c.getId());
-            String programInfo = (String) CacheFactory.get(cacheKey);
-            
+        List<ProgramInfo> json = new ArrayList<ProgramInfo>();
+        for (NnChannel c : channels) {            
+            String cacheKey = CacheFactory.getLatestProgramInfoKey(c.getId(), format);
+            Object programInfo = CacheFactory.get(cacheKey);
             if (programInfo != null) {
-                log.info("got programInfo from cache, channelId = " + c.getId());
-                if (!programInfo.isEmpty())
-                    output += programInfo;
+                log.info("got programInfo from cache, channelId = " + c.getId() + "; cacheKey=" + cacheKey);
+                if (format == PlayerApiService.FORMAT_PLAIN) {
+                	String programInfoStr = (String) programInfo;
+	                if (!programInfoStr.isEmpty())
+	                    output += programInfoStr;
+                } else {
+					List<ProgramInfo> info = (ArrayList<ProgramInfo>) programInfo;
+                	if (info != null)
+                		json.addAll(info);
+                }
                 continue;
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
@@ -225,7 +234,7 @@ public class NnProgramManager {
                 if (yt != null) {
                     programs.add(yt);
                     log.info("find latest yt program:" + yt.getId());
-                    programInfo = this.composeYtProgramInfo(c, programs);
+                    programInfo = this.composeYtProgramInfo(c, programs, format);
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
@@ -233,19 +242,32 @@ public class NnProgramManager {
                 if (episodes.size() > 0) {
                     log.info("find latest episode id:" + episodes.get(0).getId());
                     List<NnProgram> programs = this.findByEpisodeId(episodes.get(0).getId());
-                    programInfo = this.composeNnProgramInfo(c, episodes, programs);
+                    programInfo = this.composeNnProgramInfo(c, episodes, programs, format);
                 }
             }
             if (programInfo != null) {
-                output += programInfo;
-                log.info("save lastProgramInfo to cache, channelId = " + c.getId());
-                CacheFactory.set(cacheKey, programInfo);
+                log.info("save lastProgramInfo to cache, channelId = " + c.getId() + "; cacheKey=" + cacheKey);
+            	if (format == PlayerApiService.FORMAT_PLAIN) {
+	                output += (String)programInfo;
+	                CacheFactory.set(cacheKey, programInfo);
+            	} else {
+            		json.addAll((ArrayList<ProgramInfo>)programInfo);
+	                CacheFactory.set(cacheKey, programInfo);
+            	}
             } else {
                 log.info("save lastProgramInfo to cache, channelId = " + c.getId() + ", though its empty");
-                CacheFactory.set(cacheKey, ""); // save an empty string to prevent cache miss
+                if (format == PlayerApiService.FORMAT_PLAIN) {
+                	CacheFactory.set(cacheKey, ""); // save an empty string to prevent cache miss
+                } else {
+                	CacheFactory.set(cacheKey, null);
+                }
             }
         }        
-        return output;
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+        	return output;
+        } else {
+        	return json;
+        }
     }
     
     public static String getCntViewCacheName(long channelId, String programId) {
@@ -305,12 +327,14 @@ public class NnProgramManager {
     }
     
     public void resetCache(long channelId) {        
-        log.info("reset program info cache: " + channelId);
-        CacheFactory.delete(getCacheKey(channelId));
-        CacheFactory.delete(getV31CacheKey(channelId));
-        CacheFactory.delete(getProgramInfoCacheKey(channelId));
-        CacheFactory.delete(NnChannelManager.getCacheKey(channelId, 32));
-        CacheFactory.delete(NnChannelManager.getCacheKey(channelId, 40));
+        log.info("reset program info cache: " + channelId);        
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 31, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_JSON));        
+        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_PLAIN));        
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 32, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_JSON));        
     }
     
     /*
@@ -334,24 +358,7 @@ public class NnProgramManager {
         return value;
     }
     */
-    
-    //example: nnprogram(channel_id)
-    public String getCacheKey(long channelId) {
-        String str = "nnprogram(" + channelId + ")"; 
-        return str;
-    }
-    
-    //cache the 1st program of channel
-    public String getProgramInfoCacheKey(long channelId) {
-        String str = "nnprogram-info(" + channelId + ")";
-        return str;
-    }
-    
-    public String getV31CacheKey(long channelId) {
-        String str = "nnprogram-v31(" + channelId + ")"; 
-        return str;
-    }
-    
+        
     public int total() {
         return dao.total();
     }
@@ -454,56 +461,86 @@ public class NnProgramManager {
      * @param limit number of records
      * @return program info string 
      */
-    public String findPlayerProgramInfoByChannel(long channelId, String episodeIds, long sidx, long limit) {
-        String result = this.findPlayerProgramInfoByChannel(channelId);
-        if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds);
+    public Object findPlayerProgramInfoByChannel(long channelId, String episodeIds, long sidx, long limit, int version, short format) {
+        Object result = this.findPlayerProgramInfoByChannel(channelId, version, format);
+        if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds, format);
         if (channelId == 28087) return result; // weifilm, temporary workaround
-        return this.composeLimitProgramInfoStr(result, sidx, limit);
+        return this.composeLimitProgramInfoStr(result, sidx, limit, format);
     }    
     
-    private String composeSpecifiedProgramInfoStr(String input, long channelId, String episodeIds) {
-        
+    private Object composeSpecifiedProgramInfoStr(Object input, long channelId, String episodeIds, short format) {        
         if (episodeIds == null || episodeIds.isEmpty())
             return input;
-        String[] lines = input.split("\n");
         String[] episodeIdArr = episodeIds.split(",");
-        String result = "";
-            
-        for (String episodeId : episodeIdArr) {
-                
-            String regex = "^" + channelId + "\t" + episodeId + "\t.*";
-            log.info("regex = " + regex);
-            for (String line : lines) {
-                
-                if (line.matches(regex)) {
-                    result += line + "\n";
-                }
-            }
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            String inputStr = (String)input;
+            String[] lines = inputStr.split("\n");
+	        String result = "";
+	        for (String episodeId : episodeIdArr) {                
+	            String regex = "^" + channelId + "\t" + episodeId + "\t.*";
+	            log.info("regex = " + regex);
+	            for (String line : lines) {                
+	                if (line.matches(regex)) {
+	                    result += line + "\n";
+	                }
+	            }
+	        }
+	        return result;
+        } else {
+	        @SuppressWarnings("unchecked")
+			List<ProgramInfo> json = (List<ProgramInfo>) input;
+	        List<ProgramInfo> result = new ArrayList<ProgramInfo>();
+	        int i=0;
+	        for (String episodeId : episodeIdArr) {	        	
+	        	if (json.get(i).getId().equals(episodeId)) {
+	        		result.add(json.get(i));
+	        	}
+	        }
+	        return result;
         }
-        return result;
     }
+    
     //for iOS
-    private String composeLimitProgramInfoStr(String input, long sidx, long limit) {
-        if (sidx == 0 && limit == 0)
+    private Object composeLimitProgramInfoStr(Object input, long sidx, long limit, short format) {
+        if (sidx == 0 && limit == 0) {
+System.out.println("---- return original----");        	
             return input;
-        String[] lines = input.split("\n");
-        String result = "";
+        }
         long start = sidx - 1;
         long end = start + limit;
-        for (int i=0; i<lines.length; i++) {
-            if (i>=start && i<end) {
-                result += lines[i] + "\n";
-            }
-            if (i > end) {
-                return result;
-            }
-        }        
-        return result;
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+        	String inputStr = (String) input;
+	        String[] lines = inputStr.split("\n");
+	        String result = "";
+	        for (int i=0; i<lines.length; i++) {
+	            if (i>=start && i<end) {
+	                result += lines[i] + "\n";
+	            }
+	            if (i > end) {
+	                return result;
+	            }
+	        }
+	        return result;
+        } else {
+        	@SuppressWarnings("unchecked")
+			List<ProgramInfo> json = (ArrayList<ProgramInfo>) input; 
+        	List<ProgramInfo> result = new ArrayList<ProgramInfo>();
+        	for (int i=0; i<json.size(); i++) {
+	            if (i>=start && i<end) {
+	            	result.add(json.get(i));
+	            }
+	            if (i > end) {
+	                return result;
+	            }        		
+        	}
+        	System.out.println("-------------- enter here???----");
+        	return result;
+        }
     }
     
     //player programInfo entry
-    public String findPlayerProgramInfoByChannel(long channelId) {
-        String cacheKey = this.getCacheKey(channelId);
+    public Object findPlayerProgramInfoByChannel(long channelId, int version, short format) {
+        String cacheKey = CacheFactory.getProgramInfoKey(channelId, version, format);
         try {
             String result = (String)CacheFactory.get(cacheKey);
             if (result != null) {
@@ -516,8 +553,8 @@ public class NnProgramManager {
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
-        String output = this.assembleProgramInfo(c);
-        log.info("store programInfo, channelId = " + channelId);
+        Object output = this.assembleProgramInfo(c, format);
+        log.info("store programInfo, key = " + cacheKey);
         CacheFactory.set(cacheKey, output);
         return output;
     }
@@ -558,47 +595,67 @@ public class NnProgramManager {
     }
                 
     //based on channel type, assemble programInfo string
-    public String assembleProgramInfo(NnChannel c) {
-        String output = "";        
+    public Object assembleProgramInfo(NnChannel c, short format) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
             List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting());
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
-            output = this.composeNnProgramInfo(c, episodes, programs);
+            return this.composeNnProgramInfo(c, episodes, programs, format);
         } else {
             List<NnProgram> programs = this.findPlayerProgramsByChannel(c.getId());
-            log.info("channel id:" + c.getId() + "; program size:" + programs.size());
-            output = this.composeProgramInfo(c, programs);
+            log.info("channel id:" + c.getId() + "; program size:" + programs.size());            
+            return this.composeProgramInfo(c, programs, format);
         }
-        return output;
     }
     
-    public String composeYtProgramInfo(NnChannel c, List<YtProgram> programs) {
-        if (programs.size() == 0)
-            return "";        
-        String result = "";
-        if (c == null) return null;
-        for (YtProgram p : programs) {
-            result += this.composeYtProgramInfoStr(p);
+    public Object composeYtProgramInfo(NnChannel c, List<YtProgram> programs, short format) {
+        if (programs.size() == 0) {
+        	if (format == PlayerApiService.FORMAT_JSON)
+        		return null;
+        	else
+        		return "";        
         }
-        return result;
+        if (c == null) return null;
+        String result = "";
+        List<ProgramInfo> json = new ArrayList<ProgramInfo>();
+        for (YtProgram p : programs) {
+        	if (format == PlayerApiService.FORMAT_PLAIN)
+        		result += (String)this.composeEachYtProgramInfo(p, format);
+        	else {
+        		json.add((ProgramInfo)this.composeEachYtProgramInfo(p, format));
+        	}
+        }
+    	if (format == PlayerApiService.FORMAT_PLAIN)
+    		return result;
+    	else
+    		return json;
     }
     
     //compose programInfo for non 9x9 and non favorite channel
-    public String composeProgramInfo(NnChannel c, List<NnProgram> programs) {
+    //favorite channel is not really supported
+    public Object composeProgramInfo(NnChannel c, List<NnProgram> programs, short format) {
         if (programs.size() == 0)
             return "";        
-        String result = "";
         //NnProgram original = programs.get(0);
         //NnChannel c = new NnChannelManager().findById(original.getChannelId());
+    	String result = "";
+		List<ProgramInfo> jsonResult = new ArrayList<ProgramInfo>();
         if (c == null) return null;
         if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED &&
             c.getContentType() != NnChannel.CONTENTTYPE_FAVORITE) {
-            for (NnProgram p : programs) {
-                result += this.composeProgramInfoStr(p);
+    		if (format == PlayerApiService.FORMAT_PLAIN) {
+    			for (NnProgram p : programs) {
+        			result += this.composeEachProgramInfo(p, format);
+    			}
+    			return result;
+        	} else {
+        		for (NnProgram p : programs) {
+        			jsonResult.add((ProgramInfo) this.composeEachProgramInfo(p, format));
+        		}
+        		return jsonResult;
             }
-            return result;
         }
-        if (c.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+        //do not have json support
+        if (c.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {        	
             for (NnProgram p : programs) {
                 if (p.getContentType() == NnProgram.CONTENTTYPE_REFERENCE) {
                     Object[] obj = this.findFavoriteReferenced(p.getStorageId());
@@ -608,36 +665,51 @@ public class NnProgramManager {
                         @SuppressWarnings("unchecked")
                         List<NnProgram> referencePrograms = (List<NnProgram>)obj[1];
                         log.info("reference program size:" + referencePrograms.size());
-                        String favoriteStr = this.composeNnProgramInfo(c, epList, referencePrograms);
-                        String[] lines = favoriteStr.split("\n");
-                        for (String line : lines) {
-                            //replace with favorite's own channel id and program id
-                            Pattern pattern = Pattern.compile("\t.*?\t");
-                            Matcher m = pattern.matcher(line);
-                            if (m.find()) {
-                                line = m.replaceFirst("\t" + String.valueOf(p.getId()) + "\t");
-                            }
-                            pattern = Pattern.compile(".*?\t");
-                            m = pattern.matcher(line);
-                            if (m.find()) {
-                                line = m.replaceFirst(p.getChannelId() + "\t");
-                            }                        
-                            result += line + "\n";
-                        }
+                        if (format == PlayerApiService.FORMAT_PLAIN) {
+	                        String favoriteStr = (String)this.composeNnProgramInfo(c, epList, referencePrograms, format);
+	                        String[] lines = favoriteStr.split("\n");
+	                        for (String line : lines) {
+	                            //replace with favorite's own channel id and program id
+	                            Pattern pattern = Pattern.compile("\t.*?\t");
+	                            Matcher m = pattern.matcher(line);
+	                            if (m.find()) {
+	                                line = m.replaceFirst("\t" + String.valueOf(p.getId()) + "\t");
+	                            }
+	                            pattern = Pattern.compile(".*?\t");
+	                            m = pattern.matcher(line);
+	                            if (m.find()) {
+	                                line = m.replaceFirst(p.getChannelId() + "\t");
+	                            }                        
+	                            result += line + "\n";
+	                        }
+                        } else {
+                        	//not supported
+                        }                    
                     }                    
                 } else {
-                    result += this.composeProgramInfoStr(p);
+                	if (format == PlayerApiService.FORMAT_PLAIN)
+                		result += this.composeEachProgramInfo(p, format);
+                	else
+                		jsonResult.add((ProgramInfo)this.composeEachProgramInfo(p, format));
                 }
             }
         }
-        return result;
+        if (format == PlayerApiService.FORMAT_PLAIN)
+        	return result;
+        else
+        	return jsonResult;
     }
     
     //compose nnchannel programs and favorite channels, otherwise use composeProgramInfo
-    public String composeNnProgramInfo(NnChannel channel, List<NnEpisode> episodes, 
-                                       List<NnProgram> programs) {
-        if (episodes.size() == 0 || programs.size() == 0)
-            return "";
+    //format == json won't go to composeEachEpisodeInfo
+    public Object composeNnProgramInfo(NnChannel channel, List<NnEpisode> episodes, 
+                                       List<NnProgram> programs, short format) {
+        if (episodes.size() == 0 || programs.size() == 0) {
+        	if (format == PlayerApiService.FORMAT_PLAIN)
+        		return "";
+        	else
+        		return null;
+        }
         String result = "";
         Map<Long, List<NnProgram>> map = new TreeMap<Long, List<NnProgram>>();                
         for (NnProgram p : programs) {
@@ -660,6 +732,7 @@ public class NnProgramManager {
         //List<PoiEvent> events = new PoiEventManager().findByChannel(channel.getId());
         PoiPointManager pointMngr = new PoiPointManager();
         PoiEventManager eventMngr = new PoiEventManager();
+        List<ProgramInfo> programInfos = new ArrayList<ProgramInfo>();
         for (NnEpisode e : episodes) {
             List<NnProgram> list = (List<NnProgram>) map.get(e.getId());
             if (list == null)
@@ -675,8 +748,22 @@ public class NnProgramManager {
                 String card = "";
                 String contentType = "";
                 int i=1;                
-                String poiStr = "";
+                String poiStr = "";     
+            	ProgramInfo info = new ProgramInfo();
+                if (format == PlayerApiService.FORMAT_JSON) {
+                	info.setId(String.valueOf(e.getId()));
+                	info.setChannelId(e.getChannelId());
+                	info.setDuration(duration);
+                	info.setName(name);
+                	info.setThumbnail(imageUrl);
+                	info.setThumbnailLarge(imageLargeUrl);
+                	info.setDescription(intro);
+                	programInfos.add(info);
+                }
+                List<SubEpisode> subEpisodes = new ArrayList<SubEpisode>();
                 for (NnProgram p : list) { //sub-episodes
+                    List<PlayerPoi> playerPois = new ArrayList<PlayerPoi>();
+                    List<PlayerTitleCard> playerTitleCards = new ArrayList<PlayerTitleCard>();
                     List<PoiPoint> points = pointMngr.findCurrentByProgram(p.getId());
                     //List<Poi> pois = pointMngr.findCurrentPoiByProgram(p.getId());                    
                     log.info("points size:" + points.size());                    
@@ -692,31 +779,38 @@ public class NnProgramManager {
                     for (int j=0; j<points.size(); j++) {
                         PoiPoint point = points.get(j);
                         PoiEvent event = events.get(j);
-                        //Poi poi = pois.get(j);
                         String context = NnStringUtil.urlencode(event.getContext());
-                        //String poiStrHere = i + ";" + poi.getId() + ";" + point.getStartTime() + ";" + point.getEndTime() + ";" + event.getType() + ";" + context + "|";
-                        String poiStrHere = i + ";" + point.getStartTime() + ";" + point.getEndTime() + ";" + event.getType() + ";" + context + "|";
-                        log.info("poi output:" + poiStrHere);
-                        poiStr += poiStrHere;
+                    	if (format == PlayerApiService.FORMAT_PLAIN) {
+	                        String poiStrHere = i + ";" + point.getStartTime() + ";" + point.getEndTime() + ";" + event.getType() + ";" + context + "|";
+	                        log.info("poi output:" + poiStrHere);
+	                        poiStr += poiStrHere;
+                    	} else {
+	                        PlayerPoi playerPoi = new PlayerPoi();
+	                        playerPoi.setStartTime(point.getStartTime());
+	                        playerPoi.setEndTime(point.getEndTime());
+	                        playerPoi.setType(String.valueOf(event.getType()));
+	                        playerPoi.setContext(context);
+	                        playerPois.add(playerPoi);
+                    	}
                     }
-//                    for (PoiPoint point : points) {
-//                        PoiEvent event = eventMngr.findByPoint(point.getId());
-//                        String poiStrHere = i + ";" + event.getHyperChannelText() + ";" + event.getHyperChannelLink() + ";" + poi.getStartTime() + ";" + poi.getEndTime() + "|";
-//                        log.info("poiStrHere:" + poiStrHere);                        
-//                        poiStr += poiStrHere;                        
-//                    }                    
                     String cardKey1 = String.valueOf(p.getId() + ";" + TitleCard.TYPE_BEGIN); 
                     String cardKey2 = String.valueOf(p.getId() + ";" + TitleCard.TYPE_END);
                     if (p.getSubSeq() != null && p.getSubSeq().length() > 0) {
-                        if (cardMap.containsKey(cardKey1)) {
-                            card += "subepisode" + "%3A%20" + i + "%0A";
-                            card += cardMap.get(cardKey1).getPlayerSyntax() + "%0A--%0A";
-                            cardMap.remove(cardKey1);
-                        }
-                        if (cardMap.containsKey(cardKey2)) {
-                            card += "subepisode" + "%3A%20" + i + "%0A";
-                            card += cardMap.get(cardKey2).getPlayerSyntax() + "%0A--%0A";
-                            cardMap.remove(cardKey2);                            
+                        if (cardMap.containsKey(cardKey1) || cardMap.containsKey(cardKey2)) {
+                        	String key = cardKey1;
+                        	if (cardMap.containsKey(cardKey2))
+                        		key = cardKey2;
+                        	String syntax = cardMap.get(key).getPlayerSyntax();
+                        	if (format == PlayerApiService.FORMAT_PLAIN) {
+	                            card += "subepisode" + "%3A%20" + i + "%0A";
+	                            card += syntax + "%0A--%0A";
+                        	} else {
+                        		PlayerTitleCard titleCard = new PlayerTitleCard();
+                        		titleCard.setKey(String.valueOf(i));
+                        		titleCard.setSyntax(syntax);
+                        		playerTitleCards.add(titleCard);
+                        	}
+                            cardMap.remove(key);
                         }
                     }
                     if (p.getStartTime() != null && p.getStartTime().equals("0") &&
@@ -727,32 +821,49 @@ public class NnProgramManager {
                     String f1 = p.getFileUrl();
                     if (p.getAudioFileUrl() != null)
                         f1 = p.getAudioFileUrl();
-                    //log.info("f1:" + f1);
-                    videoUrl += "|" + f1;
-                    String d1 = (p.getStartTime() != null) ? ";" + p.getStartTime() : ";";
-                    String d2 = (p.getEndTime() != null) ? ";" + p.getEndTime() : ";";
-                    videoUrl += d1;
-                    videoUrl += d2;
-                    //log.info("video url :" + videoUrl);
-                    name += "|" + p.getPlayerName();
-                    imageUrl += "|" + p.getImageUrl();
-                    imageLargeUrl += "|" + p.getImageLargeUrl();
-                    intro += "|" + p.getPlayerIntro();
-                    duration += "|" + p.getDurationInt();
-                    contentType += "|" + p.getContentType();
+                    if (format == PlayerApiService.FORMAT_PLAIN) {
+	                    //log.info("f1:" + f1);
+	                    videoUrl += "|" + f1;
+	                    String d1 = (p.getStartTime() != null) ? ";" + p.getStartTime() : ";";
+	                    String d2 = (p.getEndTime() != null) ? ";" + p.getEndTime() : ";";
+	                    videoUrl += d1;
+	                    videoUrl += d2;
+	                    //log.info("video url :" + videoUrl);
+	                    name += "|" + p.getPlayerName();
+	                    imageUrl += "|" + p.getImageUrl();
+	                    imageLargeUrl += "|" + p.getImageLargeUrl();
+	                    intro += "|" + p.getPlayerIntro();
+	                    duration += "|" + p.getDurationInt();
+	                    contentType += "|" + p.getContentType();
+                    } else {
+                    	SubEpisode subEpisode = new SubEpisode();
+                    	subEpisode.setStartTime(p.getStartTime());
+                    	subEpisode.setEndTime(p.getEndTime());
+                    	subEpisode.setFileUrl(f1);
+                    	subEpisode.setName(p.getPlayerName());                    	
+                    	subEpisode.setThumbnail(p.getImageUrl());
+                    	subEpisode.setThumbnailLarge(p.getImageLargeUrl());
+                    	subEpisode.setDescription(p.getPlayerIntro());
+                    	subEpisode.setDuration(String.valueOf(p.getDurationInt()));
+                    	subEpisode.setContentType(String.valueOf(p.getContentType()));
+                    	subEpisode.setTitleCards(playerTitleCards);
+                    	subEpisode.setPois(playerPois);                    	
+                    	subEpisodes.add(subEpisode);
+                    }
                     i++;
                 }
-                /*
-                videoUrl = videoUrl.replaceFirst("\\|", "");
-                name = name.replaceFirst("\\|", "");
-                imageUrl = imageUrl.replaceFirst("\\|", "");
-                intro = intro.replaceFirst("\\|", "");
-                */
-                poiStr = poiStr.replaceAll("\\|$", "");                
-                result += composeEpisodeInfoStr(e, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr);
+                if (format == PlayerApiService.FORMAT_PLAIN) {
+                    poiStr = poiStr.replaceAll("\\|$", "");
+                	result += composeEachEpisodeInfo(e, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
+                } else {
+                	info.setSubEpisodes(subEpisodes);
+                }
             }
         }
-        return result;
+        if (format == PlayerApiService.FORMAT_PLAIN)
+        	return result;
+        else 
+        	return programInfos;
     }    
     
     private String removePlayerUnwanted(String value) {
@@ -768,42 +879,60 @@ public class NnProgramManager {
         return str;
     }
 
-    public String composeEpisodeInfoStr(NnEpisode e, 
+    public Object composeEachEpisodeInfo(NnEpisode e, 
              String name, String intro, 
              String imageUrl, String imageLargeUrl, String videoUrl, 
              String duration, String card,
-             String contentType, String poiStr) {
+             String contentType, String poiStr, 
+             short format) {
         //zero file to play            
         name = this.removePlayerUnwanted(name);
         intro = this.removePlayerUnwanted(intro);
         String output = "";
         if (e.getPublishDate() == null)
         	e.setPublishDate(new Date()); //should not happen, just in case
-        String[] ori = {String.valueOf(e.getChannelId()), 
-                        "e" + String.valueOf(e.getId()), 
-                        name, 
-                        intro,
-                        contentType,
-                        duration,
-                        imageUrl,
-                        imageLargeUrl, //imageLargeUrl
-                        videoUrl,
-                        "", //url2
-                        "", //url3
-                        "", //audio file           
-                        String.valueOf(e.getPublishDate().getTime()),
-                        "", //comment
-                        card,
-                        poiStr};
-                
-        output = output + NnStringUtil.getDelimitedStr(ori);
-        output = output.replaceAll("null", "");
+        long channelId = e.getChannelId();
+        String eId = "e" + String.valueOf(e.getId());
+        long publishTime = e.getPublishDate().getTime();
         
-        output = output + "\n";
-        return output;
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+	        String[] ori = {String.valueOf(channelId), 
+	                        eId, 
+	                        name, 
+	                        intro,
+	                        contentType,
+	                        duration,
+	                        imageUrl,
+	                        imageLargeUrl, //imageLargeUrl
+	                        videoUrl,
+	                        "", //url2
+	                        "", //url3
+	                        "", //audio file           
+	                        String.valueOf(publishTime),
+	                        "", //comment
+	                        card,
+	                        poiStr};
+	        output = output + NnStringUtil.getDelimitedStr(ori);
+	        output = output.replaceAll("null", "");	        
+	        output = output + "\n";
+	        return output;
+        } else {        	
+        	ProgramInfo info = new ProgramInfo();
+        	info.setChannelId(channelId);
+        	info.setId(eId);
+        	info.setName(name);
+        	info.setDescription(intro);
+        	info.setContentType(contentType);
+        	info.setDuration(duration);
+        	info.setThumbnail(imageUrl);
+        	info.setThumbnailLarge(imageLargeUrl);
+        	info.setFileUrl(videoUrl);
+        	info.setPublishTime(publishTime);        	
+        	return info;
+        }
     }        
 
-    public String composeProgramInfoStr(NnProgram p) {
+    public Object composeEachProgramInfo(NnProgram p, short format) {
         String output = "";        
         String regexCache = "^(http|https)://(9x9cache.s3.amazonaws.com|s3.amazonaws.com/9x9cache)";
         String regexPod = "^(http|https)://(9x9pod.s3.amazonaws.com|s3.amazonaws.com/9x9pod)";
@@ -821,53 +950,98 @@ public class NnProgramManager {
         }
         if (p.getPublishDate() == null)
         	p.setPublishDate(new Date()); //should not happen, just in case
-
-        String[] ori = {String.valueOf(p.getChannelId()), 
-                        String.valueOf(p.getId()), 
-                        p.getPlayerName(), 
-                        p.getPlayerIntro(),
-                        String.valueOf(p.getContentType()), 
-                        p.getDuration(),
-                        imageUrl,
-                        "",
-                        url1, //video url
-                        "", //file type 2 
-                        "", //file type 3
-                        p.getAudioFileUrl(), //audio file            
-                        String.valueOf(p.getPublishDate().getTime()),
-                        p.getComment(),
-                        ""}; //card
-        output = output + NnStringUtil.getDelimitedStr(ori);
-        output = output.replaceAll("null", "");
-        output = output + "\n";
-        return output;
+        long channelId = p.getChannelId();
+        long pid = p.getId();
+        String name = p.getName();
+        String intro = p.getIntro();
+        short contentType = p.getContentType();
+        String duration = p.getDuration();
+        String audioFileUrl = p.getAudioFileUrl();
+        long publishTime = p.getPublishDate().getTime();
+        String comment = p.getComment();
+        
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+	        String[] ori = {String.valueOf(channelId), 
+	                        String.valueOf(pid), 
+	                        name, 
+	                        intro,
+	                        String.valueOf(contentType), 
+	                        duration,
+	                        imageUrl,
+	                        "",
+	                        url1, //video url
+	                        "", //file type 2 
+	                        "", //file type 3
+	                        audioFileUrl, //audio file            
+	                        String.valueOf(publishTime),
+	                        comment,
+	                        ""}; //card
+	        output = output + NnStringUtil.getDelimitedStr(ori);
+	        output = output.replaceAll("null", "");
+	        output = output + "\n";
+	        return output;
+        } else {
+        	ProgramInfo json = new ProgramInfo();
+        	json.setChannelId(channelId);
+        	json.setId(String.valueOf(pid));
+        	json.setName(name);
+        	json.setDescription(intro);
+        	json.setContentType(String.valueOf(contentType));
+        	json.setDuration(duration);
+        	json.setThumbnail(imageUrl);
+        	json.setFileUrl(url1);
+        	json.setAudioFileUrl(audioFileUrl);
+        	json.setPublishTime(publishTime);
+        	json.setComment(comment);
+        	return json;
+        }
     }        
 
-    public String composeYtProgramInfoStr(YtProgram p) {
-        String output = "";
-        
+    public Object composeEachYtProgramInfo(YtProgram p, short format) {
+    	long channelId = p.getChannelId();
+    	String pId = String.valueOf(p.getId());
+    	String name = p.getPlayerName();
+    	String intro = p.getPlayerIntro();
+    	short contentType = NnProgram.CONTENTTYPE_YOUTUBE;
+    	String duration = p.getDuration();
+    	String imageUrl = p.getImageUrl();
+    	long updateTime = p.getUpdateDate().getTime();
         String url1 = "";
         if (p.getYtVideoId() != null)
             url1 = "http://www.youtube.com/watch?v=" + p.getYtVideoId();
-        String[] ori = {String.valueOf(p.getChannelId()), 
-                        String.valueOf(p.getId()), 
-                        p.getPlayerName(), 
-                        p.getPlayerIntro(),
-                        String.valueOf(NnProgram.CONTENTTYPE_YOUTUBE), 
-                        p.getDuration(),
-                        p.getImageUrl(),
-                        "",
-                        url1, //video url
-                        "", //file type 2 
-                        "", //file type 3
-                        "", //audio file            
-                        String.valueOf(p.getUpdateDate().getTime()),
-                        "", //comment
-                        ""}; //card
-        output = output + NnStringUtil.getDelimitedStr(ori);
-        output = output.replaceAll("null", "");
-        output = output + "\n";
-        return output;
+    	if (format == PlayerApiService.FORMAT_PLAIN) {
+	        String output = "";        
+	        String[] ori = {String.valueOf(channelId), 
+	                        pId, 
+	                        name, 
+	                        intro,
+	                        String.valueOf(contentType), 
+	                        duration,
+	                        imageUrl,
+	                        "",
+	                        url1, //video url
+	                        "", //file type 2 
+	                        "", //file type 3
+	                        "", //audio file            
+	                        String.valueOf(updateTime),
+	                        "", //comment
+	                        ""}; //card
+	        output = output + NnStringUtil.getDelimitedStr(ori);
+	        output = output.replaceAll("null", "");
+	        output = output + "\n";
+	        return output;
+    	} else {
+    		ProgramInfo info = new ProgramInfo();
+    		info.setChannelId(channelId);
+    		info.setId(pId);
+    		info.setName(name);
+    		info.setContentType(String.valueOf(contentType));
+    		info.setDuration(duration);
+    		info.setThumbnail(imageUrl);
+    		info.setFileUrl(url1);
+    		info.setPublishTime(updateTime);
+    		return info;
+    	}
     }        
     
     // TODO change to isPoiPointCollision

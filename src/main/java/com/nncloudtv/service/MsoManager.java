@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -15,6 +16,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.web.json.player.BrandInfo;
 
 @Service
 public class MsoManager {
@@ -22,6 +24,18 @@ public class MsoManager {
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
     private MsoDao msoDao = new MsoDao();    
+    private MsoConfigManager configMngr;
+    
+    @Autowired
+    public MsoManager(MsoConfigManager configMngr) {
+        
+        this.configMngr = configMngr;
+    }
+    
+    public MsoManager() {
+        
+        this.configMngr = new MsoConfigManager();
+    }
 
     public Mso findOneByName(String name) {
         if (name == null)
@@ -62,11 +76,6 @@ public class MsoManager {
             */
         return mso;
     }
-    /*
-    public void processCache() {
-        this.getBrandInfoCache(true);
-    }
-    */
     
     public Mso findNNMso() {
         List<Mso> list = this.findByType(Mso.TYPE_NN);
@@ -81,67 +90,121 @@ public class MsoManager {
     	return false;
     }
     
-    public String[] getBrandInfoCache(Mso mso, String os) {
-        if (mso == null) {return null; }
-        String[] result = {""};
-        String cacheKey = "brandInfo(" + mso.getName() + ")";
-        try {
-            String[] cached = (String[]) CacheFactory.get(cacheKey);
-            if (cached != null) {
-                log.info("get brandInfo from cache:" + cached.length);
-                return cached;
-            }
-        } catch (Exception e) {
-            log.info("memcache error");
-        }
-        
-        log.info("brand info not from cache");
-        MsoConfigManager configMngr = new MsoConfigManager();
+    private String composeBrandInfoStr(Mso mso) {
         
         //general setting
-        result[0] += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-        result[0] += PlayerApiService.assembleKeyValue("name", mso.getName());
-        result[0] += PlayerApiService.assembleKeyValue("title", mso.getTitle());        
-        result[0] += PlayerApiService.assembleKeyValue("logoUrl", mso.getLogoUrl());
-        result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
-        result[0] += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
-        result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
+        String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        result += PlayerApiService.assembleKeyValue("name", mso.getName());
+        result += PlayerApiService.assembleKeyValue("title", mso.getTitle());        
+        result += PlayerApiService.assembleKeyValue("logoUrl", mso.getLogoUrl());
+        result += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
+        result += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
+        result += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         List<MsoConfig> list = configMngr.findByMso(mso);
         //config
         boolean regionSet = false;
         for (MsoConfig c : list) {
             System.out.println(c.getItem() + ";" + c.getValue());
             if (c.getItem().equals(MsoConfig.DEBUG))
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
             if (c.getItem().equals(MsoConfig.FBTOKEN))
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.FBTOKEN, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.FBTOKEN, c.getValue());
             if (c.getItem().equals(MsoConfig.RO)) {
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.RO, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.RO, c.getValue());
             }            
             if (c.getItem().equals(MsoConfig.SUPPORTED_REGION)) {
-            	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, c.getValue());
+            	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, c.getValue());
             	regionSet = true;
             }
             if (c.getItem().equals(MsoConfig.FORCE_UPGRADE)) {
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.FORCE_UPGRADE, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.FORCE_UPGRADE, c.getValue());
             }            
             if (c.getItem().equals(MsoConfig.UPGRADE_MSG)) {
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.UPGRADE_MSG, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.UPGRADE_MSG, c.getValue());
             }    
             if (c.getItem().equals(MsoConfig.VIDEO)) {
-                result[0] += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, c.getValue());
+                result += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, c.getValue());
             }            
         }
         if (regionSet == false) {
-        	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
         }
         /*
         if (videoSet == false) {
         	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, "en w-YkGyubqcA;zh w-YkGyubqcA");
         }
         */
-        CacheFactory.set(cacheKey, result);
-        return result;        
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, PlayerApiService.FORMAT_PLAIN), result);
+        return result;
+    }
+    
+    private Object composeBrandInfoJson(Mso mso) {
+        MsoConfigManager configMngr = new MsoConfigManager();
+        BrandInfo info = new BrandInfo();
+        
+        //general setting
+        info.setKey(mso.getId());
+        info.setName(mso.getName());
+        info.setTitle(mso.getTitle());        
+        info.setLogoUrl(mso.getLogoUrl());
+        info.setJingleUrl(mso.getJingleUrl());
+        info.setPreferredLangCode(mso.getLang());
+        List<MsoConfig> list = configMngr.findByMso(mso);
+        //config
+        for (MsoConfig c : list) {
+            System.out.println(c.getItem() + ";" + c.getValue());
+            if (c.getItem().equals(MsoConfig.DEBUG))
+                info.setDebug(c.getValue());
+            if (c.getItem().equals(MsoConfig.FBTOKEN))
+                info.setFbToken(c.getValue());
+            if (c.getItem().equals(MsoConfig.RO))
+                info.setReadOnly(c.getValue());
+            if (c.getItem().equals(MsoConfig.SUPPORTED_REGION))
+            	info.setSupportedRegion(c.getValue());
+            if (c.getItem().equals(MsoConfig.FORCE_UPGRADE))
+                info.setForceUpgrade(c.getValue());
+            if (c.getItem().equals(MsoConfig.UPGRADE_MSG))
+            	info.setUpgradeMessage(c.getValue());
+            if (c.getItem().equals(MsoConfig.VIDEO)) {
+                info.setTutorialVideo(c.getValue());
+            }            
+        }
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, PlayerApiService.FORMAT_JSON), info);
+        return info;    	
+    }    
+    
+    public Object getBrandInfo(Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
+        if (mso == null) {return null; }
+        String cacheKey = CacheFactory.getBrandInfoKey(mso, format);
+        Object cached = null;
+        try {
+            cached = CacheFactory.get(cacheKey);
+        } catch (Exception e) {
+            log.info("memcache error");
+        }
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	BrandInfo json = (BrandInfo)cached;
+        	if (cached == null) {
+        		log.info("plain text is not cached");
+        		json =  (BrandInfo)this.composeBrandInfoJson(mso);
+        	}
+        	json.setLocale(locale);
+        	json.setBrandInfoCounter(counter);
+        	json.setPiwik(piwik);
+        	json.setAcceptLang(acceptLang);        	
+        	return json;
+        } else {
+	    	String[] plain = {(String) cached};
+	    	if (cached == null) {
+	    		log.info("plain text is not cached");
+	    		plain[0] = this.composeBrandInfoStr(mso);
+	    	}
+	    	plain[0] += PlayerApiService.assembleKeyValue("locale", locale);
+	        plain[0] += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
+	        plain[0] += PlayerApiService.assembleKeyValue("piwik", piwik);
+	        plain[0] += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);        
+	        return plain;        	
+        }        
     }
             
     public List<Mso> findByType(short type) {

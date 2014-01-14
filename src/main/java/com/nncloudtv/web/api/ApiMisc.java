@@ -183,9 +183,9 @@ public class ApiMisc extends ApiGeneric {
 		Map<String, String[]> names = req.getParameterMap();
 		Map<String, String> result = new TreeMap<String, String>();
 		
-		ApiContext ctx = new ApiContext(req);
+		ApiContext context = new ApiContext(req);
 		
-        log.info("isProductionSite = " + ctx.isProductionSite());
+        log.info("isProductionSite = " + context.isProductionSite());
 		
 		for (String name : names.keySet()) {
 			
