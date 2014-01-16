@@ -74,20 +74,20 @@ crawlRecommendCount9: ${crawlRecommendCount9}
 <!-- $Revision: 2612 $ -->
 
 <!-- Google+ Sharing meta data -->
-<meta itemprop="name" content="${fbName}">
-<meta itemprop="description" content="${fbDescription}">
-<meta itemprop="image" content="${fbImg}"><!-- Google+ requires thumbnail size at least 125px -->
+<meta itemprop="name" content="${meta_title}">
+<meta itemprop="description" content="${meta_description}">
+<meta itemprop="image" content="${meta_thumbnail}"><!-- Google+ requires thumbnail size at least 125px -->
 
 <!-- FB Sharing meta data -->
-<meta name="title" content="${fbName}"/>
-<meta name="description" content="${fbDescription}"/>
+<meta name="title" content="${meta_title}"/>
+<meta name="description" content="${meta_description}"/>
 
-<link rel="image_src" href="${fbImg}" />
+<link rel="image_src" href="${meta_thumbnail}" />
 
-<meta property="og:title" content="${fbName}"/>
-<meta property="og:image" content="${fbImg}"/>
-<meta property="og:description" content="${fbDescription}"/>
-<meta property="og:url" content="${fbUrl}"/>
+<meta property="og:title" content="${meta_title}"/>
+<meta property="og:image" content="${meta_thumbnail}"/>
+<meta property="og:description" content="${meta_description}"/>
+<meta property="og:url" content="${meta_url}"/>
 
 <script type="text/javascript">
 var brandinfo = "${brandInfo}";

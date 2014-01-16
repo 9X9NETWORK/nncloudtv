@@ -37,20 +37,56 @@ public class MockMsoConfigManager extends MsoConfigManager {
         MsoConfig config = new MsoConfig();
         config.setItem(item);
         
-        if (mso.getName() == Mso.NAME_9X9 && item == MsoConfig.FAVICON_URL) {
+        if (mso.getName() == Mso.NAME_9X9) {
             
-            config.setValue("http://www.mock.com/favicon.ico");
-            log.info("[MOCK] favicon url = " + config.getValue());
+            if (item == MsoConfig.FAVICON_URL) {
+                
+                config.setValue("http://www.mock.com/favicon.ico");
+                log.info("[MOCK] favicon url = " + config.getValue());
+                
+                return config;
+                
+            } else if (item == MsoConfig.META_TITLE) {
+                
+                config.setValue("mock 9x9 mso");
+                log.info("[MOCK] meta title = " + config.getValue());
+                
+                return config;
+                
+            } else if (item == MsoConfig.META_DESCRIPTION) {
+                
+                config.setValue("mock 9x9 description");
+                log.info("[MOCK] meta description = " + config.getValue());
+                
+                return config;
+                
+            } else if (item == MsoConfig.META_THUMBNAIL) {
+                
+                config.setValue("http://www.mock.com/thumbnail.jpg");
+                log.info("[MOCK] meta thumbnail = " + config.getValue());
+                
+                return config;
+                
+            } else if (item == MsoConfig.META_KEYWORD) {
+                
+                config.setValue("one,two,three,four");
+                log.info("[MOCK] meta keyword = " + config.getValue());
+                
+                return config;
+                
+            }
             
-            return config;
+        } else if (mso.getName() == Mso.NAME_CTS) {
             
-        } else if (mso.getName() == Mso.NAME_CTS && item == MsoConfig.SUPPORTED_REGION) {
+            if (item == MsoConfig.SUPPORTED_REGION) {
+                
+                String supportedRegion = "zh 中文";
+                config.setValue(supportedRegion);
+                log.info("[MOCK] supported region = " + supportedRegion);
+                
+                return config;
+            }
             
-            String supportedRegion = "zh 中文";
-            config.setValue(supportedRegion);
-            log.info("[MOCK] supported region = " + supportedRegion);
-            
-            return config;
         }
         
         return null;

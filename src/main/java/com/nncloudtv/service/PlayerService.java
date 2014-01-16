@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
@@ -29,13 +28,11 @@ public class PlayerService {
     
     protected static final Logger log = Logger.getLogger(PlayerService.class.getName());
     
-    public static final String META_NAME = "fbName";
-    public static final String META_IMAGE = "fbImg";
-    public static final String META_DESCRIPTION = "fbDescription";
-    public static final String META_URL = "fbUrl";
-    public static final String META_KEYWORD = "fbKeyword";
-    public static final String META_TITLE = "fbTitle"; // <title/>
-    public static final String META_BRANDINFO = "brandInfo";
+    public static final String META_TITLE = "meta_title";
+    public static final String META_THUMBNAIL = "meta_thumbnail";
+    public static final String META_DESCRIPTION = "meta_desciption";
+    public static final String META_URL = "meta_url";
+    public static final String META_KEYWORD = "meta_keyword";
     public static final String META_CHANNEL_TITLE = "crawlChannelTitle";
     public static final String META_EPISODE_TITLE = "crawlEpisodeTitle";
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
@@ -69,30 +66,23 @@ public class PlayerService {
         
         // bind favicon
         Mso mso = msoMngr.findByName(msoName);
-        MsoConfig item = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
-        if (item != null && item.getValue() != null && item.getValue().isEmpty() == false) {
-            model.addAttribute(META_FAVICON, "<link rel=\"icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>" +
-                "<link rel=\"shortcut icon\" href=\"" + item.getValue() + "\" type=\"image/x-icon\"/>");
+        if (mso == null)
+            return model;
+        
+        Map<String, String> brandInfo = configMngr.getBrandInfo(mso);
+        model.addAttribute(PlayerService.META_TITLE, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_TITLE)));
+        model.addAttribute(PlayerService.META_DESCRIPTION, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_DESCRIPTION)));
+        model.addAttribute(PlayerService.META_THUMBNAIL, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_THUMBNAIL)));
+        model.addAttribute(PlayerService.META_KEYWORD, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_KEYWORD)));
+        String faviconUrl = brandInfo.get(MsoConfig.FAVICON_URL);
+        if (faviconUrl != null) { 
+            model.addAttribute(META_FAVICON, "<link rel='icon' href='" + faviconUrl + 
+                                             "' type='image/x-icon'/>" +
+                                             "<link rel='shortcut icon' href='" + faviconUrl +
+                                             "' type='image/x-icon'/>");
         }
         
-        // TODO: move to mso_config
-        if (msoName.equals(Mso.NAME_CTS)) {
-            
-            model.addAttribute(META_BRANDINFO, Mso.NAME_CTS);
-            model.addAttribute(META_TITLE, "華視");
-            model.addAttribute(META_DESCRIPTION, "「華視雲端電視網」讓您跨地區、跨時間、跨裝置地收看華視為您精選的節目，現正推出：微新運動(weiflim)元年第一屆臺灣微電影節選拔活動，主題以臺灣的社會創新，鼓勵臺灣人民與各行各業運用新科技、新方法、新思維、新管理方式，解決社會問題，創造價值與幸福的精彩故事");
-            model.addAttribute(META_KEYWORD, "微電影節,微新運動,2013台灣微電影節-微視界‧大創新,華視 微電影節,臺灣微電影節,weifilm");
-            model.addAttribute(META_IMAGE, "http://9x9ui.s3.amazonaws.com/tv4.0/img/cts-logo.png");
-            
-        } else {
-            
-            model.addAttribute(META_BRANDINFO, Mso.NAME_9X9);
-            model.addAttribute(META_TITLE, "9x9.tv");
-            model.addAttribute(META_DESCRIPTION, "&nbsp;");
-            model.addAttribute(META_IMAGE, "http://9x9ui.s3.amazonaws.com/9x9playerV39/images/9x9-facebook-icon.png");
-            CookieHelper.deleteCookie(resp, CookieHelper.MSO); //delete brand cookie
-        }
-        return model;        
+        return model;
     }
     
     public String getBrandNameByUrl(HttpServletRequest req, String mso) {
@@ -221,9 +211,9 @@ public class PlayerService {
                 log.info("nnprogram found = " + pid);
                 model.addAttribute(META_EPISODE_TITLE, program.getName());
                 model.addAttribute("crawlEpThumb1", program.getImageUrl());
-                model.addAttribute(META_NAME, this.prepareFb(program.getName(), 0));
+                model.addAttribute(META_TITLE, this.prepareFb(program.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(program.getIntro(), 1));
-                model.addAttribute(META_IMAGE, this.prepareFb(program.getImageUrl(), 2));
+                model.addAttribute(META_THUMBNAIL, this.prepareFb(program.getImageUrl(), 2));
                 model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getProgramPlaybackUrl(null, "" + program.getChannelId(), pid), 3));
             }
         } else if (pid.matches("e[0-9]+")){
@@ -234,9 +224,9 @@ public class PlayerService {
                 log.info("nnepisode found = " + eid);
                 model.addAttribute(META_EPISODE_TITLE, episode.getName());
                 model.addAttribute("crawlEpThumb1", episode.getImageUrl());
-                model.addAttribute(META_NAME, this.prepareFb(episode.getName(), 0));
+                model.addAttribute(META_TITLE, this.prepareFb(episode.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(episode.getIntro(), 1));
-                model.addAttribute(META_IMAGE, this.prepareFb(episode.getImageUrl(), 2));
+                model.addAttribute(META_THUMBNAIL, this.prepareFb(episode.getImageUrl(), 2));
                 model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), mso), 3));
             }
             /*
@@ -260,9 +250,9 @@ public class PlayerService {
             log.info("found channel = " + cid);
             model.addAttribute(META_CHANNEL_TITLE, channel.getName());
             model.addAttribute(META_VIDEO_THUMBNAIL, channel.getOneImageUrl());
-            model.addAttribute(META_NAME, this.prepareFb(channel.getName(), 0));
+            model.addAttribute(META_TITLE, this.prepareFb(channel.getName(), 0));
             model.addAttribute(META_DESCRIPTION, this.prepareFb(channel.getIntro(), 1));
-            model.addAttribute(META_IMAGE, this.prepareFb(channel.getOneImageUrl(), 2));
+            model.addAttribute(META_THUMBNAIL, this.prepareFb(channel.getOneImageUrl(), 2));
             model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(channel.getId(), null, mso), 3));
         }
         return model;
@@ -390,9 +380,9 @@ public class PlayerService {
                 model.addAttribute(META_EPISODE_TITLE, c.getName());
                 model.addAttribute(META_VIDEO_THUMBNAIL, c.getOneImageUrl());
                 model.addAttribute("crawlEpThumb1", c.getOneImageUrl());                
-                model.addAttribute(META_NAME, this.prepareFb(c.getName(), 0));
+                model.addAttribute(META_TITLE, this.prepareFb(c.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
-                model.addAttribute(META_IMAGE, this.prepareFb(c.getOneImageUrl(), 2));  
+                model.addAttribute(META_THUMBNAIL, this.prepareFb(c.getOneImageUrl(), 2));  
                 
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
@@ -410,9 +400,9 @@ public class PlayerService {
                             model.addAttribute(META_EPISODE_TITLE, e.getName());
                             model.addAttribute("crawlEpThumb" + i, e.getImageUrl());
                             if (episodeShare) {
-                               model.addAttribute(META_NAME, this.prepareFb(e.getName(), 0));   
+                               model.addAttribute(META_TITLE, this.prepareFb(e.getName(), 0));   
                                model.addAttribute(META_DESCRIPTION, this.prepareFb(e.getIntro(), 1));
-                               model.addAttribute(META_IMAGE, this.prepareFb(e.getImageUrl(), 2));
+                               model.addAttribute(META_THUMBNAIL, this.prepareFb(e.getImageUrl(), 2));
                             }
                             i++;
                         }
@@ -438,9 +428,9 @@ public class PlayerService {
                                 model.addAttribute(META_EPISODE_TITLE, p.getName());
                                 model.addAttribute("crawlEpThumb" + i, p.getImageUrl());
                                 if (episodeShare) {
-                                   model.addAttribute(META_NAME, this.prepareFb(p.getName(), 0));
+                                   model.addAttribute(META_TITLE, this.prepareFb(p.getName(), 0));
                                    model.addAttribute(META_DESCRIPTION, this.prepareFb(p.getIntro(), 1));
-                                   model.addAttribute(META_IMAGE, this.prepareFb(p.getImageUrl(), 2));
+                                   model.addAttribute(META_THUMBNAIL, this.prepareFb(p.getImageUrl(), 2));
                                 }
                                 i++;
                             }
@@ -459,16 +449,10 @@ public class PlayerService {
                         }
                     }
                     if (episodeShare) {
-                        model.addAttribute(META_NAME, this.prepareFb((String)model.asMap().get(META_EPISODE_TITLE), 0));
-                        model.addAttribute(META_IMAGE, this.prepareFb((String)model.asMap().get(META_VIDEO_THUMBNAIL), 2));
+                        model.addAttribute(META_TITLE, this.prepareFb((String)model.asMap().get(META_EPISODE_TITLE), 0));
+                        model.addAttribute(META_THUMBNAIL, this.prepareFb((String)model.asMap().get(META_VIDEO_THUMBNAIL), 2));
                     }
                 }
-                /*
-                String fbDescription = (String) model.asMap().get(META_DESCRIPTION);
-                if (fbDescription == null || fbDescription.length() == 0) {
-                    model.addAttribute(META_DESCRIPTION, " ");
-                }
-                */
             }
         }
         

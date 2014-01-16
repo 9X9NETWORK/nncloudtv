@@ -46,17 +46,17 @@ public class PlayerServiceTest {
         Map<String, Object> map = mockModel.asMap();
         log.info(map.toString());
         
-        Assert.assertTrue("META_FAVICON is not null.", map.containsKey(PlayerService.META_FAVICON));
+        Assert.assertTrue("META_FAVICON is not null.", map.containsKey(PlayerService.META_FAVICON) && map.get(PlayerService.META_FAVICON) != null);
         Assert.assertFalse("META_FAVICON is not empty.", ((String)map.get(PlayerService.META_FAVICON)).isEmpty());
         
-        Assert.assertTrue("META_TITLE is not null.", map.containsKey(PlayerService.META_TITLE));
+        Assert.assertTrue("META_TITLE is not null.", map.containsKey(PlayerService.META_TITLE) && map.get(PlayerService.META_TITLE) != null);
         Assert.assertFalse("META_TITLE is not empty.", ((String)map.get(PlayerService.META_TITLE)).isEmpty());
         
-        Assert.assertTrue("META_DESCRIPTION is not null.", map.containsKey(PlayerService.META_DESCRIPTION));
+        Assert.assertTrue("META_DESCRIPTION is not null.", map.containsKey(PlayerService.META_DESCRIPTION) && map.get(PlayerService.META_DESCRIPTION) != null);
         Assert.assertFalse("META_DESCRIPTION is not empty.", ((String)map.get(PlayerService.META_DESCRIPTION)).isEmpty());
         
-        Assert.assertTrue("META_IMAGE is not null.", map.containsKey(PlayerService.META_IMAGE));
-        Assert.assertFalse("META_IMAGE is not empty.", ((String)map.get(PlayerService.META_IMAGE)).isEmpty());
+        Assert.assertTrue("META_IMAGE is not null.", map.containsKey(PlayerService.META_THUMBNAIL) && map.get(PlayerService.META_THUMBNAIL) != null);
+        Assert.assertFalse("META_IMAGE is not empty.", ((String)map.get(PlayerService.META_THUMBNAIL)).isEmpty());
         
     }
 }
