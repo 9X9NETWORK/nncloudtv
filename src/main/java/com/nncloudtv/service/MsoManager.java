@@ -218,14 +218,15 @@ public class MsoManager {
     public MsoEx findByName(String name, boolean extend) {
         
         if (name == null) return null;
-        MsoEx mso = (MsoEx) msoDao.findByName(name);
+        Mso mso = msoDao.findByName(name);
         if (mso == null) return null;
         
         if (extend) {
-            mso = populateMso(mso);
+            
+            return populateMso((MsoEx) mso);
         }
         
-        return mso;
+        return (MsoEx) mso;
         
     }
     

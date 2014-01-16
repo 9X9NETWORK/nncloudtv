@@ -6,11 +6,6 @@ public class MsoEx extends com.nncloudtv.model.Mso {
     
     private static final long serialVersionUID = 543022127572205720L;
     
-    public MsoEx(String name, String intro, String contactEmail, short type) {
-        
-        super(name, intro, contactEmail, type);
-    }
-    
     private Map<String, String> meta;
     
     // the value comes from MsoConfig's SUPPORTED_REGION

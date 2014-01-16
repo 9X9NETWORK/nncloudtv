@@ -12,40 +12,40 @@ import javax.jdo.annotations.*;
 public class Mso implements Serializable {
 
     private static final long serialVersionUID = 352047930355952392L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
-        
+    protected long id;
+    
     @Persistent 
     @Column(jdbcType="VARCHAR", length=255)
-    private String name; //name is unique, used as unique nameId, be careful of the case
+    protected String name; //name is unique, used as unique nameId, be careful of the case
     public static String NAME_9X9 = "9x9";
     public static String NAME_CTS = "cts";
     public static String NAME_5F = "5f";
 
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)    
-    private String title;
+    protected String title;
         
     @Persistent 
     @Column(jdbcType="VARCHAR", length=255)
-    private String intro;
+    protected String intro;
         
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)     
-    private String logoUrl;
+    protected String logoUrl;
         
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
-    private String jingleUrl;
+    protected String jingleUrl;
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
-    private String contactEmail;
+    protected String contactEmail;
     
     @Persistent
-    private short type;
+    protected short type;
     public static final short TYPE_NN = 1; //default mso, must have and must have ONLY one
     public static final short TYPE_MSO= 2;
     public static final short TYPE_3X3= 3;
@@ -57,13 +57,15 @@ public class Mso implements Serializable {
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=5)
-    public String lang;
+    protected String lang;
     
     @Persistent
-    private Date createDate;
+    protected Date createDate;
     
     @Persistent
-    private Date updateDate;
+    protected Date updateDate;
+    
+    public Mso() { }
     
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
