@@ -32,7 +32,6 @@ import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
-import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.cms.Set;
 
 @Controller
@@ -929,7 +928,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        MsoEx mso = null;
+        Mso mso = null;
         
         if (msoIdStr.matches("^\\d+$")) {
             
@@ -951,7 +950,7 @@ public class ApiMso extends ApiGeneric {
             log.info(printExitState(now, req, "404"));
             return null;
         }
-        MsoEx result = apiMsoService.mso(mso);
+        Mso result = apiMsoService.mso(mso);
         
         result = MsoManager.normalize(result);
         log.info(printExitState(now, req, "ok"));

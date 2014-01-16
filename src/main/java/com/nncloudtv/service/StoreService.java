@@ -22,7 +22,6 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Category;
-import com.nncloudtv.web.json.cms.MsoEx;
 
 @Service
 public class StoreService {
@@ -100,7 +99,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        MsoEx mso = msoMngr.findById(msoId, true);
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -135,7 +134,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        MsoEx mso = msoMngr.findById(msoId, true);
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }

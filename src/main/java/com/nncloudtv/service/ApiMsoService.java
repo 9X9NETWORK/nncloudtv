@@ -15,7 +15,6 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Category;
-import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.cms.Set;
 
 @Service
@@ -359,7 +358,7 @@ public class ApiMsoService {
      *  get Mso by given Mso's ID
      *  @param mso required, the Mso's Id
      *  @return object Mso or null if not exist */
-    public MsoEx mso(MsoEx mso) {
+    public Mso mso(Mso mso) {
         
         if (mso == null) {
             return null;

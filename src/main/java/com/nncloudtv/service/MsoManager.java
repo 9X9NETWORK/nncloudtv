@@ -15,7 +15,6 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.player.BrandInfo;
 
 @Service
@@ -215,7 +214,7 @@ public class MsoManager {
         return msoDao.findByType(type);
     }
     
-    public MsoEx findByName(String name, boolean extend) {
+    public Mso findByName(String name, boolean extend) {
         
         if (name == null) return null;
         Mso mso = msoDao.findByName(name);
@@ -223,14 +222,14 @@ public class MsoManager {
         
         if (extend) {
             
-            return populateMso((MsoEx) mso);
+            return populateMso(mso);
         }
         
-        return (MsoEx) mso;
+        return mso;
         
     }
     
-    private MsoEx populateMso(MsoEx mso) {
+    private Mso populateMso(Mso mso) {
         
         MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
@@ -274,9 +273,9 @@ public class MsoManager {
     
     /** rewrite method findById, populate supportedRegion information 
      * @param extend TODO*/
-    public MsoEx findById(long id, boolean extend) {
+    public Mso findById(long id, boolean extend) {
         
-        MsoEx mso = (MsoEx) msoDao.findById(id);
+        Mso mso = msoDao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
@@ -404,7 +403,7 @@ public class MsoManager {
             return new ArrayList<Long>();
         }
         
-        MsoEx mso = findById(msoId, true);
+        Mso mso = findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -467,14 +466,6 @@ public class MsoManager {
     }
     
     public static Mso normalize(Mso mso) {
-        
-        mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
-        mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
-        
-        return mso;
-    }
-    
-    public static MsoEx normalize(MsoEx mso) {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
         mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
