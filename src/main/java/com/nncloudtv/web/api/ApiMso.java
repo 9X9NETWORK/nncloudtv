@@ -946,7 +946,7 @@ public class ApiMso extends ApiGeneric {
             mso = msoMngr.findByName(msoIdStr, true);
         }
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
+            notFound(resp, null);
             log.info(printExitState(now, req, "404"));
             return null;
         }
