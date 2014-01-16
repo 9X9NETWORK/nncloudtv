@@ -486,25 +486,13 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        Mso brand = new MsoManager().findOneByName(mso);
-        NnUserManager userMngr = new NnUserManager();
+        Mso brand = msoMngr.findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        NnChannelManager channelMngr = new NnChannelManager();
-        //results = channelMngr.findByUserAndHisFavorite(user, 0, true);
         results = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : results) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
@@ -517,13 +505,6 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
-            
-            /*
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAKE_FAVORITE) {
-                channel.setContentType(NnChannel.CONTENTTYPE_FAVORITE); // To fake is necessary to fake like that
-                channel.setMoreImageUrl(NnChannel.IMAGE_EPISODE_URL + "|" + NnChannel.IMAGE_EPISODE_URL + "|" + NnChannel.IMAGE_EPISODE_URL);
-            }
-            */
         }
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));

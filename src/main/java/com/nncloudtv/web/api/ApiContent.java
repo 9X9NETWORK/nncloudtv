@@ -1389,7 +1389,7 @@ public class ApiContent extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
-    
+        
         Long channelId = evaluateLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
@@ -1401,17 +1401,6 @@ public class ApiContent extends ApiGeneric {
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
