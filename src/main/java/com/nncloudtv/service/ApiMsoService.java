@@ -15,6 +15,7 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Category;
+import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.cms.Set;
 
 @Service
@@ -356,20 +357,15 @@ public class ApiMsoService {
     
     /** service for ApiMso.mso
      *  get Mso by given Mso's ID
-     *  @param msoId required, the Mso's Id
+     *  @param mso required, the Mso's Id
      *  @return object Mso or null if not exist */
-    public Mso mso(Long msoId) {
+    public MsoEx mso(MsoEx mso) {
         
-        if (msoId == null) {
-            return null;
-        }
-        
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
         if (mso == null) {
             return null;
         }
         
-        mso.setMaxSets(Mso.MAXSETS_DEFAULT);
+        mso.setMaxSets(MsoConfig.MAXSETS_DEFAULT);
         MsoConfig maxSets = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
         if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
             try {
@@ -378,7 +374,7 @@ public class ApiMsoService {
             }
         }
         
-        mso.setMaxChPerSet(Mso.MAXCHPERSET_DEFAULT);
+        mso.setMaxChPerSet(MsoConfig.MAXCHPERSET_DEFAULT);
         MsoConfig maxChPerSet = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
         if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
             try {

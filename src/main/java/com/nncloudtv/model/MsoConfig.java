@@ -45,10 +45,13 @@ public class MsoConfig {
     public static String MAX_SETS = "max-sets";
     public static String MAX_CH_PER_SET = "max-ch-per-set";
     
-    public static String META_TITLE = "meta-title";
-    public static String META_DESCRIPTION = "meta-description";
-    public static String META_KEYWORD = "meta-keyword";
-    public static String META_THUMBNAIL = "meta-thumbnail";
+    public static final String META_TITLE = "meta-title";
+    public static final String META_DESCRIPTION = "meta-description";
+    public static final String META_KEYWORD = "meta-keyword";
+    public static final String META_THUMBNAIL = "meta-thumbnail";
+    
+    public static final short MAXCHPERSET_DEFAULT = 27;
+    public static final short MAXSETS_DEFAULT = 3;
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)

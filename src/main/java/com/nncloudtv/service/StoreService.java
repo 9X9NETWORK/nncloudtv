@@ -22,6 +22,7 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Category;
+import com.nncloudtv.web.json.cms.MsoEx;
 
 @Service
 public class StoreService {
@@ -99,7 +100,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        MsoEx mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -134,7 +135,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        MsoEx mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -144,8 +145,8 @@ public class StoreService {
         } else {
             spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
         }
-        List<NnChannel> msoStoreCategoryChannels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
-        if (msoStoreCategoryChannels == null || msoStoreCategoryChannels.size() == 0) {
+        List<NnChannel> channels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
+        if (channels == null || channels.size() == 0) {
             return new ArrayList<Long>();
         }
         
@@ -157,16 +158,16 @@ public class StoreService {
             }
         }
         
-        List<Long> msoStoreCategoryChannelIds = new ArrayList<Long>();
-        for (NnChannel channel : msoStoreCategoryChannels) {
+        List<Long> store = new ArrayList<Long>();
+        for (NnChannel channel : channels) {
             if (blackListMap.containsKey(channel.getId())) {
                 // skip
             } else {
-                msoStoreCategoryChannelIds.add(channel.getId());
+                store.add(channel.getId());
             }
         }
         
-        return msoStoreCategoryChannelIds;
+        return store;
     }
     
     /** get Channels from official Store's Category

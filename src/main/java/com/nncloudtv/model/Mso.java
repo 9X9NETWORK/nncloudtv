@@ -65,20 +65,6 @@ public class Mso implements Serializable {
     @Persistent
     private Date updateDate;
     
-    // the value comes from MsoConfig's SUPPORTED_REGION
-    @NotPersistent
-    private String supportedRegion;
-    
-    // The value of maximum number of sets each MSO
-    @NotPersistent
-    private short maxSets;
-    public static short MAXSETS_DEFAULT = 3;
-    
-    // The maximum number of channels per set
-    @NotPersistent
-    private short maxChPerSet;
-    public static short MAXCHPERSET_DEFAULT = 27;
-
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
         this.intro = intro;
@@ -173,29 +159,4 @@ public class Mso implements Serializable {
     public void setLang(String lang) {
         this.lang = lang;
     }
-
-    public String getSupportedRegion() {
-        return supportedRegion;
-    }
-
-    public void setSupportedRegion(String supportedRegion) {
-        this.supportedRegion = supportedRegion;
-    }
-
-    public short getMaxSets() {
-        return maxSets;
-    }
-
-    public void setMaxSets(short maxSets) {
-        this.maxSets = maxSets;
-    }
-
-    public short getMaxChPerSet() {
-        return maxChPerSet;
-    }
-
-    public void setMaxChPerSet(short maxChPerSet) {
-        this.maxChPerSet = maxChPerSet;
-    }
-
 }

@@ -15,6 +15,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.player.BrandInfo;
 
 @Service
@@ -213,13 +214,41 @@ public class MsoManager {
     public List<Mso> findByType(short type) {
         return msoDao.findByType(type);
     }
-
+    
+    public MsoEx findByName(String name, boolean extend) {
+        
+        if (name == null) return null;
+        MsoEx mso = (MsoEx) msoDao.findByName(name);
+        if (mso == null) return null;
+        
+        if (extend) {
+            mso = populateMso(mso);
+        }
+        
+        return mso;
+        
+    }
+    
+    private MsoEx populateMso(MsoEx mso) {
+        
+        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        if (config == null) {
+            mso.setSupportedRegion(null);
+        } else {
+            mso.setSupportedRegion(config.getValue());
+        }
+        
+        mso.setMeta(configMngr.getBrandInfo(mso));
+        
+        return mso;
+    }
+    
     public Mso findByName(String name) {
         if (name == null) {return null;}
         Mso mso = msoDao.findByName(name);
         return mso;
     }
-
+    
     public Mso getByNameFromCache(String name) {
         if (name == null || name.isEmpty()) {return null;}
         String cacheKey = "mso(" + name + ")";
@@ -242,18 +271,15 @@ public class MsoManager {
         return msoDao.findById(id);
     }
     
-    /** rewrite method findById, populate supportedRegion information */
-    public Mso findByIdWithSupportedRegion(long id) {
-        Mso mso = msoDao.findById(id);
-        if (mso == null) {
-            return null;
-        }
+    /** rewrite method findById, populate supportedRegion information 
+     * @param extend TODO*/
+    public MsoEx findById(long id, boolean extend) {
         
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (config == null) {
-            mso.setSupportedRegion(null);
-        } else {
-            mso.setSupportedRegion(config.getValue());
+        MsoEx mso = (MsoEx) msoDao.findById(id);
+        if (mso == null) {return null;}
+        
+        if (extend) {
+            mso = populateMso(mso);
         }
         
         return mso;
@@ -377,7 +403,7 @@ public class MsoManager {
             return new ArrayList<Long>();
         }
         
-        Mso mso = findByIdWithSupportedRegion(msoId);
+        MsoEx mso = findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -440,6 +466,14 @@ public class MsoManager {
     }
     
     public static Mso normalize(Mso mso) {
+        
+        mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
+        mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
+        
+        return mso;
+    }
+    
+    public static MsoEx normalize(MsoEx mso) {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
         mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));

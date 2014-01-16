@@ -32,6 +32,7 @@ import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
+import com.nncloudtv.web.json.cms.MsoEx;
 import com.nncloudtv.web.json.cms.Set;
 
 @Controller
@@ -928,33 +929,29 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
+        MsoEx mso = null;
         
-        Mso mso = msoMngr.findById(msoId);
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                log.info(printExitState(now, req, "404"));
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId, true);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr, true);
+        }
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
             return null;
         }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
-        }
-        
-        Mso result = apiMsoService.mso(mso.getId());
+        MsoEx result = apiMsoService.mso(mso);
         
         result = MsoManager.normalize(result);
         log.info(printExitState(now, req, "ok"));
