@@ -22,9 +22,22 @@ public class NnChannelPrefManager {
 	protected static final Logger log = Logger
 	        .getLogger(NnChannelPrefManager.class.getName());
 	
-	private NnChannelPrefDao prefDao = new NnChannelPrefDao();
+	private NnChannelPrefDao prefDao;
+	private MsoManager msoMngr;
 	
-	public NnChannelPref save(NnChannelPref pref) {
+	public NnChannelPrefManager() {
+	    
+	    this.prefDao = new NnChannelPrefDao();
+	    this.msoMngr = new MsoManager();
+	}
+	
+	public NnChannelPrefManager(NnChannelPrefDao prefDao, MsoManager msoMngr) {
+        
+        this.prefDao = prefDao;
+        this.msoMngr = msoMngr;
+    }
+	
+    public NnChannelPref save(NnChannelPref pref) {
 		Date now = new Date();
 		if (pref.getCreateDate() == null)
 			pref.setCreateDate(now);
@@ -165,12 +178,10 @@ public class NnChannelPrefManager {
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.BRAND_AUTOSHARE);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
             
-            MsoManager msoMngr = new MsoManager();
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
         }
         
         NnChannelPref pref = channelPrefs.get(0);
-        MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.findByName(pref.getValue());
         if (msoMngr.isValidBrand(channelId, mso) == false) {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());

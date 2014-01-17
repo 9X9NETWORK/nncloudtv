@@ -20,7 +20,13 @@ public class NnStringUtil {
     
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
     public static final int MAX_JDO_STRING_LENGTH = 255;
-
+    
+    private static NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
+    
+    public static void setChannelPrefMngr(NnChannelPrefManager mngr) {
+        channelPrefMngr = mngr;
+    }
+    
     public static boolean stringToBool(String s) {
       if (s.equals("1"))
         return true;
@@ -234,19 +240,24 @@ public class NnStringUtil {
         
         return "http://"
                 + (context == null ? MsoConfigManager.getServerDomain()
-                        : context.getAppDomain()) + "/view?ch=" + channelIdStr
-                + (programIdStr == null ? "" : "&ep=" + programIdStr);
+                                   : context.getAppDomain())
+                + "/web/p" + channelIdStr + "/"
+                + (programIdStr == null ? "" : programIdStr);
     }
     
     public static String getSharingUrl(Long channelId, Long episodeId, String mso) {
         
-        NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
-        NnChannelPref channelPref = channelPrefMngr.getBrand(channelId);
+        String domain = MsoConfigManager.getServerDomain();
         
-        String url = "http://" + MsoConfigManager.getServerDomain() + "/view?mso="
-                   + (mso == null ? channelPref.getValue() : mso) + "&ch=" + channelId
-                   + (episodeId == null ? "" : "&ep=e" + episodeId);
+        if (mso == null) {
+            
+            NnChannelPref pref = channelPrefMngr.getBrand(channelId);
+            mso = pref.getValue();
+        }
         
-        return url;
+        domain = mso + "." + domain.replaceAll("^www\\.", "");
+        
+        return "http://" + domain + "/web/p" + channelId
+                   + "/" + (episodeId == null ? "" : episodeId);
     }
 }
