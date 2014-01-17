@@ -505,6 +505,8 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(channel.getId(), null, mso));
         }
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));
