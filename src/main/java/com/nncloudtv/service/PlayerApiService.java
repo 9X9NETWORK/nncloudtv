@@ -284,8 +284,8 @@ public class PlayerApiService {
           }
           for (App a : myapps) {
               String storeUrl = a.getIosStoreUrl();
-              if (type == App.TYPE_IOS)
-            	  storeUrl = a.getAndroidStoreUrl();
+              if (type == App.TYPE_ANDROID)            	  
+                 storeUrl = a.getAndroidStoreUrl();
               String[] obj = {
                 a.getName(),
                 a.getIntro(),
