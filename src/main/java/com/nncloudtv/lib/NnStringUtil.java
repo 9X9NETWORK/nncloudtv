@@ -230,9 +230,9 @@ public class NnStringUtil {
         
         return "http://"
                 + (context == null ? MsoConfigManager.getServerDomain()
-                        : context.getAppDomain()) + "/tv#/promotion/"
-                + channelIdStr
-                + (programIdStr == null ? "" : "/" + programIdStr);
+                                   : context.getAppDomain())
+                + "/web/p" + channelIdStr + "/"
+                + (programIdStr == null ? "" : programIdStr);
     }
     
     public static String getProgramPlaybackUrl(ApiContext context,
