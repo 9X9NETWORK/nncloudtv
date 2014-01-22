@@ -8,8 +8,10 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.web.api.ApiContext;
 
@@ -225,29 +227,29 @@ public class NnStringUtil {
         return String.format("%08d", seq);
     }
     
-    public static String getPlyaerPromotionUrl(ApiContext context,
-            String channelIdStr, String programIdStr) {
+    public static String getSharingUrl(boolean flipr,
+            ApiContext context, String channelIdStr, String programIdStr) {
         
-        return "http://"
-                + (context == null ? MsoConfigManager.getServerDomain()
-                                   : context.getAppDomain())
-                + "/web/p" + channelIdStr + "/"
-                + (programIdStr == null ? "" : programIdStr);
-    }
-    
-    public static String getProgramPlaybackUrl(ApiContext context,
-            String channelIdStr, String programIdStr) {
-        
-        return "http://"
-                + (context == null ? MsoConfigManager.getServerDomain()
-                                   : context.getAppDomain())
-                + "/web/p" + channelIdStr + "/"
-                + (programIdStr == null ? "" : programIdStr);
-    }
-    
-    public static String getSharingUrl(Long channelId, Long episodeId, String mso) {
+        String schema = "http";
+        if (flipr) {
+            schema = "flipr";
+            if (context != null) {
+                Mso mso = context.getMso();
+                schema += MsoManager.isNNMso(mso) ? "" : "-" + mso.getName();
+            }
+        }
         
         String domain = MsoConfigManager.getServerDomain();
+        if (context != null) {
+            domain = context.getAppDomain();
+        }
+        
+        return schema + "://" + domain
+                + "/web/p" + channelIdStr + "/"
+                + (programIdStr == null ? "" : programIdStr);
+    }
+    
+    public static String getSharingUrl(boolean flipr, String mso, Long channelId, Long episodeId) {
         
         if (mso == null) {
             
@@ -255,9 +257,22 @@ public class NnStringUtil {
             mso = pref.getValue();
         }
         
-        domain = mso + "." + domain.replaceAll("^www\\.", "");
+        String schema = "http";
+        if (flipr) {
+            schema = "flipr";
+            if (mso != null && mso != Mso.NAME_9X9) {
+                schema += "-" + mso;
+            }
+        }
         
-        return "http://" + domain + "/web/p" + channelId
+        String domain = MsoConfigManager.getServerDomain();
+        
+        if (mso != null && mso != Mso.NAME_9X9) {
+            
+            domain = mso + "." + domain.replaceAll("^www\\.", "");
+        }
+        
+        return schema + "://" + domain + "/web/p" + channelId
                    + "/" + (episodeId == null ? "" : episodeId);
     }
 }

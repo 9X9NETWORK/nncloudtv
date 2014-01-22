@@ -90,8 +90,7 @@ crawlRecommendCount9: ${crawlRecommendCount9}
 <meta property="og:url" content="${meta_url}"/>
 
 <script type="text/javascript">
-var brandinfo = "${brandInfo}";
-location.replace('${playerPromotionUrl}');
+location.replace('${meta_url}');
 </script>
 
 <link rel="stylesheet" href="${nroot}/stylesheets/main.css"/>
