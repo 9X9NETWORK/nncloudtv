@@ -264,10 +264,9 @@ public class PlayerApiService {
        }
        AppDao dao = new AppDao();
        List<App> featuredApps = dao.findFeaturedBySphere(sphere);
-       List<App> apps = featuredApps;
+       List<App> apps = new ArrayList<App>();
+       apps.addAll(featuredApps);
        apps.addAll(dao.findAllBySphere(sphere));
-       System.out.println("apps size:" + apps.size());
-
        /*
      	if (stack != null && stack.equals("featured")) {
       	   apps.addAll(dao.findFeaturedByOsAndSphere(type, sphere));
@@ -276,16 +275,13 @@ public class PlayerApiService {
      	}
       */
        String[] result = {"", ""};
-       List<App> myapps = featuredApps;
+       List<App> myapps = new ArrayList<App>();
+       myapps.addAll(featuredApps);
        for (int i=0; i<2; i++) {
           if (i==1) {
               myapps.clear();
-              System.out.println("apps 2 in the loop size:" + apps.size());
               myapps.addAll(apps);
-              System.out.println("now my apps size:" + myapps.size());
           }
-          System.out.println ("i:" + i + ";size:" + myapps.size());
-
           for (App a : myapps) {
               String storeUrl = a.getIosStoreUrl();
               if (type == App.TYPE_IOS)
