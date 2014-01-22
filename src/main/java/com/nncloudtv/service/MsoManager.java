@@ -468,13 +468,11 @@ public class MsoManager {
         return false;
     }
     
-    public static Mso normalize(Mso mso) {
+    public static void normalize(Mso mso) {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
         mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
         mso.setSupportedRegion(formatSupportedRegion(mso.getSupportedRegion()));
-        
-        return mso;
     }
     
     /** format supportedRegion of Mso to response format, ex : "en,zh,other" */

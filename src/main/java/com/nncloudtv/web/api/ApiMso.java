@@ -939,20 +939,20 @@ public class ApiMso extends ApiGeneric {
                 return null;
             }
             
-            mso = msoMngr.findById(msoId, true);
+            mso = msoMngr.findById(msoId);
             
         } else {
             
-            mso = msoMngr.findByName(msoIdStr, true);
+            mso = msoMngr.findByName(msoIdStr);
         }
         if (mso == null) {
-            notFound(resp, null);
+            notFound(resp);
             log.info(printExitState(now, req, "404"));
             return null;
         }
-        Mso result = apiMsoService.mso(mso);
         
-        result = MsoManager.normalize(result);
+        Mso result = apiMsoService.mso(mso.getId());
+        
         log.info(printExitState(now, req, "ok"));
         return result;
     }
@@ -1002,7 +1002,6 @@ public class ApiMso extends ApiGeneric {
         
         Mso result = apiMsoService.msoUpdate(mso.getId(), title, logoUrl);
         
-        result = MsoManager.normalize(result);
         log.info(printExitState(now, req, "ok"));
         return result;
     }
