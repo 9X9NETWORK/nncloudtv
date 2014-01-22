@@ -69,12 +69,11 @@ public class PlayerService {
         if (mso == null)
             return model;
         
-        Map<String, String> brandInfo = configMngr.getBrandInfo(mso);
-        model.addAttribute(PlayerService.META_TITLE, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_TITLE)));
-        model.addAttribute(PlayerService.META_DESCRIPTION, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_DESCRIPTION)));
-        model.addAttribute(PlayerService.META_THUMBNAIL, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_THUMBNAIL)));
-        model.addAttribute(PlayerService.META_KEYWORD, NnStringUtil.htmlSafeChars(brandInfo.get(MsoConfig.META_KEYWORD)));
-        String faviconUrl = brandInfo.get(MsoConfig.FAVICON_URL);
+        model.addAttribute(PlayerService.META_TITLE, mso.getTitle());
+        model.addAttribute(PlayerService.META_DESCRIPTION, mso.getIntro());
+        model.addAttribute(PlayerService.META_THUMBNAIL, mso.getLogoUrl());
+        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        String faviconUrl = config == null ? null : config.getValue();
         if (faviconUrl != null) { 
             model.addAttribute(META_FAVICON, "<link rel='icon' href='" + faviconUrl + 
                                              "' type='image/x-icon'/>" +

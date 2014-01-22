@@ -2,8 +2,6 @@ package com.nncloudtv.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Map;
-
 import javax.jdo.annotations.*;
 
 /**
@@ -65,9 +63,6 @@ public class Mso implements Serializable {
     @Persistent
     private Date updateDate;
     
-    @NotPersistent
-    private Map<String, String> meta;
-    
     // the value comes from MsoConfig's SUPPORTED_REGION
     @NotPersistent
     private String supportedRegion;
@@ -109,14 +104,6 @@ public class Mso implements Serializable {
     
     public void setMaxChPerSet(short maxChPerSet) {
         this.maxChPerSet = maxChPerSet;
-    }
-    
-    public Map<String, String> getMeta() {
-        return meta;
-    }
-    
-    public void setMeta(Map<String, String> meta) {
-        this.meta = meta;
     }
     
     public long getId() {
