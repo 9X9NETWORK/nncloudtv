@@ -263,10 +263,11 @@ public class PlayerApiService {
     		   type = App.TYPE_ANDROID;
        }
        AppDao dao = new AppDao();
-       List<App> featuredApps = dao.findFeaturedBySphere(sphere);
+       
+       List<App> featuredApps = dao.findFeaturedBySphere(sphere, this.mso.getId());
        List<App> apps = new ArrayList<App>();
        apps.addAll(featuredApps);
-       apps.addAll(dao.findAllBySphere(sphere));
+       apps.addAll(dao.findAllBySphere(sphere, this.mso.getId()));
        /*
      	if (stack != null && stack.equals("featured")) {
       	   apps.addAll(dao.findFeaturedByOsAndSphere(type, sphere));
@@ -284,7 +285,7 @@ public class PlayerApiService {
           }
           for (App a : myapps) {
               String storeUrl = a.getIosStoreUrl();
-              if (type == App.TYPE_IOS)
+              if (type == App.TYPE_ANDROID)
             	  storeUrl = a.getAndroidStoreUrl();
               String[] obj = {
                 a.getName(),
