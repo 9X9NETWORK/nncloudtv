@@ -176,12 +176,13 @@ public class PlayerApiController {
     } 
 
     /**
-     * Get related apps
+     * <p> Retrieve list of suggested apps for mobile device
      *  
-     * @param stack "featured" or keep it empty
+     * @param mso mso name 
      * @param sphere "en" or "zh"
-     * @param os "android" or "ios" or keep it empty
-     * @return
+     * @param os "android" or "ios", or keep it empty for server to decide.
+     * @return <p>Returns data in two sections. First is the short list, second is the complete list. </p>
+     *         <p>Each app has the following information: app name, app description, app thumbnail, app store url
      */
     @RequestMapping(value="relatedApps", produces = "text/plain; charset=utf-8")
     public @ResponseBody String relatedApps(
