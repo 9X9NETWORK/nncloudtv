@@ -245,7 +245,7 @@ public class NnStringUtil {
         }
         
         return schema + "://" + domain
-                + "/web/p" + channelIdStr + "/"
+                + "/view/p" + channelIdStr + "/"
                 + (programIdStr == null ? "" : programIdStr);
     }
     
@@ -272,7 +272,7 @@ public class NnStringUtil {
             domain = mso + "." + domain.replaceAll("^www\\.", "");
         }
         
-        return schema + "://" + domain + "/web/p" + channelId
+        return schema + "://" + domain + "/view/p" + channelId
                    + "/" + (episodeId == null ? "" : episodeId);
     }
 }

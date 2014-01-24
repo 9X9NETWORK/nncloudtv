@@ -44,11 +44,11 @@ public class NnUtilStringTest {
     public void testGetSharingUrl() {
         
         Assert.assertEquals("standard sharing URL is not matched.",
-                            "http://" + MsoConfigManager.getServerDomain() + "/web/p" + chId + "/" + epId,
+                            "http://" + MsoConfigManager.getServerDomain() + "/view/p" + chId + "/" + epId,
                             NnStringUtil.getSharingUrl(false, context, chId, epId));
         
         Assert.assertEquals("flipr URL is not matched.",
-                "flipr://" + MsoConfigManager.getServerDomain() + "/web/p" + chId + "/" + epId,
+                "flipr://" + MsoConfigManager.getServerDomain() + "/view/p" + chId + "/" + epId,
                 NnStringUtil.getSharingUrl(true, context, chId, epId));
         
     }
