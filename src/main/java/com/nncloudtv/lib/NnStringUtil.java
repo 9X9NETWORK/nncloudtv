@@ -267,7 +267,7 @@ public class NnStringUtil {
         
         String domain = MsoConfigManager.getServerDomain();
         
-        if (mso != null && mso != Mso.NAME_9X9) {
+        if (mso != null && !mso.equals(Mso.NAME_9X9)) {
             
             domain = mso + "." + domain.replaceAll("^www\\.", "");
         }
