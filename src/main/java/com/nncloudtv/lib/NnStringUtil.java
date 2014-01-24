@@ -273,6 +273,6 @@ public class NnStringUtil {
         }
         
         return schema + "://" + domain + "/view/p" + channelId
-                   + "/" + (episodeId == null ? "" : episodeId);
+                   + "/" + (episodeId == null ? "" : "e" + episodeId);
     }
 }
