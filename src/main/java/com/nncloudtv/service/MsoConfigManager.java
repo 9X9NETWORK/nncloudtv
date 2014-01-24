@@ -3,7 +3,6 @@ package com.nncloudtv.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -72,25 +71,6 @@ public class MsoConfigManager {
     
     static public String getCrawlerDomain() {
         return getProperty("crawler.properties", "server");
-    }
-    
-    public Map<String,String> getBrandInfo(Mso mso) {
-        
-        Map<String, String> result = new HashMap<String, String>();
-        
-        String[] targets = {
-                MsoConfig.META_TITLE, MsoConfig.META_DESCRIPTION, MsoConfig.META_THUMBNAIL, MsoConfig.META_KEYWORD,
-                MsoConfig.FAVICON_URL
-        };
-        
-        for (String target : targets) {
-            
-            MsoConfig config = findByMsoAndItem(mso, target);
-            if (config != null)
-                result.put(target, config.getValue());
-        }
-        
-        return result;
     }
     
     public String getFacebookInfo(String type, Mso mso) {

@@ -21,10 +21,12 @@ public class MockMsoManager extends MsoManager {
     @Override
     public Mso findNNMso() {
         
-        Mso nnMso = new Mso(Mso.NAME_9X9, "mock 9x9 mso", "mso@9x9.tv", Mso.TYPE_NN);
-        nnMso.setId(1);
+        Mso nn = new Mso(Mso.NAME_9X9, "This is a mock mso.", "mock@9x9.tv", Mso.TYPE_NN);
+        nn.setId(1);
+        nn.setLogoUrl("http://www.mock.com/logo.png");
+        nn.setTitle("Mock 9x9");
         
-        return nnMso;
+        return nn;
     }
     
     @Override

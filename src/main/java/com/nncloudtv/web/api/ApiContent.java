@@ -41,6 +41,7 @@ import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
+import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
@@ -71,15 +72,30 @@ public class ApiContent extends ApiGeneric {
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     private NnUserManager userMngr;
+    private NnProgramManager programMngr;
+    
+    public ApiContent() {
+        
+        this.channelMngr = new NnChannelManager();
+        this.channelPrefMngr = new NnChannelPrefManager();
+        this.storeService = new StoreService();
+        this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager());
+        this.userMngr = new NnUserManager();
+        this.programMngr = new NnProgramManager();
+    }
     
     @Autowired
-    public ApiContent(ApiContentService apiContentService, NnChannelManager channelMngr, StoreService storeService,
-                NnChannelPrefManager channelPrefMngr, NnUserManager userMngr) {
+    public ApiContent(ApiContentService apiContentService,
+            NnChannelManager channelMngr, StoreService storeService,
+            NnChannelPrefManager channelPrefMngr, NnUserManager userMngr,
+            NnProgramManager programMngr) {
+        
         this.apiContentService = apiContentService;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
         this.userMngr = userMngr;
+        this.programMngr = programMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -414,19 +430,6 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        /*
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
-        }
-        */
-        
         MsoManager msoMngr = new MsoManager();
         List<Mso> msos = msoMngr.getValidBrands(channel.getId());
         
@@ -443,6 +446,28 @@ public class ApiContent extends ApiGeneric {
         
         log.info(printExitState(now, req, "ok"));
         return results;
+    }
+    
+    @RequestMapping(value = "ytprograms/{ytProgramId}", method = RequestMethod.GET)
+    public @ResponseBody
+    YtProgram ytprogram(@PathVariable("ytProgramId") String ytProgramIdStr,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long ytProgramId = null;
+        try {
+            ytProgramId = Long.valueOf(ytProgramIdStr);
+        } catch (NumberFormatException e) { }
+        
+        if (ytProgramId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        YtProgram ytProgram = programMngr.findYtProgramById(ytProgramId);
+        if (ytProgram == null) {
+            notFound(resp, "Pogram Not Found");
+            return null;
+        }
+        return ytProgram;
     }
     
     @RequestMapping(value = "programs/{programId}", method = RequestMethod.GET)

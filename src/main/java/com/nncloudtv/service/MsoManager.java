@@ -238,7 +238,10 @@ public class MsoManager {
             mso.setSupportedRegion(config.getValue());
         }
         
-        mso.setMeta(configMngr.getBrandInfo(mso));
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        if (config != null) {
+            mso.setJingleUrl(config.getValue());
+        }
         
         return mso;
     }
@@ -465,13 +468,11 @@ public class MsoManager {
         return false;
     }
     
-    public static Mso normalize(Mso mso) {
+    public static void normalize(Mso mso) {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
         mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
         mso.setSupportedRegion(formatSupportedRegion(mso.getSupportedRegion()));
-        
-        return mso;
     }
     
     /** format supportedRegion of Mso to response format, ex : "en,zh,other" */

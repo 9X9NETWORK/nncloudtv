@@ -358,8 +358,13 @@ public class ApiMsoService {
      *  get Mso by given Mso's ID
      *  @param mso required, the Mso's Id
      *  @return object Mso or null if not exist */
-    public Mso mso(Mso mso) {
+    public Mso mso(Long msoId) {
         
+        if (msoId == null) {
+            return null;
+        }
+        
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return null;
         }
@@ -382,6 +387,7 @@ public class ApiMsoService {
             }
         }
         
+        MsoManager.normalize(mso);
         return mso;
     }
     
@@ -409,12 +415,10 @@ public class ApiMsoService {
             mso.setLogoUrl(logoUrl);
         }
         
-        if (title != null || logoUrl != null) {
-            Mso savedMso = msoMngr.save(mso);
-            return savedMso;
-        } else {
-            return mso;
-        }
+        Mso savedMso = msoMngr.save(mso);
+        
+        MsoManager.normalize(savedMso);
+        return savedMso;
     }
     
     /**

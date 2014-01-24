@@ -164,7 +164,7 @@
                 <version>2.2</version>
                 <configuration>
                     <warName>root</warName>
-                    <warSourceExcludes>player/, videos/, installer/, ios/</warSourceExcludes>
+                    <warSourceExcludes>installer/</warSourceExcludes>
                 </configuration>
             </plugin>
         </plugins>
