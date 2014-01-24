@@ -39,6 +39,7 @@ public class NnProgramManager {
                                               .getName());
     
     private NnProgramDao dao = new NnProgramDao();
+    private YtProgramDao ytDao = new YtProgramDao();
     
     public NnProgram create(NnEpisode episode, NnProgram program) {
         
@@ -303,16 +304,19 @@ public class NnProgramManager {
         return NnProgram.CONTENTTYPE_DIRECTLINK;     
     }
     
+    public YtProgram findYtProgramById(Long ytProgramId) {
+        return ytDao.findById(ytProgramId);
+    }
     
     public NnProgram findByStorageId(String storageId) {
         return dao.findByStorageId(storageId);
     }
-
+    
     public NnProgram findById(long id) {
         NnProgram program = dao.findById(id);
         return program;
     }
-
+    
     public List<NnProgram> findByYtVideoId(String videoId) {
         List<NnProgram> programs = dao.findByYtVideoId(videoId);
         return programs;
