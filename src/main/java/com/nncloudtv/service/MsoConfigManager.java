@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,15 +29,26 @@ public class MsoConfigManager {
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
     static String getProperty(String propertyFile, String propertyName) {
-        
         Properties properties = new Properties();
         String result = null;
         log.info("to get property " + propertyName + " from " + propertyFile);
+        InputStream input = null;
         try {
-            properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile));
+        	input = MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile);
+        	if (input == null)
+        		return null;
+            properties.load(input);
             result = properties.getProperty(propertyName);
         } catch (IOException e) {
             NnLogUtil.logException(e);
+        } finally {
+        	if (input != null) {
+        		try {
+        			input.close();
+        		} catch (IOException e) {
+        			e.printStackTrace();
+        		}
+        	}
         }
         return result;
     }
