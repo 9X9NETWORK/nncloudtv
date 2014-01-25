@@ -168,7 +168,8 @@ public class MsoManager {
         }        
         log.info("NOT get mso object from cache:" + name);
         Mso mso = msoDao.findByName(name);
-        CacheFactory.set(cacheKey, mso);
+        if (mso != null)
+           CacheFactory.set(cacheKey, mso);
         return mso;
     }
     
