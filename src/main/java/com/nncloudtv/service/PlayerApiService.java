@@ -104,7 +104,7 @@ public class PlayerApiService {
         MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.getByNameFromCache(msoName);
         if (mso == null) {
-            mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);;
+            mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);
            //mso = msoMngr.findNNMso();
         }
         log.info("mso entrance:" + mso.getId());
@@ -145,6 +145,7 @@ public class PlayerApiService {
     
     public String handleException (Exception e) {
         if (e.getClass().equals(NumberFormatException.class)) {
+            log.info("return db error");
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);            
         } else if (e.getClass().equals(CommunicationsException.class)) {
             log.info("return db error");
@@ -286,7 +287,7 @@ public class PlayerApiService {
           for (App a : myapps) {
               String storeUrl = a.getIosStoreUrl();
               if (type == App.TYPE_ANDROID)
-                 storeUrl = a.getAndroidStoreUrl();
+            	  storeUrl = a.getAndroidStoreUrl();
               String[] obj = {
                 a.getName(),
                 a.getIntro(),
@@ -572,16 +573,8 @@ public class PlayerApiService {
         }
     }
      
-    public String brandInfo(HttpServletRequest req) {
-     PlayerService service = new PlayerService();
-     String os = "";
-     if (service.isAndroid(req)) {
-      os = "android";
-     }
-     if (service.isIos(req)) {
-      os = "ios";
-     }
-        String[] result = msoMngr.getBrandInfoCache(mso, os);
+    public String brandInfo(String os, HttpServletRequest req) {
+        String[] result = msoMngr.getBrandInfoCache(mso, os, req);
         boolean readOnly = MsoConfigManager.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
@@ -591,14 +584,15 @@ public class PlayerApiService {
         if (!readOnly)
             counter = this.addMsoInfoVisitCounter(readOnly);        
         result[0] += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
+        
         //piwik
-        result[0] += PlayerApiService.assembleKeyValue("piwik", "http://piwik.9x9.tv/"); //though site is down, in case player not handles well?
         //result[0] += PlayerApiService.assembleKeyValue("piwik", "http://" + MsoConfigManager.getPiwikDomain() + "/");
+        result[0] += PlayerApiService.assembleKeyValue("piwik", "http://piwik.9x9.tv/"); //though site is down, in case player not handles well?
         String acceptLang = req.getHeader("Accept-Language");
         result[0] += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }    
-
+    
     public String findLocaleByHttpRequest(HttpServletRequest req) {
         String locale = NnUserManager.findLocaleByHttpRequest(req);
         return locale;

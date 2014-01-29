@@ -29,32 +29,33 @@ public class MsoConfigManager {
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
     static String getProperty(String propertyFile, String propertyName) {
+        
         Properties properties = new Properties();
         String result = null;
         log.info("to get property " + propertyName + " from " + propertyFile);
         InputStream input = null;
         try {
-        	input = MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile);
-        	if (input == null)
-        		return null;
+            input = MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile);
+            if (input == null)
+                return null;
             properties.load(input);
             result = properties.getProperty(propertyName);
         } catch (IOException e) {
             NnLogUtil.logException(e);
         } finally {
-        	if (input != null) {
-        		try {
-        			input.close();
-        		} catch (IOException e) {
-        			e.printStackTrace();
-        		}
-        	}
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return result;
     }
 
     static public String getSearchServer() {
-    	return getProperty("services.properties", "search");
+        return getProperty("services.properties", "search");
     }
     
     static public String getS3UploadBucket() {
@@ -69,11 +70,11 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("sns.properties", "server_domain");
+        return getProperty("facebook.properties", "server_domain");
     }
         
-    static public String getFacebookAppToken() {        
-        return getProperty("sns.properties", "facebook_app_token");
+    static public String getDefaultFacebookAppToken() {        
+        return getProperty("facebook.properties", "facebook_apptoken");
     }
     
     static public String getCrawlerDomain() {
@@ -81,29 +82,29 @@ public class MsoConfigManager {
     }
     
     public String getFacebookInfo(String type, Mso mso) {
-    	if (mso == null || type == null) {
-    		return null;
-    	}
-    	MsoConfig config = this.findByMsoAndItem(mso, type);
-    	if (config != null) {
-    		return config.getValue(); 
-    	}
-    	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("sns.properties", "facebook_client_id");
-    	if (type == MsoConfig.FACEBOOK_APPTOKEN)
-    		return getProperty("sns.properties", "facebook_app_token");
-    	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-    		return getProperty("sns.properties", "facebook_client_secret");
-    	return null;
+        if (mso == null || type == null) {
+            return null;
+        }
+        MsoConfig config = this.findByMsoAndItem(mso, type);
+        if (config != null) {
+            return config.getValue(); 
+        }
+        if (type == MsoConfig.FACEBOOK_CLIENTID)
+            return getProperty("facebook.properties", "facebook_clientid");
+        if (type == MsoConfig.FACEBOOK_APPTOKEN)
+            return getProperty("facebook.properties", "facebook_apptoken");
+        if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
+            return getProperty("facebook.properties", "facebook_client_secret");
+        return null;
     }
     
-    static public String getFacebookClientId() {        
-        return getProperty("sns.properties", "facebook_client_id");
+    static public String getDefaultFacebookClientId() {        
+        return getProperty("facebook.properties", "facebook_clientid");
     }
     
-    static public String getFacebookClientSecret() {
+    static public String getDefaultFacebookClientSecret() {
         
-        return getProperty("sns.properties", "facebook_client_secret");
+        return getProperty("facebook.properties", "facebook_client_secret");
     }
     
     static public String getExternalRootPath() {
@@ -131,6 +132,62 @@ public class MsoConfigManager {
         isQueueEnabled(true);
     }
 
+    public String getDefaultValueByOs(String os, String function) {
+        if (os == null || function == null)
+            return null;
+        if (function.contains("flurry")) {
+            if (os.equals(PlayerService.OS_IOS)) 
+                return "J6GPGNMBR7GRDJVSCCN8";
+            if (os.equals(PlayerService.OS_ANDROID))
+                return "CJGQT59JKHN4MWBQFXZN";
+        }
+        if (function.contains("google")) {
+            if (os.equals(PlayerService.OS_IOS)) 
+                return "UA-47454448-3";
+            if (os.equals(PlayerService.OS_ANDROID))
+                return "UA-47454448-2";
+            if (os.equals(PlayerService.OS_WEB)) {
+                return "UA-47454448-1";
+            }
+        }
+        if (function.contains("youtube")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+                return "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA";
+        }
+        return null;        
+    }
+    
+    //used for device dependant key name. currently flurry and ga and youtube
+    public String getKeyNameByOs(String os, String function) {
+        if (os == null || function == null)
+            return null;
+        if (function.contains("flurry")) {
+            if (os.equals(PlayerService.OS_IOS)) 
+                return MsoConfig.FLURRY_ANALYTICS_IOS;
+            if (os.equals(PlayerService.OS_ANDROID))
+                return MsoConfig.FLURRY_ANALYTICS_ANDROID;
+        }
+        if (function.contains("google")) {
+            if (os.equals(PlayerService.OS_IOS)) 
+                return MsoConfig.GOOGLE_ANALYTICS_IOS;
+            if (os.equals(PlayerService.OS_ANDROID))
+                return MsoConfig.GOOGLE_ANALYTICS_ANDROID;
+            if (os.equals(PlayerService.OS_WEB)) {
+                return MsoConfig.GOOGLE_ANALYTICS_WEB;
+            }
+        }
+        if (function.contains("youtube")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+                return MsoConfig.YOUTUBE_ID_ANDROID;
+        }
+        return null;
+    }
+    
+    public String getCacheKeyByMsoAndKey(long msoId, String key) {
+        String cacheKey = "msoconfig(" + msoId + ")(" + key + ")";
+        return cacheKey;
+    }
+        
     public static boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
         try {        

@@ -43,7 +43,7 @@ public class PlayerApiServiceTest {
 	 	 	
 	@Test
 	public void testBrandInfo() {
-		Assert.assertTrue(service.brandInfo(req).contains("SUCCESS")); 
+		Assert.assertTrue(service.brandInfo(null, req).contains("SUCCESS"));  
 	}
 
 	@Test
