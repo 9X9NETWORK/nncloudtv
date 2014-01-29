@@ -44,6 +44,14 @@ public class MsoConfig {
     public static String FACEBOOK_CLIENTSECRET = "facebook-client-secret";
     public static String MAX_SETS = "max-sets";
     public static String MAX_CH_PER_SET = "max-ch-per-set";
+    public static String GOOGLE_ANALYTICS_IOS = "google-analytics-ios";
+    public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
+    public static String GOOGLE_ANALYTICS_WEB = "google-analytics-web";
+    public static String FLURRY_ANALYTICS_ANDROID = "flurry-analytics-android";
+    public static String FLURRY_ANALYTICS_IOS = "flurry-analytics-ios";
+    public static String YOUTUBE_ID_ANDROID = "youtube-id-android";
+    public static String CHROMECAST_ID = "chromecast-id";
+    
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
