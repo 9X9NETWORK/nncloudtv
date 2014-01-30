@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -15,6 +17,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.BrandInfo;
 
 @Service
@@ -94,7 +97,7 @@ public class MsoManager {
     	return false;
     }
     
-    private String composeBrandInfoStr(Mso mso) {
+    private String composeBrandInfoStr(Mso mso, String os) {
         
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
@@ -107,6 +110,9 @@ public class MsoManager {
         List<MsoConfig> list = configMngr.findByMso(mso);
         //config
         boolean regionSet = false;
+        boolean chromecastId = false;
+        boolean facebookId = false;
+        
         for (MsoConfig c : list) {
             System.out.println(c.getItem() + ";" + c.getValue());
             if (c.getItem().equals(MsoConfig.DEBUG))
@@ -128,6 +134,14 @@ public class MsoManager {
             }    
             if (c.getItem().equals(MsoConfig.VIDEO)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, c.getValue());
+            }
+            if (c.getItem().equals(MsoConfig.FACEBOOK_CLIENTID)) {
+                facebookId = true;
+                result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, c.getValue());
+            }
+            if (c.getItem().equals(MsoConfig.CHROMECAST_ID)) {
+                chromecastId = true;
+                result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, c.getValue());
             }            
         }
         if (regionSet == false) {
@@ -138,11 +152,46 @@ public class MsoManager {
         	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, "en w-YkGyubqcA;zh w-YkGyubqcA");
         }
         */
-        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, PlayerApiService.FORMAT_PLAIN), result);
+        if (chromecastId == false)
+            result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "5ecf7ff9-2144-46ce-acc9-6d606831e2dc_1");
+        if (facebookId == false)
+            result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
+        //add ga based on device
+        String gaKeyName = configMngr.getKeyNameByOs(os, "google");
+        if (gaKeyName != null) {
+            MsoConfig gaKeyConfig = configMngr.findByMsoAndItem(mso, gaKeyName);
+            String ga = configMngr.getDefaultValueByOs(os, "google");
+            if (gaKeyConfig != null) 
+                ga = gaKeyConfig.getValue();
+            if (ga != null)
+                result += PlayerApiService.assembleKeyValue("ga", ga);
+        }
+        //add flurry based on device
+        String flurryKeyName = configMngr.getKeyNameByOs(os, "flurry");
+        if (flurryKeyName != null) {
+            MsoConfig flurryConfig = configMngr.findByMsoAndItem(mso, flurryKeyName);
+            String flurry = configMngr.getDefaultValueByOs(os, "flurry");
+            if (flurryConfig != null) 
+                flurry = flurryConfig.getValue();
+            if (flurry != null) 
+                result += PlayerApiService.assembleKeyValue("flurry", flurry);
+        }
+        String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
+        if (youtubeKeyName != null) {
+            MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);
+            String youtube = configMngr.getDefaultValueByOs(os, "youtube");
+            if (youtubeConfig != null) 
+                youtube = youtubeConfig.getValue();            
+            if (youtube != null) {
+                result += PlayerApiService.assembleKeyValue("youtube", youtube);            
+            }
+        }
+        
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
         return result;
     }
     
-    private Object composeBrandInfoJson(Mso mso) {
+    private Object composeBrandInfoJson(Mso mso, String os) {
         BrandInfo info = new BrandInfo();
         
         //general setting
@@ -172,13 +221,31 @@ public class MsoManager {
                 info.setTutorialVideo(c.getValue());
             }            
         }
-        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, PlayerApiService.FORMAT_JSON), info);
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON), info);
         return info;    	
     }    
+
+    private String checkOs(String os, HttpServletRequest req) {
+        if (os != null) {
+            if (!os.equals(PlayerService.OS_ANDROID) && !os.equals(PlayerService.OS_IOS)) {
+                return PlayerService.OS_WEB;
+            }
+            return os;
+        }
+        ApiContext service = new ApiContext(req);
+        os = PlayerService.OS_WEB;
+        if (service.isIos()) {
+            os = PlayerService.OS_IOS;
+        } else if (service.isAndroid()) { 
+            os = PlayerService.OS_ANDROID;
+        }
+        return os;
+    }
     
-    public Object getBrandInfo(Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
+    public Object getBrandInfo(HttpServletRequest req, Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
         if (mso == null) {return null; }
-        String cacheKey = CacheFactory.getBrandInfoKey(mso, format);
+        os = checkOs(os, req);        
+        String cacheKey = CacheFactory.getBrandInfoKey(mso, os, format);
         Object cached = null;
         try {
             cached = CacheFactory.get(cacheKey);
@@ -189,7 +256,7 @@ public class MsoManager {
         	BrandInfo json = (BrandInfo)cached;
         	if (cached == null) {
         		log.info("plain text is not cached");
-        		json =  (BrandInfo)this.composeBrandInfoJson(mso);
+        		json =  (BrandInfo)this.composeBrandInfoJson(mso, os);
         	}
         	json.setLocale(locale);
         	json.setBrandInfoCounter(counter);
@@ -200,7 +267,7 @@ public class MsoManager {
 	    	String[] plain = {(String) cached};
 	    	if (cached == null) {
 	    		log.info("plain text is not cached");
-	    		plain[0] = this.composeBrandInfoStr(mso);
+	    		plain[0] = this.composeBrandInfoStr(mso, os);
 	    	}
 	    	plain[0] += PlayerApiService.assembleKeyValue("locale", locale);
 	        plain[0] += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));

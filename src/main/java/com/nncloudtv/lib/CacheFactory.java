@@ -255,11 +255,12 @@ public class CacheFactory {
     }
             
 	//example: brandInfo(9x9)[json]
-    public static String getBrandInfoKey(Mso mso, short format) {
+    public static String getBrandInfoKey(Mso mso, String os, short format) {
     	if (format == PlayerApiService.FORMAT_PLAIN)
-    		return "brandInfo(" + mso.getName() + ")";
-    	return "brandInfo(" + mso.getName() + ")[json]";
+    		return "brandInfo(" + mso.getName() + ")(" + os + ")";
+    	return "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
     }
+    
 
     //nnprogram(1)[json]
     public static String getProgramInfoKey(long channelId, int version, short format) {

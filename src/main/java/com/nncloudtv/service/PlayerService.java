@@ -37,6 +37,9 @@ public class PlayerService {
     public static final String META_EPISODE_TITLE = "crawlEpisodeTitle";
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
     public static final String META_FAVICON = "favicon";
+    public static final String OS_ANDROID = "android";
+    public static final String OS_IOS = "ios";
+    public static final String OS_WEB = "web";
     
     private NnUserManager userMngr;
     private MsoConfigManager configMngr;

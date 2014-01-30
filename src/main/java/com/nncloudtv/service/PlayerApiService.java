@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
+import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
@@ -38,6 +39,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
 import com.nncloudtv.model.EndPoint;
 import com.nncloudtv.model.LangTable;
@@ -78,6 +80,7 @@ import com.nncloudtv.web.json.player.ChannelLineup;
 import com.nncloudtv.web.json.player.PlayerChannelLineup;
 import com.nncloudtv.web.json.player.PlayerProgramInfo;
 import com.nncloudtv.web.json.player.ProgramInfo;
+import com.nncloudtv.web.json.player.RelatedApp;
 import com.nncloudtv.web.json.player.Search;
 import com.nncloudtv.web.json.player.SubscribeSetInfo;
 import com.nncloudtv.web.json.player.UserInfo;
@@ -238,6 +241,56 @@ public class PlayerApiService {
     public void setUserCookie(HttpServletResponse resp, String cookieName, String userId) {        
         CookieHelper.setCookie(resp, cookieName, userId);
     }    
+    public Object relatedApps(String mso, String os, String stack, String sphere, HttpServletRequest req) {     
+        sphere = this.checkLang(sphere);    
+        ApiContext context = new ApiContext(req);
+        short type = App.TYPE_IOS;
+        if (os == null) {      
+           if (context.isAndroid()) {
+              type = App.TYPE_ANDROID;
+           }
+        } else {
+     	   if (os.equals("android"))
+     		   type = App.TYPE_ANDROID;
+        }
+        AppDao dao = new AppDao();
+        
+        List<App> featuredApps = dao.findFeaturedBySphere(sphere, this.mso.getId());
+        List<App> apps = new ArrayList<App>();
+        apps.addAll(featuredApps);
+        apps.addAll(dao.findAllBySphere(sphere, this.mso.getId()));
+        /*
+      	if (stack != null && stack.equals("featured")) {
+       	   apps.addAll(dao.findFeaturedByOsAndSphere(type, sphere));
+      	} else {
+            apps.addAll(dao.findAllByOsAndSphere(type, sphere));
+      	}
+       */
+        String[] result = {"", ""};
+        List<App> myapps = new ArrayList<App>();
+        myapps.addAll(featuredApps);
+        for (int i=0; i<2; i++) {
+           if (i==1) {
+               myapps.clear();
+               myapps.addAll(apps);
+           }
+           for (App a : myapps) {
+               String storeUrl = a.getIosStoreUrl();
+               if (type == App.TYPE_ANDROID)
+             	  storeUrl = a.getAndroidStoreUrl();
+               String[] obj = {
+                 a.getName(),
+                 a.getIntro(),
+                 a.getImageUrl(),
+                 storeUrl
+              };
+              result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
+           }         
+        }
+        if (format == PlayerApiService.FORMAT_JSON)
+        	return this.assembleMsgs(NnStatusCode.SUCCESS, new RelatedApp());
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+     }
     
     public Object listRecommended(String lang) {
         lang = this.checkLang(lang);    
@@ -523,14 +576,7 @@ public class PlayerApiService {
         }
     }
      
-    public Object brandInfo() {
-    	String os = "";
-    	if (context.isAndroid()) {
-    		os = "android";
-    	}
-    	if (context.isIos()) {
-    		os = "ios";
-    	}
+    public Object brandInfo(String os, HttpServletRequest req) {
         boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
@@ -538,8 +584,8 @@ public class PlayerApiService {
         if (!readOnly)
             counter = this.addMsoInfoVisitCounter(readOnly);     
         String acceptLang = req.getHeader("Accept-Language");
-        String piwik = "http://" + MsoConfigManager.getPiwikDomain() + "/";
-        Object result = msoMngr.getBrandInfo(mso, os, this.format, locale, counter, piwik, acceptLang);
+        String piwik = "http://piwik.9x9.tv/";
+        Object result = msoMngr.getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }    
 

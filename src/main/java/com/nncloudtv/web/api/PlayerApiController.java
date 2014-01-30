@@ -192,6 +192,39 @@ public class PlayerApiController {
     } 
 
     /**
+     * <p> Get suggested apps
+     *  
+     * @param mso mso name 
+     * @param sphere "en" or "zh"
+     * @param os "android" or "ios", or keep it empty for server to decide.
+     * @return <p>Returns data in two sections. First is the short list, second is the complete list. </p>
+     *         <p>Each app has the following information: app name, app description, app thumbnail, app store url
+     */
+    @RequestMapping(value="relatedApps", produces = "text/plain; charset=utf-8")
+    public @ResponseBody Object relatedApps(
+            @RequestParam(value="mso", required = false) String mso,
+            @RequestParam(value="stack", required = false) String stack,
+            @RequestParam(value="sphere", required = false) String sphere,
+            @RequestParam(value="os", required = false) String os,
+            HttpServletRequest req, 
+            HttpServletResponse resp) {
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {             
+                return playerApiService.assembleMsgs(status, null);
+            }            
+            output = playerApiService.relatedApps(mso, os, stack, sphere, req);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return output;
+    } 
+
+    /**
      *  User signup.
      *  
      *  <p>only POST operation is supported.</p>
@@ -241,6 +274,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }    
+    
     
     /**
      * Pass every param passing from Facebook in its original format
@@ -345,8 +379,9 @@ public class PlayerApiController {
      * Get brand information. 
      *     
      * @param mso mso name, optional, server returns default mso 9x9 if omiited
+     * @param os "android" or "ios" or "web" or leave it empty and determined by server.
      * @return <p>Data returns in key and value pair. Key and value is tab separated. Each pair is \n separated.<br/> 
-     *            keys include "key", "name", logoUrl", "jingleUrl", "preferredLangCode" "debug"<br/></p>
+     *            keys include "key", "name", logoUrl", "jingleUrl", "preferredLangCode" "debug", "facebook-clientid", "youtube", "chromecast-id", "ga", "flurry"<br/></p>
      *         <p>Example: <br/>
      *          0    success <br/>
      *          --<br/>
@@ -363,6 +398,7 @@ public class PlayerApiController {
     @RequestMapping(value="brandInfo")
     public @ResponseBody Object brandInfo(
             @RequestParam(value="mso", required=false)String brandName,
+            @RequestParam(value="os", required=false)String os,
             @RequestParam(value="version", required=false)String version,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp) {
@@ -374,7 +410,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                                    
-            output = playerApiService.brandInfo();
+            output = playerApiService.brandInfo(os, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
