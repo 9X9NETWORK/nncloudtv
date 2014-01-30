@@ -59,7 +59,7 @@ public class PlayerApiServiceTest {
 	@Test
 	public void testBrandInfo() {
 	    
-	    Object result = service.brandInfo();
+	    Object result = service.brandInfo(null, req);
 	    
 		Assert.assertNotNull(result); 
 	}
