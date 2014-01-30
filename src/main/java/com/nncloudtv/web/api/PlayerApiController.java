@@ -362,8 +362,9 @@ public class PlayerApiController {
      * Get brand information. 
      *     
      * @param mso mso name, optional, server returns default mso 9x9 if omiited
+     * @param os "android" or "ios" or "web" or leave it empty and determined by server.
      * @return <p>Data returns in key and value pair. Key and value is tab separated. Each pair is \n separated.<br/> 
-     *            keys include "key", "name", logoUrl", "jingleUrl", "preferredLangCode" "debug"<br/></p>
+     *            keys include "key", "name", logoUrl", "jingleUrl", "preferredLangCode" "debug", "facebook-clientid", "youtube", "chromecast-id", "ga", "flurry"<br/></p>
      *         <p>Example: <br/>
      *          0    success <br/>
      *          --<br/>
