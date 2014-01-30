@@ -110,6 +110,7 @@ public class PlayerApiService {
         userMngr = new NnUserManager();
         msoMngr = new MsoManager();
         chMngr = new NnChannelManager();
+        profileMngr = new NnUserProfileManager();
     }
     
     @Autowired
