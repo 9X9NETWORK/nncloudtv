@@ -208,7 +208,7 @@ public class NnChannel implements Serializable {
     
     // used in YouTube Sync Channel, true means back-end will auto sync with YouTube in a fixed time 
     @NotPersistent
-    private boolean autoSync;
+    private String autoSync;
 
     protected static final Logger log = Logger.getLogger(NnChannel.class.getName());    
     
@@ -667,11 +667,11 @@ public class NnChannel implements Serializable {
         this.readonly = readonly;
     }
 
-    public boolean isAutoSync() {
+    public String getAutoSync() {
         return autoSync;
     }
 
-    public void setAutoSync(boolean autoSync) {
+    public void setAutoSync(String autoSync) {
         this.autoSync = autoSync;
     }
 }
