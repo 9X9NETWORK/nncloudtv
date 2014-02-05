@@ -232,7 +232,7 @@ public class MsoManager {
             }
             return os;
         }
-        ApiContext service = new ApiContext(req);
+        ApiContext service = new ApiContext(req, this);
         os = PlayerService.OS_WEB;
         if (service.isIos()) {
             os = PlayerService.OS_IOS;
