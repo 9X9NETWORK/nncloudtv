@@ -779,7 +779,7 @@ location.replace('${meta_url}');
         <img src="${nroot}/images/btn_flip_L_on.png" id="btn-fpl-on">
       </p>
       <img src="${nroot}/images/bg_player.jpg" id="player-bg">
-      <p id="btn-player2store"><span>< Back to Store</span></p>
+      <p id="btn-player2store"><span>&lt; Back to Store</span></p>
       <p id="player-index"><span>You are watching</span><span class="ch-title"></span><span>channel</span></p>
       <img src="${nroot}/images/player_ep_panel.png" id="player-ep-panel">
       <img src="${nroot}/images/arrow_right_on.png" id="player-arrow-right">
