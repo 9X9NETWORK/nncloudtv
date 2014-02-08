@@ -521,35 +521,40 @@ public class PlayerApiService {
         boolean disableAll = false;
         HashMap<Long, Long> map = new HashMap<Long, Long>();
         if (mask != null && mask.getValue() != null && mask.getValue().length() > 0) {
-         String maskStr = mask.getValue();
-         String[] str = maskStr.split(",");         
-         for (int i=0; i<str.length; i++) {
+            String maskStr = mask.getValue();
+            String[] str = maskStr.split(",");         
+            for (int i=0; i<str.length; i++) {
                 if (str[i].equals(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY)) {
-                 disableAll = true;
-                 i = str.length+1;
+                    disableAll = true;
+                    i = str.length+1;
                 } else { 
-                 Long number = Long.parseLong(str[i].trim());
-                 map.put(number, number);
+                    Long number = Long.parseLong(str[i].trim());
+                    map.put(number, number);
                 }
-         }
+            }
         }
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
-        Mso nnMso = mso;
+        categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
+
+        /*
+        //to add system categories. this feature is removed. for now
+        Mso nnMso = mso;        
         if (!MsoManager.isNNMso(mso)) {           
          categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
          log.info("non 9x9 mso categories:" + mso.getId() + ";" + categories.size());
          nnMso = msoMngr.findNNMso();
-        }                
+        } 
         if (!disableAll) {
-         List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, nnMso.getId());
+            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, nnMso.getId());
             categories.addAll(systemCategories);
-         for (SysTagDisplay d : systemCategories) {
-          if (map.get(d.getSystagId()) != null) {
-           log.info("removing category:" + d.getSystagId());
-              categories.remove(d);        
-          }
-         }
-         }
+            for (SysTagDisplay d : systemCategories) {
+                if (map.get(d.getSystagId()) != null) {
+                     log.info("removing category:" + d.getSystagId());
+                     categories.remove(d);        
+                }
+             }
+        }
+        */
         
         for (SysTagDisplay display : categories) {
             String subItemHint = "ch"; //what's under this level
@@ -562,7 +567,7 @@ public class PlayerApiService {
                          
         //flatten result process
         if (id.equals("0") && flatten) {
-         log.info("return flatten data");
+            log.info("return flatten data");
             List<String> flattenResult = new ArrayList<String>();
             flattenResult.add(result[0]);
             flattenResult.add(result[1]);
