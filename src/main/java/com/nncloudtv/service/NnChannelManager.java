@@ -787,9 +787,9 @@ public class NnChannelManager {
     
     //return List<ChannelLineup>
     @SuppressWarnings("unchecked")
-	public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format) {
-        NnProgramManager programMngr = new NnProgramManager();
-        List<String> result = new ArrayList<String>();
+	public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
+    	NnProgramManager programMngr = new NnProgramManager();
+        //List<String> result = new ArrayList<String>();
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         String channelOutput = "";
         if (isReduced) {
@@ -806,24 +806,25 @@ public class NnChannelManager {
             	channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, version, format));
         }
         
-        if (channelPos && channelOutput != null) {
+        if (channelPos) {
         	if (format == PlayerApiService.FORMAT_PLAIN)
         		channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, format);
         	else
-        		channelLineup.addAll((List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, format));
+        		channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, format);
             
         }
-        result.add(channelOutput);
-        String programStr = "";
-        if (programInfo) {
-	        programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
-	        result.add(programStr);
-        } 
-        String size[] = new String[result.size()];
-        if (format == PlayerApiService.FORMAT_PLAIN)
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            result.add(channelOutput);
+            String programStr = "";
+            if (programInfo) {
+    	        programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+    	        result.add(programStr);
+            } 
+            String size[] = new String[result.size()];
         	return result.toArray(size);
-        else 
+        } else { 
         	return channelLineup;
+        }
     }
     
     //List<ChannelLineup> or String
