@@ -800,7 +800,7 @@ public class NnChannelManager {
                 }
             } else {
                 NnEpisodeManager eMngr = new NnEpisodeManager();
-                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting());
+                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
                 Collections.sort(episodes, eMngr.getEpisodePublicSeqComparator());
                 for (int i=0; i<3; i++) {

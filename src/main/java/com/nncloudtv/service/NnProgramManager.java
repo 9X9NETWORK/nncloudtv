@@ -307,7 +307,11 @@ public class NnProgramManager {
     
     public void resetCache(long channelId) {        
         log.info("reset program info cache: " + channelId);
-        CacheFactory.delete(getCacheKey(channelId));
+        CacheFactory.delete(getCacheKey(channelId, 0));
+        CacheFactory.delete(getCacheKey(channelId, 50));
+        CacheFactory.delete(getCacheKey(channelId, 100));
+        CacheFactory.delete(getCacheKey(channelId, 150));
+
         CacheFactory.delete(getV31CacheKey(channelId));
         CacheFactory.delete(getProgramInfoCacheKey(channelId));
         CacheFactory.delete(NnChannelManager.getCacheKey(channelId, 32));
@@ -336,9 +340,9 @@ public class NnProgramManager {
     }
     */
     
-    //example: nnprogram(channel_id)
-    public String getCacheKey(long channelId) {
-        String str = "nnprogram(" + channelId + ")"; 
+    //example: nnprogram(channel_id-1)
+    public String getCacheKey(long channelId, int start) {
+        String str = "nnprogram(" + channelId + "-" + start + ")"; 
         return str;
     }
     
@@ -510,15 +514,15 @@ public class NnProgramManager {
      * @param limit number of records
      * @return program info string 
      */
-    public String findPlayerProgramInfoByChannel(long channelId, String episodeIds, long sidx, long limit) {
-        String result = this.findPlayerProgramInfoByChannel(channelId);
+    public String findPlayerProgramInfoByChannel(long channelId, String episodeIds, int sidx, int end) {
+        String result = this.findPlayerProgramInfoByChannel(channelId, sidx, end);
         if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds);
         if (channelId == 28087) return result; // weifilm, temporary workaround
-        return this.composeLimitProgramInfoStr(result, sidx, limit);
+        return result;
+        //return this.composeLimitProgramInfoStr(result, sidx, limit);
     }    
     
-    private String composeSpecifiedProgramInfoStr(String input, long channelId, String episodeIds) {
-        
+    private String composeSpecifiedProgramInfoStr(String input, long channelId, String episodeIds) {        
         if (episodeIds == null || episodeIds.isEmpty())
             return input;
         String[] lines = input.split("\n");
@@ -558,12 +562,12 @@ public class NnProgramManager {
     }
     
     //player programInfo entry
-    public String findPlayerProgramInfoByChannel(long channelId) {
-        String cacheKey = this.getCacheKey(channelId);
+    public String findPlayerProgramInfoByChannel(long channelId, int start, int end) {
+        String cacheKey = this.getCacheKey(channelId, start);
         try {
             String result = (String)CacheFactory.get(cacheKey);
             if (result != null) {
-                log.info("cached programInfo, channelId = " + channelId);
+                log.info("cached programInfo, channelId = " + cacheKey);
                 return result;
             } 
         } catch (Exception e) {
@@ -572,8 +576,8 @@ public class NnProgramManager {
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
-        String output = this.assembleProgramInfo(c);
-        log.info("store programInfo, channelId = " + channelId);
+        String output = this.assembleProgramInfo(c, start, end);
+        log.info("store programInfo, channelId = " + cacheKey);
         CacheFactory.set(cacheKey, output);
         return output;
     }
@@ -614,10 +618,10 @@ public class NnProgramManager {
     }
                 
     //based on channel type, assemble programInfo string
-    public String assembleProgramInfo(NnChannel c) {
+    public String assembleProgramInfo(NnChannel c, int start, int end) {
         String output = "";        
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
-            List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting());
+            List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             output = this.composeNnProgramInfo(c, episodes, programs);
         } else {

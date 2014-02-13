@@ -1057,6 +1057,8 @@ public class PlayerApiController {
             @RequestParam(value="ipg", required = false) String ipgId,
             @RequestParam(value="sidx", required = false) String sidx,
             @RequestParam(value="limit", required = false) String limit,
+            @RequestParam(value="start", required = false) String start,
+            @RequestParam(value="count", required = false) String count,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -1069,7 +1071,7 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }         
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, req);
+            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, start, count, req);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

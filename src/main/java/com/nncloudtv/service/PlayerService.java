@@ -419,7 +419,7 @@ public class PlayerService {
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
                     NnEpisodeManager episodeMngr = new NnEpisodeManager(); 
-                    List<NnEpisode> episodes = episodeMngr.findPlayerEpisodes(c.getId(), c.getSorting());
+                    List<NnEpisode> episodes = episodeMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                     int i = 1;                    
                     for (NnEpisode e : episodes) {
                         if (i > 1 && i < 4) {

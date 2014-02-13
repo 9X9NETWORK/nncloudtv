@@ -5,11 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
@@ -197,8 +194,8 @@ public class NnEpisodeManager {
         return dao.list(page, rows, sidx, sord, filter);
     }
 
-    public List<NnEpisode> findPlayerEpisodes(long channelId, short sort) {
-        return dao.findPlayerEpisode(channelId, sort);
+    public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
+        return dao.findPlayerEpisode(channelId, sort, start, end);
     }
 
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {

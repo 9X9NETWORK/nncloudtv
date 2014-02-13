@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationTimeoutException;
@@ -31,6 +32,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -38,6 +40,7 @@ import com.nncloudtv.model.Tag;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -172,7 +175,7 @@ public class WatchDogController {
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel) {
         NnProgramManager mngr = new NnProgramManager();
-        String result = mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel));        
+        String result = mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50);        
         if (result == null)
             return "null, error";
         String output = "";
@@ -401,6 +404,19 @@ public class WatchDogController {
             cache.shutdown();
         }
         return NnNetUtil.textReturn("cache get:" + setValue);
+    }
+
+    @RequestMapping("reset")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam(value="email")String email, 
+            @RequestParam(value="password")String password, HttpServletRequest req, HttpServletResponse resp) {
+    	NnUserManager userMngr = new NnUserManager();
+        NnUser user = userMngr.findByEmail(email, 1, req);
+        if (user == null)
+            return NnNetUtil.textReturn("user does not exist");
+        user.setPassword(password);
+        userMngr.resetPassword(user);    
+        return NnNetUtil.textReturn("OK");
     }
     
 }
