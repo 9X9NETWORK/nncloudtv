@@ -12,13 +12,16 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.nncloudtv.web.json.cms.Set;
 
+/**
+ * This is unit test for ApiMsoService's method, use Mockito mock dependence object.
+ * Each test case function name begin with target method name, plus dash and a serial number avoid duplication. 
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class ApiMsoServiceTest {
     
-    /** 測試對象 */
+    /** target class for testing */
     private ApiMsoService apiMsoService;
     
-    /** mocked SetService */
     @Mock
     private SetService setService;
     
@@ -32,14 +35,39 @@ public class ApiMsoServiceTest {
         setService = null;       
     }
     
+    // if NnSet exist
     @Test
-    public void set_tc0() {
+    public void set_0() {
         
-        when(setService.findById((long) 1)).thenReturn(new Set());
+        when(setService.findById(anyLong())).thenReturn(new Set());
         
-        Set result = apiMsoService.set((long) 1);
+        Set result = apiMsoService.set(anyLong());
         assertNotNull(result);
         
-        verify(setService).findById((long) 1);
+        verify(setService).findById(anyLong());
     }
+    
+    // if NnSet not exist
+    @Test
+    public void set_1() {
+        
+        when(setService.findById(anyLong())).thenReturn(null);
+        
+        Set result = apiMsoService.set(anyLong());
+        assertNull(result);
+        
+        verify(setService).findById(anyLong());
+    }
+    
+    // if invalid input such as NULL
+    @Test
+    public void set_2() {
+        
+        Set result = apiMsoService.set(null);
+        assertNull(result);
+        
+        verify(setService, never()).findById(anyLong());
+        verify(setService, never()).findById(null);
+    }
+
 }
