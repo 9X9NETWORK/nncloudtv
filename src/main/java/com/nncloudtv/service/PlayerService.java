@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.Mso;
@@ -87,49 +86,6 @@ public class PlayerService {
         return model;
     }
     
-    public String getBrandNameByUrl(HttpServletRequest req, String mso) {
-    	if (mso != null) 
-    		return mso;
-    	String url = NnNetUtil.getUrlRoot(req);
-		String strs[] = url.split("\\.");		
-		String brand = strs[0];
-		brand = brand.replace("http://", "");
-		if (brand.equals("www"))
-			return Mso.NAME_9X9;
-    	return brand;
-    }
-    
-    //!!! many places in playercontroller, playerservice needs to be changed here
-    public String getBrandName(String mso) {
-    	String name = Mso.NAME_9X9;
-    	if (mso != null && mso.equals(Mso.NAME_CTS))
-    		name = Mso.NAME_CTS;
-    	return name;
-    }
-    
-    public String getTransitionPageFile(String brandName) {
-        if (brandName != null && brandName.equals(Mso.NAME_CTS)) {
-        	return "player/ios_cts";
-        }
-        return "player/ios";
-    }
-    
-    //http://www.9x9.tv/flview?ch=572&ep=pVf0dc15igo&fb_action_ids=10151150850017515%2C10151148373067515%2C10151148049832515%2C10151148017797515%2C10151140220097515&fb_action_types=og.likes&fb_source=other_multiline&action_object_map=%7B%2210151150850017515%22%3A369099836508025%2C%2210151148373067515%22%3A518842601477880%2C%2210151148049832515%22%3A486192988067672%2C%2210151148017797515%22%3A374063942680087%2C%2210151140220097515%22%3A209326199200849%2C%2210151140216042515%22%3A361904300567180%7D
-    //to flipr://www.9x9.tv/view?ch=572&ep=pVf0dc15igo                    
-    public String getFliprUrl(String cid, String pid, String mso, HttpServletRequest req) {
-        String root = NnNetUtil.getUrlRoot(req);
-        root = root.replace("http://", "");
-        String urlScheme = "flipr";        
-        if (mso != null && !mso.equals(Mso.NAME_9X9))
-        	urlScheme += "-" + mso;
-        String iosStr = urlScheme + "://" + root;
-        iosStr += cid != null ? "/view?ch=" + cid : "";
-        if (cid != null)
-            iosStr += pid != null ? "&ep=" + pid : "";        	
-        log.info("flipr url:" + iosStr);
-        return iosStr;
-    }
-    
     public String getGAReportUrl(String ch, String ep, String mso) {
     	String reportUrl = "/promotion";
     	if (ch != null) {
@@ -147,22 +103,6 @@ public class PlayerService {
     		msoDomain = mso + ".9x9.tv"; 
     	reportUrl += "?mso=" + msoDomain;
     	return reportUrl;
-    }
-    
-    public String getRedirectAndroidUrl(String cid, String pid, String mso, HttpServletRequest req) {
-        //String root = NnNetUtil.getUrlRoot(req);
-        String url = "redirect/";
-        String msoName = "9x9";
-        if (mso != null && !mso.equals(Mso.NAME_9X9))
-        	msoName = mso;
-        if (mso == null)
-        	msoName = Mso.NAME_9X9;
-        url += msoName;
-        url += cid != null ? "/view?ch=" + cid : "";
-        if (cid != null)
-            url += pid != null ? "&ep=" + pid : "";   
-        log.info("android redirect url:" + url);
-        return url;
     }
     
     //it is likely for old ios app who doesn't know about episdoe
@@ -216,7 +156,7 @@ public class PlayerService {
                 model.addAttribute(META_TITLE, this.prepareFb(program.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(program.getIntro(), 1));
                 model.addAttribute(META_THUMBNAIL, this.prepareFb(program.getImageUrl(), 2));
-                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getProgramPlaybackUrl(null, "" + program.getChannelId(), pid), 3));
+                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, null, "" + program.getChannelId(), pid), 3));
             }
         } else if (pid.matches("e[0-9]+")){
             String eid = pid.replace("e", "");
@@ -229,7 +169,7 @@ public class PlayerService {
                 model.addAttribute(META_TITLE, this.prepareFb(episode.getName(), 0));
                 model.addAttribute(META_DESCRIPTION, this.prepareFb(episode.getIntro(), 1));
                 model.addAttribute(META_THUMBNAIL, this.prepareFb(episode.getImageUrl(), 2));
-                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), mso), 3));
+                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, mso, episode.getChannelId(), episode.getId()), 3));
             }
             /*
             Map<String, String> entry = YouTubeLib.getYouTubeVideoEntry(pid);
@@ -255,7 +195,7 @@ public class PlayerService {
             model.addAttribute(META_TITLE, this.prepareFb(channel.getName(), 0));
             model.addAttribute(META_DESCRIPTION, this.prepareFb(channel.getIntro(), 1));
             model.addAttribute(META_THUMBNAIL, this.prepareFb(channel.getOneImageUrl(), 2));
-            model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(channel.getId(), null, mso), 3));
+            model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, mso, channel.getId(), null), 3));
         }
         return model;
     }
@@ -375,7 +315,7 @@ public class PlayerService {
             NnChannelManager channelMngr = new NnChannelManager();        
             NnChannel c = channelMngr.findById(Long.parseLong(ch));
             if (c != null) {
-                String sharingUrl = NnStringUtil.getProgramPlaybackUrl(context, ch, (ep == null ? youtubeEp : ep));
+                String sharingUrl = NnStringUtil.getSharingUrl(false, context, ch, (ep == null ? youtubeEp : ep));
                 model.addAttribute(META_URL, this.prepareFb(sharingUrl, 3));
                 model.addAttribute(META_CHANNEL_TITLE, c.getName());
                 //in case not enough episode data, use channel for default  

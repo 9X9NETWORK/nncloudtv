@@ -276,7 +276,7 @@ public class ApiUser extends ApiGeneric {
                 favorite.setPublishDate(episode.getPublishDate());
                 favorite.setCntView(episode.getCntView());
                 favorite.setPublic(episode.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null));
+                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
                 
             } else {
                 
@@ -286,10 +286,10 @@ public class ApiUser extends ApiGeneric {
                 favorite.setPublishDate(program.getPublishDate());
                 favorite.setCntView(program.getCntView());
                 favorite.setPublic(program.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getProgramPlaybackUrl(
+                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(
+                        false,
                         null,
-                        program.getStorageId(),
-                        YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
+                        program.getStorageId(), YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
                 
             }
             
@@ -505,6 +505,8 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));

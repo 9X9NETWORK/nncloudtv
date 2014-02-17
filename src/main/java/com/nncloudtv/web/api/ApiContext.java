@@ -14,6 +14,7 @@ import com.google.common.base.Joiner;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
 
@@ -90,6 +91,9 @@ public class ApiContext {
         }
         
         root = NnNetUtil.getUrlRoot(httpReq);
+        if (root == "") {
+            root = MsoConfigManager.getServerDomain();
+        }
         mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
         if (mso == null) {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");

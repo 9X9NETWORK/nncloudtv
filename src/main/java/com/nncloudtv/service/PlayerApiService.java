@@ -585,7 +585,7 @@ public class PlayerApiService {
     public Object brandInfo(String os, HttpServletRequest req) {
         boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
-        String locale = this.findLocaleByHttpRequest(req);
+        String locale = userMngr.findLocaleByHttpRequest(req);
         long counter = 0;
         if (!readOnly)
             counter = this.addMsoInfoVisitCounter(readOnly);     
@@ -594,11 +594,6 @@ public class PlayerApiService {
         Object result = msoMngr.getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }    
-
-    public String findLocaleByHttpRequest(HttpServletRequest req) {
-        String locale = userMngr.findLocaleByHttpRequest(req);
-        return locale;
-    }
     
     public Object pdr(String userToken, String deviceToken,             
                       String session, String pdr,

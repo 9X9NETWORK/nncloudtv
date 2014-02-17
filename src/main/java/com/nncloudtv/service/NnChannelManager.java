@@ -1000,7 +1000,7 @@ public class NnChannelManager {
         if ((channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL ||
                 channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) &&
              channel.getImageUrl() != null) {
-
+            
             String[] imageUrls = channel.getImageUrl().split("\\|");
             channel.setImageUrl(imageUrls[0]);
         }

@@ -201,7 +201,7 @@ public class ApiContentService {
         
         episodeMngr.normalize(results);
         for (NnEpisode episode : results) {
-            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null));
+            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
         return results;
