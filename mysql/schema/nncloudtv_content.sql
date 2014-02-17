@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.5.34, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.22, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: nncloudtv_content
 -- ------------------------------------------------------
--- Server version	5.5.34-0ubuntu0.12.04.1-log
+-- Server version	5.5.22-0ubuntu1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -14,6 +14,29 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `app`
+--
+
+DROP TABLE IF EXISTS `app`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `app` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `msoId` bigint(20) DEFAULT '0',
+  `name` varchar(500) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `intro` varchar(500) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `imageUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `iosStoreUrl` varchar(500) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `androidStoreUrl` varchar(500) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `sphere` varchar(5) DEFAULT 'en',
+  `featured` bit(1) NOT NULL,
+  `position1` int(11) NOT NULL DEFAULT '0',
+  `position2` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `captcha`
@@ -48,7 +71,7 @@ CREATE TABLE `counter` (
   `numShards` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `counterName` (`counterName`)
-) ENGINE=InnoDB AUTO_INCREMENT=97102 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=101901 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -65,7 +88,7 @@ CREATE TABLE `counter_shard` (
   `count` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `counter_shard_name` (`counterName`)
-) ENGINE=InnoDB AUTO_INCREMENT=103992 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=108789 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,7 +111,7 @@ CREATE TABLE `mso` (
   `type` smallint(6) NOT NULL,
   `updateDate` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +129,7 @@ CREATE TABLE `mso_config` (
   `updateDate` datetime DEFAULT NULL,
   `value` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=177 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -146,7 +169,7 @@ CREATE TABLE `nnchannel` (
   PRIMARY KEY (`id`),
   KEY `nnchannel_userIdStr` (`userIdStr`),
   KEY `nnchannel_poolType` (`poolType`)
-) ENGINE=InnoDB AUTO_INCREMENT=30263 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=30643 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -165,7 +188,28 @@ CREATE TABLE `nnchannel_pref` (
   `value` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `nnchannel_pref_channel_id` (`channelid`)
-) ENGINE=InnoDB AUTO_INCREMENT=370 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=834 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `nndevice`
+--
+
+DROP TABLE IF EXISTS `nndevice`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nndevice` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `createDate` datetime DEFAULT NULL,
+  `shard` smallint(6) DEFAULT NULL,
+  `token` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `userId` bigint(20) NOT NULL,
+  `updateDate` datetime DEFAULT NULL,
+  `msoId` bigint(20) DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `nndevice_msoId` (`msoId`)
+) ENGINE=InnoDB AUTO_INCREMENT=653833 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +234,7 @@ CREATE TABLE `nnepisode` (
   `seq` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `nnepisode_channelId` (`channelId`)
-) ENGINE=InnoDB AUTO_INCREMENT=51843 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=468896 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -227,7 +271,7 @@ CREATE TABLE `nnprogram` (
   PRIMARY KEY (`id`),
   KEY `nnprogram_channel_id` (`channelId`),
   KEY `nnprogram_episodeId` (`episodeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=252396 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=672390 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,7 +299,7 @@ CREATE TABLE `poi` (
   `hoursOfWeek` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `nnprogram_program_id` (`programId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1001 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1009 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -275,7 +319,7 @@ CREATE TABLE `poi_campaign` (
   `updatedate` datetime DEFAULT NULL,
   `enddate` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=411 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=473 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -298,7 +342,7 @@ CREATE TABLE `poi_event` (
   `notifyMsg` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `notifyScheduler` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1006 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1014 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -337,7 +381,7 @@ CREATE TABLE `poi_point` (
   `updateDate` datetime DEFAULT NULL,
   `tag` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1010 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1018 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -378,7 +422,7 @@ CREATE TABLE `systag` (
   PRIMARY KEY (`id`),
   KEY `mso_id` (`msoId`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=267 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=295 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -401,7 +445,7 @@ CREATE TABLE `systag_display` (
   PRIMARY KEY (`id`),
   KEY `lang` (`lang`),
   KEY `systag_id` (`systagId`)
-) ENGINE=InnoDB AUTO_INCREMENT=346 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=383 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -425,7 +469,7 @@ CREATE TABLE `systag_map` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `systagMap` (`systagId`,`channelId`),
   KEY `channel_id` (`channelId`)
-) ENGINE=InnoDB AUTO_INCREMENT=11197 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=11962 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -440,7 +484,7 @@ CREATE TABLE `tag` (
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2920 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2966 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -458,7 +502,7 @@ CREATE TABLE `tag_map` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `tagMap` (`tagId`,`channelId`),
   KEY `tagMap_channelId` (`channelId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9917 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10017 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -488,7 +532,7 @@ CREATE TABLE `title_card` (
   PRIMARY KEY (`id`),
   KEY `title_card_channelId` (`channelId`),
   KEY `title_card_programId` (`programId`)
-) ENGINE=InnoDB AUTO_INCREMENT=10354 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10536 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -512,7 +556,7 @@ CREATE TABLE `ytprogram` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ytprogram` (`channelId`,`ytVideoId`),
   KEY `yt_channel_id` (`channelId`)
-) ENGINE=InnoDB AUTO_INCREMENT=337499695 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=434433861 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -524,4 +568,4 @@ CREATE TABLE `ytprogram` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-12-25  1:52:06
+-- Dump completed on 2014-02-10  7:30:09
