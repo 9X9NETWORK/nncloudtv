@@ -32,7 +32,6 @@ public class MsoManager {
     @Autowired
     protected NnChannelManager channelMngr;
     
-    @Autowired
     public MsoManager(MsoConfigManager configMngr,
             NnChannelManager channelMngr, MsoDao msoDao) {
         

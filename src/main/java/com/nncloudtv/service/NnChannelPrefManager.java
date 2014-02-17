@@ -28,7 +28,6 @@ public class NnChannelPrefManager {
 	public NnChannelPrefManager() {
 	}
 	
-    @Autowired
 	public NnChannelPrefManager(NnChannelPrefDao prefDao) {
         
         this.prefDao = prefDao;
