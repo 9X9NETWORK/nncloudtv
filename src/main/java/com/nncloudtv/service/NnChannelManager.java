@@ -44,8 +44,11 @@ public class NnChannelManager {
 
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
-    private NnChannelDao dao = new NnChannelDao();
+    @Autowired
+    private NnChannelDao dao;
+    @Autowired
     private MsoConfigManager configMngr;
+    @Autowired
     private NnChannelPrefManager prefMngr;
     
     @Autowired
@@ -56,9 +59,6 @@ public class NnChannelManager {
     }
     
     public NnChannelManager() {
-        
-        this.configMngr = new MsoConfigManager();
-        this.prefMngr = new NnChannelPrefManager();
     }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {

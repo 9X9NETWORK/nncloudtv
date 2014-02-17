@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -25,10 +26,14 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
+    @Autowired
     private MsoDao msoDao;
+    @Autowired
     protected MsoConfigManager configMngr;
+    @Autowired
     protected NnChannelManager channelMngr;
     
+    @Autowired
     public MsoManager(MsoConfigManager configMngr,
             NnChannelManager channelMngr, MsoDao msoDao) {
         
@@ -38,10 +43,6 @@ public class MsoManager {
     }
 
     public MsoManager() {
-        
-        this.configMngr = new MsoConfigManager();
-        this.channelMngr = new NnChannelManager();
-        this.msoDao = new MsoDao();
     }
 
     public Mso findOneByName(String name) {

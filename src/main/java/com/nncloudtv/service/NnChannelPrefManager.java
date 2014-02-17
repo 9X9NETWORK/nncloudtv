@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelPrefDao;
@@ -22,15 +23,15 @@ public class NnChannelPrefManager {
 	protected static final Logger log = Logger
 	        .getLogger(NnChannelPrefManager.class.getName());
 	
+    @Autowired
 	private NnChannelPrefDao prefDao;
+    @Autowired
 	private MsoManager msoMngr;
 	
 	public NnChannelPrefManager() {
-	    
-	    this.prefDao = new NnChannelPrefDao();
-	    this.msoMngr = new MsoManager();
 	}
 	
+    @Autowired
 	public NnChannelPrefManager(NnChannelPrefDao prefDao, MsoManager msoMngr) {
         
         this.prefDao = prefDao;
