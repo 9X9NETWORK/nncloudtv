@@ -23,8 +23,7 @@ public class NnChannelPrefManager {
 	protected static final Logger log = Logger
 	        .getLogger(NnChannelPrefManager.class.getName());
 	
-    @Autowired
-	private NnChannelPrefDao prefDao;
+	private NnChannelPrefDao prefDao = new NnChannelPrefDao();
 	
 	public NnChannelPrefManager() {
 	}

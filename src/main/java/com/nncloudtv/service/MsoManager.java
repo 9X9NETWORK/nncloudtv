@@ -26,8 +26,7 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
-    @Autowired
-    private MsoDao msoDao;
+    private MsoDao msoDao = new MsoDao();
     @Autowired
     protected MsoConfigManager configMngr;
     @Autowired
