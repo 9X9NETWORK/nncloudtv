@@ -25,17 +25,14 @@ public class NnChannelPrefManager {
 	
     @Autowired
 	private NnChannelPrefDao prefDao;
-    @Autowired
-	private MsoManager msoMngr;
 	
 	public NnChannelPrefManager() {
 	}
 	
     @Autowired
-	public NnChannelPrefManager(NnChannelPrefDao prefDao, MsoManager msoMngr) {
+	public NnChannelPrefManager(NnChannelPrefDao prefDao) {
         
         this.prefDao = prefDao;
-        this.msoMngr = msoMngr;
     }
 	
     public NnChannelPref save(NnChannelPref pref) {
@@ -166,6 +163,8 @@ public class NnChannelPrefManager {
     
 	/**
 	 * Get channel specified promotion brand, 9x9 is default if empty.
+	 *
+	 * TODO: move to MsoManager
 	 * 
 	 * @param channelId
 	 * @return msoName
@@ -175,6 +174,8 @@ public class NnChannelPrefManager {
         if (channelId == null) {
             return null;
         }
+
+        MsoManager msoMngr = new MsoManager();
         
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.BRAND_AUTOSHARE);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
