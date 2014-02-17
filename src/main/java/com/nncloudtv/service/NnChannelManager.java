@@ -47,14 +47,11 @@ public class NnChannelManager {
     private NnChannelDao dao = new NnChannelDao();
     @Autowired
     private MsoConfigManager configMngr;
-    @Autowired
-    private NnChannelPrefManager prefMngr;
     
     @Autowired
-    public NnChannelManager(MsoConfigManager configMngr, NnChannelPrefManager prefMngr) {
+    public NnChannelManager(MsoConfigManager configMngr) {
         
         this.configMngr = configMngr;
-        this.prefMngr = prefMngr;
     }
     
     public NnChannelManager() {
@@ -1017,7 +1014,7 @@ public class NnChannelManager {
         channel.setIntro(NnStringUtil.revertHtml(channel.getIntro()));
         
         // autoSync
-        channel.setAutoSync(prefMngr.getAutoSync(channel.getId()));
+        channel.setAutoSync(new NnChannelPrefManager().getAutoSync(channel.getId()));
     }
     
     /** get CategoryId that Channel belongs to */
