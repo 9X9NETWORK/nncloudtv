@@ -190,26 +190,23 @@ public class NnChannelPrefManager {
         return pref;
     }
     
-    public boolean getAutoSync(Long channelId) {
+    public String getAutoSync(Long channelId) {
         
         if (channelId == null) {
-            return false;
+            return null;
         }
         
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
-            return false;
+            return NnChannelPref.OFF;
         }
         
-        if (NnChannelPref.ON.equals(channelPrefs.get(0).getValue())) {
-            return true;
-        }
-        return false;
+        return channelPrefs.get(0).getValue();
     }
     
-    public void setAutoSync(Long channelId, boolean autoSync) {
+    public void setAutoSync(Long channelId, String autoSync) {
         
-        if (channelId == null) {
+        if (channelId == null || autoSync == null) {
             return ;
         }
         
@@ -221,11 +218,7 @@ public class NnChannelPrefManager {
             channelAutoSync = channelPrefs.get(0);
         }
         
-        if (autoSync == true) {
-            channelAutoSync.setValue(NnChannelPref.ON);
-        } else {
-            channelAutoSync.setValue(NnChannelPref.OFF);
-        }
+        channelAutoSync.setValue(autoSync);
         
         save(channelAutoSync);
     }

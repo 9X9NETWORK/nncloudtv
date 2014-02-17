@@ -46,16 +46,19 @@ public class NnChannelManager {
     
     private NnChannelDao dao = new NnChannelDao();
     private MsoConfigManager configMngr;
+    private NnChannelPrefManager prefMngr;
     
     @Autowired
-    public NnChannelManager(MsoConfigManager configMngr) {
+    public NnChannelManager(MsoConfigManager configMngr, NnChannelPrefManager prefMngr) {
         
         this.configMngr = configMngr;
+        this.prefMngr = prefMngr;
     }
     
     public NnChannelManager() {
         
         this.configMngr = new MsoConfigManager();
+        this.prefMngr = new NnChannelPrefManager();
     }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {
@@ -1014,6 +1017,8 @@ public class NnChannelManager {
         // intro
         channel.setIntro(NnStringUtil.revertHtml(channel.getIntro()));
         
+        // autoSync
+        channel.setAutoSync(prefMngr.getAutoSync(channel.getId()));
     }
     
     /** get CategoryId that Channel belongs to */

@@ -1213,13 +1213,6 @@ public class ApiContent extends ApiGeneric {
             updateDate = new Date();
         }
         
-        // autoSync
-        Boolean autoSync = null;
-        String autoSyncStr = req.getParameter("autoSync");
-        if (autoSyncStr != null) {
-            autoSync = evaluateBoolean(autoSyncStr);
-        }
-        
         // sorting
         Short sorting = null;
         String sortingStr = req.getParameter("sorting");
@@ -1228,7 +1221,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,
-                                    imageUrl, categoryId, updateDate, autoSync, sorting);
+                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));

@@ -709,13 +709,6 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        // autoSync
-        Boolean autoSync = null;
-        String autoSyncStr = req.getParameter("autoSync");
-        if (autoSyncStr != null) {
-            autoSync = evaluateBoolean(autoSyncStr);
-        }
-        
         // sourceUrl
         String sourceUrl = req.getParameter("sourceUrl");
         if (sourceUrl != null) {
@@ -734,7 +727,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         NnChannel savedChannel = apiUserService.userChannelCreate(user, name, intro, imageUrl, lang, isPublic, sphere, tag,
-                categoryId, autoSync, sourceUrl, sorting);
+                categoryId, req.getParameter("autoSync"), sourceUrl, sorting);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));
