@@ -27,22 +27,22 @@ public class MsoManager {
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
     private MsoDao msoDao = new MsoDao();
-    @Autowired
     protected MsoConfigManager configMngr;
-    @Autowired
     protected NnChannelManager channelMngr;
     
-    @Autowired
     public MsoManager(MsoConfigManager configMngr,
-            NnChannelManager channelMngr) {
+            NnChannelManager channelMngr, MsoDao msoDao) {
         
         this.configMngr = configMngr;
         this.channelMngr = channelMngr;
+        this.msoDao = msoDao;
     }
-
+    
     public MsoManager() {
+        configMngr = new MsoConfigManager();
+        channelMngr = new NnChannelManager();
     }
-
+    
     public Mso findOneByName(String name) {
         if (name == null)
             return this.findNNMso(); //most of the situation
