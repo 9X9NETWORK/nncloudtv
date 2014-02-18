@@ -45,8 +45,7 @@ public class NnChannelManager {
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
     private NnChannelDao dao = new NnChannelDao();
-    @Autowired
-    private MsoConfigManager configMngr;
+    private MsoConfigManager configMngr = new MsoConfigManager();
     
     @Autowired
     public NnChannelManager(MsoConfigManager configMngr) {
