@@ -526,7 +526,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         Mso mso = msoMngr.findById(set.getMsoId());
-        if (msoMngr.isPlayableChannel(channel.getId(), mso.getId()) == false) {
+        if (msoMngr.isPlayableChannel(channel, mso.getId()) == false) {
             badRequest(resp, "Channel Cant Play On This Mso");
             log.info(printExitState(now, req, "400"));
             return null;

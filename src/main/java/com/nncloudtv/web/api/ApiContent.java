@@ -390,7 +390,7 @@ public class ApiContent extends ApiGeneric {
             log.info(printExitState(now, req, "400"));
             return null;
         }
-        if (msoMngr.isValidBrand(channel.getId(), mso) == false) {
+        if (msoMngr.isValidBrand(channel, mso) == false) {
             badRequest(resp, INVALID_PARAMETER);
             log.info(printExitState(now, req, "400"));
             return null;
@@ -431,7 +431,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         MsoManager msoMngr = new MsoManager();
-        List<Mso> msos = msoMngr.getValidBrands(channel.getId());
+        List<Mso> msos = msoMngr.getValidBrands(channel);
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (Mso mso : msos) {
@@ -1007,7 +1007,7 @@ public class ApiContent extends ApiGeneric {
             log.info("total channels = " + results.size());
             if (mso != null) {
                 // filter out channels that not in MSO's store
-                Set<Long> verifiedChannelIds = new HashSet<Long>(storeService.checkChannelIdsInMsoStore(fetchedChannelIds, brand.getId()));
+                Set<Long> verifiedChannelIds = new HashSet<Long>(storeService.checkChannelsInMsoStore(results, brand.getId()));
                 List<NnChannel> verifiedChannels = new ArrayList<NnChannel>();
                 for (NnChannel channel : results) {
                     if (verifiedChannelIds.contains(channel.getId()) == true) {
@@ -1023,8 +1023,6 @@ public class ApiContent extends ApiGeneric {
         } else if (keyword != null && keyword.length() > 0) {
             
             log.info("keyword: " + keyword);
-            Set<Long> channelIdSet = new HashSet<Long>();
-            List<Long> channelIdList = new ArrayList<Long>();
             List<String> sphereList = new ArrayList<String>();
             String sphereFilter = null;
             if (sphereStr == null && mso != null) {
@@ -1049,9 +1047,6 @@ public class ApiContent extends ApiGeneric {
             
             List<NnChannel> channels = NnChannelManager.search(keyword, "store_only", sphereFilter, false, 0, 150);
             log.info("found channels = " + channels.size());
-            for (NnChannel channel : channels) {
-                channelIdSet.add(channel.getId());
-            }
             
             Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
             Set<Long> userIdSet = new HashSet<Long>();
@@ -1068,21 +1063,20 @@ public class ApiContent extends ApiGeneric {
                     if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
                         if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
                             log.info("from curator = " + channel.getName());
-                            channelIdSet.add(channel.getId());
+                            channels.add(channel);
                         }
                     }
                 }
             }
             
-            log.info("total channels = " + channelIdSet.size());
+            log.info("total channels = " + channels.size());
             if (mso != null) {
-                channelIdList = storeService.checkChannelIdsInMsoStore(channelIdSet, brand.getId());
+                List<Long> channelIdList = storeService.checkChannelsInMsoStore(channels, brand.getId());
+                results = channelMngr.findByIds(channelIdList);
                 log.info("total channels (filtered) = " + channelIdList.size());
             } else {
-                channelIdList = new ArrayList<Long>(channelIdSet);
+                results = channels;
             }
-            
-            results = channelMngr.findByIds(channelIdList);
             
             Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {

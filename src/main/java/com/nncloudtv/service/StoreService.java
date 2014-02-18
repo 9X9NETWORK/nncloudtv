@@ -78,13 +78,13 @@ public class StoreService {
      *  @param msoId required, indicate which Mso Store
      *  @param channelIds, required, the Channel IDs to be verified
      *  @return list of Channel's ID */
-    public List<Long> checkChannelIdsInMsoStore(java.util.Set<Long> channelIds, Long msoId) {
+    public List<Long> checkChannelsInMsoStore(List<NnChannel> channels, Long msoId) {
         
-        if (channelIds == null || channelIds.isEmpty() || msoId == null) {
+        if (channels == null || channels.isEmpty() || msoId == null) {
             return new ArrayList<Long>();
         }
         
-        List<Long> results = msoMngr.getPlayableChannels(new ArrayList<Long>(channelIds), msoId);
+        List<Long> results = msoMngr.getPlayableChannels(channels, msoId);
         return results;
     }
     

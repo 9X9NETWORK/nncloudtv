@@ -181,10 +181,12 @@ public class NnChannelPrefManager {
         }
         
         NnChannelPref pref = channelPrefs.get(0);
+        /*
         Mso mso = msoMngr.findByName(pref.getValue());
         if (msoMngr.isValidBrand(channelId, mso) == false) {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
         }
+        */
         
         return pref;
     }

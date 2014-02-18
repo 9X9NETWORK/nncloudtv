@@ -64,12 +64,7 @@ public class ApiContentService {
         // filter part
         if (msoId != null) {
             
-            List<Long> unverifiedChannel = new ArrayList<Long>();
-            for (NnChannel channel : results) {
-                unverifiedChannel.add(channel.getId());
-            }
-            
-            List<Long> verifiedChannel = msoMngr.getPlayableChannels(unverifiedChannel, msoId);
+            List<Long> verifiedChannel = msoMngr.getPlayableChannels(results, msoId);
             
             results = channelMngr.findByIds(verifiedChannel);
             Collections.sort(results, channelMngr.getChannelComparator("updateDate"));

@@ -27,19 +27,15 @@ public class MsoManager {
     
     private MsoDao msoDao = new MsoDao();
     protected MsoConfigManager configMngr;
-    protected NnChannelManager channelMngr;
     
-    public MsoManager(MsoConfigManager configMngr,
-            NnChannelManager channelMngr, MsoDao msoDao) {
+    public MsoManager(MsoConfigManager configMngr, MsoDao msoDao) {
         
         this.configMngr = configMngr;
-        this.channelMngr = channelMngr;
         this.msoDao = msoDao;
     }
     
     public MsoManager() {
         configMngr = new MsoConfigManager();
-        channelMngr = new NnChannelManager();
     }
     
     public Mso findOneByName(String name) {
@@ -374,12 +370,8 @@ public class MsoManager {
     }
     
     /** indicate which brands that channel can play on, means channel is in the brand's store */
-    public List<Mso> getValidBrands(Long channelId) {
+    public List<Mso> getValidBrands(NnChannel channel) {
         
-        if (channelId == null) {
-            return new ArrayList<Mso>();
-        }
-        NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             return new ArrayList<Mso>();
         }
@@ -421,14 +413,9 @@ public class MsoManager {
     
     /** indicate channel can or can't set brand for target MSO,
      *  9x9 is always a valid brand for auto-sharing even channel is not playable */
-    public boolean isValidBrand(Long channelId, Mso mso) {
+    public boolean isValidBrand(NnChannel channel, Mso mso) {
         
-        if (channelId == null || mso == null) {
-            return false;
-        }
-        
-        NnChannel channel = channelMngr.findById(channelId);
-        if (channel == null) {
+        if (channel == null || mso == null) {
             return false;
         }
         
@@ -465,9 +452,9 @@ public class MsoManager {
     
     /** Get playable channels on target MSO.
      *  The basic definition of playable should same as NnChannelDao.getStoreChannels. */
-    public List<Long> getPlayableChannels(List<Long> channelIds, Long msoId) {
+    public List<Long> getPlayableChannels(List<NnChannel> channels, Long msoId) {
         
-        if (channelIds == null || channelIds.size() < 1 || msoId == null) {
+        if (channels == null || channels.size() < 1 || msoId == null) {
             return new ArrayList<Long>();
         }
         
@@ -482,11 +469,6 @@ public class MsoManager {
         } else {
             supportSpheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
             supportSpheres.add(LangTable.OTHER);
-        }
-        
-        List<NnChannel> channels = channelMngr.findByIds(channelIds);
-        if (channels == null || channels.size() < 1) {
-            return new ArrayList<Long>();
         }
         
         List<Long> results = new ArrayList<Long>();
@@ -517,17 +499,17 @@ public class MsoManager {
         return results;
     }
     
-    public boolean isPlayableChannel(Long channelId, Long msoId) {
+    public boolean isPlayableChannel(NnChannel channel, Long msoId) {
         
-        if (channelId == null || msoId==null) {
+        if (channel == null || msoId==null) {
             return false;
         }
         
-        List<Long> unverifiedChannel = new ArrayList<Long>();
-        unverifiedChannel.add(channelId);
+        List<NnChannel> unverifiedChannels = new ArrayList<NnChannel>();
+        unverifiedChannels.add(channel);
         
-        List<Long> verifiedChannel = getPlayableChannels(unverifiedChannel, msoId);
-        if (verifiedChannel != null && verifiedChannel.isEmpty() == false) {
+        List<Long> verifiedChannels = getPlayableChannels(unverifiedChannels, msoId);
+        if (verifiedChannels != null && verifiedChannels.isEmpty() == false) {
             return true;
         }
         return false;

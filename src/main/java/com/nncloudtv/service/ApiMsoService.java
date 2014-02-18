@@ -317,7 +317,8 @@ public class ApiMsoService {
         
         List<Long> results = null;
         if (channelIds != null) {
-            results = storeService.checkChannelIdsInMsoStore(channelIds, msoId);
+            List<NnChannel> channels = channelMngr.findByIds(new ArrayList<Long>(channelIds));
+            results = storeService.checkChannelsInMsoStore(channels, msoId);
         } else if (categoryId != null) {
             results = storeService.getChannelIdsFromMsoStoreCategory(categoryId, msoId);
         } else {
@@ -580,12 +581,14 @@ public class ApiMsoService {
                 return ;
             }
             
-            List<Long> verifiedChannelIds = msoMngr.getPlayableChannels(channelIds, category.getMsoId());
+            List<NnChannel> channels = channelMngr.findByIds(channelIds);
+            List<Long> verifiedChannelIds = msoMngr.getPlayableChannels(channels, category.getMsoId());
             categoryService.addChannelsToCategory(category.getId(), verifiedChannelIds);
             
         } else if (channelId != null) {
             
-            if (msoMngr.isPlayableChannel(channelId, category.getMsoId()) == true) {
+            NnChannel channel = channelMngr.findById(channelId);
+            if (msoMngr.isPlayableChannel(channel, category.getMsoId()) == true) {
                 categoryService.addChannelToCategory(category.getId(), channelId, seq, alwaysOnTop);
             }
         }
