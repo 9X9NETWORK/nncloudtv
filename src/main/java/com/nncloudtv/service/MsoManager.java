@@ -32,12 +32,12 @@ public class MsoManager {
     @Autowired
     protected NnChannelManager channelMngr;
     
+    @Autowired
     public MsoManager(MsoConfigManager configMngr,
-            NnChannelManager channelMngr, MsoDao msoDao) {
+            NnChannelManager channelMngr) {
         
         this.configMngr = configMngr;
         this.channelMngr = channelMngr;
-        this.msoDao = msoDao;
     }
 
     public MsoManager() {
