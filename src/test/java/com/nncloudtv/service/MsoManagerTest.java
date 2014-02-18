@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.nncloudtv.mock.dao.MockMsoDao;
 import com.nncloudtv.mock.service.MockMsoConfigManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
+import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 
@@ -34,6 +35,10 @@ public class MsoManagerTest {
         
         Mso mockMso = new Mso(Mso.NAME_CTS, "mock cts mso", "cts@9x9.tv", Mso.TYPE_MSO);
         NnChannel channel = new NnChannel("name", "intro", "imgUrl");
+        channel.setStatus(NnChannel.STATUS_SUCCESS);
+        channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
+        channel.setPublic(true);
+        channel.setSphere(LangTable.LANG_ZH);
         Assert.assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand(channel, mockMso));
         
     }
