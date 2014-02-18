@@ -8,8 +8,7 @@ public class MockMsoManager extends MsoManager {
     
     public MockMsoManager() {
         
-        super(new MockMsoConfigManager(), new MockNnChannelManager(),
-                new MockMsoDao());
+        super(new MockMsoConfigManager(), new MockMsoDao());
     }
     
     @Override

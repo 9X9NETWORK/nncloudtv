@@ -8,6 +8,7 @@ import com.nncloudtv.mock.dao.MockMsoDao;
 import com.nncloudtv.mock.service.MockMsoConfigManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnChannel;
 
 public class MsoManagerTest {
     
@@ -24,7 +25,7 @@ public class MsoManagerTest {
         mockChannelMngr = new MockNnChannelManager();
         mockMsoDao = new MockMsoDao();
         
-        msoMngr = new MsoManager(mockConfigMngr, mockChannelMngr, mockMsoDao);
+        msoMngr = new MsoManager(mockConfigMngr, mockMsoDao);
         
     }
     
@@ -32,8 +33,8 @@ public class MsoManagerTest {
     public void testIsVliadBrand() {
         
         Mso mockMso = new Mso(Mso.NAME_CTS, "mock cts mso", "cts@9x9.tv", Mso.TYPE_MSO);
-        
-        Assert.assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand((long)777, mockMso));
+        NnChannel channel = new NnChannel("name", "intro", "imgUrl");
+        Assert.assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand(channel, mockMso));
         
     }
 }
