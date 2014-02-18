@@ -171,24 +171,19 @@ public class NnChannelPrefManager {
         if (channelId == null) {
             return null;
         }
-
-        MsoManager msoMngr = new MsoManager();
         
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.BRAND_AUTOSHARE);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
             
-            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
+            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_9X9);
         }
-        
-        NnChannelPref pref = channelPrefs.get(0);
+        return channelPrefs.get(0);
         /*
         Mso mso = msoMngr.findByName(pref.getValue());
         if (msoMngr.isValidBrand(channelId, mso) == false) {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
         }
         */
-        
-        return pref;
     }
     
     public String getAutoSync(Long channelId) {

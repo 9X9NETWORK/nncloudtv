@@ -331,10 +331,16 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        MsoManager msoMngr = new MsoManager();
         NnChannelPref pref = prefMngr.getBrand(channel.getId());
+        Mso mso = msoMngr.findByName(pref.getValue());
+        String brand = pref.getValue();
+        if (msoMngr.isValidBrand(channel, mso) == false) {
+            brand = Mso.NAME_9X9;
+        }
         
         Map<String, Object> result = new TreeMap<String, Object>();
-        result.put("brand", pref.getValue());
+        result.put("brand", brand);
         log.info(printExitState(now, req, "ok"));
         return result;
     }
