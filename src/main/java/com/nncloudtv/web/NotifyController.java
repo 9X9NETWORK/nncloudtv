@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -79,6 +80,16 @@ public class NotifyController {
             e.printStackTrace();
         }
         return NnNetUtil.textReturn(output);
-    }    
+    }
+    
+    //gcm testing
+    @RequestMapping(value="apnsTest")
+    public ResponseEntity<String> apnsTest(HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("apnsTest func called ----------------------------------");
+        NotifyLib.apnsSend();
+        
+        return NnNetUtil.textReturn("OK");
+    }
 
 }
