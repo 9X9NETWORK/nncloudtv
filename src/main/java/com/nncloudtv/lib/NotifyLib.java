@@ -46,7 +46,13 @@ public class NotifyLib {
 	public static void apnsSend() {
 	    log.info("get in apns func ---------------------------------------------------");
 	    
-        ApnsService service = APNS.newService() .withCert("/usr/share/jetty/webapps/bartonAPNS5.p12", "111111") .withSandboxDestination() .build();
+        ApnsService service = APNS.newService().
+                withCert("/usr/share/jetty/webapps/bartonAPNS5.p12", "111111")
+                .withSandboxDestination() // Specify to use the Apple sandbox servers
+                //.withProductionDestination() // Specify to use the Apple Production servers
+                //.asNonBlocking() // Constructs non-blocking queues and sockets connections
+                //.withDelegate(ApnsDelegate delegate)
+                .build();
         
 	    //String payload = APNS.newPayload().alertBody(args[3]).build();
         String token = "d8e8a8c5c4337a7b8b564a1d215d7f3691791597d9e91316413788f93a7dfa67";
