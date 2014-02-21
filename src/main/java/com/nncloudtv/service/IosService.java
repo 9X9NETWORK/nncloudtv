@@ -158,7 +158,7 @@ public class IosService {
         String result = null;
         NnProgramManager programMngr = new NnProgramManager();
         try {
-            result = (String)CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 31, PlayerApiService.FORMAT_PLAIN));
+            result = (String)CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN));
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -169,7 +169,7 @@ public class IosService {
         List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(channelId);
         log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());        
         String str = this.composeProgramInfoStr(programs);
-        CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 21, PlayerApiService.FORMAT_PLAIN), str);
+        CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 21, PlayerApiService.FORMAT_PLAIN), str);
         return str;
     }    
 

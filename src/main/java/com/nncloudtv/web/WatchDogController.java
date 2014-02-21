@@ -192,7 +192,7 @@ public class WatchDogController {
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel) {
         NnProgramManager mngr = new NnProgramManager();
-        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 40, PlayerApiService.FORMAT_PLAIN);        
+        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN);        
         if (result == null)
             return "null, error";
         String output = "";
@@ -445,6 +445,6 @@ public class WatchDogController {
        ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, 40, PlayerApiService.FORMAT_JSON);
        System.out.println(json);       
        return json;
-    }    
+    }        
     
 }

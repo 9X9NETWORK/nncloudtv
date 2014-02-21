@@ -261,47 +261,65 @@ public class CacheFactory {
     	return "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
     }
     
-
-    //nnprogram(1)[json]
-    public static String getProgramInfoKey(long channelId, int version, short format) {
+    /**
+     * key looks like nnprogram-v version number-channelId-pagination-json
+     * pagination has value 0, 50, 100, 150
+     * examples: nnprogram-v31-1-0-text
+     *           nnprogram-v40-2-50-json
+     */
+    public static String getProgramInfoKey(long channelId, int start, int version, short format) {
     	if (version == 31) {
-            return "nnprogram-v31(" + channelId + ")"; 
+    		return "nnprogram-v31-" + channelId + "-0-" + "text";
     	}
-        String str = "nnprogram(" + channelId + ")"; 
+        String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
         if (format == PlayerApiService.FORMAT_JSON) {
-        	str += "[json]";
+        	str += "json";
+        } else {
+        	str += "text";
         }
+        log.info("programInfo cache key:" + str);
         return str;
     }
-    
-    //cache the 1st program of channel    
+        
+    /**
+     * cache the 1st program of channel
+     * format: nnprogramLatest-channel_id-format
+     * example: nnprogramLatest-1-json
+     *          nnprogramLatest-1-text
+     */
     public static String getLatestProgramInfoKey(long channelId, short format) {
-        String str = "nnprogram-info(" + channelId + ")";
+        String str = "nnprogramLatest-" + channelId + "-";
         if (format == PlayerApiService.FORMAT_JSON) {
-        	str += "[json]";
+        	str += "json";
+        } else {
+        	str += "text";
         }
         return str;
     }
-    
-    
-    //example: nnchannel(1)[json]
+        
+    /**
+     * format: nnchannel-v version_number-channel_id-format
+     * example: nnchannel-v31-1-text
+     *          nnchannel-v40-2-json 
+     */
     public static String getChannelLineupKey(long channelId, int version, short format) {
     	String key = "";
     	if (version == 32) {
     		//nnchannel-v32(1)
-    		key = "nnchannel-v32(" + channelId + ")";
+    		key = "nnchannel-v32-" + channelId;
     	} else if (version < 32) {
     		//nnchannel-v31(1)
-        	key = "nnchannel-v31(" + channelId + ")";
+        	key = "nnchannel-v31-" + channelId;
     	} else {			
     		//nnchannel(1)
-            key = "nnchannel(" + channelId + ")";
+            key = "nnchannel-v40-" + channelId;
     	}
         if (format == PlayerApiService.FORMAT_JSON) {
-        	//nnchnanel(1)[json]
-        	//nnchannel-v31(1)[json]
-        	return key += "[json]";
-        }    	
+        	key += "-json";
+        } else {
+        	key += "-text";
+        }
+        log.info("channelLineup key:" + key);
         return key;
     }
         

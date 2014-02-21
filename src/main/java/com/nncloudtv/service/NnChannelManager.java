@@ -45,7 +45,7 @@ public class NnChannelManager {
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
     private NnChannelDao dao = new NnChannelDao();
-    private MsoConfigManager configMngr = new MsoConfigManager();
+    private MsoConfigManager configMngr;
     
     @Autowired
     public NnChannelManager(MsoConfigManager configMngr) {
@@ -54,6 +54,8 @@ public class NnChannelManager {
     }
     
     public NnChannelManager() {
+        
+        this.configMngr = new MsoConfigManager();
     }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {
@@ -998,7 +1000,7 @@ public class NnChannelManager {
         if ((channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL ||
                 channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) &&
              channel.getImageUrl() != null) {
-            
+
             String[] imageUrls = channel.getImageUrl().split("\\|");
             channel.setImageUrl(imageUrls[0]);
         }
@@ -1012,8 +1014,6 @@ public class NnChannelManager {
         // intro
         channel.setIntro(NnStringUtil.revertHtml(channel.getIntro()));
         
-        // autoSync
-        channel.setAutoSync(new NnChannelPrefManager().getAutoSync(channel.getId()));
     }
     
     /** get CategoryId that Channel belongs to */
@@ -1100,7 +1100,7 @@ public class NnChannelManager {
                 }
             } else {
                 NnEpisodeManager eMngr = new NnEpisodeManager();
-                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting());
+                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
                 Collections.sort(episodes, eMngr.getEpisodePublicSeqComparator());
                 for (int i=0; i<3; i++) {

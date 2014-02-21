@@ -1062,39 +1062,45 @@ public class PlayerApiController {
      *  http://host:port/playerAPI/programInfo?channel=153,158 <br/>
      *  http://host:port/playerAPI/programInfo?channel=153 <br/>
      * </p> 
-     * @param  channel (1)Could be *, all the programs, e.g. channel=* (user is required for wildcard query). 
-     *                    (2)Could be a channel Id, e.g. channel=1 <br/>
-     *                    (3)Could be list of channels, e.g. channels = 34,35,36.
+     * @param  channel (1)Could be a channel Id, e.g. channel=1 <br/>
+     *                 (2)Could be list of channels, e.g. channels = 34,35,36.<br/>
+     *                 (3)[deprecated] Could be *, all the programs, e.g. channel=* (user is required for wildcard query). 
      * @param  user user's unique identifier, it is required for wildcard query
      * @param  userInfo true or false. Whether to return user information as login. If asked, it will be returned after status code. 
      * @param  ipg  ipg's unique identifier, it is required for wildcard query
-     * @param  sidx the start index for pagination
-     * @param  limit the count of records
-     * @return <p>Programs info. Each program is separate by \n.</p>
-     *          <p>Program info has: <br/>
-     *            1. channelId <br/>
-     *            2. programId <br/>
-     *            3. program name, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode name and follows by each sub-episode's name. <br/>
-     *            4. description(max length=256), version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode description and follows by each sub-episode's description.<br/>
-     *            5. programType, version after 3.2 has "|" to separate between sub-episodes, expect the first field to be empty since it has no umbrella program type.<br/>
-     *            6. duration, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode duration and follows by each sub-episode's duration.<br/>
-     *            7. programThumbnailUrl, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode image and follows by each sub-episode's image.<br/>
-     *            8. programLargeThumbnailUrl, version after 3.2 has "|" to separate between sub-episodes, rule same as programThumbnailUrl<br/>
-     *            9. url1(mpeg4/slideshow), version after 3.2 has "|" to separate between videos. 
-     *            Each unit starts with a video url, separated by ";" is the start time (unit is seconds), 
-     *            after the next ";" is the end play time of the video. Expect the first field to be empty since there is no umbrella video url.
-     *            Example: |http://www.youtube.com/watch?v=TDpqS6GS_OQ;50;345|http://www.youtube.com/watch?v=JcmKq9kmP5U;0;380<br/> 
-     *            10. url2(webm), reserved<br/> 
-     *            11. url3(flv more likely), reserved<br/>
-     *            12. url4(audio), reserved<br/> 
-     *            13. publish date timestamp, version before 3.2 stops here<br/>
-     *            14. reserved<br/>
-     *            15. title card <br/>
-     *            16. poi information, each poi is separated by "|". 
-     *            Each poi unit starts with a number, to indicate what sub-episode it is in; follows start time; end time; poi type; urlencode json context. 
-     *            The information within the poi unit is separated by ";".
-     *            Currently there's only one poi type which is hyper link. This info is also included in the context.
-     *            <br/>
+     * @param  sidx [deprecated]the start index for pagination
+     * @param  limit [deprecated] the count of records
+     * @param  start the start index for pagination. If "start" param is presented, the pagination info will be shown in the return data in the 2nd block.
+     * @param  count the count of records. Currently server always sets it 50. 
+     * @return <p>If "start" is presented, data returns in two blocks. First block is pagination information. Second block is program information.
+     *         <p>First block (if pagination enabled): channelId, number of return records, total number of records. Example:<br/>
+     *            25096    50    121 <br/> 
+     *            25103    50    84
+     *         <p>Second block (if pagination enabled, otherwise it's first block): Programs info. Each program is separate by \n.</p>
+     *         <p>Program info has: <br/>
+     *           1. channelId <br/>
+     *           2. programId <br/>
+     *           3. program name, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode name and follows by each sub-episode's name. <br/>
+     *           4. description(max length=256), version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode description and follows by each sub-episode's description.<br/>
+     *           5. programType, version after 3.2 has "|" to separate between sub-episodes, expect the first field to be empty since it has no umbrella program type.<br/>
+     *           6. duration, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode duration and follows by each sub-episode's duration.<br/>
+     *           7. programThumbnailUrl, version after 3.2 has "|" to separate between sub-episodes, it starts from the umbrella episode image and follows by each sub-episode's image.<br/>
+     *           8. programLargeThumbnailUrl, version after 3.2 has "|" to separate between sub-episodes, rule same as programThumbnailUrl<br/>
+     *           9. url1(mpeg4/slideshow), version after 3.2 has "|" to separate between videos. 
+     *           Each unit starts with a video url, separated by ";" is the start time (unit is seconds), 
+     *           after the next ";" is the end play time of the video. Expect the first field to be empty since there is no umbrella video url.
+     *           Example: |http://www.youtube.com/watch?v=TDpqS6GS_OQ;50;345|http://www.youtube.com/watch?v=JcmKq9kmP5U;0;380<br/> 
+     *           10. url2(webm), reserved<br/> 
+     *           11. url3(flv more likely), reserved<br/>
+     *           12. url4(audio), reserved<br/> 
+     *           13. publish date timestamp, version before 3.2 stops here<br/>
+     *           14. reserved<br/>
+     *           15. title card <br/>
+     *           16. poi information, each poi is separated by "|". 
+     *           Each poi unit starts with a number, to indicate what sub-episode it is in; follows start time; end time; poi type; urlencode json context. 
+     *           The information within the poi unit is separated by ";".
+     *           Currently there's only one poi type which is hyper link. This info is also included in the context.
+     *           <br/>
      */        
     @RequestMapping(value="programInfo")
     public @ResponseBody Object programInfo(
@@ -1106,6 +1112,8 @@ public class PlayerApiController {
             @RequestParam(value="ipg", required = false) String ipgId,
             @RequestParam(value="sidx", required = false) String sidx,
             @RequestParam(value="limit", required = false) String limit,
+            @RequestParam(value="start", required = false) String start,
+            @RequestParam(value="count", required = false) String count,            
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -1118,7 +1126,7 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }         
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit);
+            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, start, count);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

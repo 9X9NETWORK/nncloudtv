@@ -331,15 +331,27 @@ public class NnProgramManager {
     }
     
     public void resetCache(long channelId) {        
-        log.info("reset program info cache: " + channelId);        
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 31, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_JSON));        
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_PLAIN));        
+        log.info("reset program info cache: " + channelId);    
+        //programInfo version 40, format json
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));       
+        //programInfo, version 40, format json
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_PLAIN));       
+        //programInfo, version 31
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 31, 0, PlayerApiService.FORMAT_PLAIN));
+        //latestProgramInfo
+        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_PLAIN));
+        //channelLineup
         CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 32, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_JSON));        
-    }
+    }           
     
     public int total() {
         return dao.total();
@@ -442,14 +454,14 @@ public class NnProgramManager {
      * @param sidx start index
      * @param limit number of records
      * @return program info string 
-     */
-    public Object findPlayerProgramInfoByChannel(long channelId, String episodeIds, long sidx, long limit, int version, short format) {
-        Object result = this.findPlayerProgramInfoByChannel(channelId, version, format);
+     */    
+    public Object findPlayerProgramInfoByChannel(long channelId, String episodeIds, int start, int end, int version, short format) {
+        Object result = this.findPlayerProgramInfoByChannel(channelId, start, end, version, format);
         if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds, format);
         if (channelId == 28087) return result; // weifilm, temporary workaround
-        return this.composeLimitProgramInfoStr(result, sidx, limit, format);
+        return this.composeLimitProgramInfoStr(result, start, end, format);
     }    
-    
+        
     private Object composeSpecifiedProgramInfoStr(Object input, long channelId, String episodeIds, short format) {        
         if (episodeIds == null || episodeIds.isEmpty())
             return input;
@@ -521,8 +533,8 @@ System.out.println("---- return original----");
     }
     
     //player programInfo entry
-    public Object findPlayerProgramInfoByChannel(long channelId, int version, short format) {
-        String cacheKey = CacheFactory.getProgramInfoKey(channelId, version, format);
+    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format) {
+        String cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
         try {
             String result = (String)CacheFactory.get(cacheKey);
             if (result != null) {
@@ -535,7 +547,7 @@ System.out.println("---- return original----");
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
-        Object output = this.assembleProgramInfo(c, format);
+        Object output = this.assembleProgramInfo(c, format, start, end);
         log.info("store programInfo, key = " + cacheKey);
         CacheFactory.set(cacheKey, output);
         return output;
@@ -577,9 +589,9 @@ System.out.println("---- return original----");
     }
                 
     //based on channel type, assemble programInfo string
-    public Object assembleProgramInfo(NnChannel c, short format) {
+    public Object assembleProgramInfo(NnChannel c, short format, int start, int end) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
-            List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting());
+            List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else {
