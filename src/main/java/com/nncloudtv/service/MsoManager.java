@@ -161,7 +161,7 @@ public class MsoManager {
         if (regionSet == false) 
             result[0] += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
         if (chromecastId == false)
-            result[0] += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "5ecf7ff9-2144-46ce-acc9-6d606831e2dc_1");
+            result[0] += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "DBB1992C");
         if (facebookId == false)
             result[0] += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
         //add ga based on device
