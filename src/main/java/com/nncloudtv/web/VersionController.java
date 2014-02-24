@@ -12,9 +12,9 @@ public class VersionController {
         
     @RequestMapping(value="current", produces = "text/plain; charset=utf-8")
     public ResponseEntity<String> current() {
-        String appVersion = "3.1.1.2";
-        String hash = "4619860e4476b23afd7e53511f877f173d4226d4";
-        String packagedTime = "2014-01-09 22:00:06.967024";
+        String appVersion = "4.4.0.1";
+        String hash = "50442fcf6be0525267e8cdfe58f7c114cb2daeef";
+        String packagedTime = "2014-02-24 22:33:08.489894";
         String info = "app version: " + appVersion + "\n"; 
         info += "hash: " + hash + "\n";
         info += "packaged time: " + packagedTime + "\n";
