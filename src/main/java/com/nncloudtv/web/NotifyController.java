@@ -120,9 +120,9 @@ public class NotifyController {
     }
     
     @RequestMapping(value="apns")
-    public ResponseEntity<String> apns(@RequestParam Long notifyId, HttpServletRequest req, HttpServletResponse resp) {
+    public ResponseEntity<String> apns(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
         
-        log.info("notifyId = " + notifyId);
+        log.info("notifyId = " + id);
         
         
         // APNs push notification
@@ -132,9 +132,9 @@ public class NotifyController {
     }
     
     @RequestMapping(value="gcm")
-    public ResponseEntity<String> gcm(@RequestParam Long notifyId, HttpServletRequest req, HttpServletResponse resp) {
+    public ResponseEntity<String> gcm(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
         
-        log.info("notifyId = " + notifyId);
+        log.info("notifyId = " + id);
         
         
         // GCM push notification
