@@ -25,5 +25,9 @@ public class MsoNotificationManager {
         return dao.list(page, limit, sidx, sord, filter);
     }
     
+    public MsoNotification findById(long id) {
+        return dao.findById(id);
+    }
+    
 }
 

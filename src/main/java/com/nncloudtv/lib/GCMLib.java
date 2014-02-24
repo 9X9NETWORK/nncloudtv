@@ -8,31 +8,42 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.springframework.stereotype.Service;
+
 import com.google.android.gcm.server.Constants;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
 import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
+import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.MsoNotification;
+import com.nncloudtv.model.NnDevice;
 
+@Service
 public class GCMLib {
     
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE = 1000;
+    // hard coded for test purpose
+    private static final String GCM_SENDER_KEY = "AIzaSyAXlEvWnLCNF0yL1GnZb-U0YRxG2WRvAc4";
     
-    private Sender sender;
-    //private NnDeviceDao deviceDao;
-    public GCMLib(String googleDevelopKey) {
-        sender = new Sender("AIzaSyAXlEvWnLCNF0yL1GnZb-U0YRxG2WRvAc4");
-    }
+    private NnDeviceDao deviceDao = new NnDeviceDao();
     
     public void doPost(MsoNotification msoNotification) {
         
         log.info("send to mso id=" + msoNotification.getMsoId());
         
-        //List<String> devices = deviceDao.getAndroidDevices(msoNotification.getMsoId());
+        // TODO find GCM key from given msoNotification.getMsoId()
+        Sender sender = new Sender(GCM_SENDER_KEY);
+        
+        List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         List<String> devices = new ArrayList<String>();
+        if (fetchedDevices != null) {
+            for (NnDevice device : fetchedDevices) {
+                devices.add(device.getToken());
+            }
+        }
         devices.add("APA91bGsJpHEvbL5GvWDjghV8O06E9U0JbTsi5-cScMaOUxtFkDUOYMtzYXstmZ3MX_ZHhAgM3lo" +
         		"1iS9VI-l8XIS6mzZcLf4TrFy4cLnCsW8uzSVTZ9Fl1tlmxcgqDnIGeymnisAVZH76ux_f0VURedHbQiwdxIVzg");
         
@@ -47,7 +58,7 @@ public class GCMLib {
             partialDevices.add(device);
             int partialSize = partialDevices.size();
             if (partialSize == MULTICAST_SIZE || counter == total) {
-                asyncSend(partialDevices, msoNotification);
+                asyncSend(sender, partialDevices, msoNotification);
                 partialDevices.clear();
                 tasks++;
             }
@@ -55,11 +66,12 @@ public class GCMLib {
         log.info("Asynchronously sending " + tasks + " multicast messages to " + total + " devices");
     }
     
-    private void asyncSend(List<String> partialDevices, MsoNotification msoNotification) {
+    private void asyncSend(Sender gcmSender, List<String> partialDevices, MsoNotification msoNotification) {
         
         // make a copy
         final List<String> devices = new ArrayList<String>(partialDevices);
         final MsoNotification notification = msoNotification;
+        final Sender sender = gcmSender;
         
         threadPool.execute(new Runnable() {
             public void run() {

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,12 +22,20 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NotifyLib;
 import com.nncloudtv.model.EndPoint;
 import com.nncloudtv.service.EndPointManager;
+import com.nncloudtv.service.NotifyService;
 
 @Controller
 @RequestMapping("notify") //@RequestMapping("gcm")
 public class NotifyController {
 
     protected static final Logger log = Logger.getLogger(NotifyController.class.getName());
+    
+    private NotifyService notifyService;
+    
+    @Autowired
+    public NotifyController(NotifyService notifyService) {
+        this.notifyService = notifyService;
+    }
 
     @RequestMapping(value="send")
     public @ResponseBody String send (
@@ -82,14 +91,32 @@ public class NotifyController {
         return NnNetUtil.textReturn(output);
     }
     
-    //gcm testing
-    @RequestMapping(value="apnsTest")
-    public ResponseEntity<String> apnsTest(HttpServletRequest req, HttpServletResponse resp) {
+    //APNS testing
+    @RequestMapping(value="APNSTest")
+    public @ResponseBody String APNSTest(HttpServletRequest req, HttpServletResponse resp) {
         
-        log.info("apnsTest func called ----------------------------------");
+        log.info("APNSTest func called ----------------------------------");
         NotifyLib.apnsSend();
         
-        return NnNetUtil.textReturn("OK");
+        return "OK";
+    }
+    
+    //GCM testing
+    @RequestMapping(value="GCMTest")
+    public @ResponseBody String GCMTest(HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("GCMTest func called ----------------------------------");
+        
+        String idStr = req.getParameter("id");
+        Long id = null;
+        try {
+            id = Long.valueOf(idStr);
+        } catch (NumberFormatException e) {
+        }
+        
+        notifyService.sendMsoNotification(id);
+        
+        return "OK";
     }
     
     @RequestMapping(value="apns")
