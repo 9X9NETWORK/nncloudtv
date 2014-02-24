@@ -1755,6 +1755,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         Long verifiedUserId = userIdentify(req);
+        log.info("userId = " + verifiedUserId);
         if (verifiedUserId == null) {
             unauthorized(resp);
             return null;
@@ -1764,7 +1765,7 @@ public class ApiMso extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        
+        log.info("mso verified");
         return notificationMngr.list(1, 10, "updateDate", "desc", "msoId == " + mso.getId());
     }
 }
