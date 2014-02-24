@@ -541,7 +541,6 @@ public class PlayerApiController {
             pdrServer = "http://v32d.9x9.tv";
         } else {
         	log.info("at pdr devel server");
-        	//this.pdrServer(userToken, deviceToken, session, pdr, rx, req, resp);
         }
         try {
             String urlStr = pdrServer + path;
@@ -564,11 +563,6 @@ public class PlayerApiController {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("redirection failed");
             }
-            //BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            //String line = null;
-            //while ((line = reader.readLine()) != null) {
-            //    log.info(line);
-            //}
         } catch (Exception e) {
             e.printStackTrace();
         }
