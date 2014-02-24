@@ -1,5 +1,7 @@
 package com.nncloudtv.web.api;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -554,10 +556,15 @@ public class PlayerApiController {
                 connection.setRequestMethod("POST");
                 OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
                 writer.write(params);
-                writer.close();
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     log.info("redirection failed");
                 }
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    log.info(line);
+                }
+                writer.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
