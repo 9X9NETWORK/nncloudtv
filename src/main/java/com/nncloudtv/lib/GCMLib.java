@@ -66,7 +66,7 @@ public class GCMLib {
                 
                 Message message = new Message.Builder()
                     .addData("message", notification.getMessage()) // message
-                    .addData("url", notification.getUrl()) // url
+                    .addData("content", notification.getContent()) // content
                     .build();
                 MulticastResult multicastResult;
                 try {
