@@ -530,40 +530,39 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         
-        String pdrServer = "http://v32d.9x9.tv";
+        String pdrServer = NnNetUtil.getUrlRoot(req);
         String path = "/playerAPI/pdrServer";
         PlayerApiService playerApiService = new PlayerApiService();
         playerApiService.prepService(req, resp, false);
         
         if (playerApiService.isProductionSite()) {
-            
-            try {
-                String urlStr = pdrServer + path;
-                log.info("forward to " + urlStr);
-                String params = "user=" + userToken + 
-                 "&device=" + deviceToken + 
-                 "&session=" + session +
-                 "&pdr=" + NnStringUtil.urlencode("" + pdr) +
-                 "&rx=" + rx +
-                 "&mso=" + playerApiService.getMso().getName();
-                //log.info(urlStr + "?" + params);
-                
-                URL url = new URL(urlStr);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoOutput(true);
-                connection.setRequestMethod("POST");
-                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-                writer.write(params);
-                writer.close();
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    log.info("redirection failed");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            pdrServer = "http://v32d.9x9.tv";
         } else {
         	log.info("at pdr devel server");
-        	this.pdrServer(userToken, deviceToken, session, pdr, rx, req, resp);
+        }
+        try {
+            String urlStr = pdrServer + path;
+            log.info("forward to " + urlStr);
+            String params = "user=" + userToken + 
+             "&device=" + deviceToken + 
+             "&session=" + session +
+             "&pdr=" + NnStringUtil.urlencode("" + pdr) +
+             "&rx=" + rx +
+             "&mso=" + playerApiService.getMso().getName();
+            //log.info(urlStr + "?" + params);
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+            writer.write(params);
+            writer.close();
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                log.info("redirection failed");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return playerApiService.assembleMsgs(NnStatusCode.SUCCESS, null); 
     }

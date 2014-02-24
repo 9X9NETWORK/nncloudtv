@@ -171,7 +171,7 @@ public class WatchDogController {
     }
     
     @RequestMapping(value="msoInfo")
-    public ResponseEntity<String> msoInfo(HttpServletRequest req) {
+    public ResponseEntity<String> msoInfo(HttpServletRequest req, HttpServletResponse resp) {
         MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.findNNMso();
         String[] result = {""};
@@ -184,6 +184,7 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
 
         PlayerApiService s = new PlayerApiService();
+        s.prepService(req, resp);        
         String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    
