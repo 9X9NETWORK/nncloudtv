@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -1719,10 +1720,8 @@ public class ApiMso extends ApiGeneric {
         
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
-            
-            // DO THINGS FOR INSTANT PUBLISH
-            
-            
+            QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
+            QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
         }
         
         return notification;

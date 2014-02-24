@@ -91,5 +91,28 @@ public class NotifyController {
         
         return NnNetUtil.textReturn("OK");
     }
-
+    
+    @RequestMapping(value="apns")
+    public ResponseEntity<String> apns(@RequestParam Long notifyId, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("notifyId = " + notifyId);
+        
+        
+        // APNs push notification
+        
+        
+        return NnNetUtil.textReturn("OK");
+    }
+    
+    @RequestMapping(value="gcm")
+    public ResponseEntity<String> gcm(@RequestParam Long notifyId, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("notifyId = " + notifyId);
+        
+        
+        // GCM push notification
+        
+        
+        return NnNetUtil.textReturn("OK");
+    }
 }
