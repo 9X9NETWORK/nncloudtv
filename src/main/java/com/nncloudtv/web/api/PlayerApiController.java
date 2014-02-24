@@ -560,15 +560,15 @@ public class PlayerApiController {
             connection.setRequestMethod("POST");
             OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
             writer.write(params);
+            writer.close();
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("redirection failed");
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                log.info(line);
-            }
-            writer.close();
+            //BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            //String line = null;
+            //while ((line = reader.readLine()) != null) {
+            //    log.info(line);
+            //}
         } catch (Exception e) {
             e.printStackTrace();
         }
