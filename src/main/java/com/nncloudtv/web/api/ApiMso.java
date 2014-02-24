@@ -1649,7 +1649,7 @@ public class ApiMso extends ApiGeneric {
     }
     
     @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)
-    MsoNotification notificationsCreate(HttpServletRequest req,
+    public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
     
         
@@ -1729,11 +1729,11 @@ public class ApiMso extends ApiGeneric {
     }    
     
     @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.GET)
-    List<MsoNotification> notifications(HttpServletRequest req,
+    public @ResponseBody List<MsoNotification> notifications(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
         Mso mso = null;
-        
+        log.info("mso = " + msoIdStr);
         if (msoIdStr.matches("^\\d+$")) {
             
             Long msoId = evaluateLong(msoIdStr);
