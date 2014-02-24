@@ -33,9 +33,9 @@ public class NnDevice {
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
     private String type;
-    public final String TYPE_FLIPR = "flipr";
-    public final String TYPE_APNS = "apns";
-    public final String TYPE_GCM = "gcm";
+    public static final String TYPE_FLIPR = "flipr";
+    public static final String TYPE_APNS = "apns";
+    public static final String TYPE_GCM = "gcm";
     
     @Persistent
     private int badge;
@@ -46,6 +46,17 @@ public class NnDevice {
     @Persistent
     private Date updateDate;
     
+    public NnDevice() {
+        
+    }
+    
+    public NnDevice(String token, long msoId, String type) {
+        
+        this.token = token;
+        this.msoId = msoId;
+        this.type = type;
+    }
+
     public String getToken() {
         return token;
     }

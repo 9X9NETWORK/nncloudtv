@@ -1316,6 +1316,8 @@ public class PlayerApiService {
     }
     
     public Object deviceRegister(String userToken, String type, HttpServletRequest req, HttpServletResponse resp) {
+        
+        NnDevice device = null;
         NnUser user = null;
         if (userToken != null) {
             @SuppressWarnings({ "rawtypes"})
@@ -1325,11 +1327,27 @@ public class PlayerApiService {
             }
             user = (NnUser) map.get("u");
         }
+        
+        if (type == null) {
+        } else if (type.equalsIgnoreCase(NnDevice.TYPE_APNS) || type.equalsIgnoreCase(NnDevice.TYPE_GCM)) {
+            
+            String token = req.getParameter("token");
+            if (token == null) {
+                return this.assembleMsgs(NnStatusCode.ERROR, "missing param token");
+            }
+            
+            ApiContext context = new ApiContext(req);
+            Mso mso = context.getMso();
+            device = new NnDevice(token, mso.getId(), type);
+        }
         NnDeviceManager deviceMngr = new NnDeviceManager();
         deviceMngr.setReq(req); //!!!
-        NnDevice device = deviceMngr.create(null, user, type);
+        device = deviceMngr.create(device, user, type);
+        
+        if (type == null || type.equalsIgnoreCase(NnDevice.TYPE_FLIPR)) {
+            setUserCookie(resp, CookieHelper.DEVICE, device.getToken());
+        }
         Object result = deviceMngr.getPlayerDeviceInfo(device, this.format, null);
-        this.setUserCookie(resp, CookieHelper.DEVICE, device.getToken());
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
