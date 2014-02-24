@@ -32,7 +32,10 @@ public class NnDevice {
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
-    private String type; // to identify device type ("ios","android","web", ...)
+    private String type;
+    public final String TYPE_FLIPR = "flipr";
+    public final String TYPE_APNS = "apns";
+    public final String TYPE_GCM = "gcm";
     
     @Persistent
     private int badge;

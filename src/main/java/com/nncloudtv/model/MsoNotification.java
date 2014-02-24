@@ -27,6 +27,11 @@ public class MsoNotification implements Serializable {
     @Persistent
     private Date scheduleDate;
     
+    public MsoNotification(long msoId, String message) {
+        this.msoId = msoId;
+        this.message = message;
+    }
+
     @Persistent
     private Date publishDate;
 
@@ -39,7 +44,7 @@ public class MsoNotification implements Serializable {
 
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
-    private String url;
+    private String content;
 
     public long getMsoId() {
       return msoId;
@@ -88,11 +93,11 @@ public class MsoNotification implements Serializable {
         this.message = message;
     }
 
-    public String getUrl() {
-        return url;
+    public String getContent() {
+        return content;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setContent(String content) {
+        this.content = content;
     }
 }

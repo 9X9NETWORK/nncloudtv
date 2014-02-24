@@ -20,11 +20,13 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
+import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.MsoNotificationManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
@@ -48,11 +50,12 @@ public class ApiMso extends ApiGeneric {
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
     private NnUserManager userMngr;
+    private MsoNotificationManager notificationMngr;
     
     @Autowired
     public ApiMso(MsoManager msoMngr, NnChannelManager channelMngr, StoreService storeService,
             NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
-            CategoryService categoryService, NnUserManager userMngr) {
+            CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr) {
         this.msoMngr = msoMngr;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
@@ -61,6 +64,7 @@ public class ApiMso extends ApiGeneric {
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
         this.userMngr = userMngr;
+        this.notificationMngr = notificationMngr;
     }
     
     /** indicate logging user has access right to target mso in PCS API
@@ -1643,5 +1647,124 @@ public class ApiMso extends ApiGeneric {
         log.info(printExitState(now, req, "ok"));
         return results;
     }
-
+    
+    @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)
+    MsoNotification notificationsCreate(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    
+        
+        Mso mso = null;
+        
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr);
+        }
+        
+        if (mso == null) {
+            notFound(resp, "MSO_NOT_FOUND");
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        String message = req.getParameter("message");
+        if (message == null) {
+            badRequest(resp, "MISSING_PARAM_MESSAGE");
+            return null;
+        }
+        
+        MsoNotification notification = new MsoNotification(mso.getId(), message);
+        
+        String content = req.getParameter("content");
+        if (content != null) {
+            notification.setContent(content);
+        }
+        
+        String scheduleDateStr = req.getParameter("scheduleDate");
+        if (scheduleDateStr == null) {
+            badRequest(resp, "MISSING_PARAM_SCHEDULE_DATE");
+            return null;
+            
+        } else if (scheduleDateStr.equalsIgnoreCase("NOW")) {
+        } else {
+            
+            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            if (scheduleDateLong == null) {
+                badRequest(resp, INVALID_PARAMETER);
+                return null;
+            }
+            notification.setScheduleDate(new Date(scheduleDateLong));
+        }
+        
+        notification = notificationMngr.save(notification);
+        
+        if (scheduleDateStr.equalsIgnoreCase("NOW")) {
+            
+            
+            // DO THINGS FOR INSTANT PUBLISH
+            
+            
+        }
+        
+        return notification;
+    }    
+    
+    @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.GET)
+    List<MsoNotification> notifications(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+        
+        Mso mso = null;
+        
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr);
+        }
+        
+        if (mso == null) {
+            notFound(resp, "MSO_NOT_FOUND");
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        return notificationMngr.list(1, 10, "updateDate", "desc", "msoId == " + mso.getId());
+    }
 }
