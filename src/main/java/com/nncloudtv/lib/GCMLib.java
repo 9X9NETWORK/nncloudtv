@@ -25,17 +25,14 @@ public class GCMLib {
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE = 1000;
-    // hard coded for test purpose
-    private static final String GCM_SENDER_KEY = "AIzaSyAXlEvWnLCNF0yL1GnZb-U0YRxG2WRvAc4";
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     
-    public void doPost(MsoNotification msoNotification, boolean debug) {
+    public void doPost(MsoNotification msoNotification, String apiKey) {
         
         log.info("send to mso id=" + msoNotification.getMsoId());
         
-        // TODO find GCM key from given msoNotification.getMsoId()
-        Sender sender = new Sender(GCM_SENDER_KEY);
+        Sender sender = new Sender(apiKey);
         
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         List<String> devices = new ArrayList<String>();

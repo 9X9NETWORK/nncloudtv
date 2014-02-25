@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.APNSLib;
 import com.nncloudtv.lib.GCMLib;
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
 
 @Service
@@ -17,12 +19,17 @@ public class NotifyService {
     private MsoNotificationManager msoNotificationMngr;
     private GCMLib gcmLib;
     private APNSLib apnsLib;
+    private MsoConfigManager msoConfigMngr;
+    private MsoManager msoMngr;
     
     @Autowired
-    public NotifyService(MsoNotificationManager msoNotificationMngr, GCMLib gcmLib, APNSLib apnsLib) {
+    public NotifyService(MsoNotificationManager msoNotificationMngr, GCMLib gcmLib, APNSLib apnsLib,
+                MsoConfigManager msoConfigMngr, MsoManager msoMngr) {
         this.msoNotificationMngr = msoNotificationMngr;
         this.gcmLib = gcmLib;
         this.apnsLib = apnsLib;
+        this.msoNotificationMngr = msoNotificationMngr;
+        this.msoMngr = msoMngr;
     }
     
     public void sendToGCM(Long msoNotificationId) {
@@ -36,7 +43,17 @@ public class NotifyService {
             return ;
         }
         
-        gcmLib.doPost(msoNotification, false);
+        Mso mso = msoMngr.findById(msoNotification.getMsoId());
+        if (mso == null) {
+            return ;
+        }
+        
+        MsoConfig config = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        if (config == null) {
+            return ;
+        }
+        
+        gcmLib.doPost(msoNotification, config.getValue());
     }
     
     public void sendToAPNS(Long msoNotificationId) {
@@ -64,7 +81,10 @@ public class NotifyService {
             return ;
         }
         
-        gcmLib.doPost(msoNotification, true);
+        // hard coded for test purpose
+        String GCM_SENDER_KEY = "AIzaSyAXlEvWnLCNF0yL1GnZb-U0YRxG2WRvAc4";
+        
+        gcmLib.doPost(msoNotification, GCM_SENDER_KEY);
     }
     
     public void sendToAPNS_debug(Long msoNotificationId) {
