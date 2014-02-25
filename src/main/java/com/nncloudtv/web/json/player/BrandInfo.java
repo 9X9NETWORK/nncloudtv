@@ -22,6 +22,7 @@ public class BrandInfo  implements Serializable {
 	private String forceUpgrade = "0";
 	private String upgradeMessage;
 	private String tutorialVideo;
+	private String gcmSenderId;
 	
 	public String getTutorialVideo() {
 		return tutorialVideo;
@@ -125,5 +126,11 @@ public class BrandInfo  implements Serializable {
 	public void setAcceptLang(String acceptLang) {
 		this.acceptLang = acceptLang;
 	}
+    public String getGcmSenderId() {
+        return gcmSenderId;
+    }
+    public void setGcmSenderId(String gcmSenderId) {
+        this.gcmSenderId = gcmSenderId;
+    }
 
 }

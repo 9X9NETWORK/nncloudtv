@@ -136,7 +136,10 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.CHROMECAST_ID)) {
                 chromecastId = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, c.getValue());
-            }            
+            }
+            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
+                result += PlayerApiService.assembleKeyValue(MsoConfig.GCM_SENDER_ID, c.getValue());
+            }
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -213,7 +216,10 @@ public class MsoManager {
             	info.setUpgradeMessage(c.getValue());
             if (c.getItem().equals(MsoConfig.VIDEO)) {
                 info.setTutorialVideo(c.getValue());
-            }            
+            }
+            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
+                info.setGcmSenderId(c.getValue());
+            }
         }
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON), info);
         return info;    	
