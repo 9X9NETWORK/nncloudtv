@@ -95,6 +95,8 @@ public class PlayerApiService {
     private NnUserManager userMngr;    
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
+    private NnDeviceManager deviceMngr;
+    
     private Mso mso;
     private int version = 32;
     private Locale locale = Locale.ENGLISH;
@@ -111,18 +113,21 @@ public class PlayerApiService {
         msoMngr = new MsoManager();
         chMngr = new NnChannelManager();
         profileMngr = new NnUserProfileManager();
+        deviceMngr = new NnDeviceManager();
     }
     
     @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
-            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr) {
+            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
+            NnDeviceManager deviceMngr) {
         
         this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
         this.chMngr = chMngr;
         this.profileMngr = profileMngr;
+        this.deviceMngr = deviceMngr;
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
@@ -1338,7 +1343,12 @@ public class PlayerApiService {
             
             ApiContext context = new ApiContext(req);
             Mso mso = context.getMso();
-            device = new NnDevice(token, mso.getId(), type);
+            
+            device = deviceMngr.findDuplicated(token, mso.getId(), type);
+            if (device == null) {
+                device = new NnDevice(token, mso.getId(), type);
+            }
+            device.setBadge(0);
         }
         NnDeviceManager deviceMngr = new NnDeviceManager();
         deviceMngr.setReq(req); //!!!

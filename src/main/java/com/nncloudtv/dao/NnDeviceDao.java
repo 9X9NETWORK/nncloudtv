@@ -107,4 +107,22 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
         return device;
     }
     
+    @SuppressWarnings("unchecked")
+    public NnDevice findDuplicated(String token, long msoId, String type) {
+        NnDevice device = null;
+        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnDevice.class);
+            query.setFilter("token == tokenParam && msoId == msoIdParam && type == typeParam");
+            query.declareParameters("String tokenParam, long msoIdParam, String typeParam");
+            List<NnDevice> results = (List<NnDevice>) query.execute(token, msoId, type);
+            if (results.size() > 0) {
+                device = results.get(0);
+            }            
+            device = pm.detachCopy(device);
+        } finally {
+            pm.close();
+        }
+        return device;
+    }
 }

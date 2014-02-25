@@ -141,4 +141,9 @@ public class NnDeviceManager {
         this.delete(existed);
         return true;
     }
+    
+    public NnDevice findDuplicated(String token, long msoId, String type) {
+        
+        return deviceDao.findDuplicated(token, msoId, type);
+    }
 }
