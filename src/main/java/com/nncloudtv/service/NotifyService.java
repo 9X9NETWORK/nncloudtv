@@ -67,7 +67,30 @@ public class NotifyService {
             return ;
         }
         
-        apnsLib.doPost(msoNotification, false);
+        Mso mso = msoMngr.findById(msoNotification.getMsoId());
+        if (mso == null) {
+            return ;
+        }
+        
+        String fileRoot = "/var/opt/p12files/" + mso.getName() + "_apns.p12";
+        String password = "";
+        String msoName = mso.getName();
+        for (int count = 0; count < msoName.length(); count++) {
+            if (count == 1) {
+                password = password + (msoName.charAt(count) + "").toUpperCase();
+            } else {
+                password = password + (msoName.charAt(count) + "").toLowerCase();
+            }
+        }
+        password = password + "9x9";
+        for (int count = password.length(); count < 8; count++) {
+            password = password + "_";
+        }
+        
+        log.info("fileRoot=" + fileRoot);
+        log.info("password=" + password);
+        
+        apnsLib.doPost(msoNotification, fileRoot, password);
     }
     
     public void sendToGCM_debug(Long msoNotificationId) {
@@ -98,7 +121,11 @@ public class NotifyService {
             return ;
         }
         
-        apnsLib.doPost(msoNotification, true);
+        // hard coded for test purpose
+        String APNS_KEYFILE_ROOT = "/usr/share/jetty/webapps/bartonAPNS5.p12";
+        String APNS_KEYFILE_PASSWORD = "111111";
+        
+        apnsLib.doPost(msoNotification, APNS_KEYFILE_ROOT, APNS_KEYFILE_PASSWORD);
     }
 
 }

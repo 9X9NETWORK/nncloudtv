@@ -21,9 +21,8 @@ import com.notnoop.apns.EnhancedApnsNotification;
 public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
-    // hard coded for test purpose
-    private static final String APNS_KEYFILE_ROOT = "/usr/share/jetty/webapps/bartonAPNS5.p12";
-    private static final String APNS_KEYFILE_PASSWORD = "111111";
+    
+    private NnDeviceDao deviceDao = new NnDeviceDao();
     
     // current for log purpose
     private static final ApnsDelegate delegate = new ApnsDelegate() {
@@ -49,7 +48,7 @@ public class APNSLib {
                 log.info("INVALID_PAYLOAD_SIZE");
             }
             if (e.code() == DeliveryError.INVALID_TOKEN.code()) {
-                log.info("INVALID_TOKEN"); // TODO remove token in database
+                log.info("INVALID_TOKEN"); // TODO remove token from database
             }
             if (e.code() == DeliveryError.INVALID_TOKEN_SIZE.code()) {
                 log.info("INVALID_TOKEN_SIZE");
@@ -89,16 +88,10 @@ public class APNSLib {
         }
     };
     
-    private NnDeviceDao deviceDao = new NnDeviceDao();
-    
-    public void doPost(MsoNotification msoNotification, boolean debug) {
+    public void doPost(MsoNotification msoNotification, String fileRoot, String password) {
         
         log.info("get in apns func ---------------------------------------------------");
         log.info("send to mso id=" + msoNotification.getMsoId());
-        
-        // TODO find APNS key from given msoNotification.getMsoId()
-        String fileRoot = APNS_KEYFILE_ROOT;
-        String password = APNS_KEYFILE_PASSWORD;
         
         ApnsService service = APNS.newService()
                 .withCert(fileRoot, password)
