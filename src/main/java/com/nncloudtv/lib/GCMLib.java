@@ -30,7 +30,7 @@ public class GCMLib {
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     
-    public void doPost(MsoNotification msoNotification) {
+    public void doPost(MsoNotification msoNotification, boolean debug) {
         
         log.info("send to mso id=" + msoNotification.getMsoId());
         

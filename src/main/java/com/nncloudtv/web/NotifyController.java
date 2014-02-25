@@ -93,30 +93,24 @@ public class NotifyController {
     
     //APNS testing
     @RequestMapping(value="APNSTest")
-    public @ResponseBody String APNSTest(HttpServletRequest req, HttpServletResponse resp) {
+    public ResponseEntity<String> APNSTest(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("APNSTest func called ----------------------------------");
-        NotifyLib.apnsSend();
         
-        return "OK";
+        notifyService.sendToAPNS_debug(id);
+        
+        return NnNetUtil.textReturn("OK");
     }
     
     //GCM testing
     @RequestMapping(value="GCMTest")
-    public @ResponseBody String GCMTest(HttpServletRequest req, HttpServletResponse resp) {
+    public ResponseEntity<String> GCMTest(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("GCMTest func called ----------------------------------");
         
-        String idStr = req.getParameter("id");
-        Long id = null;
-        try {
-            id = Long.valueOf(idStr);
-        } catch (NumberFormatException e) {
-        }
+        notifyService.sendToGCM_debug(id);
         
-        notifyService.sendMsoNotification(id);
-        
-        return "OK";
+        return NnNetUtil.textReturn("OK");
     }
     
     @RequestMapping(value="apns")
@@ -126,6 +120,7 @@ public class NotifyController {
         
         
         // APNs push notification
+        notifyService.sendToAPNS(id);
         
         
         return NnNetUtil.textReturn("OK");
@@ -138,6 +133,7 @@ public class NotifyController {
         
         
         // GCM push notification
+        notifyService.sendToGCM(id);
         
         
         return NnNetUtil.textReturn("OK");

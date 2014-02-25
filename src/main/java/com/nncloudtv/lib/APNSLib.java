@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.springframework.stereotype.Service;
+
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
@@ -15,6 +17,7 @@ import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.DeliveryError;
 import com.notnoop.apns.EnhancedApnsNotification;
 
+@Service
 public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
@@ -88,7 +91,7 @@ public class APNSLib {
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     
-    public void doPost(MsoNotification msoNotification) {
+    public void doPost(MsoNotification msoNotification, boolean debug) {
         
         log.info("get in apns func ---------------------------------------------------");
         log.info("send to mso id=" + msoNotification.getMsoId());
