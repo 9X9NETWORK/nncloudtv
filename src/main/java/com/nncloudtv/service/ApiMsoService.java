@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,14 +32,14 @@ public class ApiMsoService {
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
-    private MsoConfigManager msoConfigMngr;
+    private MsoConfigManager configMngr;
     
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
                             SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
                             NnChannelManager channelMngr, StoreService storeService,
                             StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            CategoryService categoryService, MsoConfigManager msoConfigMngr) {
+                            CategoryService categoryService, MsoConfigManager configMngr) {
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
@@ -48,7 +49,7 @@ public class ApiMsoService {
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
-        this.msoConfigMngr = msoConfigMngr;
+        this.configMngr = configMngr;
     }
     
     /** service for ApiMso.msoSets
@@ -99,7 +100,7 @@ public class ApiMsoService {
         }
         
         String lang = LangTable.LANG_EN; // default
-        MsoConfig supportedRegion = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion != null && supportedRegion.getValue() != null) {
             List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
             if (spheres != null && spheres.isEmpty() == false) {
@@ -371,7 +372,7 @@ public class ApiMsoService {
         }
         
         mso.setMaxSets(MsoConfig.MAXSETS_DEFAULT);
-        MsoConfig maxSets = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        MsoConfig maxSets = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
         if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
             try {
                 mso.setMaxSets(Short.valueOf(maxSets.getValue()));
@@ -380,13 +381,21 @@ public class ApiMsoService {
         }
         
         mso.setMaxChPerSet(MsoConfig.MAXCHPERSET_DEFAULT);
-        MsoConfig maxChPerSet = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        MsoConfig maxChPerSet = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
         if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
             try {
                 mso.setMaxChPerSet(Short.valueOf(maxChPerSet.getValue()));
             } catch (NumberFormatException e) {
             }
         }
+        
+        boolean pushNotificationEnabled = true;
+        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        File p12 = new File("/var/opt/p12files/" + mso.getName() + "_apns.p12");
+        if (p12.exists() == false || gcmApiKey == null || gcmApiKey.getValue() == null || !gcmApiKey.getValue().isEmpty()) {
+            pushNotificationEnabled = false;
+        }
+        mso.setPushNotificationEnabled(pushNotificationEnabled);
         
         MsoManager.normalize(mso);
         return mso;

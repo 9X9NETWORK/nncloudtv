@@ -75,6 +75,9 @@ public class Mso implements Serializable {
     @NotPersistent
     private short maxChPerSet;
     
+    @NotPersistent
+    private boolean pushNotificationEnabled;
+    
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
         this.intro = intro;
@@ -192,5 +195,13 @@ public class Mso implements Serializable {
 
     public void setLang(String lang) {
         this.lang = lang;
+    }
+
+    public boolean isPushNotificationEnabled() {
+        return pushNotificationEnabled;
+    }
+
+    public void setPushNotificationEnabled(boolean pushNotificationEnabled) {
+        this.pushNotificationEnabled = pushNotificationEnabled;
     }
 }
