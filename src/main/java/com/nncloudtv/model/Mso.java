@@ -76,7 +76,10 @@ public class Mso implements Serializable {
     private short maxChPerSet;
     
     @NotPersistent
-    private boolean pushNotificationEnabled;
+    private boolean apnsEnabled;
+    
+    @NotPersistent
+    private boolean gcmEnabled;
     
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
@@ -197,11 +200,19 @@ public class Mso implements Serializable {
         this.lang = lang;
     }
 
-    public boolean isPushNotificationEnabled() {
-        return pushNotificationEnabled;
+    public boolean isApnsEnabled() {
+        return apnsEnabled;
     }
 
-    public void setPushNotificationEnabled(boolean pushNotificationEnabled) {
-        this.pushNotificationEnabled = pushNotificationEnabled;
+    public void setApnsEnabled(boolean pushApnsEnabled) {
+        this.apnsEnabled = pushApnsEnabled;
+    }
+
+    public boolean isGcmEnabled() {
+        return gcmEnabled;
+    }
+
+    public void setGcmEnabled(boolean gcmEnabled) {
+        this.gcmEnabled = gcmEnabled;
     }
 }

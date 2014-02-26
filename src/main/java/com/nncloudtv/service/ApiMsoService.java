@@ -389,13 +389,18 @@ public class ApiMsoService {
             }
         }
         
-        boolean pushNotificationEnabled = true;
+        boolean apnsEnabled = true;
+        boolean gcmEnabled = true;
         MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
         File p12 = new File("/var/opt/p12files/" + mso.getName() + "_apns.p12");
-        if (p12.exists() == false || gcmApiKey == null || gcmApiKey.getValue() == null || !gcmApiKey.getValue().isEmpty()) {
-            pushNotificationEnabled = false;
+        if (gcmApiKey == null || gcmApiKey.getValue() == null || !gcmApiKey.getValue().isEmpty()) {
+            gcmEnabled = false;
         }
-        mso.setPushNotificationEnabled(pushNotificationEnabled);
+        if (p12.exists() == false) {
+            apnsEnabled = false;
+        }
+        mso.setGcmEnabled(gcmEnabled);
+        mso.setApnsEnabled(apnsEnabled);
         
         MsoManager.normalize(mso);
         return mso;
