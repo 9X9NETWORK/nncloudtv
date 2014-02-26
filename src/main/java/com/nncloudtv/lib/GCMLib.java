@@ -2,7 +2,10 @@ package com.nncloudtv.lib;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -35,14 +38,15 @@ public class GCMLib {
         Sender sender = new Sender(apiKey);
         
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
+        // used to handle NnDevice if send failed event occur
+        Map<String, NnDevice> deviceMap = new HashMap<String, NnDevice>();
         List<String> devices = new ArrayList<String>();
         if (fetchedDevices != null) {
             for (NnDevice device : fetchedDevices) {
                 devices.add(device.getToken());
+                deviceMap.put(device.getToken(), device);
             }
         }
-        devices.add("APA91bGsJpHEvbL5GvWDjghV8O06E9U0JbTsi5-cScMaOUxtFkDUOYMtzYXstmZ3MX_ZHhAgM3lo" +
-        		"1iS9VI-l8XIS6mzZcLf4TrFy4cLnCsW8uzSVTZ9Fl1tlmxcgqDnIGeymnisAVZH76ux_f0VURedHbQiwdxIVzg");
         
         // send a multicast message using JSON
         // must split in chunks of 1000 devices (GCM limit)
@@ -55,7 +59,7 @@ public class GCMLib {
             partialDevices.add(device);
             int partialSize = partialDevices.size();
             if (partialSize == MULTICAST_SIZE || counter == total) {
-                asyncSend(sender, partialDevices, msoNotification);
+                asyncSend(sender, partialDevices, msoNotification, deviceMap);
                 partialDevices.clear();
                 tasks++;
             }
@@ -63,19 +67,23 @@ public class GCMLib {
         log.info("Asynchronously sending " + tasks + " multicast messages to " + total + " devices");
     }
     
-    private void asyncSend(Sender gcmSender, List<String> partialDevices, MsoNotification msoNotification) {
+    private void asyncSend(Sender gcmSender, List<String> partialDevices, MsoNotification msoNotification,
+            Map<String, NnDevice> allDeviceMap) {
         
         // make a copy
         final List<String> devices = new ArrayList<String>(partialDevices);
         final MsoNotification notification = msoNotification;
         final Sender sender = gcmSender;
+        final Map<String, NnDevice> deviceMap = allDeviceMap;
         
         threadPool.execute(new Runnable() {
             public void run() {
                 
+                Date now = new Date();
                 Message message = new Message.Builder()
                     .addData("message", notification.getMessage()) // message
                     .addData("content", notification.getContent()) // content
+                    //.addData("ts", now) // ts
                     .build();
                 MulticastResult multicastResult;
                 try {
@@ -86,6 +94,7 @@ public class GCMLib {
                 }
                 
                 List<Result> results = multicastResult.getResults();
+                List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
                 // analyze the results
                 for (int i = 0; i < devices.size(); i++) {
                     
@@ -101,21 +110,54 @@ public class GCMLib {
                         if (canonicalRegId != null) {
                             // same device has more than on registration id: update it
                             log.info("canonicalRegId " + canonicalRegId);
-                            // TODO Datastore.updateRegistration(regId, canonicalRegId);
+                            updateRegistration(regId, canonicalRegId, notification);
                         }
                     } else {
                         String error = result.getErrorCodeName();
                         if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
                             // application has been removed from device - unregister it
                             log.info("Unregistered device: " + regId);
-                            // TODO Datastore.unregister(regId);
+                            NnDevice device = deviceMap.get(regId);
+                            if (device != null) {
+                                deleteDevices.add(device);
+                            }
                         } else {
                             log.severe("Error sending message to " + regId + ": " + error);
                         }
                     }
                 }
+                deviceDao.deleteAll(deleteDevices);
             }
         });
+    }
+    
+    // kill duplicate and keep only one, replace with canonicalRegId
+    private void updateRegistration(String regId, String canonicalRegId, MsoNotification notification) {
+        
+        if (regId == null || canonicalRegId == null || notification == null) {
+            return ;
+        }
+        
+        List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(notification.getMsoId(), NnDevice.TYPE_GCM);
+        List<NnDevice> targetDevices = new ArrayList<NnDevice>();
+        for (NnDevice device : fetchedDevices) {
+            if (regId.equals(device.getToken()) || canonicalRegId.equals(device.getToken())) {
+                targetDevices.add(device);
+            }
+        }
+        
+        if (targetDevices.size() > 0) {
+            NnDevice device = targetDevices.get(0);
+            if (canonicalRegId.equals(device.getToken()) == false) {
+                device.setToken(canonicalRegId);
+                deviceDao.save(device);
+            }
+            
+            if (targetDevices.size() > 1) {
+                List<NnDevice> deleteDevices = targetDevices.subList(1, targetDevices.size() - 1);
+                deviceDao.deleteAll(deleteDevices);
+            }
+        }
     }
 
 }
