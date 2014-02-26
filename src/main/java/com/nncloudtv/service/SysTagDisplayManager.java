@@ -213,6 +213,8 @@ public class SysTagDisplayManager {
         	String imageUrl = display.getImageUrl();
         	int cntChannel = display.getCntChannel();
         	String imageUrl2 = display.getImageUrl2();
+        	String bannerImageUrl = display.getBannerImageUrl();
+        	String bannerImageUrl2 = display.getBannerImageUrl2();
         	if (format == PlayerApiService.FORMAT_PLAIN) {
 	            String[] obj = {
 	                id,
@@ -221,6 +223,8 @@ public class SysTagDisplayManager {
 	                imageUrl,
 	                String.valueOf(cntChannel),
 	                imageUrl2,
+	                bannerImageUrl,
+	                bannerImageUrl2,
 	            };
 	            setStr += NnStringUtil.getDelimitedStr(obj) + "\n";
         	} else {
@@ -230,6 +234,8 @@ public class SysTagDisplayManager {
         		info.setThumbnail(imageUrl);
         		info.setNumberOfChannels(cntChannel);
         		info.setThumbnail2(imageUrl2);
+        		info.setBannerImageUrl(bannerImageUrl2);
+        		info.setBannerImageUrl2(bannerImageUrl2);
         		setInfo.add(info);
         	}
         }
@@ -295,6 +301,8 @@ public class SysTagDisplayManager {
     	String setId = String.valueOf(display.getId());
     	String setName = display.getName();
     	String setImageUrl = display.getImageUrl();
+    	String bannerImageUrl = display.getBannerImageUrl();
+    	String bannerImageUrl2 = display.getBannerImageUrl2();
         NnProgramManager programMngr = new NnProgramManager();
         for (NnChannel c : channels) {
             if (c.getStatus() == NnChannel.STATUS_SUCCESS && c.isPublic())
@@ -310,6 +318,8 @@ public class SysTagDisplayManager {
 	        result[1] += PlayerApiService.assembleKeyValue("id", setId);
 	        result[1] += PlayerApiService.assembleKeyValue("name", setName);
 	        result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
+	        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
+	        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);	        
 	        //channel info
 	        result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
 	        //program info
@@ -325,6 +335,8 @@ public class SysTagDisplayManager {
     		setInfo.setId(setId);
     		setInfo.setName(setName);
     		setInfo.setThumbnail(setImageUrl);
+    		setInfo.setBannerImageUrl(bannerImageUrl);
+    		setInfo.setBannerImageUrl2(bannerImageUrl2);
     		List<SetInfo> setInfoList = new ArrayList<SetInfo>();
     		setInfoList.add(setInfo);
     		json.setSetInfo(setInfoList);
