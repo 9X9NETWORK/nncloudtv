@@ -3,6 +3,8 @@ package com.nncloudtv.lib;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
@@ -24,74 +26,93 @@ public class APNSLib {
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     
-    // current for log purpose
-    private static final ApnsDelegate delegate = new ApnsDelegate() {
-        
-        public void messageSent(ApnsNotification notification, boolean isRetry) {
-            
-            if (isRetry) {
-                log.info("Retry send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
-            } else {
-                log.info("Send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
-            }
-        }
-
-        public void messageSendFailed(ApnsNotification notification, Throwable t) {
-            log.info("Send failed ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
-            log.info(t.toString());
-        }
-
-        public void connectionClosed(DeliveryError e, int messageIdentifier) {
-            log.info("Connection closed due to ID=" + messageIdentifier);
-            log.info("Delivery error code : " + e.code());
-            if (e.code() == DeliveryError.INVALID_PAYLOAD_SIZE.code()) {
-                log.info("INVALID_PAYLOAD_SIZE");
-            }
-            if (e.code() == DeliveryError.INVALID_TOKEN.code()) {
-                log.info("INVALID_TOKEN"); // TODO remove token from database
-            }
-            if (e.code() == DeliveryError.INVALID_TOKEN_SIZE.code()) {
-                log.info("INVALID_TOKEN_SIZE");
-            }
-            if (e.code() == DeliveryError.INVALID_TOPIC_SIZE.code()) {
-                log.info("INVALID_TOPIC_SIZE");
-            }
-            if (e.code() == DeliveryError.MISSING_DEVICE_TOKEN.code()) {
-                log.info("MISSING_DEVICE_TOKEN");
-            }
-            if (e.code() == DeliveryError.MISSING_PAYLOAD.code()) {
-                log.info("MISSING_PAYLOAD");
-            }
-            if (e.code() == DeliveryError.MISSING_TOPIC.code()) {
-                log.info("MISSING_TOPIC");
-            }
-            if (e.code() == DeliveryError.NO_ERROR.code()) {
-                log.info("NO_ERROR");
-            }
-            if (e.code() == DeliveryError.NONE.code()) {
-                log.info("NONE");
-            }
-            if (e.code() == DeliveryError.PROCESSING_ERROR.code()) {
-                log.info("PROCESSING_ERROR");
-            }
-            if (e.code() == DeliveryError.UNKNOWN.code()) {
-                log.info("UNKNOWN");
-            }
-        }
-
-        public void cacheLengthExceeded(int newCacheLength) {
-            log.info("Cache length exceeded, new cache length : " + newCacheLength);
-        }
-
-        public void notificationsResent(int resendCount) {
-            log.info("Notifications resent, resend count : " + resendCount);
-        }
-    };
-    
     public void doPost(MsoNotification msoNotification, String fileRoot, String password) {
         
-        log.info("get in apns func ---------------------------------------------------");
         log.info("send to mso id=" + msoNotification.getMsoId());
+         
+        class NnDelegate implements ApnsDelegate {
+            
+            private Map<Integer, NnDevice> messageIdMap;
+            private NnDeviceDao deviceDao = new NnDeviceDao();
+            
+            public void setMessageIdMap(Map<Integer, NnDevice> messageIdMap) {
+                this.messageIdMap = messageIdMap;
+            }
+            
+            private void removeToken(int messageId) {
+                
+                if (messageIdMap == null) {
+                    return ;
+                }
+                
+                NnDevice device = messageIdMap.get(messageId);
+                if (device != null) {
+                    deviceDao.delete(device);
+                }
+            }
+            
+            public void messageSent(ApnsNotification notification, boolean isRetry) {
+                //deviceDao.findByMsoAndType(3, NnDevice.TYPE_APNS);
+                if (isRetry) {
+                    log.info("Retry send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                } else {
+                    log.info("Send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                }
+            }
+
+            public void messageSendFailed(ApnsNotification notification, Throwable t) {
+                log.info("Send failed ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                log.info(t.toString());
+            }
+
+            public void connectionClosed(DeliveryError e, int messageIdentifier) {
+                log.info("Connection closed due to ID=" + messageIdentifier);
+                log.info("Delivery error code : " + e.code());
+                if (e.code() == DeliveryError.INVALID_PAYLOAD_SIZE.code()) {
+                    log.info("INVALID_PAYLOAD_SIZE");
+                }
+                if (e.code() == DeliveryError.INVALID_TOKEN.code()) {
+                    log.info("INVALID_TOKEN"); // TODO remove token from database
+                    removeToken(messageIdentifier);
+                }
+                if (e.code() == DeliveryError.INVALID_TOKEN_SIZE.code()) {
+                    log.info("INVALID_TOKEN_SIZE");
+                }
+                if (e.code() == DeliveryError.INVALID_TOPIC_SIZE.code()) {
+                    log.info("INVALID_TOPIC_SIZE");
+                }
+                if (e.code() == DeliveryError.MISSING_DEVICE_TOKEN.code()) {
+                    log.info("MISSING_DEVICE_TOKEN");
+                }
+                if (e.code() == DeliveryError.MISSING_PAYLOAD.code()) {
+                    log.info("MISSING_PAYLOAD");
+                }
+                if (e.code() == DeliveryError.MISSING_TOPIC.code()) {
+                    log.info("MISSING_TOPIC");
+                }
+                if (e.code() == DeliveryError.NO_ERROR.code()) {
+                    log.info("NO_ERROR");
+                }
+                if (e.code() == DeliveryError.NONE.code()) {
+                    log.info("NONE");
+                }
+                if (e.code() == DeliveryError.PROCESSING_ERROR.code()) {
+                    log.info("PROCESSING_ERROR");
+                }
+                if (e.code() == DeliveryError.UNKNOWN.code()) {
+                    log.info("UNKNOWN");
+                }
+            }
+
+            public void cacheLengthExceeded(int newCacheLength) {
+                log.info("Cache length exceeded, new cache length : " + newCacheLength);
+            }
+
+            public void notificationsResent(int resendCount) {
+                log.info("Notifications resent, resend count : " + resendCount);
+            }
+        };
+        NnDelegate delegate = new NnDelegate();
         
         ApnsService service = null;
         try {
@@ -118,6 +139,9 @@ public class APNSLib {
             return ;
         }
         
+        // used to handle NnDevice if send failed event occur
+        Map<Integer, NnDevice> messageIdMap = new TreeMap<Integer, NnDevice>();
+        
         List<EnhancedApnsNotification> notifications = new ArrayList<EnhancedApnsNotification>();
         int count = 1;
         for (NnDevice device : fetchedDevices) {
@@ -133,16 +157,20 @@ public class APNSLib {
                             .build());
             
                 // TODO check size 256 bytes
+                
                 notifications.add(notification);
+                messageIdMap.put(count, device);
+            
+                count = count + 1;
+            
+                // update badges
+                device.setBadge(device.getBadge() + 1);
             } catch (Exception e) {
                 log.info(e.getMessage());
             }
-            
-            count = count + 1;
-            
-            // update badges
-            device.setBadge(device.getBadge() + 1);
         }
+        delegate.setMessageIdMap(messageIdMap);
+        
         // TODO update all fetchedDevices with new badge
         
         // test notification add
