@@ -147,7 +147,7 @@ public class MsoManager {
         }
         */
         if (chromecastId == false)
-            result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "5ecf7ff9-2144-46ce-acc9-6d606831e2dc_1");
+            result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "DBB1992C");
         if (facebookId == false)
             result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
         //add ga based on device
