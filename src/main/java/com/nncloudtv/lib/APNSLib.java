@@ -38,7 +38,7 @@ public class APNSLib {
 
         public void messageSendFailed(ApnsNotification notification, Throwable t) {
             log.info("Send failed ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
-            NnLogUtil.logThrowable(t);
+            log.info(t.toString());
         }
 
         public void connectionClosed(DeliveryError e, int messageIdentifier) {
@@ -93,7 +93,9 @@ public class APNSLib {
         log.info("get in apns func ---------------------------------------------------");
         log.info("send to mso id=" + msoNotification.getMsoId());
         
-        ApnsService service = APNS.newService()
+        ApnsService service = null;
+        try {
+            service = APNS.newService()
                 .withCert(fileRoot, password)
                 .asPool(15)
                 .withSandboxDestination() // Specify to use the Apple sandbox servers
@@ -101,6 +103,10 @@ public class APNSLib {
                 //.asNonBlocking() // Constructs non-blocking queues and sockets connections
                 .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
                 .build();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return ;
+        }
         
         //service.testConnection(); TODO if not available ?
         //service.getInactiveDevices(); TODO update inactive tokens, do it every call ?
@@ -108,23 +114,30 @@ public class APNSLib {
         // prepare notifications
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
         if (fetchedDevices == null) {
+            log.info("fetchedDevices=null");
             return ;
         }
         
         List<EnhancedApnsNotification> notifications = new ArrayList<EnhancedApnsNotification>();
         int count = 1;
         for (NnDevice device : fetchedDevices) {
-            EnhancedApnsNotification notification = new EnhancedApnsNotification(
-                    count /* Next ID */,
-                    (int) new Date().getTime() + 60 * 60 /* Expire in one hour */,
-                    device.getToken() /* Device Token */,
-                    APNS.newPayload()
-                        .alertBody(msoNotification.getMessage())
-                        .badge(device.getBadge() + 1)
-                        .customField("content", msoNotification.getContent())
-                        .build());
-            // TODO check size 256 bytes
-            notifications.add(notification);
+            try {
+                EnhancedApnsNotification notification = new EnhancedApnsNotification(
+                        count /* Next ID */,
+                        (int) new Date().getTime() + 60 * 60 /* Expire in one hour */,
+                        device.getToken() /* Device Token */,
+                        APNS.newPayload()
+                            .alertBody(msoNotification.getMessage())
+                            .badge(device.getBadge() + 1)
+                            .customField("content", msoNotification.getContent())
+                            .build());
+            
+                // TODO check size 256 bytes
+                notifications.add(notification);
+            } catch (Exception e) {
+                log.info(e.getMessage());
+            }
+            
             count = count + 1;
             
             // update badges
