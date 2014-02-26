@@ -170,15 +170,12 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
         String notifyKeyName = configMngr.getKeyNameByOs(os, "notify");
-System.out.println("notifyKeyName" + notifyKeyName);        
         if (notifyKeyName != null) {
             MsoConfig notifyConfig = configMngr.findByMsoAndItem(mso, notifyKeyName);
             String notify = configMngr.getDefaultValueByOs(os, "notify");
-System.out.println("notify:" + notify);            
             if (notifyConfig != null) 
                 notify = notifyConfig.getValue();            
             if (notify != null) {
-            	System.out.println("final value:" + notify);            
                 result += PlayerApiService.assembleKeyValue("notify", notify);            
             }	
         }
