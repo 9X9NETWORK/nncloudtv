@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnDeviceDao;
@@ -18,6 +19,7 @@ import com.notnoop.apns.ApnsNotification;
 import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.DeliveryError;
 import com.notnoop.apns.EnhancedApnsNotification;
+import com.notnoop.apns.PayloadBuilder;
 
 @Service
 public class APNSLib {
@@ -52,16 +54,19 @@ public class APNSLib {
             }
             
             public void messageSent(ApnsNotification notification, boolean isRetry) {
-                //deviceDao.findByMsoAndType(3, NnDevice.TYPE_APNS);
+                
                 if (isRetry) {
-                    log.info("Retry send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                    log.info("Retry send ID=" + notification.getIdentifier() +
+                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
                 } else {
-                    log.info("Send ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                    log.info("Send ID=" + notification.getIdentifier() +
+                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
                 }
             }
 
             public void messageSendFailed(ApnsNotification notification, Throwable t) {
-                log.info("Send failed ID=" + notification.getIdentifier() + " , token=" + notification.getDeviceToken());
+                log.info("Send failed ID=" + notification.getIdentifier() +
+                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
                 log.info(t.toString());
             }
 
@@ -72,11 +77,12 @@ public class APNSLib {
                     log.info("INVALID_PAYLOAD_SIZE");
                 }
                 if (e.code() == DeliveryError.INVALID_TOKEN.code()) {
-                    log.info("INVALID_TOKEN"); // TODO remove token from database
+                    log.info("INVALID_TOKEN");
                     removeToken(messageIdentifier);
                 }
                 if (e.code() == DeliveryError.INVALID_TOKEN_SIZE.code()) {
                     log.info("INVALID_TOKEN_SIZE");
+                    removeToken(messageIdentifier);
                 }
                 if (e.code() == DeliveryError.INVALID_TOPIC_SIZE.code()) {
                     log.info("INVALID_TOPIC_SIZE");
@@ -125,12 +131,34 @@ public class APNSLib {
                 .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
                 .build();
         } catch (Exception e) {
-            log.info(e.getMessage());
+            log.warning(e.getMessage());
             return ;
         }
         
-        //service.testConnection(); TODO if not available ?
-        //service.getInactiveDevices(); TODO update inactive tokens, do it every call ?
+        try {
+            service.testConnection();
+        } catch (Exception e) {
+            log.warning("APNS service not reachable");
+            log.warning(e.getMessage());
+            return ;
+        }
+        
+        List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
+        Map<String,Date> inactiveDevices = service.getInactiveDevices();
+        if (inactiveDevices != null) {
+            for(String inactiveDevice : inactiveDevices.keySet()) {
+                log.info("inactiveDevice : " + inactiveDevice.toLowerCase());
+                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice.toLowerCase());
+                if (devices != null) {
+                    for (NnDevice device : devices) {
+                        if (device.getMsoId() == msoNotification.getMsoId() && NnDevice.TYPE_APNS.equals(device.getType())) {
+                            deleteDevices.add(device);
+                        }
+                    }
+                }
+            }
+        }
+        deviceDao.deleteAll(deleteDevices);
         
         // prepare notifications
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
@@ -146,23 +174,29 @@ public class APNSLib {
         int count = 1;
         for (NnDevice device : fetchedDevices) {
             try {
+                Date now = new Date();
+                PayloadBuilder payloadBuilder = APNS.newPayload()
+                        .alertBody(msoNotification.getMessage())
+                        .badge(device.getBadge() + 1)
+                        .customField("content", msoNotification.getContent())
+                        .customField("ts", now);
+                // check size 256 bytes
+                if (payloadBuilder.isTooLong()) {
+                    log.info("Payload is too long, shrinking it");
+                    payloadBuilder = payloadBuilder.shrinkBody();
+                }
+                
                 EnhancedApnsNotification notification = new EnhancedApnsNotification(
                         count /* Next ID */,
                         (int) new Date().getTime() + 60 * 60 /* Expire in one hour */,
                         device.getToken() /* Device Token */,
-                        APNS.newPayload()
-                            .alertBody(msoNotification.getMessage())
-                            .badge(device.getBadge() + 1)
-                            .customField("content", msoNotification.getContent())
-                            .build());
-            
-                // TODO check size 256 bytes
+                        payloadBuilder.build());
                 
                 notifications.add(notification);
                 messageIdMap.put(count, device);
-            
+                
                 count = count + 1;
-            
+                
                 // update badges
                 device.setBadge(device.getBadge() + 1);
             } catch (Exception e) {
@@ -171,19 +205,8 @@ public class APNSLib {
         }
         delegate.setMessageIdMap(messageIdMap);
         
-        // TODO update all fetchedDevices with new badge
-        
-        // test notification add
-        EnhancedApnsNotification testNotification = new EnhancedApnsNotification(
-                count /* Next ID */,
-                (int) new Date().getTime() + 60 * 60 /* Expire in one hour */,
-                "d8e8a8c5c4337a7b8b564a1d215d7f3691791597d9e91316413788f93a7dfa67" /* Device Token */,
-                APNS.newPayload()
-                    .alertBody(msoNotification.getMessage())
-                    .badge(1)
-                    .customField("content", msoNotification.getContent())
-                    .build());
-        notifications.add(testNotification);
+        // update all fetchedDevices with new badge
+        deviceDao.saveAll(fetchedDevices);
         
         // TODO performance issue
         for (EnhancedApnsNotification notification : notifications) {
