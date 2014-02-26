@@ -1,5 +1,6 @@
 package com.nncloudtv.web.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.MsoNotificationManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -52,11 +54,14 @@ public class ApiMso extends ApiGeneric {
     private CategoryService categoryService;
     private NnUserManager userMngr;
     private MsoNotificationManager notificationMngr;
+    private MsoConfigManager configMngr;
     
     @Autowired
     public ApiMso(MsoManager msoMngr, NnChannelManager channelMngr, StoreService storeService,
             NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
-            CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr) {
+            CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr,
+            MsoConfigManager configMngr) {
+        
         this.msoMngr = msoMngr;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
@@ -66,6 +71,7 @@ public class ApiMso extends ApiGeneric {
         this.categoryService = categoryService;
         this.userMngr = userMngr;
         this.notificationMngr = notificationMngr;
+        this.configMngr = configMngr;
     }
     
     /** indicate logging user has access right to target mso in PCS API
@@ -1720,8 +1726,16 @@ public class ApiMso extends ApiGeneric {
         
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
-            QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
-            QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
+            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            File p12 = new File(MsoConfigManager.getP12FilePath(mso));
+            if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
+                
+                QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
+            }
+            if (p12.exists() == true) {
+                
+                QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
+            }
         }
         
         return notification;

@@ -392,7 +392,7 @@ public class ApiMsoService {
         boolean apnsEnabled = true;
         boolean gcmEnabled = true;
         MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-        File p12 = new File("/var/opt/p12files/" + mso.getName() + "_apns.p12");
+        File p12 = new File(MsoConfigManager.getP12FilePath(mso));
         if (gcmApiKey == null || gcmApiKey.getValue() == null || !gcmApiKey.getValue().isEmpty()) {
             gcmEnabled = false;
         }

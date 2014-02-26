@@ -83,7 +83,7 @@ public class GCMLib {
                 Message message = new Message.Builder()
                     .addData("message", notification.getMessage()) // message
                     .addData("content", notification.getContent()) // content
-                    //.addData("ts", now) // ts
+                    .addData("ts", String.valueOf(now.getTime()))  // ts
                     .build();
                 MulticastResult multicastResult;
                 try {

@@ -30,12 +30,11 @@ public class APNSLib {
     
     public void doPost(MsoNotification msoNotification, String fileRoot, String password) {
         
-        log.info("send to mso id=" + msoNotification.getMsoId());
+        log.info("apns sender, send to mso id = " + msoNotification.getMsoId());
          
         class NnDelegate implements ApnsDelegate {
             
             private Map<Integer, NnDevice> messageIdMap;
-            private NnDeviceDao deviceDao = new NnDeviceDao();
             
             public void setMessageIdMap(Map<Integer, NnDevice> messageIdMap) {
                 this.messageIdMap = messageIdMap;
@@ -56,21 +55,22 @@ public class APNSLib {
             public void messageSent(ApnsNotification notification, boolean isRetry) {
                 
                 if (isRetry) {
-                    log.info("Retry send ID=" + notification.getIdentifier() +
-                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
+                    log.info("Retry send ID = " + notification.getIdentifier() +
+                            " , token = " + Hex.encodeHexString(notification.getDeviceToken()));
                 } else {
-                    log.info("Send ID=" + notification.getIdentifier() +
-                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
+                    log.info("Send ID = " + notification.getIdentifier() +
+                             ", token = " + Hex.encodeHexString(notification.getDeviceToken()));
                 }
             }
-
+            
             public void messageSendFailed(ApnsNotification notification, Throwable t) {
-                log.info("Send failed ID=" + notification.getIdentifier() +
-                            " , token=" + Hex.encodeHexString(notification.getDeviceToken()));
+                log.info("Send failed ID = " + notification.getIdentifier() +
+                            " , token = " + Hex.encodeHexString(notification.getDeviceToken()));
                 log.info(t.toString());
             }
-
+            
             public void connectionClosed(DeliveryError e, int messageIdentifier) {
+                
                 log.info("Connection closed due to ID=" + messageIdentifier);
                 log.info("Delivery error code : " + e.code());
                 if (e.code() == DeliveryError.INVALID_PAYLOAD_SIZE.code()) {
@@ -109,13 +109,13 @@ public class APNSLib {
                     log.info("UNKNOWN");
                 }
             }
-
+            
             public void cacheLengthExceeded(int newCacheLength) {
-                log.info("Cache length exceeded, new cache length : " + newCacheLength);
+                log.info("Cache length exceeded, new cache length = " + newCacheLength);
             }
-
+            
             public void notificationsResent(int resendCount) {
-                log.info("Notifications resent, resend count : " + resendCount);
+                log.info("Notifications resent, resend count = " + resendCount);
             }
         };
         NnDelegate delegate = new NnDelegate();
@@ -142,23 +142,6 @@ public class APNSLib {
             log.warning(e.getMessage());
             return ;
         }
-        
-        List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
-        Map<String,Date> inactiveDevices = service.getInactiveDevices();
-        if (inactiveDevices != null) {
-            for(String inactiveDevice : inactiveDevices.keySet()) {
-                log.info("inactiveDevice : " + inactiveDevice.toLowerCase());
-                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice.toLowerCase());
-                if (devices != null) {
-                    for (NnDevice device : devices) {
-                        if (device.getMsoId() == msoNotification.getMsoId() && NnDevice.TYPE_APNS.equals(device.getType())) {
-                            deleteDevices.add(device);
-                        }
-                    }
-                }
-            }
-        }
-        deviceDao.deleteAll(deleteDevices);
         
         // prepare notifications
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
@@ -187,9 +170,9 @@ public class APNSLib {
                 }
                 
                 EnhancedApnsNotification notification = new EnhancedApnsNotification(
-                        count /* Next ID */,
-                        (int) new Date().getTime() + 60 * 60 /* Expire in one hour */,
-                        device.getToken() /* Device Token */,
+                        count,                                 /* Next ID */
+                        (int) new Date().getTime() + 60 * 60,  /* Expire in one hour */
+                        device.getToken(),                     /* Device Token */
                         payloadBuilder.build());
                 
                 notifications.add(notification);
@@ -212,6 +195,22 @@ public class APNSLib {
         for (EnhancedApnsNotification notification : notifications) {
             service.push(notification);
         }
+        
+        List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
+        Map<String,Date> inactiveDevices = service.getInactiveDevices();
+        if (inactiveDevices != null) {
+            for(String inactiveDevice : inactiveDevices.keySet()) {
+                log.info("inactiveDevice = " + inactiveDevice);
+                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice);
+                if (devices != null) {
+                    for (NnDevice device : devices) {
+                        if (device.getMsoId() == msoNotification.getMsoId() && NnDevice.TYPE_APNS.equals(device.getType())) {
+                            deleteDevices.add(device);
+                        }
+                    }
+                }
+            }
+        }
+        deviceDao.deleteAll(deleteDevices);
     }
-
 }

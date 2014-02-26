@@ -118,10 +118,8 @@ public class NotifyController {
         
         log.info("notifyId = " + id);
         
-        
         // APNs push notification
         notifyService.sendToAPNS(id);
-        
         
         return NnNetUtil.textReturn("OK");
     }
@@ -131,10 +129,8 @@ public class NotifyController {
         
         log.info("notifyId = " + id);
         
-        
         // GCM push notification
         notifyService.sendToGCM(id);
-        
         
         return NnNetUtil.textReturn("OK");
     }

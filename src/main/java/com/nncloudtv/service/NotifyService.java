@@ -64,6 +64,7 @@ public class NotifyService {
         
         MsoNotification msoNotification = msoNotificationMngr.findById(msoNotificationId);
         if (msoNotification == null) {
+            log.info("notificationId not found! " + msoNotificationId);
             return ;
         }
         
@@ -72,7 +73,7 @@ public class NotifyService {
             return ;
         }
         
-        String fileRoot = "/var/opt/p12files/" + mso.getName() + "_apns.p12";
+        String fileRoot = MsoConfigManager.getP12FilePath(mso);
         String password = "";
         String msoName = mso.getName();
         for (int count = 0; count < msoName.length(); count++) {
