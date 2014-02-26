@@ -146,6 +146,10 @@ public class MsoConfigManager {
             if (os.equals(PlayerService.OS_ANDROID))
                 return "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA";
         }
+        if (function.contains("notify")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+            	return "758834427689";
+        }
         return null;        
     }
     
@@ -171,6 +175,10 @@ public class MsoConfigManager {
         if (function.contains("youtube")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.YOUTUBE_ID_ANDROID;
+        }
+        if (function.contains("notify")) {
+        	if (os.equals(PlayerService.OS_ANDROID))
+        		return MsoConfig.GCM_SENDER;
         }
         return null;
     }

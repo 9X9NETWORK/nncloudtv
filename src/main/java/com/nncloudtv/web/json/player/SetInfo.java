@@ -8,8 +8,22 @@ public class SetInfo implements Serializable{
 	private String name;
 	private String thumbnail;
 	private String thumbnail2;
-	private int numberOfChannels;
-	
+	private int numberOfChannels;	
+    private String bannerImageUrl; //banner basic resolution
+    private String bannerImageUrl2; //banner retina resolution
+    
+	public String getBannerImageUrl() {
+		return bannerImageUrl;
+	}
+	public void setBannerImageUrl(String bannerImageUrl) {
+		this.bannerImageUrl = bannerImageUrl;
+	}
+	public String getBannerImageUrl2() {
+		return bannerImageUrl2;
+	}
+	public void setBannerImageUrl2(String bannerImageUrl2) {
+		this.bannerImageUrl2 = bannerImageUrl2;
+	}
 	public String getId() {
 		return id;
 	}

@@ -92,7 +92,6 @@ public class MsoManager {
     }
     
     private String composeBrandInfoStr(Mso mso, String os) {
-        
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result += PlayerApiService.assembleKeyValue("name", mso.getName());
@@ -170,6 +169,20 @@ public class MsoManager {
             if (flurry != null) 
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
+        String notifyKeyName = configMngr.getKeyNameByOs(os, "notify");
+System.out.println("notifyKeyName" + notifyKeyName);        
+        if (notifyKeyName != null) {
+            MsoConfig notifyConfig = configMngr.findByMsoAndItem(mso, notifyKeyName);
+            String notify = configMngr.getDefaultValueByOs(os, "notify");
+System.out.println("notify:" + notify);            
+            if (notifyConfig != null) 
+                notify = notifyConfig.getValue();            
+            if (notify != null) {
+            	System.out.println("final value:" + notify);            
+                result += PlayerApiService.assembleKeyValue("notify", notify);            
+            }	
+        }
+        
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {
             MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);
@@ -185,9 +198,9 @@ public class MsoManager {
         return result;
     }
     
+    //missing the latest stuff
     private Object composeBrandInfoJson(Mso mso, String os) {
-        BrandInfo info = new BrandInfo();
-        
+        BrandInfo info = new BrandInfo();        
         //general setting
         info.setKey(mso.getId());
         info.setName(mso.getName());

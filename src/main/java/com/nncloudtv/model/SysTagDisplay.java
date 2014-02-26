@@ -38,6 +38,14 @@ public class SysTagDisplay implements Serializable {
     private String imageUrl2; //currently channel thumbnail
     
     @Persistent
+    @Column(jdbcType="VARCHAR", length=255)
+    private String bannerImageUrl; //banner basic resolution
+
+    @Persistent
+    @Column(jdbcType="VARCHAR", length=255)
+    private String bannerImageUrl2; //banner retina resolution
+    
+    @Persistent
     @Column(jdbcType="VARCHAR", length=500)
     private String popularTag; //sequence shown in the directory
 
@@ -46,6 +54,22 @@ public class SysTagDisplay implements Serializable {
     
     @Persistent
     private Date updateDate;
+
+    public String getBannerImageUrl() {
+		return bannerImageUrl;
+	}
+
+	public void setBannerImageUrl(String bannerImageUrl) {
+		this.bannerImageUrl = bannerImageUrl;
+	}
+
+	public String getBannerImageUrl2() {
+		return bannerImageUrl2;
+	}
+
+	public void setBannerImageUrl2(String bannerImageUrl2) {
+		this.bannerImageUrl2 = bannerImageUrl2;
+	}
     
     public long getId() {
         return id;

@@ -53,7 +53,7 @@ public class MsoConfig {
     public static String FLURRY_ANALYTICS_IOS = "flurry-analytics-ios";
     public static String YOUTUBE_ID_ANDROID = "youtube-id-android";
     public static String CHROMECAST_ID = "chromecast-id";
-    
+    public static String GCM_SENDER = "gcm-sender";
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
