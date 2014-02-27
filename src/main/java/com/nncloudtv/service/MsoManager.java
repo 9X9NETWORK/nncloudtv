@@ -7,11 +7,15 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -76,6 +80,18 @@ public class MsoManager {
             this.processCache();
             */
         return mso;
+    }
+    
+    public void resetCache(String mso) {
+    	if (mso == null)
+    		return;
+        String key = "brandInfo(" + mso + ")";
+        String web = key + "(web)";
+        String ios = key + "(ios)";
+        String android = key + "(android)";
+        CacheFactory.delete(web);
+        CacheFactory.delete(ios);
+        CacheFactory.delete(android);
     }
     
     public Mso findNNMso() {

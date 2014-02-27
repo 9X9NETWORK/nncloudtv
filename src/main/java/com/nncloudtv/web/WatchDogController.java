@@ -337,6 +337,14 @@ public class WatchDogController {
         mngr.resetCache(chId);
         return "OK";
     }
+    
+    //delete brandInfo_reset
+    @RequestMapping("brandCache")
+    public ResponseEntity<String> brandCache(@RequestParam(value="mso", required=false)String mso) {
+    	MsoManager mngr = new MsoManager();
+    	mngr.resetCache(mso);
+    	return NnNetUtil.textReturn("cache delete:" + mso);
+    }    
 
     @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
@@ -379,50 +387,6 @@ public class WatchDogController {
         tagMngr.createTagMap(tagId, chId);
         return "OK";                
     }    
-
-    //delete brandInfo_reset
-    @RequestMapping("brandInfo_reset")
-    public ResponseEntity<String> brandInfo_reset(@RequestParam(value="mso", required=false)String mso) {
-    	if (mso == null)
-            return NnNetUtil.textReturn("need 'mso' param");    		
-        String key = "brandInfo(" + mso + ")";
-        String web = key + "(web)";
-        String ios = key + "(ios)";
-        String android = key + "(android)";
-        CacheFactory.delete(web);
-        CacheFactory.delete(ios);
-        CacheFactory.delete(android);
-        return NnNetUtil.textReturn("cache delete:" + key);
-    }
-
-    //delete brandInfo_reset
-    @RequestMapping("programInfo_reset")
-    public ResponseEntity<String> programInfo_reset(@RequestParam(value="channel", required=false)String channel) {
-    	if (channel == null)
-            return NnNetUtil.textReturn("need 'channel' param");    		
-        //programInfo version 40, format json
-    	Long channelId = Long.parseLong(channel);
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));       
-        //programInfo, version 40, format json
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_PLAIN));       
-        //programInfo, version 31
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 31, 0, PlayerApiService.FORMAT_PLAIN));
-        //latestProgramInfo
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_PLAIN));
-        //channelLineup
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 32, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_JSON));        
-
-    	return NnNetUtil.textReturn("cache delete:programInfo" + channel);
-    }
     
     //delete cache with key
     @RequestMapping("cache_delete")
