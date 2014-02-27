@@ -40,6 +40,7 @@ public class NotifyService {
         
         MsoNotification msoNotification = msoNotificationMngr.findById(msoNotificationId);
         if (msoNotification == null) {
+            log.info("notificationId not found! " + msoNotificationId);
             return ;
         }
         
@@ -49,7 +50,8 @@ public class NotifyService {
         }
         
         MsoConfig config = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-        if (config == null) {
+        if (config == null || config.getValue() == null) {
+            log.info("GCM api key not approrite set for mso : " + mso.getName());
             return ;
         }
         

@@ -30,6 +30,10 @@ public class APNSLib {
     
     public void doPost(MsoNotification msoNotification, String fileRoot, String password) {
         
+        if (msoNotification == null || fileRoot == null || password == null) {
+            return ;
+        }
+        
         log.info("apns sender, send to mso id = " + msoNotification.getMsoId());
          
         class NnDelegate implements ApnsDelegate {

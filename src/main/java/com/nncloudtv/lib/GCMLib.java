@@ -33,7 +33,11 @@ public class GCMLib {
     
     public void doPost(MsoNotification msoNotification, String apiKey) {
         
-        log.info("send to mso id=" + msoNotification.getMsoId());
+        if (msoNotification == null || apiKey == null) {
+            return ;
+        }
+        
+        log.info("gcm sender, send to mso id = " + msoNotification.getMsoId());
         
         Sender sender = new Sender(apiKey);
         
@@ -108,7 +112,7 @@ public class GCMLib {
                         
                         String canonicalRegId = result.getCanonicalRegistrationId();
                         if (canonicalRegId != null) {
-                            // same device has more than on registration id: update it
+                            // same device has more than one registration id: update it
                             log.info("canonicalRegId " + canonicalRegId);
                             updateRegistration(regId, canonicalRegId, notification);
                         }
