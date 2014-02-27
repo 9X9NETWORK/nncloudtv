@@ -1990,7 +1990,7 @@ public class PlayerApiService {
     }
 
     @SuppressWarnings("unchecked")
-	public Object search(String text, String stack, String content, String start, String count, HttpServletRequest req) {                       
+	public Object search(String text, String stack, String start, String count, HttpServletRequest req) {                       
         if (text == null || text.length() == 0)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         if (version < 32) {
@@ -2028,7 +2028,7 @@ public class PlayerApiService {
         startIndex = startIndex - 1;
 
         //public static List<NnChannel> search(String queryStr, boolean total, boolean all, int start, int count) {
-        List<NnChannel> channels = NnChannelManager.search(text, content, null, false, startIndex, limit);
+        List<NnChannel> channels = NnChannelManager.search(text, "store_only", null, false, startIndex, limit);
         List<NnUser> users = userMngr.search(null, null, text, mso.getId());
         int endIndex = (users.size() > 9) ? 9: users.size();
         users = users.subList(0, endIndex);
