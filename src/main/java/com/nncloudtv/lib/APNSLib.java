@@ -221,8 +221,8 @@ public class APNSLib {
         List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
         if (inactiveDevices != null) {
             for(String inactiveDevice : inactiveDevices.keySet()) {
-                log.info("inactiveDevice = " + inactiveDevice);
-                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice);
+                log.info("inactiveDevice = " + inactiveDevice.toLowerCase());
+                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice.toLowerCase());
                 if (devices != null) {
                     for (NnDevice device : devices) {
                         if (device.getMsoId() == msoId
