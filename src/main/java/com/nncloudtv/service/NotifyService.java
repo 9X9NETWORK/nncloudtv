@@ -28,7 +28,7 @@ public class NotifyService {
         this.msoNotificationMngr = msoNotificationMngr;
         this.gcmLib = gcmLib;
         this.apnsLib = apnsLib;
-        this.msoNotificationMngr = msoNotificationMngr;
+        this.msoConfigMngr = msoConfigMngr;
         this.msoMngr = msoMngr;
     }
     
