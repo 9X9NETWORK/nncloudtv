@@ -225,7 +225,12 @@ public class APNSLib {
                 List<NnDevice> devices = deviceDao.findByToken(inactiveDevice);
                 if (devices != null) {
                     for (NnDevice device : devices) {
-                        if (device.getMsoId() == msoId && NnDevice.TYPE_APNS.equals(device.getType())) {
+                        if (device.getMsoId() == msoId
+                                && NnDevice.TYPE_APNS.equals(device.getType())
+                                // if install app after uninstall app,
+                                // the old inactiveDevice record should not kick the new activeDevice out
+                                // which they have same device token
+                                && inactiveDevices.get(inactiveDevice).after(device.getUpdateDate())) {
                             deleteDevices.add(device);
                         }
                     }
