@@ -147,6 +147,9 @@ public class APNSLib {
             return ;
         }
         
+        // remove inactive devices in database before push, reduce invalid token event occur when pushing.
+        removeInactiveDevices(service, msoNotification.getMsoId());
+        
         // prepare notifications
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
         if (fetchedDevices == null) {
@@ -199,16 +202,30 @@ public class APNSLib {
         for (EnhancedApnsNotification notification : notifications) {
             service.push(notification);
         }
+    }
+    
+    private void removeInactiveDevices(ApnsService service, Long msoId) {
+        
+        if (service == null || msoId == null) {
+            return ;
+        }
+        
+        Map<String,Date> inactiveDevices = null;
+        try {
+            inactiveDevices = service.getInactiveDevices();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return ;
+        }
         
         List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
-        Map<String,Date> inactiveDevices = service.getInactiveDevices();
         if (inactiveDevices != null) {
             for(String inactiveDevice : inactiveDevices.keySet()) {
                 log.info("inactiveDevice = " + inactiveDevice);
                 List<NnDevice> devices = deviceDao.findByToken(inactiveDevice);
                 if (devices != null) {
                     for (NnDevice device : devices) {
-                        if (device.getMsoId() == msoNotification.getMsoId() && NnDevice.TYPE_APNS.equals(device.getType())) {
+                        if (device.getMsoId() == msoId && NnDevice.TYPE_APNS.equals(device.getType())) {
                             deleteDevices.add(device);
                         }
                     }
