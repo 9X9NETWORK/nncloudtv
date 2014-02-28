@@ -459,7 +459,8 @@ public class NnProgramManager {
         Object result = this.findPlayerProgramInfoByChannel(channelId, start, end, version, format);
         if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds, format);
         if (channelId == 28087) return result; // weifilm, temporary workaround
-        return this.composeLimitProgramInfoStr(result, start, end, format);
+        return result;
+        //return this.composeLimitProgramInfoStr(result, start, end, format);
     }    
         
     private Object composeSpecifiedProgramInfoStr(Object input, long channelId, String episodeIds, short format) {        
