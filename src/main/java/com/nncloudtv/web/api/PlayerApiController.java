@@ -1994,7 +1994,6 @@ public class PlayerApiController {
     public @ResponseBody Object search(
             @RequestParam(value="text", required=false) String text,
             @RequestParam(value="start", required=false) String start,
-            @RequestParam(value="content", required=false) String content,
             @RequestParam(value="count", required=false) String count,            
             @RequestParam(value="stack", required=false) String stack,
             @RequestParam(value="rx", required = false) String rx,
@@ -2007,7 +2006,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);        
             }            
-            output = playerApiService.search(text, stack, content, start, count, req);
+            output = playerApiService.search(text, stack, start, count, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

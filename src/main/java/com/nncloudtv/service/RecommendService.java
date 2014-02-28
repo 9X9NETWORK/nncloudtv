@@ -69,14 +69,14 @@ public class RecommendService {
         List<NnChannel> channels = new ArrayList<NnChannel>();
         if (userToken == null || NnUserManager.isGuestByToken(userToken)) {
             log.info("recommend: guest user find from billboard");
-            channels = this.findBillboardPool(9, lang);
+            channels = this.findBillboardPool(10, lang);
         } else {
             NnUser user = new NnUserManager().findByToken(userToken, msoId);
             if (user != null) {
                 Deep deep = deepDao.findByUser(user.getShard(), user.getId());
                 if (deep != null) {
                     log.info("recommend: user get recommendation from fdm pool " + userToken);
-                    channels = this.findFdm(user.getProfile().getSphere(), 9);
+                    channels = this.findFdm(user.getProfile().getSphere(), 10);
                 } else {
                     log.info("recommend: freshman user get recommendation from billboard pool " + userToken);
                     channels = this.findBillboardPool(9, lang);
@@ -85,7 +85,7 @@ public class RecommendService {
         }
         if (channels.size() == 0) {//invalid user
             log.info("recommend: maybe invalid user, same as guest " + userToken);
-            channels = this.findBillboardPool(9, lang);
+            channels = this.findBillboardPool(10, lang);
         }
         return channels;        
     }
