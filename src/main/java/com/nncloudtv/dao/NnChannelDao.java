@@ -10,6 +10,7 @@ import javax.jdo.Query;
 
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
+import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.NnChannel;
 
@@ -153,17 +154,17 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         try {
             String sql = "select * from nnchannel where ("
                        + "lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-            if (!all && content != null && content.equals("store_only")) {
+            if (!all && content != null && content.equals(SearchLib.STORE_ONLY)) {
                 sql += " || lower(intro) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
             }
             sql += ")";
             if (!all) {
                 sql += " and (status = " + NnChannel.STATUS_SUCCESS + " or status = " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")";
                 if (content != null) {
-                    if (content.equals("youtube")) {
+                    if (content.equals(SearchLib.YOUTUBE_ONLY)) {
                         sql += " and contentType = "
                                 + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL;
-                    } else if (content.equals("store_only")) {
+                    } else if (content.equals(SearchLib.STORE_ONLY)) {
                         // store only
                         sql += " and (status = " + NnChannel.STATUS_SUCCESS + ")";
                     }

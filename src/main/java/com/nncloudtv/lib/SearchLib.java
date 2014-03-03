@@ -23,6 +23,10 @@ import com.nncloudtv.service.MsoConfigManager;
 public class SearchLib {
 	protected static final Logger log = Logger.getLogger(SearchLib.class.getName());
 	
+	// search criteria
+	public static final String STORE_ONLY = "store_only";
+	public static final String YOUTUBE_ONLY = "youtube";
+	
 	/**
 	 * @param keyword search keyword
 	 * @param content null or "youtube" or "store-only" 
@@ -46,9 +50,9 @@ public class SearchLib {
 			query.setFilterQueries("status:(" + NnChannel.STATUS_SUCCESS + " OR " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")");
 		}		
         if (content != null) {
-            if (content.equals("youtube")) {
+            if (content.equals(SearchLib.YOUTUBE_ONLY)) {
     			query.setFilterQueries("contentType:3");
-            } else if (content.equals("store_only")) {
+            } else if (content.equals(SearchLib.STORE_ONLY)) {
             	query.setFilterQueries("status:0");
             }
         }

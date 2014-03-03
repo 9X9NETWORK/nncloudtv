@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -961,6 +962,7 @@ public class ApiContent extends ApiGeneric {
         StoreService storeService = new StoreService();
         MsoConfigManager configMngr = new MsoConfigManager();
         Mso brand = new MsoManager().findOneByName(mso);
+        boolean storeOnly = false;
         
         if (userIdStr != null) {
             
@@ -1032,6 +1034,7 @@ public class ApiContent extends ApiGeneric {
             List<String> sphereList = new ArrayList<String>();
             String sphereFilter = null;
             if (sphereStr == null && mso != null) {
+                storeOnly = true;
                 log.info("mso = " + mso);
                 MsoConfig supportedRegion = configMngr.findByMsoAndItem(brand, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
@@ -1041,6 +1044,7 @@ public class ApiContent extends ApiGeneric {
                 }
             }
             if (sphereStr != null && !sphereStr.isEmpty()) {
+                storeOnly = true;
                 String[] sphereArr = new String[0];
                 sphereArr = sphereStr.split(",");
                 for (String sphere : sphereArr) {
@@ -1051,7 +1055,7 @@ public class ApiContent extends ApiGeneric {
                 log.info("sphere filter = " + sphereFilter);
             }
             
-            List<NnChannel> channels = NnChannelManager.search(keyword, "store_only", sphereFilter, false, 0, 150);
+            List<NnChannel> channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             log.info("found channels = " + channels.size());
             
             Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
