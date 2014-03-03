@@ -151,9 +151,12 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>();
         try {
-            String sql = "select * from nnchannel " + 
-                          "where (lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")" +
-                              "|| lower(intro) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + "))";
+            String sql = "select * from nnchannel where ("
+                       + "lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
+            if (!all && content != null && content.equals("store_only")) {
+                sql += " || lower(intro) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
+            }
+            sql += ")";
             if (!all) {
                 sql += " and (status = " + NnChannel.STATUS_SUCCESS + " or status = " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")";
                 if (content != null) {
