@@ -83,13 +83,22 @@ public class NotifyService {
             return ;
         }
         
+        /*
+         * There's also convention of password to follow:
+
+            contact mso name with "9x9"
+            padding underscore to reach 8 characters
+            translate the second character to uppercase
+
+            ex. cTs9x9__, cRashcourse9x9, dDtv9x9_, ...
+         */
         String password = "";
         String msoName = mso.getName();
         for (int count = 0; count < msoName.length(); count++) {
             if (count == 1) {
                 password = password + (msoName.charAt(count) + "").toUpperCase();
             } else {
-                password = password + (msoName.charAt(count) + "").toLowerCase();
+                password = password + msoName.charAt(count);
             }
         }
         password = password + "9x9";
