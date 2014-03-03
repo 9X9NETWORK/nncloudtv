@@ -18,6 +18,9 @@ public class MsoNotificationManager {
     public MsoNotification save(MsoNotification notification) {
         Date now = new Date();
         notification.setUpdateDate(now);
+        if (notification.getCreateDate() == null) {
+            notification.setCreateDate(now);
+        }
         return dao.save(notification);
     }
     

@@ -37,6 +37,9 @@ public class MsoNotification implements Serializable {
 
     @Persistent
     private Date updateDate;
+    
+    @Persistent
+    private Date createDate;
 
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
@@ -99,5 +102,13 @@ public class MsoNotification implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 }
