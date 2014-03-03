@@ -1058,22 +1058,25 @@ public class ApiContent extends ApiGeneric {
             List<NnChannel> channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             log.info("found channels = " + channels.size());
             
-            Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
-            Set<Long> userIdSet = new HashSet<Long>();
-            log.info("found profiles = " + profiles.size());
-            for (NnUserProfile profile : profiles) {
-                userIdSet.add(profile.getUserId());
-            }
-            List<NnUser> users = userMngr.findAllByIds(userIdSet);
-            log.info("found users = " + users.size());
-            
-            for (NnUser user : users) {
-                List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
-                for (NnChannel channel : userChannels) {
-                    if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
-                        if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
-                            log.info("from curator = " + channel.getName());
-                            channels.add(channel);
+            if (sphereFilter == null) {
+                
+                Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
+                Set<Long> userIdSet = new HashSet<Long>();
+                log.info("found profiles = " + profiles.size());
+                for (NnUserProfile profile : profiles) {
+                    userIdSet.add(profile.getUserId());
+                }
+                List<NnUser> users = userMngr.findAllByIds(userIdSet);
+                log.info("found users = " + users.size());
+                
+                for (NnUser user : users) {
+                    List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
+                    for (NnChannel channel : userChannels) {
+                        if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
+                            if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
+                                log.info("from curator = " + channel.getName());
+                                channels.add(channel);
+                            }
                         }
                     }
                 }
