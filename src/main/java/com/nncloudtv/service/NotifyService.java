@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.File;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class NotifyService {
         }
         
         MsoConfig config = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-        if (config == null || config.getValue() == null) {
+        if (config == null || config.getValue() == null || config.getValue().isEmpty()) {
             log.info("GCM api key not approrite set for mso : " + mso.getName());
             return ;
         }
@@ -76,6 +77,12 @@ public class NotifyService {
         }
         
         String fileRoot = MsoConfigManager.getP12FilePath(mso);
+        File p12 = new File(fileRoot);
+        if (p12.exists() == false) {
+            log.info("APNS p12 file not approrite set for mso : " + mso.getName());
+            return ;
+        }
+        
         String password = "";
         String msoName = mso.getName();
         for (int count = 0; count < msoName.length(); count++) {
