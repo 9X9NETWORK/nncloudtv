@@ -100,7 +100,7 @@ public class PlayerApiService {
     private Locale locale = Locale.ENGLISH;
     public static short FORMAT_JSON = 1;
     public static short FORMAT_PLAIN = 2;
-    private short format = FORMAT_JSON;
+    private short format = FORMAT_PLAIN;
     private HttpServletRequest req;
     private HttpServletResponse resp;
     private ApiContext context = null;
