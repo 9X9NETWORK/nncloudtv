@@ -154,7 +154,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         try {
             String sql = "select * from nnchannel where ("
                        + "lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-            if (!all && content != null && content.equals(SearchLib.STORE_ONLY)) {
+            if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) { // PCS
                 sql += " || lower(intro) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
             }
             sql += ")";
