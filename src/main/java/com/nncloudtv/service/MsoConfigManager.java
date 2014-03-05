@@ -42,9 +42,15 @@ public class MsoConfigManager {
         }
         return result;
     }
-
+    
     static public String getSearchServer() {
+        
     	return getProperty("services.properties", "search");
+    }
+    
+    static public String getP12FilePath(Mso mso) {
+        
+        return "/var/opt/p12files/" + mso.getName() + "_apns.p12";
     }
     
     static public String getS3UploadBucket() {

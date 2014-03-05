@@ -95,6 +95,8 @@ public class PlayerApiService {
     private NnUserManager userMngr;    
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
+    private NnDeviceManager deviceMngr;
+    
     private Mso mso;
     private int version = 32;
     private Locale locale = Locale.ENGLISH;
@@ -111,18 +113,21 @@ public class PlayerApiService {
         msoMngr = new MsoManager();
         chMngr = new NnChannelManager();
         profileMngr = new NnUserProfileManager();
+        deviceMngr = new NnDeviceManager();
     }
     
     @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
-            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr) {
+            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
+            NnDeviceManager deviceMngr) {
         
         this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
         this.chMngr = chMngr;
         this.profileMngr = profileMngr;
+        this.deviceMngr = deviceMngr;
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
@@ -1366,6 +1371,8 @@ public class PlayerApiService {
     }
     
     public Object deviceRegister(String userToken, String type, HttpServletRequest req, HttpServletResponse resp) {
+        
+        NnDevice device = null;
         NnUser user = null;
         if (userToken != null) {
             @SuppressWarnings({ "rawtypes"})
@@ -1375,11 +1382,32 @@ public class PlayerApiService {
             }
             user = (NnUser) map.get("u");
         }
+        
+        if (type == null) {
+        } else if (type.equalsIgnoreCase(NnDevice.TYPE_APNS) || type.equalsIgnoreCase(NnDevice.TYPE_GCM)) {
+            
+            String token = req.getParameter("token");
+            if (token == null) {
+                return this.assembleMsgs(NnStatusCode.ERROR, "missing param token");
+            }
+            
+            ApiContext context = new ApiContext(req);
+            Mso mso = context.getMso();
+            
+            device = deviceMngr.findDuplicated(token, mso.getId(), type);
+            if (device == null) {
+                device = new NnDevice(token, mso.getId(), type);
+            }
+            device.setBadge(0);
+        }
         NnDeviceManager deviceMngr = new NnDeviceManager();
         deviceMngr.setReq(req); //!!!
-        NnDevice device = deviceMngr.create(null, user, type);
+        device = deviceMngr.create(device, user, type);
+        
+        if (type == null || type.equalsIgnoreCase(NnDevice.TYPE_FLIPR)) {
+            setUserCookie(resp, CookieHelper.DEVICE, device.getToken());
+        }
         Object result = deviceMngr.getPlayerDeviceInfo(device, this.format, null);
-        this.setUserCookie(resp, CookieHelper.DEVICE, device.getToken());
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     

@@ -53,7 +53,8 @@ public class NnDeviceManager {
             device.setUserId(user.getId());
             device.setShard(user.getShard()); //for future reference
             device.setMsoId(user.getMsoId());            
-        } else {
+        }
+        if (device.getMsoId() == 0) {
             //!!! problem
             device.setMsoId(1);
         }
@@ -139,5 +140,10 @@ public class NnDeviceManager {
             return false;
         this.delete(existed);
         return true;
+    }
+    
+    public NnDevice findDuplicated(String token, long msoId, String type) {
+        
+        return deviceDao.findDuplicated(token, msoId, type);
     }
 }
