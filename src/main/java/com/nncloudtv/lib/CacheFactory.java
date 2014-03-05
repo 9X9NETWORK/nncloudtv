@@ -270,6 +270,8 @@ public class CacheFactory {
     public static String getProgramInfoKey(long channelId, int start, int version, short format) {
     	if (version == 31) {
     		return "nnprogram-v31-" + channelId + "-0-" + "text";
+    	} else if (version == 32) {
+            return "nnprogram-v32-" + channelId + "-0-" + "text";
     	}
         String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
         if (format == PlayerApiService.FORMAT_JSON) {

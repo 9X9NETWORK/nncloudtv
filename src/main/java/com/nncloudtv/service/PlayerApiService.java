@@ -1201,8 +1201,8 @@ public class PlayerApiService {
         log.info("sidx = " + startI + ";" + "end = " + end);
             
         String programInfoStr = "";
-        String paginationStr = "";        
-
+        String paginationStr = "";
+        
         List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
             user = userMngr.findByToken(userToken, mso.getId());

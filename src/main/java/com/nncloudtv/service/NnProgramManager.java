@@ -343,7 +343,8 @@ public class NnProgramManager {
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_PLAIN));       
         //programInfo, version 31
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 31, 0, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 31, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 32, PlayerApiService.FORMAT_PLAIN));
         //latestProgramInfo
         CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_JSON));
         CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, PlayerApiService.FORMAT_PLAIN));
