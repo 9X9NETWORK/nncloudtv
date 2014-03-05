@@ -183,16 +183,6 @@ public class MsoManager {
             if (flurry != null) 
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
-        String notifyKeyName = configMngr.getKeyNameByOs(os, "notify");
-        if (notifyKeyName != null) {
-            MsoConfig notifyConfig = configMngr.findByMsoAndItem(mso, notifyKeyName);
-            String notify = configMngr.getDefaultValueByOs(os, "notify");
-            if (notifyConfig != null) 
-                notify = notifyConfig.getValue();            
-            if (notify != null) {
-                result += PlayerApiService.assembleKeyValue("notify", notify);            
-            }	
-        }
         
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {

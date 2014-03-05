@@ -124,12 +124,12 @@ public class MsoConfigManager {
         }
         return configDao.save(config);
     }
-
+    
     public void processCache(MsoConfig config) {
         isInReadonlyMode(true);
         isQueueEnabled(true);
     }
-
+    
     public String getDefaultValueByOs(String os, String function) {
         if (os == null || function == null)
             return null;
@@ -181,10 +181,6 @@ public class MsoConfigManager {
         if (function.contains("youtube")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.YOUTUBE_ID_ANDROID;
-        }
-        if (function.contains("notify")) {
-        	if (os.equals(PlayerService.OS_ANDROID))
-        		return MsoConfig.GCM_SENDER;
         }
         return null;
     }
