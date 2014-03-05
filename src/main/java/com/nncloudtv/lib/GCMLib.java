@@ -120,13 +120,21 @@ public class GCMLib {
                         String error = result.getErrorCodeName();
                         if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
                             // application has been removed from device - unregister it
-                            log.info("Unregistered device: " + regId);
+                            log.info("Unregistered device : " + regId);
+                            log.info("Remove device : " + regId);
                             NnDevice device = deviceMap.get(regId);
                             if (device != null) {
                                 deleteDevices.add(device);
                             }
+                        } else if (error.equals(Constants.ERROR_INVALID_REGISTRATION)) {
+                            NnDevice device = deviceMap.get(regId);
+                            if (device != null) {
+                                deleteDevices.add(device);
+                            }
+                            log.severe("Error sending message to " + regId + " : " + error);
+                            log.info("Remove device : " + regId);
                         } else {
-                            log.severe("Error sending message to " + regId + ": " + error);
+                            log.severe("Error sending message to " + regId + " : " + error);
                         }
                     }
                 }
