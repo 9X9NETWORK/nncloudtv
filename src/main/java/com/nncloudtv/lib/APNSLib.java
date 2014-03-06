@@ -129,8 +129,8 @@ public class APNSLib {
             service = APNS.newService()
                 .withCert(fileRoot, password)
                 .asPool(15)
-                .withSandboxDestination() // Specify to use the Apple sandbox servers
-                //.withProductionDestination() // Specify to use the Apple Production servers
+                //.withSandboxDestination() // Specify to use the Apple sandbox servers
+                .withProductionDestination() // Specify to use the Apple Production servers
                 //.asNonBlocking() // Constructs non-blocking queues and sockets connections
                 .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
                 .build();
