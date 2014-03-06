@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -403,10 +404,15 @@ public class NnChannelManager {
     public static List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
         return NnChannelDao.search(keyword, content, extra, all, start, limit);
     }
-    public static List<NnChannel> searchSolr(String keyword, String content, String extra, boolean all, int start, int limit) {
-        List<Long> ids = SearchLib.search(keyword, content, extra, all, start, limit);
+
+    //stack => NnChannel, total number found
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
+        Stack st = SearchLib.search(core, keyword, content, extra, all, start, limit);
+        List<Long> ids = (List<Long>) st.pop();
 		List<NnChannel> channels = new NnChannelDao().findByIds(ids);
-		return channels;
+		st.push(channels);
+		return st;
     }
  
     public static long searchSize(String queryStr, boolean all) {
@@ -698,10 +704,11 @@ public class NnChannelManager {
     
     public void resetCache(long channelId) {        
         log.info("reset channel info cache: " + channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 31, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 32, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(channelId, 40, PlayerApiService.FORMAT_PLAIN));
+        String cId = String.valueOf(channelId);
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_PLAIN));
     }
     
     /*
@@ -1054,7 +1061,7 @@ public class NnChannelManager {
         Object result = null;
         log.info("version number: " + version);
 
-        String cacheKey = CacheFactory.getChannelLineupKey(c.getId(), version, format);
+        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(c.getId()), version, format);
         try {
             result = CacheFactory.get(cacheKey);
         } catch (Exception e) {

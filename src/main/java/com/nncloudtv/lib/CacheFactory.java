@@ -304,7 +304,7 @@ public class CacheFactory {
      * example: nnchannel-v31-1-text
      *          nnchannel-v40-2-json 
      */
-    public static String getChannelLineupKey(long channelId, int version, short format) {
+    public static String getChannelLineupKey(String channelId, int version, short format) {
     	String key = "";
     	if (version == 32) {
     		//nnchannel-v32(1)
