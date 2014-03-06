@@ -808,7 +808,9 @@ public class PlayerApiService {
             */
             List<NnChannel> chs = new ArrayList<NnChannel>();
             if (s.equals(Tag.RECOMMEND)) {
-                chs = new RecommendService().findRecommend(userToken, mso.getId(), lang);
+                //chs = new RecommendService().findRecommend(userToken, mso.getId(), lang);
+            	Object obj = new YtChannelManager().findRecommend(userToken, lang, version, this.format);
+            	return this.assembleMsgs(NnStatusCode.SUCCESS, obj);
             } else if (s.equals("mayLike")) {            
                 chs = new RecommendService().findMayLike(userToken, mso.getId(), channel, lang);                
             } else {                
