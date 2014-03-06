@@ -137,6 +137,7 @@ public class APNSLib {
                         .build();
             } else {
                 
+                log.info("developement provisioning profile is used (developement site)");
                 service = APNS.newService()
                         .withCert(fileRoot, password)
                         .asPool(15)
