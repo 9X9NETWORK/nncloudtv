@@ -1778,6 +1778,6 @@ public class ApiMso extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        return notificationMngr.list(1, 10, "createDate", "desc", "msoId == " + mso.getId());
+        return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
     }
 }
