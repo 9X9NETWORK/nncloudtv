@@ -59,7 +59,7 @@ public class NotifyService {
         gcmLib.doPost(msoNotification, config.getValue());
     }
     
-    public void sendToAPNS(Long msoNotificationId) {
+    public void sendToAPNS(Long msoNotificationId, boolean isProduction) {
         
         if (msoNotificationId == null) {
             return ;
@@ -109,7 +109,7 @@ public class NotifyService {
         log.info("fileRoot=" + fileRoot);
         log.info("password=" + password);
         
-        apnsLib.doPost(msoNotification, fileRoot, password);
+        apnsLib.doPost(msoNotification, fileRoot, password, isProduction);
     }
     
     public void sendToGCM_debug(Long msoNotificationId) {
@@ -144,7 +144,7 @@ public class NotifyService {
         String APNS_KEYFILE_ROOT = "/usr/share/jetty/webapps/bartonAPNS5.p12";
         String APNS_KEYFILE_PASSWORD = "111111";
         
-        apnsLib.doPost(msoNotification, APNS_KEYFILE_ROOT, APNS_KEYFILE_PASSWORD);
+        apnsLib.doPost(msoNotification, APNS_KEYFILE_ROOT, APNS_KEYFILE_PASSWORD, false);
     }
 
 }

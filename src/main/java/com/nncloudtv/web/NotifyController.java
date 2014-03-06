@@ -23,6 +23,7 @@ import com.nncloudtv.lib.NotifyLib;
 import com.nncloudtv.model.EndPoint;
 import com.nncloudtv.service.EndPointManager;
 import com.nncloudtv.service.NotifyService;
+import com.nncloudtv.web.api.ApiContext;
 
 @Controller
 @RequestMapping("notify") //@RequestMapping("gcm")
@@ -118,8 +119,10 @@ public class NotifyController {
         
         log.info("notifyId = " + id);
         
+        ApiContext context = new ApiContext(req);
+        
         // APNs push notification
-        notifyService.sendToAPNS(id);
+        notifyService.sendToAPNS(id, context.isProductionSite());
         
         return NnNetUtil.textReturn("OK");
     }

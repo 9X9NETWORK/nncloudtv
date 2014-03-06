@@ -28,7 +28,7 @@ public class APNSLib {
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
     
-    public void doPost(MsoNotification msoNotification, String fileRoot, String password) {
+    public void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
         
         if (msoNotification == null || fileRoot == null || password == null) {
             return ;
@@ -126,14 +126,25 @@ public class APNSLib {
         
         ApnsService service = null;
         try {
-            service = APNS.newService()
-                .withCert(fileRoot, password)
-                .asPool(15)
-                //.withSandboxDestination() // Specify to use the Apple sandbox servers
-                .withProductionDestination() // Specify to use the Apple Production servers
-                //.asNonBlocking() // Constructs non-blocking queues and sockets connections
-                .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
-                .build();
+            
+            if (isProduction) {
+                
+                service = APNS.newService()
+                        .withCert(fileRoot, password)
+                        .asPool(15)
+                        .withProductionDestination() // Specify to use the Apple Production servers
+                        .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
+                        .build();
+            } else {
+                
+                service = APNS.newService()
+                        .withCert(fileRoot, password)
+                        .asPool(15)
+                        .withSandboxDestination() // Specify to use the Apple sandbox servers
+                        //.asNonBlocking() // Constructs non-blocking queues and sockets connections
+                        .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
+                        .build();
+            }
         } catch (Exception e) {
             log.warning(e.getMessage());
             return ;
