@@ -40,3 +40,7 @@ src = server + "//facebook.properties"
 dst = "..//src//main//resources//facebook.properties"
 shutil.copyfile(src, dst)
 
+src = server + "//crawler.properties"
+dst = "..//src//main//resources//crawler.properties"
+shutil.copyfile(src, dst)
+
