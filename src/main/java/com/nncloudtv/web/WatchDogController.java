@@ -5,10 +5,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationTimeoutException;
@@ -29,8 +31,11 @@ import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnNetUtil;
+import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -38,15 +43,29 @@ import com.nncloudtv.model.Tag;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.api.NnStatusCode;
+import com.nncloudtv.web.json.player.ChannelLineup;
 
 @Controller
 @RequestMapping("wd")
 public class WatchDogController {
 
     protected static final Logger log = Logger.getLogger(WatchDogController.class.getName());
+
+    @RequestMapping(value="ytvideo")
+    public ResponseEntity<String> ytvideo(HttpServletRequest req) {
+    	String vid = req.getParameter("v");
+        Map<String, String> entry = YouTubeLib.getYouTubeVideo(vid);
+        String result = "";
+        String title = NnStringUtil.htmlSafeChars(entry.get("title"));
+        String intro = NnStringUtil.htmlSafeChars(entry.get("description"));
+        String thumb = NnStringUtil.htmlSafeChars((entry.get("thumbnail")));
+    	result += "title:" + title + "\n" + "intro:" + intro + "\n" + "thumb:" + thumb;
+       return NnNetUtil.textReturn(result);
+    }
     
     @RequestMapping(value="search")
     public ResponseEntity<String> search(HttpServletRequest req) {
@@ -145,13 +164,14 @@ public class WatchDogController {
        }
        channel.setSphere(sphere);
        channel.setLang(lang);
+       channel.setStatus(NnChannel.STATUS_SUCCESS);
        channel.setPublic(true);
        chMngr.save(channel);
        return NnNetUtil.textReturn(channel.getIdStr());
     }
     
     @RequestMapping(value="msoInfo")
-    public ResponseEntity<String> msoInfo(HttpServletRequest req) {
+    public ResponseEntity<String> msoInfo(HttpServletRequest req, HttpServletResponse resp) {
         MsoManager msoMngr = new MsoManager();
         Mso mso = msoMngr.findNNMso();
         String[] result = {""};
@@ -164,7 +184,8 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
 
         PlayerApiService s = new PlayerApiService();
-        String output = s.assembleMsgs(NnStatusCode.SUCCESS, result);
+        s.prepService(req, resp);        
+        String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    
 
@@ -172,7 +193,7 @@ public class WatchDogController {
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel) {
         NnProgramManager mngr = new NnProgramManager();
-        String result = mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel));        
+        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN);        
         if (result == null)
             return "null, error";
         String output = "";
@@ -242,7 +263,7 @@ public class WatchDogController {
         int version = 40;
         if (v != null)
             version = Integer.parseInt(v);
-        String result = mngr.composeChannelLineup(channels, version);
+        String result = (String) mngr.composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
         if (result == null) {
             return "error, can't be null";
         }
@@ -290,6 +311,7 @@ public class WatchDogController {
                             ObjectMapper mapper = new ObjectMapper();
                             JsonFactory factory = mapper.getJsonFactory(); 
                             JsonParser jp = factory.createJsonParser(jsonstr); //to test valid json
+                            log.info("jp" + jp);
                             output += "\n" + URLDecoder.decode(json[3], "utf-8") + "\n--\n";
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
@@ -315,6 +337,14 @@ public class WatchDogController {
         mngr.resetCache(chId);
         return "OK";
     }
+    
+    //delete brandInfo_reset
+    @RequestMapping("brandCache")
+    public ResponseEntity<String> brandCache(@RequestParam(value="mso", required=false)String mso) {
+    	MsoManager mngr = new MsoManager();
+    	mngr.resetCache(mso);
+    	return NnNetUtil.textReturn("cache delete:" + mso);
+    }    
 
     @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
@@ -357,7 +387,7 @@ public class WatchDogController {
         tagMngr.createTagMap(tagId, chId);
         return "OK";                
     }    
-
+    
     //delete cache with key
     @RequestMapping("cache_delete")
     public ResponseEntity<String> cache_delete(@RequestParam(value="key", required=false)String key) {
@@ -402,5 +432,28 @@ public class WatchDogController {
         }
         return NnNetUtil.textReturn("cache get:" + setValue);
     }
+
+    @RequestMapping("reset")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam(value="email")String email, 
+            @RequestParam(value="password")String password, HttpServletRequest req, HttpServletResponse resp) {
+    	NnUserManager userMngr = new NnUserManager();
+        NnUser user = userMngr.findByEmail(email, 1, req);
+        if (user == null)
+            return NnNetUtil.textReturn("user does not exist");
+        user.setPassword(password);
+        userMngr.resetPassword(user);    
+        return NnNetUtil.textReturn("OK");
+    }
+    
+    @RequestMapping("json") 
+    public @ResponseBody ChannelLineup json (
+    		@RequestParam(value="id") long id) {         
+       NnChannelManager chMngr = new NnChannelManager();
+       NnChannel c = chMngr.findById(id);
+       ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, 40, PlayerApiService.FORMAT_JSON);
+       System.out.println(json);       
+       return json;
+    }        
     
 }

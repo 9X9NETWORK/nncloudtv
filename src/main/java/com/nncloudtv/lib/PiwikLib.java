@@ -3,11 +3,9 @@ package com.nncloudtv.lib;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -66,18 +64,13 @@ public class PiwikLib {
         }
         
         String urlStr = piwikHost + "/index.php?";
-        try {
-            urlStr += "jsoncallback=jsonp1316430986921";
-            urlStr += "&method=SitesManager.addSite";
-            urlStr += "&module=API";
-            urlStr += "&format=JSON";
-            urlStr += "&token_auth=23ed70e585b18033d7150f917232d1f4"; 
-            urlStr += "&urls=" + URLEncoder.encode(contentUrl, "UTF-8");
-            urlStr += "&siteName=" + URLEncoder.encode(siteName, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return null;
-        }
+        urlStr += "jsoncallback=jsonp1316430986921";
+        urlStr += "&method=SitesManager.addSite";
+        urlStr += "&module=API";
+        urlStr += "&format=JSON";
+        urlStr += "&token_auth=23ed70e585b18033d7150f917232d1f4"; 
+        urlStr += "&urls=" + NnStringUtil.urlencode(contentUrl);
+        urlStr += "&siteName=" + NnStringUtil.urlencode(siteName);
         
         //urlStr = "http://piwik.teltel.com/index.php?jsoncallback=jsonp1316424512664&method=SitesManager.getSitesIdFromSiteUrl&url=http%3A%2F%2Fcms.9x9.tv%2F9x9&module=API&format=JSON&token_auth=23ed70e585b18033d7150f917232d1f4";
         //HTTP GET

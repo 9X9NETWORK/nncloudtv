@@ -6,7 +6,9 @@ import java.util.Calendar;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +22,21 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NotifyLib;
 import com.nncloudtv.model.EndPoint;
 import com.nncloudtv.service.EndPointManager;
+import com.nncloudtv.service.NotifyService;
+import com.nncloudtv.web.api.ApiContext;
 
 @Controller
 @RequestMapping("notify") //@RequestMapping("gcm")
 public class NotifyController {
 
     protected static final Logger log = Logger.getLogger(NotifyController.class.getName());
+    
+    private NotifyService notifyService;
+    
+    @Autowired
+    public NotifyController(NotifyService notifyService) {
+        this.notifyService = notifyService;
+    }
 
     @RequestMapping(value="send")
     public @ResponseBody String send (
@@ -79,6 +90,51 @@ public class NotifyController {
             e.printStackTrace();
         }
         return NnNetUtil.textReturn(output);
-    }    
-
+    }
+    
+    //APNS testing
+    @RequestMapping(value="APNSTest")
+    public ResponseEntity<String> APNSTest(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("APNSTest func called ----------------------------------");
+        
+        notifyService.sendToAPNS_debug(id);
+        
+        return NnNetUtil.textReturn("OK");
+    }
+    
+    //GCM testing
+    @RequestMapping(value="GCMTest")
+    public ResponseEntity<String> GCMTest(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("GCMTest func called ----------------------------------");
+        
+        notifyService.sendToGCM_debug(id);
+        
+        return NnNetUtil.textReturn("OK");
+    }
+    
+    @RequestMapping(value="apns")
+    public ResponseEntity<String> apns(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("notifyId = " + id);
+        
+        ApiContext context = new ApiContext(req);
+        
+        // APNs push notification
+        notifyService.sendToAPNS(id, context.isProductionSite());
+        
+        return NnNetUtil.textReturn("OK");
+    }
+    
+    @RequestMapping(value="gcm")
+    public ResponseEntity<String> gcm(@RequestParam(required=true) Long id, HttpServletRequest req, HttpServletResponse resp) {
+        
+        log.info("notifyId = " + id);
+        
+        // GCM push notification
+        notifyService.sendToGCM(id);
+        
+        return NnNetUtil.textReturn("OK");
+    }
 }

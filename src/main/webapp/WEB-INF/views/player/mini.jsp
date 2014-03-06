@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<title>${fbTitle}</title>
-<meta name="keyword" content="${fbKeyword}"/>
-<meta name="description" content="${fbDescription}"/>
+<title>${meta_title}</title>
+<meta name="keyword" content="${meta_keyword}"/>
+<meta name="description" content="${meta_description}"/>
 <meta name="viewport" content="width=device-width"/>
 ${favicon}
-<link rel="image_src" href="${fbImg}"/>
+<link rel="image_src" href="${meta_thumbnail}"/>
 <link rel="stylesheet" href="http://9x9ui.s3.amazonaws.com/tv4.0.1.4/css/main.css">
 <link href="http://9x9ui.s3.amazonaws.com/poi/jquery.poi.css" rel="stylesheet" type="text/css" />
 </head>

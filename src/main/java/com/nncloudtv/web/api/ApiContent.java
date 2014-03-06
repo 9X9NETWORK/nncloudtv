@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -41,6 +42,7 @@ import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
+import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
@@ -70,14 +72,31 @@ public class ApiContent extends ApiGeneric {
     private NnChannelManager channelMngr;
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
+    private NnUserManager userMngr;
+    private NnProgramManager programMngr;
+    
+    public ApiContent() {
+        
+        this.channelMngr = new NnChannelManager();
+        this.channelPrefMngr = new NnChannelPrefManager();
+        this.storeService = new StoreService();
+        this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager());
+        this.userMngr = new NnUserManager();
+        this.programMngr = new NnProgramManager();
+    }
     
     @Autowired
-    public ApiContent(ApiContentService apiContentService, NnChannelManager channelMngr, StoreService storeService,
-                NnChannelPrefManager channelPrefMngr) {
+    public ApiContent(ApiContentService apiContentService,
+            NnChannelManager channelMngr, StoreService storeService,
+            NnChannelPrefManager channelPrefMngr, NnUserManager userMngr,
+            NnProgramManager programMngr) {
+        
         this.apiContentService = apiContentService;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
+        this.userMngr = userMngr;
+        this.programMngr = programMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -313,10 +332,16 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        MsoManager msoMngr = new MsoManager();
         NnChannelPref pref = prefMngr.getBrand(channel.getId());
+        Mso mso = msoMngr.findByName(pref.getValue());
+        String brand = pref.getValue();
+        if (msoMngr.isValidBrand(channel, mso) == false) {
+            brand = Mso.NAME_9X9;
+        }
         
         Map<String, Object> result = new TreeMap<String, Object>();
-        result.put("brand", pref.getValue());
+        result.put("brand", brand);
         log.info(printExitState(now, req, "ok"));
         return result;
     }
@@ -372,7 +397,7 @@ public class ApiContent extends ApiGeneric {
             log.info(printExitState(now, req, "400"));
             return null;
         }
-        if (msoMngr.isValidBrand(channel.getId(), mso) == false) {
+        if (msoMngr.isValidBrand(channel, mso) == false) {
             badRequest(resp, INVALID_PARAMETER);
             log.info(printExitState(now, req, "400"));
             return null;
@@ -412,21 +437,8 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        /*
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
-        }
-        */
-        
         MsoManager msoMngr = new MsoManager();
-        List<Mso> msos = msoMngr.getValidBrands(channel.getId());
+        List<Mso> msos = msoMngr.getValidBrands(channel);
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (Mso mso : msos) {
@@ -441,6 +453,28 @@ public class ApiContent extends ApiGeneric {
         
         log.info(printExitState(now, req, "ok"));
         return results;
+    }
+    
+    @RequestMapping(value = "ytprograms/{ytProgramId}", method = RequestMethod.GET)
+    public @ResponseBody
+    YtProgram ytprogram(@PathVariable("ytProgramId") String ytProgramIdStr,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long ytProgramId = null;
+        try {
+            ytProgramId = Long.valueOf(ytProgramIdStr);
+        } catch (NumberFormatException e) { }
+        
+        if (ytProgramId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        YtProgram ytProgram = programMngr.findYtProgramById(ytProgramId);
+        if (ytProgram == null) {
+            notFound(resp, "Pogram Not Found");
+            return null;
+        }
+        return ytProgram;
     }
     
     @RequestMapping(value = "programs/{programId}", method = RequestMethod.GET)
@@ -928,6 +962,7 @@ public class ApiContent extends ApiGeneric {
         StoreService storeService = new StoreService();
         MsoConfigManager configMngr = new MsoConfigManager();
         Mso brand = new MsoManager().findOneByName(mso);
+        boolean storeOnly = false;
         
         if (userIdStr != null) {
             
@@ -980,7 +1015,7 @@ public class ApiContent extends ApiGeneric {
             log.info("total channels = " + results.size());
             if (mso != null) {
                 // filter out channels that not in MSO's store
-                Set<Long> verifiedChannelIds = new HashSet<Long>(storeService.checkChannelIdsInMsoStore(fetchedChannelIds, brand.getId()));
+                Set<Long> verifiedChannelIds = new HashSet<Long>(storeService.checkChannelsInMsoStore(results, brand.getId()));
                 List<NnChannel> verifiedChannels = new ArrayList<NnChannel>();
                 for (NnChannel channel : results) {
                     if (verifiedChannelIds.contains(channel.getId()) == true) {
@@ -996,11 +1031,10 @@ public class ApiContent extends ApiGeneric {
         } else if (keyword != null && keyword.length() > 0) {
             
             log.info("keyword: " + keyword);
-            Set<Long> channelIdSet = new HashSet<Long>();
-            List<Long> channelIdList = new ArrayList<Long>();
             List<String> sphereList = new ArrayList<String>();
             String sphereFilter = null;
             if (sphereStr == null && mso != null) {
+                storeOnly = true;
                 log.info("mso = " + mso);
                 MsoConfig supportedRegion = configMngr.findByMsoAndItem(brand, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
@@ -1010,6 +1044,7 @@ public class ApiContent extends ApiGeneric {
                 }
             }
             if (sphereStr != null && !sphereStr.isEmpty()) {
+                storeOnly = true;
                 String[] sphereArr = new String[0];
                 sphereArr = sphereStr.split(",");
                 for (String sphere : sphereArr) {
@@ -1020,42 +1055,41 @@ public class ApiContent extends ApiGeneric {
                 log.info("sphere filter = " + sphereFilter);
             }
             
-            List<NnChannel> channels = NnChannelManager.search(keyword, "store_only", sphereFilter, false, 0, 150);
+            List<NnChannel> channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             log.info("found channels = " + channels.size());
-            for (NnChannel channel : channels) {
-                channelIdSet.add(channel.getId());
-            }
             
-            Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
-            Set<Long> userIdSet = new HashSet<Long>();
-            log.info("found profiles = " + profiles.size());
-            for (NnUserProfile profile : profiles) {
-                userIdSet.add(profile.getUserId());
-            }
-            List<NnUser> users = userMngr.findAllByIds(userIdSet);
-            log.info("found users = " + users.size());
-            
-            for (NnUser user : users) {
-                List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
-                for (NnChannel channel : userChannels) {
-                    if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
-                        if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
-                            log.info("from curator = " + channel.getName());
-                            channelIdSet.add(channel.getId());
+            if (sphereFilter == null) {
+                
+                Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
+                Set<Long> userIdSet = new HashSet<Long>();
+                log.info("found profiles = " + profiles.size());
+                for (NnUserProfile profile : profiles) {
+                    userIdSet.add(profile.getUserId());
+                }
+                List<NnUser> users = userMngr.findAllByIds(userIdSet);
+                log.info("found users = " + users.size());
+                
+                for (NnUser user : users) {
+                    List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
+                    for (NnChannel channel : userChannels) {
+                        if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
+                            if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
+                                log.info("from curator = " + channel.getName());
+                                channels.add(channel);
+                            }
                         }
                     }
                 }
             }
             
-            log.info("total channels = " + channelIdSet.size());
+            log.info("total channels = " + channels.size());
             if (mso != null) {
-                channelIdList = storeService.checkChannelIdsInMsoStore(channelIdSet, brand.getId());
+                List<Long> channelIdList = storeService.checkChannelsInMsoStore(channels, brand.getId());
+                results = channelMngr.findByIds(channelIdList);
                 log.info("total channels (filtered) = " + channelIdList.size());
             } else {
-                channelIdList = new ArrayList<Long>(channelIdSet);
+                results = channels;
             }
-            
-            results = channelMngr.findByIds(channelIdList);
             
             Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {
@@ -1186,13 +1220,6 @@ public class ApiContent extends ApiGeneric {
             updateDate = new Date();
         }
         
-        // autoSync
-        Boolean autoSync = null;
-        String autoSyncStr = req.getParameter("autoSync");
-        if (autoSyncStr != null) {
-            autoSync = evaluateBoolean(autoSyncStr);
-        }
-        
         // sorting
         Short sorting = null;
         String sortingStr = req.getParameter("sorting");
@@ -1201,7 +1228,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,
-                                    imageUrl, categoryId, updateDate, autoSync, sorting);
+                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));
@@ -1278,7 +1305,7 @@ public class ApiContent extends ApiGeneric {
         }
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Long categoryId = null;
@@ -1315,7 +1342,7 @@ public class ApiContent extends ApiGeneric {
         
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         StoreService storeServ = new StoreService();
@@ -1387,7 +1414,7 @@ public class ApiContent extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
-    
+        
         Long channelId = evaluateLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
@@ -1399,17 +1426,6 @@ public class ApiContent extends ApiGeneric {
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1583,7 +1599,7 @@ public class ApiContent extends ApiGeneric {
             
             episode.setName(NnStringUtil.revertHtml(episode.getName()));
             episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
-            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null));
+            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
         return results;

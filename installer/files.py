@@ -36,7 +36,11 @@ src = server + "//queue.properties"
 dst = "..//src//main//resources//queue.properties"
 shutil.copyfile(src, dst)
 
-src = server + "//sns.properties"
-dst = "..//src//main//resources//sns.properties"
+src = server + "//facebook.properties"
+dst = "..//src//main//resources//facebook.properties"
+shutil.copyfile(src, dst)
+
+src = server + "//crawler.properties"
+dst = "..//src//main//resources//crawler.properties"
 shutil.copyfile(src, dst)
 

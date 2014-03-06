@@ -1,7 +1,6 @@
 package com.nncloudtv.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,34 +27,30 @@ public class MsoConfigManager {
     static MsoConfigDao configDao = new MsoConfigDao();
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
-    static String getProperty(String propertyFile, String propertyName) {
+    protected static String serverDomain = null; 
+    
+    protected static String getProperty(String propertyFile, String propertyName) {
         
         Properties properties = new Properties();
         String result = null;
         log.info("to get property " + propertyName + " from " + propertyFile);
-        InputStream input = null;
         try {
-            input = MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile);
-            if (input == null)
-                return null;
-            properties.load(input);
+            properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile));
             result = properties.getProperty(propertyName);
         } catch (IOException e) {
             NnLogUtil.logException(e);
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return result;
     }
-
+    
     static public String getSearchServer() {
-        return getProperty("services.properties", "search");
+        
+    	return getProperty("services.properties", "search");
+    }
+    
+    static public String getP12FilePath(Mso mso) {
+        
+        return "/var/opt/p12files/" + mso.getName() + "_apns.p12";
     }
     
     static public String getS3UploadBucket() {
@@ -70,10 +65,13 @@ public class MsoConfigManager {
     
     static public String getServerDomain() {
         
-        return getProperty("facebook.properties", "server_domain");
+        if (serverDomain == null) {
+            serverDomain = getProperty("facebook.properties", "server_domain");
+        }
+        return serverDomain;
     }
         
-    static public String getDefaultFacebookAppToken() {        
+    static public String getFacebookAppToken() {        
         return getProperty("facebook.properties", "facebook_apptoken");
     }
     
@@ -82,27 +80,27 @@ public class MsoConfigManager {
     }
     
     public String getFacebookInfo(String type, Mso mso) {
-        if (mso == null || type == null) {
-            return null;
-        }
-        MsoConfig config = this.findByMsoAndItem(mso, type);
-        if (config != null) {
-            return config.getValue(); 
-        }
-        if (type == MsoConfig.FACEBOOK_CLIENTID)
-            return getProperty("facebook.properties", "facebook_clientid");
-        if (type == MsoConfig.FACEBOOK_APPTOKEN)
-            return getProperty("facebook.properties", "facebook_apptoken");
-        if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-            return getProperty("facebook.properties", "facebook_client_secret");
-        return null;
+    	if (mso == null || type == null) {
+    		return null;
+    	}
+    	MsoConfig config = this.findByMsoAndItem(mso, type);
+    	if (config != null) {
+    		return config.getValue(); 
+    	}
+    	if (type == MsoConfig.FACEBOOK_CLIENTID)
+    		return getProperty("facebook.properties", "facebook_clientid");
+    	if (type == MsoConfig.FACEBOOK_APPTOKEN)
+    		return getProperty("facebook.properties", "facebook_apptoken");
+    	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
+    		return getProperty("facebook.properties", "facebook_client_secret");
+    	return null;
     }
     
-    static public String getDefaultFacebookClientId() {        
+    static public String getFacebookClientId() {        
         return getProperty("facebook.properties", "facebook_clientid");
     }
     
-    static public String getDefaultFacebookClientSecret() {
+    static public String getFacebookClientSecret() {
         
         return getProperty("facebook.properties", "facebook_client_secret");
     }
@@ -126,12 +124,12 @@ public class MsoConfigManager {
         }
         return configDao.save(config);
     }
-
+    
     public void processCache(MsoConfig config) {
         isInReadonlyMode(true);
         isQueueEnabled(true);
     }
-
+    
     public String getDefaultValueByOs(String os, String function) {
         if (os == null || function == null)
             return null;
@@ -153,6 +151,10 @@ public class MsoConfigManager {
         if (function.contains("youtube")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA";
+        }
+        if (function.contains("notify")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+            	return "758834427689";
         }
         return null;        
     }
@@ -187,8 +189,8 @@ public class MsoConfigManager {
         String cacheKey = "msoconfig(" + msoId + ")(" + key + ")";
         return cacheKey;
     }
-        
-    public static boolean getBooleanValueFromCache(String key, boolean cacheReset) {
+    
+    public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
         try {        
             String result = (String)CacheFactory.get(cacheKey);        
@@ -200,7 +202,7 @@ public class MsoConfigManager {
             log.info("memcache error");
         }
         boolean value = false;
-        MsoConfig config = new MsoConfigDao().findByItem(key);
+        MsoConfig config = configDao.findByItem(key);
         if (config != null) {
             CacheFactory.set(cacheKey, config.getValue());
             value = NnStringUtil.stringToBool(config.getValue());
@@ -208,12 +210,12 @@ public class MsoConfigManager {
         return value;
     }
         
-    public static boolean isInReadonlyMode(boolean cacheReset) {
-        return MsoConfigManager.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
+    public boolean isInReadonlyMode(boolean cacheReset) {
+        return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
     }
         
-    public static boolean isQueueEnabled(boolean cacheReset) {
-        boolean status = MsoConfigManager.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
+    public boolean isQueueEnabled(boolean cacheReset) {
+        boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
         return status;     
     }
     
@@ -279,8 +281,7 @@ public class MsoConfigManager {
             return "";
         }
         
-        String systemCategoryMask = StringUtils.join(systemCategoryLocks, ",");
-        return systemCategoryMask;
+        return StringUtils.join(systemCategoryLocks, ",");
     }
     
     public static List<String> verifySystemCategoryLocks(List<String> systemCategoryLocks) {

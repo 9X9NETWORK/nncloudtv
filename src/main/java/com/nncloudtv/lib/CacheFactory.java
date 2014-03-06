@@ -12,12 +12,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nncloudtv.service.MsoConfigManager;
-
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.internal.CheckedOperationTimeoutException;
+
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.PlayerApiService;
 
 public class CacheFactory {
     
@@ -29,6 +31,7 @@ public class CacheFactory {
     public static final int HEALTH_CHECK_INTERVAL = 100000; // milliseconds
     public static final String ERROR = "ERROR";
     
+    public static boolean isEnabled = true;
     public static boolean isRunning = true;
     private static long lastCheck = 0;
     private static List<InetSocketAddress> memcacheServers = null;
@@ -78,7 +81,7 @@ public class CacheFactory {
     public static MemcachedClient getClient() {
         
         try {
-            if (isRunning) {
+            if (isRunning && isEnabled) {
                 
                 return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
             }
@@ -142,12 +145,17 @@ public class CacheFactory {
     
     public static Object get(String key) {
         
-        if (key == null || key.isEmpty()) return null;
+        if (!isEnabled || key == null || key.isEmpty()) return null;
+        
         long now = new Date().getTime();
         if (now - lastCheck > HEALTH_CHECK_INTERVAL) {
             lastCheck = now;
             reconfigClient();
             log.info("memcache reconfig costs " + (new Date().getTime() - now) + " milliseconds");
+            log.info("memory: max = " + Runtime.getRuntime().maxMemory()
+                       + ", total = " + Runtime.getRuntime().totalMemory()
+                        + ", free = " + Runtime.getRuntime().freeMemory()
+                        + ", used = " + Runtime.getRuntime().freeMemory());
         } else if (!isRunning) {
             // cache is temporarily not running
             return null;
@@ -180,7 +188,8 @@ public class CacheFactory {
     
     public static Object set(String key, Object obj) {
         
-        if (!isRunning || key == null || key.isEmpty()) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
+        
         long now = new Date().getTime();
         MemcachedClient cache = getClient();
         if (cache == null) return null;
@@ -215,8 +224,9 @@ public class CacheFactory {
     
     public static void delete(String key) {
         
+        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
+        
         boolean isDeleted = false;
-        if (!isRunning || key == null || key.isEmpty()) return;
         long now = new Date().getTime();
         MemcachedClient cache = getClient();
         if (cache == null) return;
@@ -243,4 +253,76 @@ public class CacheFactory {
             log.info("cache [" + key + "] --> not deleted");
         }
     }
+            
+	//example: brandInfo(9x9)[json]
+    public static String getBrandInfoKey(Mso mso, String os, short format) {
+    	if (format == PlayerApiService.FORMAT_PLAIN)
+    		return "brandInfo(" + mso.getName() + ")(" + os + ")";
+    	return "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
+    }
+    
+    /**
+     * key looks like nnprogram-v version number-channelId-pagination-json
+     * pagination has value 0, 50, 100, 150
+     * examples: nnprogram-v31-1-0-text
+     *           nnprogram-v40-2-50-json
+     */
+    public static String getProgramInfoKey(long channelId, int start, int version, short format) {
+    	if (version == 31) {
+    		return "nnprogram-v31-" + channelId + "-0-" + "text";
+    	} else if (version == 32) {
+            return "nnprogram-v32-" + channelId + "-0-" + "text";
+    	}
+        String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	str += "json";
+        } else {
+        	str += "text";
+        }
+        log.info("programInfo cache key:" + str);
+        return str;
+    }
+        
+    /**
+     * cache the 1st program of channel
+     * format: nnprogramLatest-channel_id-format
+     * example: nnprogramLatest-1-json
+     *          nnprogramLatest-1-text
+     */
+    public static String getLatestProgramInfoKey(long channelId, short format) {
+        String str = "nnprogramLatest-" + channelId + "-";
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	str += "json";
+        } else {
+        	str += "text";
+        }
+        return str;
+    }
+        
+    /**
+     * format: nnchannel-v version_number-channel_id-format
+     * example: nnchannel-v31-1-text
+     *          nnchannel-v40-2-json 
+     */
+    public static String getChannelLineupKey(long channelId, int version, short format) {
+    	String key = "";
+    	if (version == 32) {
+    		//nnchannel-v32(1)
+    		key = "nnchannel-v32-" + channelId;
+    	} else if (version < 32) {
+    		//nnchannel-v31(1)
+        	key = "nnchannel-v31-" + channelId;
+    	} else {			
+    		//nnchannel(1)
+            key = "nnchannel-v40-" + channelId;
+    	}
+        if (format == PlayerApiService.FORMAT_JSON) {
+        	key += "-json";
+        } else {
+        	key += "-text";
+        }
+        log.info("channelLineup key:" + key);
+        return key;
+    }
+        
 }

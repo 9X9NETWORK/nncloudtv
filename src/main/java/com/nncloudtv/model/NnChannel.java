@@ -101,6 +101,7 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_YOUTUBE_SPECIAL_SORTING = 10;
     public static final short CONTENTTYPE_FAVORITE = 11;
     public static final short CONTENTTYPE_FAKE_FAVORITE = 12;
+    public static final short CONTENTTYPE_YOUTUBE_LIVE = 13;
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
@@ -207,12 +208,12 @@ public class NnChannel implements Serializable {
     
     // used in YouTube Sync Channel, true means back-end will auto sync with YouTube in a fixed time 
     @NotPersistent
-    private boolean autoSync;
-
+    private String autoSync;
+    
+    @NotPersistent
+    private String playbackUrl;
+    
     protected static final Logger log = Logger.getLogger(NnChannel.class.getName());    
-
-    public NnChannel() {        
-    }
     
     public NnChannel(String name, String intro, String imageUrl) {
         this.name = name;
@@ -669,11 +670,20 @@ public class NnChannel implements Serializable {
         this.readonly = readonly;
     }
 
-    public boolean isAutoSync() {
+    public String getAutoSync() {
         return autoSync;
     }
 
-    public void setAutoSync(boolean autoSync) {
+    public void setAutoSync(String autoSync) {
         this.autoSync = autoSync;
+    }
+    public String getPlaybackUrl() {
+        
+        return playbackUrl;
+    }
+    
+    public void setPlaybackUrl(String playbackUrl) {
+    
+        this.playbackUrl = playbackUrl;
     }
 }

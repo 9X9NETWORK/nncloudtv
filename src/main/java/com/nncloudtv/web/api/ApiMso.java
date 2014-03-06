@@ -1,5 +1,6 @@
 package com.nncloudtv.web.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -17,14 +18,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
+import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.MsoNotificationManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
@@ -47,11 +52,16 @@ public class ApiMso extends ApiGeneric {
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
+    private NnUserManager userMngr;
+    private MsoNotificationManager notificationMngr;
+    private MsoConfigManager configMngr;
     
     @Autowired
     public ApiMso(MsoManager msoMngr, NnChannelManager channelMngr, StoreService storeService,
             NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
-            CategoryService categoryService) {
+            CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr,
+            MsoConfigManager configMngr) {
+        
         this.msoMngr = msoMngr;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
@@ -59,6 +69,9 @@ public class ApiMso extends ApiGeneric {
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
+        this.userMngr = userMngr;
+        this.notificationMngr = notificationMngr;
+        this.configMngr = configMngr;
     }
     
     /** indicate logging user has access right to target mso in PCS API
@@ -524,7 +537,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         Mso mso = msoMngr.findById(set.getMsoId());
-        if (msoMngr.isPlayableChannel(channel.getId(), mso.getId()) == false) {
+        if (msoMngr.isPlayableChannel(channel, mso.getId()) == false) {
             badRequest(resp, "Channel Cant Play On This Mso");
             log.info(printExitState(now, req, "400"));
             return null;
@@ -926,35 +939,29 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
+        Mso mso = null;
         
-        Mso mso = msoMngr.findById(msoId);
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                log.info(printExitState(now, req, "404"));
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr);
+        }
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
         Mso result = apiMsoService.mso(mso.getId());
         
-        result = MsoManager.normalize(result);
         log.info(printExitState(now, req, "ok"));
         return result;
     }
@@ -1004,7 +1011,6 @@ public class ApiMso extends ApiGeneric {
         
         Mso result = apiMsoService.msoUpdate(mso.getId(), title, logoUrl);
         
-        result = MsoManager.normalize(result);
         log.info(printExitState(now, req, "ok"));
         return result;
     }
@@ -1048,10 +1054,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         List<Category> results = apiMsoService.msoCategories(mso.getId());
@@ -1137,10 +1143,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.msoCategoryCreate(mso.getId(), seq, zhName, enName);
@@ -1202,10 +1208,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.category(category.getId());
@@ -1292,10 +1298,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = NnUserManager.findLocaleByHttpRequest(req);
+                lang = userMngr.findLocaleByHttpRequest(req);
             }
         } else {
-            lang = NnUserManager.findLocaleByHttpRequest(req);
+            lang = userMngr.findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.categoryUpdate(category.getId(), seq, zhName, enName);
@@ -1648,5 +1654,130 @@ public class ApiMso extends ApiGeneric {
         log.info(printExitState(now, req, "ok"));
         return results;
     }
-
+    
+    @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)
+    public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    
+        
+        Mso mso = null;
+        
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr);
+        }
+        
+        if (mso == null) {
+            notFound(resp, "MSO_NOT_FOUND");
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        String message = req.getParameter("message");
+        if (message == null) {
+            badRequest(resp, "MISSING_PARAM_MESSAGE");
+            return null;
+        }
+        
+        MsoNotification notification = new MsoNotification(mso.getId(), message);
+        
+        String content = req.getParameter("content");
+        if (content != null) {
+            notification.setContent(content);
+        }
+        
+        String scheduleDateStr = req.getParameter("scheduleDate");
+        if (scheduleDateStr == null) {
+            badRequest(resp, "MISSING_PARAM_SCHEDULE_DATE");
+            return null;
+            
+        } else if (scheduleDateStr.equalsIgnoreCase("NOW")) {
+        } else {
+            
+            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            if (scheduleDateLong == null) {
+                badRequest(resp, INVALID_PARAMETER);
+                return null;
+            }
+            notification.setScheduleDate(new Date(scheduleDateLong));
+        }
+        
+        notification = notificationMngr.save(notification);
+        
+        if (scheduleDateStr.equalsIgnoreCase("NOW")) {
+            
+            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            File p12 = new File(MsoConfigManager.getP12FilePath(mso));
+            if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
+                
+                QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
+            }
+            if (p12.exists() == true) {
+                
+                QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
+            }
+        }
+        
+        return notification;
+    }    
+    
+    @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.GET)
+    public @ResponseBody List<MsoNotification> notifications(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+        
+        Mso mso = null;
+        log.info("mso = " + msoIdStr);
+        if (msoIdStr.matches("^\\d+$")) {
+            
+            Long msoId = evaluateLong(msoIdStr);
+            if (msoId == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            
+            mso = msoMngr.findById(msoId);
+            
+        } else {
+            
+            mso = msoMngr.findByName(msoIdStr);
+        }
+        
+        if (mso == null) {
+            notFound(resp, "MSO_NOT_FOUND");
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        log.info("userId = " + verifiedUserId);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+    }
 }

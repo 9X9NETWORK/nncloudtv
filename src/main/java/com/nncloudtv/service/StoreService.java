@@ -78,13 +78,13 @@ public class StoreService {
      *  @param msoId required, indicate which Mso Store
      *  @param channelIds, required, the Channel IDs to be verified
      *  @return list of Channel's ID */
-    public List<Long> checkChannelIdsInMsoStore(java.util.Set<Long> channelIds, Long msoId) {
+    public List<Long> checkChannelsInMsoStore(List<NnChannel> channels, Long msoId) {
         
-        if (channelIds == null || channelIds.isEmpty() || msoId == null) {
+        if (channels == null || channels.isEmpty() || msoId == null) {
             return new ArrayList<Long>();
         }
         
-        List<Long> results = msoMngr.getPlayableChannels(new ArrayList<Long>(channelIds), msoId);
+        List<Long> results = msoMngr.getPlayableChannels(channels, msoId);
         return results;
     }
     
@@ -99,7 +99,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -134,7 +134,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -144,8 +144,8 @@ public class StoreService {
         } else {
             spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
         }
-        List<NnChannel> msoStoreCategoryChannels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
-        if (msoStoreCategoryChannels == null || msoStoreCategoryChannels.size() == 0) {
+        List<NnChannel> channels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
+        if (channels == null || channels.size() == 0) {
             return new ArrayList<Long>();
         }
         
@@ -157,16 +157,16 @@ public class StoreService {
             }
         }
         
-        List<Long> msoStoreCategoryChannelIds = new ArrayList<Long>();
-        for (NnChannel channel : msoStoreCategoryChannels) {
+        List<Long> store = new ArrayList<Long>();
+        for (NnChannel channel : channels) {
             if (blackListMap.containsKey(channel.getId())) {
                 // skip
             } else {
-                msoStoreCategoryChannelIds.add(channel.getId());
+                store.add(channel.getId());
             }
         }
         
-        return msoStoreCategoryChannelIds;
+        return store;
     }
     
     /** get Channels from official Store's Category

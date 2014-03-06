@@ -64,12 +64,7 @@ public class ApiContentService {
         // filter part
         if (msoId != null) {
             
-            List<Long> unverifiedChannel = new ArrayList<Long>();
-            for (NnChannel channel : results) {
-                unverifiedChannel.add(channel.getId());
-            }
-            
-            List<Long> verifiedChannel = msoMngr.getPlayableChannels(unverifiedChannel, msoId);
+            List<Long> verifiedChannel = msoMngr.getPlayableChannels(results, msoId);
             
             results = channelMngr.findByIds(verifiedChannel);
             Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
@@ -79,7 +74,7 @@ public class ApiContentService {
     }
     
     public NnChannel channelUpdate(Long channelId, String name, String intro, String lang, String sphere, Boolean isPublic,
-            String tag, String imageUrl, Long categoryId, Date updateDate, Boolean autoSync, Short sorting) {
+            String tag, String imageUrl, Long categoryId, Date updateDate, String autoSync, Short sorting) {
         
         if (channelId == null) {
             return null;
@@ -201,7 +196,7 @@ public class ApiContentService {
         
         episodeMngr.normalize(results);
         for (NnEpisode episode : results) {
-            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null));
+            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
         return results;

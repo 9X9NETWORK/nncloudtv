@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,14 +32,14 @@ public class ApiMsoService {
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
-    private MsoConfigManager msoConfigMngr;
+    private MsoConfigManager configMngr;
     
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
                             SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
                             NnChannelManager channelMngr, StoreService storeService,
                             StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            CategoryService categoryService, MsoConfigManager msoConfigMngr) {
+                            CategoryService categoryService, MsoConfigManager configMngr) {
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
@@ -48,7 +49,7 @@ public class ApiMsoService {
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
-        this.msoConfigMngr = msoConfigMngr;
+        this.configMngr = configMngr;
     }
     
     /** service for ApiMso.msoSets
@@ -99,7 +100,7 @@ public class ApiMsoService {
         }
         
         String lang = LangTable.LANG_EN; // default
-        MsoConfig supportedRegion = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion != null && supportedRegion.getValue() != null) {
             List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
             if (spheres != null && spheres.isEmpty() == false) {
@@ -317,7 +318,8 @@ public class ApiMsoService {
         
         List<Long> results = null;
         if (channelIds != null) {
-            results = storeService.checkChannelIdsInMsoStore(channelIds, msoId);
+            List<NnChannel> channels = channelMngr.findByIds(new ArrayList<Long>(channelIds));
+            results = storeService.checkChannelsInMsoStore(channels, msoId);
         } else if (categoryId != null) {
             results = storeService.getChannelIdsFromMsoStoreCategory(categoryId, msoId);
         } else {
@@ -356,7 +358,7 @@ public class ApiMsoService {
     
     /** service for ApiMso.mso
      *  get Mso by given Mso's ID
-     *  @param msoId required, the Mso's Id
+     *  @param mso required, the Mso's Id
      *  @return object Mso or null if not exist */
     public Mso mso(Long msoId) {
         
@@ -364,13 +366,13 @@ public class ApiMsoService {
             return null;
         }
         
-        Mso mso = msoMngr.findByIdWithSupportedRegion(msoId);
+        Mso mso = msoMngr.findById(msoId, true);
         if (mso == null) {
             return null;
         }
         
-        mso.setMaxSets(Mso.MAXSETS_DEFAULT);
-        MsoConfig maxSets = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        mso.setMaxSets(MsoConfig.MAXSETS_DEFAULT);
+        MsoConfig maxSets = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
         if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
             try {
                 mso.setMaxSets(Short.valueOf(maxSets.getValue()));
@@ -378,8 +380,8 @@ public class ApiMsoService {
             }
         }
         
-        mso.setMaxChPerSet(Mso.MAXCHPERSET_DEFAULT);
-        MsoConfig maxChPerSet = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        mso.setMaxChPerSet(MsoConfig.MAXCHPERSET_DEFAULT);
+        MsoConfig maxChPerSet = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
         if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
             try {
                 mso.setMaxChPerSet(Short.valueOf(maxChPerSet.getValue()));
@@ -387,6 +389,20 @@ public class ApiMsoService {
             }
         }
         
+        boolean apnsEnabled = true;
+        boolean gcmEnabled = true;
+        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        File p12 = new File(MsoConfigManager.getP12FilePath(mso));
+        if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
+            gcmEnabled = false;
+        }
+        if (p12.exists() == false) {
+            apnsEnabled = false;
+        }
+        mso.setGcmEnabled(gcmEnabled);
+        mso.setApnsEnabled(apnsEnabled);
+        
+        MsoManager.normalize(mso);
         return mso;
     }
     
@@ -414,12 +430,10 @@ public class ApiMsoService {
             mso.setLogoUrl(logoUrl);
         }
         
-        if (title != null || logoUrl != null) {
-            Mso savedMso = msoMngr.save(mso);
-            return savedMso;
-        } else {
-            return mso;
-        }
+        Mso savedMso = msoMngr.save(mso);
+        
+        MsoManager.normalize(savedMso);
+        return savedMso;
     }
     
     /**
@@ -581,12 +595,14 @@ public class ApiMsoService {
                 return ;
             }
             
-            List<Long> verifiedChannelIds = msoMngr.getPlayableChannels(channelIds, category.getMsoId());
+            List<NnChannel> channels = channelMngr.findByIds(channelIds);
+            List<Long> verifiedChannelIds = msoMngr.getPlayableChannels(channels, category.getMsoId());
             categoryService.addChannelsToCategory(category.getId(), verifiedChannelIds);
             
         } else if (channelId != null) {
             
-            if (msoMngr.isPlayableChannel(channelId, category.getMsoId()) == true) {
+            NnChannel channel = channelMngr.findById(channelId);
+            if (msoMngr.isPlayableChannel(channel, category.getMsoId()) == true) {
                 categoryService.addChannelToCategory(category.getId(), channelId, seq, alwaysOnTop);
             }
         }

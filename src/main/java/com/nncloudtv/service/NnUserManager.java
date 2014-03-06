@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserDao;
@@ -27,18 +28,32 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
+import com.nncloudtv.web.json.player.UserInfo;
 
 @Service
 public class NnUserManager {
     
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
-        
+    
+    protected NnUserPrefManager prefMngr;
     private NnUserDao dao = new NnUserDao();
     private NnUserProfileManager profileMngr = new NnUserProfileManager();
     public static short MSO_DEFAULT = 1; 
+    
+    public NnUserManager() {
+        
+        this.prefMngr = new NnUserPrefManager();
+    }
+    
+    @Autowired
+    public NnUserManager(NnUserPrefManager prefMngr) {
+        
+        this.prefMngr = prefMngr;
+    }
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {
@@ -49,7 +64,7 @@ public class NnUserManager {
             profile.setName(profile.getName().replaceAll("\\s", " "));
         user.setEmail(user.getEmail().toLowerCase());
         if (shard == 0)
-            shard= NnUserManager.getShardByLocale(req);
+            shard= getShardByLocale(req);
         if (user.getToken() == null)
             user.setToken(NnUserManager.generateToken(shard));
         user.setShard(shard);
@@ -153,8 +168,8 @@ public class NnUserManager {
     }
     
     //Default is 1; Asia (tw, cn, hk) is 2
-    public static short getShardByLocale(HttpServletRequest req) {
-        String locale = NnUserManager.findLocaleByHttpRequest(req);
+    public short getShardByLocale(HttpServletRequest req) {
+        String locale = findLocaleByHttpRequest(req);
         short shard = NnUser.SHARD_DEFAULT;
         if (locale.equals("tw") || locale.equals("cn") || locale.equals("hk")) {
             shard = NnUser.SHARD_CHINESE;
@@ -162,7 +177,7 @@ public class NnUserManager {
         return shard;
     }
     
-    public static String findLocaleByHttpRequest(HttpServletRequest req) {
+    public String findLocaleByHttpRequest(HttpServletRequest req) {
         String ip = req.getRemoteAddr();
         log.info("findLocaleByHttpRequest() ip is " + ip);
         ip = NnNetUtil.getIp(req);
@@ -270,7 +285,7 @@ public class NnUserManager {
     //TODO able to assign shard
     //find by email means find by unique id
     public NnUser findByEmail(String email, long msoId, HttpServletRequest req) {
-        short shard= NnUserManager.getShardByLocale(req);
+        short shard= getShardByLocale(req);
         log.info("find by email:" + email.toLowerCase());
         NnUser user = dao.findByEmail(email.toLowerCase(), shard);
         if (user != null) {
@@ -281,7 +296,7 @@ public class NnUserManager {
     }        
     
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
-        short shard= NnUserManager.getShardByLocale(req); 
+        short shard = getShardByLocale(req);
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
         if (user != null) {
             user.setMsoId(msoId);
@@ -289,63 +304,13 @@ public class NnUserManager {
         }
         return user;
     }
-
-    public NnUser findAuthenticatedMsoUser(String email, String password, long msoId) {
-        NnUser user = dao.findAuthenticatedMsoUser(email.toLowerCase(), password, msoId);
-        user.setMsoId(msoId);
-        return dao.findAuthenticatedMsoUser(email.toLowerCase(), password, msoId);
-    }
     
-    public NnUser findMsoUser(Mso mso) {        
-        if (mso.getType() == Mso.TYPE_NN) {
-            return this.findNNUser();
-        } else if (mso.getType() == Mso.TYPE_MSO) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_TBC);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_MSO");
-                    return user;
-                }
-            }
-        } else if (mso.getType() == Mso.TYPE_3X3) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_3X3);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_3X3");
-                    return user;
-                }
-            }
-        } else if (mso.getType() == Mso.TYPE_ENTERPRISE) {
-            List<NnUser> users = dao.findByType(NnUser.TYPE_ENTERPRISE);
-            for (NnUser user : users) {
-                if (user.getMsoId() == mso.getId()) {
-                    log.info("found TYPE_ENTERPRISE");
-                    return user;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public NnUser findTcoUser(Mso mso, short shard) {
-        List<NnUser> users = dao.findTcoUser(mso, shard);
-        if (users.size() > 0) {
-            log.info("found TYPE_TCO");
-            return users.get(0);
-        }
-        return null;
-    }
-
     public NnUser resetPassword(NnUser user) {
         user.setPassword(user.getPassword());
         user.setSalt(AuthLib.generateSalt());
         user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
         this.save(user);
         return user;
-    }
-    
-    public NnUser findNNUser() {
-        return dao.findNNUser();
     }
      
     public void subscibeDefaultChannels(NnUser user) {
@@ -484,7 +449,7 @@ public class NnUserManager {
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, version);
+        result += chMngr.composeChannelLineup(curatorChannels, version, PlayerApiService.FORMAT_PLAIN);
         return result;
     }
     
@@ -545,9 +510,72 @@ public class NnUserManager {
         return user;
     }
 
-    public List<NnUser> findAllByIds(Set<Long> userIdSet) {
-    
+    public List<NnUser> findAllByIds(Set<Long> userIdSet) {    
         return dao.findAllByIds(userIdSet);
     }
+    
+    //UserInfo or String
+    public Object getPlayerUserInfo(NnUser user, NnGuest guest, HttpServletRequest req, boolean login, short format) {
+    	if (user != null) {
+    		//prepare all the values
+    		String token = user.getToken();
+    		String userIdStr = user.getIdStr();
+            NnUserProfile profile = user.getProfile();
+            String name = profile.getName();
+            if (name == null) 
+                name = user.getEmail();
+            String lastLogin = String.valueOf(profile.getUpdateDate().getTime());
+            String sphere = profile.getSphere(); 
+            if (profile.getSphere() == null)
+                sphere = findLocaleByHttpRequest(req);
+            String lang = profile.getLang();
+            if (profile.getLang() == null)
+                lang = sphere;
+            String curator = String.valueOf(profile.getProfileUrl());
+            String created = "0";
+            if (login)
+            	created = "1";
+            String fbUser = "0";
+            if (user.isFbUser())
+                fbUser = "1";
+            //format
+            if (format == PlayerApiService.FORMAT_JSON) {
+        		UserInfo json = new UserInfo();
+                json.setToken(token);
+                json.setUserIdStr(userIdStr);
+                json.setName(name);
+                json.setLastLogin(lastLogin);
+                json.setSphere(sphere);
+                json.setUiLang(lang);
+                json.setCurator(curator);
+                json.setCreated(Boolean.parseBoolean(created));
+                json.setFbUser(Boolean.parseBoolean(fbUser));
+	            NnUserPrefManager prefMngr = new NnUserPrefManager();
+	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            for (NnUserPref pref : list) {
+	                json.getPrefs().add(pref.getItem() + pref.getValue());
+	            }
+	            return json;
+            } else {
+	            String output = PlayerApiService.assembleKeyValue("token", token);
+	            output += PlayerApiService.assembleKeyValue("userid", userIdStr);
+	            output += PlayerApiService.assembleKeyValue("name", name);
+	            output += PlayerApiService.assembleKeyValue("lastLogin", lastLogin);
+	            output += PlayerApiService.assembleKeyValue("sphere", sphere);
+	            output += PlayerApiService.assembleKeyValue("ui-lang", lang);
+	            output += PlayerApiService.assembleKeyValue("curator", curator);
+                output += PlayerApiService.assembleKeyValue("created",created);
+	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
+	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            for (NnUserPref pref : list) {
+	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
+	            }
+	            return output;
+            }
+    	} else {
+    		return new NnGuestManager().getPlayerGuestRegister(guest, format, req);
+    	}    	
+    }
+    
     
 }

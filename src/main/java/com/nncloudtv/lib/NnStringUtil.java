@@ -8,14 +8,27 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelPrefManager;
+import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
+    
+    public static final String UTF8 = "UTF-8";
+    public static final String ASCII = "US-ASCII";
+    
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
     public static final int MAX_JDO_STRING_LENGTH = 255;
-
+    
+    private static NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
+    
+    public static void setChannelPrefMngr(NnChannelPrefManager mngr) {
+        channelPrefMngr = mngr;
+    }
+    
     public static boolean stringToBool(String s) {
       if (s.equals("1"))
         return true;
@@ -23,18 +36,23 @@ public class NnStringUtil {
         return false;
       throw new IllegalArgumentException(s +" is not a bool");
     }
-
+    
     public static String urlencode(String text) {
-    	if (text == null)
-    		return null;
-    	String str = "";
-	    try {
-	        str = URLEncoder.encode(text, "utf-8");
-	        str = str.replace("+", "%20");                    
-	    } catch (UnsupportedEncodingException e) {
-	        e.printStackTrace();
-	    }
-	    return str;
+        
+        return urlencode(text, UTF8);
+    }
+    
+    public static String urlencode(String text, String charset) {
+        
+        if (text == null)
+            return null;
+        String str = "";
+        try {
+            str = URLEncoder.encode(text, charset).replace("+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return str;
     }
     
     public static String capitalize(String str) {
@@ -54,7 +72,7 @@ public class NnStringUtil {
      */
     public static String truncateUTF8(String str, int maxBytes) {
         if (str == null) { return null; }
-        Charset utf8 = Charset.forName("UTF-8");
+        Charset utf8 = Charset.forName(UTF8);
         int totalBytes = str.getBytes(utf8).length;
         if (totalBytes <= maxBytes) { return str; }
         for (int i = 0, b = 0; i < str.length(); i++) {
@@ -151,14 +169,13 @@ public class NnStringUtil {
         if (str == null || str.length() == 0) {
             return str;
         }
-        log.info("max length = " + length);
         
         for (int i = length; i > 0; i--) {
             String truncated = truncateUTF8(str, i);
             String htmlSafe = htmlSafeChars(truncated);
-            Integer bytelen = htmlSafe.getBytes(Charset.forName("UTF-8")).length;
+            Integer bytelen = htmlSafe.getBytes(Charset.forName(UTF8)).length;
             if (bytelen <= length) {
-                log.info("truncated length = " + bytelen);
+                log.info("truncated length = " + bytelen + " bytes (limit is " + length + ")");
                 return htmlSafe;
             }
         }
@@ -210,21 +227,52 @@ public class NnStringUtil {
         return String.format("%08d", seq);
     }
     
-    public static String getProgramPlaybackUrl(String channelIdStr, String programIdStr) {
-    
-        return "http://" + MsoConfigManager.getServerDomain() + "/view?ch="
-                + channelIdStr + "&ep=" + programIdStr;
+    public static String getSharingUrl(boolean flipr,
+            ApiContext context, String channelIdStr, String programIdStr) {
+        
+        String schema = "http";
+        if (flipr) {
+            schema = "flipr";
+            if (context != null) {
+                Mso mso = context.getMso();
+                schema += MsoManager.isNNMso(mso) ? "" : "-" + mso.getName();
+            }
+        }
+        
+        String domain = MsoConfigManager.getServerDomain();
+        if (context != null) {
+            domain = context.getAppDomain();
+        }
+        
+        return schema + "://" + domain
+                + "/view/p" + channelIdStr + "/"
+                + (programIdStr == null ? "" : programIdStr);
     }
     
-    public static String getSharingUrl(Long channelId, Long episodeId, String mso) {
+    public static String getSharingUrl(boolean flipr, String mso, Long channelId, Long episodeId) {
         
-        NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
-        NnChannelPref channelPref = channelPrefMngr.getBrand(channelId);
+        if (mso == null) {
+            
+            NnChannelPref pref = channelPrefMngr.getBrand(channelId);
+            mso = pref.getValue();
+        }
         
-        String url = "http://" + MsoConfigManager.getServerDomain() + "/view?mso="
-                   + (mso == null ? channelPref.getValue() : mso) + "&ch=" + channelId
-                   + (episodeId == null ? "" : "&ep=e" + episodeId);
+        String schema = "http";
+        if (flipr) {
+            schema = "flipr";
+            if (mso != null && mso != Mso.NAME_9X9) {
+                schema += "-" + mso;
+            }
+        }
         
-        return url;
+        String domain = MsoConfigManager.getServerDomain();
+        
+        if (mso != null && !mso.equals(Mso.NAME_9X9)) {
+            
+            domain = mso + "." + domain.replaceAll("^www\\.", "");
+        }
+        
+        return schema + "://" + domain + "/view/p" + channelId
+                   + "/" + (episodeId == null ? "" : "e" + episodeId);
     }
 }

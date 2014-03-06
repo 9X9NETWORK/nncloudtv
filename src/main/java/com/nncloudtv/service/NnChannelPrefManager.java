@@ -24,7 +24,15 @@ public class NnChannelPrefManager {
 	
 	private NnChannelPrefDao prefDao = new NnChannelPrefDao();
 	
-	public NnChannelPref save(NnChannelPref pref) {
+	public NnChannelPrefManager() {
+	}
+	
+	public NnChannelPrefManager(NnChannelPrefDao prefDao) {
+        
+        this.prefDao = prefDao;
+    }
+	
+    public NnChannelPref save(NnChannelPref pref) {
 		Date now = new Date();
 		if (pref.getCreateDate() == null)
 			pref.setCreateDate(now);
@@ -152,6 +160,8 @@ public class NnChannelPrefManager {
     
 	/**
 	 * Get channel specified promotion brand, 9x9 is default if empty.
+	 *
+	 * TODO: move to MsoManager
 	 * 
 	 * @param channelId
 	 * @return msoName
@@ -165,40 +175,34 @@ public class NnChannelPrefManager {
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.BRAND_AUTOSHARE);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
             
-            MsoManager msoMngr = new MsoManager();
-            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
+            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_9X9);
         }
-        
-        NnChannelPref pref = channelPrefs.get(0);
-        MsoManager msoMngr = new MsoManager();
+        return channelPrefs.get(0);
+        /*
         Mso mso = msoMngr.findByName(pref.getValue());
         if (msoMngr.isValidBrand(channelId, mso) == false) {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
         }
-        
-        return pref;
+        */
     }
     
-    public boolean getAutoSync(Long channelId) {
+    public String getAutoSync(Long channelId) {
         
         if (channelId == null) {
-            return false;
+            return null;
         }
         
         List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
-            return false;
+            return NnChannelPref.OFF;
         }
         
-        if (NnChannelPref.ON.equals(channelPrefs.get(0).getValue())) {
-            return true;
-        }
-        return false;
+        return channelPrefs.get(0).getValue();
     }
     
-    public void setAutoSync(Long channelId, boolean autoSync) {
+    public void setAutoSync(Long channelId, String autoSync) {
         
-        if (channelId == null) {
+        if (channelId == null || autoSync == null) {
             return ;
         }
         
@@ -210,11 +214,7 @@ public class NnChannelPrefManager {
             channelAutoSync = channelPrefs.get(0);
         }
         
-        if (autoSync == true) {
-            channelAutoSync.setValue(NnChannelPref.ON);
-        } else {
-            channelAutoSync.setValue(NnChannelPref.OFF);
-        }
+        channelAutoSync.setValue(autoSync);
         
         save(channelAutoSync);
     }

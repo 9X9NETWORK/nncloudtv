@@ -50,7 +50,24 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
         }
         return detached;        
     }
-
+    
+    @SuppressWarnings("unchecked")
+    public List<NnDevice> findByMsoAndType(long msoId, String type) {
+        
+        List<NnDevice> detached = new ArrayList<NnDevice>();
+        PersistenceManager pm = PMF.getContent().getPersistenceManager(); 
+        try {
+            Query query = pm.newQuery(NnDevice.class);
+            query.setFilter("msoId == msoIdParam && type == typeParam");
+            query.declareParameters("long msoIdParam, String typeParam");
+            List<NnDevice> results = (List<NnDevice>) query.execute(msoId, type);
+            detached = (List<NnDevice>) pm.detachCopyAll(results);
+        } finally {
+            pm.close();
+        }
+        return detached;
+    }
+    
     @SuppressWarnings("unchecked")
     public NnDevice findByTokenAndUser(String token, NnUser user) {
         NnDevice device = null;
@@ -90,4 +107,22 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
         return device;
     }
     
+    @SuppressWarnings("unchecked")
+    public NnDevice findDuplicated(String token, long msoId, String type) {
+        NnDevice device = null;
+        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnDevice.class);
+            query.setFilter("token == tokenParam && msoId == msoIdParam && type == typeParam");
+            query.declareParameters("String tokenParam, long msoIdParam, String typeParam");
+            List<NnDevice> results = (List<NnDevice>) query.execute(token, msoId, type);
+            if (results.size() > 0) {
+                device = results.get(0);
+            }            
+            device = pm.detachCopy(device);
+        } finally {
+            pm.close();
+        }
+        return device;
+    }
 }

@@ -5,11 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
@@ -137,7 +134,6 @@ public class NnEpisodeManager {
     }
     
     public Comparator<NnEpisode> getEpisodeSeqComparator() {
-        
         class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
             
             public int compare(NnEpisode episode1, NnEpisode episode2) {
@@ -197,8 +193,8 @@ public class NnEpisodeManager {
         return dao.list(page, rows, sidx, sord, filter);
     }
 
-    public List<NnEpisode> findPlayerEpisodes(long channelId, short sort) {
-        return dao.findPlayerEpisode(channelId, sort);
+    public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
+        return dao.findPlayerEpisode(channelId, sort, start, end);
     }
 
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {
@@ -229,7 +225,7 @@ public class NnEpisodeManager {
     public void autoShareToFacebook(NnEpisode episode) {
         
         FBPost fbPost = new FBPost(NnStringUtil.revertHtml(episode.getName()), NnStringUtil.revertHtml(episode.getIntro()), episode.getImageUrl());
-        String url = NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null);
+        String url = NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId());
         fbPost.setLink(url);
         log.info("share link: " + url);
         

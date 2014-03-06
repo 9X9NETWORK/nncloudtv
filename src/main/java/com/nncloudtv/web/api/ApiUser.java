@@ -276,7 +276,7 @@ public class ApiUser extends ApiGeneric {
                 favorite.setPublishDate(episode.getPublishDate());
                 favorite.setCntView(episode.getCntView());
                 favorite.setPublic(episode.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(episode.getChannelId(), episode.getId(), null));
+                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
                 
             } else {
                 
@@ -286,9 +286,10 @@ public class ApiUser extends ApiGeneric {
                 favorite.setPublishDate(program.getPublishDate());
                 favorite.setCntView(program.getCntView());
                 favorite.setPublic(program.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getProgramPlaybackUrl(
-                        program.getStorageId(),
-                        YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
+                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(
+                        false,
+                        null,
+                        program.getStorageId(), YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
                 
             }
             
@@ -485,25 +486,13 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        Mso brand = new MsoManager().findOneByName(mso);
-        NnUserManager userMngr = new NnUserManager();
+        Mso brand = msoMngr.findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        NnChannelManager channelMngr = new NnChannelManager();
-        //results = channelMngr.findByUserAndHisFavorite(user, 0, true);
         results = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : results) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
@@ -517,12 +506,7 @@ public class ApiUser extends ApiGeneric {
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
             
-            /*
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAKE_FAVORITE) {
-                channel.setContentType(NnChannel.CONTENTTYPE_FAVORITE); // To fake is necessary to fake like that
-                channel.setMoreImageUrl(NnChannel.IMAGE_EPISODE_URL + "|" + NnChannel.IMAGE_EPISODE_URL + "|" + NnChannel.IMAGE_EPISODE_URL);
-            }
-            */
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));
@@ -725,13 +709,6 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        // autoSync
-        Boolean autoSync = null;
-        String autoSyncStr = req.getParameter("autoSync");
-        if (autoSyncStr != null) {
-            autoSync = evaluateBoolean(autoSyncStr);
-        }
-        
         // sourceUrl
         String sourceUrl = req.getParameter("sourceUrl");
         if (sourceUrl != null) {
@@ -750,7 +727,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         NnChannel savedChannel = apiUserService.userChannelCreate(user, name, intro, imageUrl, lang, isPublic, sphere, tag,
-                categoryId, autoSync, sourceUrl, sorting);
+                categoryId, req.getParameter("autoSync"), sourceUrl, sorting);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));

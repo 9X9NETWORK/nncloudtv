@@ -22,6 +22,9 @@ public class NnDevice {
     private String token; //each device has a unique token
     
     @Persistent
+    private short shard; //which shard a user belongs to
+    
+    @Persistent
     private long userId; //if a device has associated user account, not always
 
     @Persistent
@@ -29,17 +32,31 @@ public class NnDevice {
     
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
-    private String type; //not really used for now, to identify device type
-
+    private String type;
+    public static final String TYPE_FLIPR = "flipr";
+    public static final String TYPE_APNS = "apns";
+    public static final String TYPE_GCM = "gcm";
+    
+    @Persistent
+    private int badge;
+    
     @Persistent
     private Date createDate;
 
     @Persistent
-    private short shard; //which shard a user belongs to
-    
-    @Persistent
     private Date updateDate;
     
+    public NnDevice() {
+        
+    }
+    
+    public NnDevice(String token, long msoId, String type) {
+        
+        this.token = token;
+        this.msoId = msoId;
+        this.type = type;
+    }
+
     public String getToken() {
         return token;
     }
@@ -102,6 +119,14 @@ public class NnDevice {
 
     public void setMsoId(long msoId) {
         this.msoId = msoId;
+    }
+    
+    public int getBadge() {
+        return badge;
+    }
+    
+    public void setBadge(int badge) {
+        this.badge = badge;
     }
     
 }

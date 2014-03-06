@@ -37,9 +37,10 @@ public class PlayerController {
         return "error/exception";                
     }        
     
-    @RequestMapping({"tv","10ft"})
+    @RequestMapping({"", "tv","10ft"})
     public String tv(@RequestParam(value="mso",required=false) String mso, 
             HttpServletRequest req, HttpServletResponse resp, Model model,
+            @RequestParam(value="_escaped_fragment_", required=false) String escaped,
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="episode", required=false) String episode,
             @RequestParam(value="ch", required=false) String ch,
@@ -47,12 +48,12 @@ public class PlayerController {
             @RequestParam(value="jsp",required=false) String jsp,
             @RequestParam(value="js",required=false) String js) {
         try {
-        	PlayerService service = new PlayerService();
-        	if (service.isAndroid(req) || service.isIos(req)) {
+            ApiContext context = new ApiContext(req);
+        	if (context.isAndroid() || context.isIos()) {
         	    return "redirect:/mobile/";
         	}
-        	String name = service.getBrandNameByUrl(req, mso);
-        	Mso brand = new MsoManager().findOneByName(name);
+        	PlayerService service = new PlayerService();
+        	Mso brand = context.getMso();
         	if (brand.getType() == Mso.TYPE_FANAPP) {
         		//below, merge with view
 	            log.info("Fan app sharing");
@@ -74,7 +75,6 @@ public class PlayerController {
 	        	model.addAttribute("brandName", brand.getName());
 	        	return "player/fanapp";
         	}
-            ApiContext context = new ApiContext(req);
             model = service.prepareBrand(model, context.getMso().getName(), resp);
             model = service.preparePlayer(model, js, jsp, req);
             if (jsp != null && jsp.length() > 0) {
@@ -84,32 +84,6 @@ public class PlayerController {
             NnLogUtil.logThrowable(t);            
         }
         return "player/mini";
-    }    
-    
-    //?_escaped_fragment_=ch=2%26ep=3
-    @RequestMapping("/")
-    public String index(
-            @RequestParam(value="name",required=false) String name,
-            @RequestParam(value="jsp",required=false) String jsp,
-            @RequestParam(value="js",required=false) String js,
-            @RequestParam(value="mso",required=false) String mso,            
-            @RequestParam(value="_escaped_fragment_", required=false) String escaped,
-            HttpServletRequest req, HttpServletResponse resp, Model model) {
-        try {
-            PlayerService service = new PlayerService();
-            model = service.prepareBrand(model, mso, resp);
-            if (escaped != null) {
-                model = service.prepareCrawled(model, escaped);
-                return "player/crawled";
-            }
-            model = service.preparePlayer(model, js, jsp, req);
-            if (jsp != null && jsp.length() > 0) {
-                return "player/" + jsp;
-            }        
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return "player/zooatomics";
     }    
     
     /**
@@ -143,51 +117,6 @@ public class PlayerController {
         service.preparePlayer(model, js, jsp, req);
         return "player/zooatomics";
     }
-        
-    // TODO: may not be used anymore
-    @RequestMapping("/redirect/{name}/view")
-    public String brandView(
-    		        Model model,
-    		        @PathVariable("name") String name,
-            		@RequestParam(value="ch", required=false) String ch,
-                    @RequestParam(value="ep", required=false) String ep,    		
-    				HttpServletRequest req, 
-    		        HttpServletResponse resp) {    		       
-    	String storeUrl = "market://details?id=tv.tv9x9.player";
-    	
-    	PlayerService service = new PlayerService();
-    	String reportUrl = service.getGAReportUrl(ch, ep, name);
-    	log.info("reportUrl:" + reportUrl); 
-    	
-        String fliprStr = service.getFliprUrl(ch, ep, name, req);
-        MsoManager msoMngr = new MsoManager();
-        
-        Mso mso = msoMngr.findByName(name);
-        MsoConfig config = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.STORE_ANDROID);
-        if (config != null) {
-        	storeUrl = config.getValue();
-        }
-        /*
-    	if (name.equals(Mso.NAME_CTS)) {
-    		storeUrl = "market://details?id=tw.com.cts.player";
-    	}
-    	*/
-    	
-        model.addAttribute("fliprUrl", fliprStr);    	
-    	model.addAttribute("reportUrl", reportUrl);
-    	model.addAttribute("storeUrl", storeUrl);
-    	model.addAttribute("brandName", mso.getName());
-    	if (config != null) {
-    		return "player/ios_brand";
-    	}
-    	/*
-        if (name.equals(Mso.NAME_CTS)) {
-        	return "player/ios_cts";
-        }
-        */
-        return "player/ios";
-
-    }
     
     /**
      * original url: view?channel=x&episode=y
@@ -214,13 +143,7 @@ public class PlayerController {
         String cid = channel != null ? channel : ch;
         String pid = episode != null ? episode : ep;
                 
-        if (service.isAndroid(req) || service.isIos(req)) {
-            String mobilePromotionUrl = "http://" + context.getAppDomain()
-                                      + "/mobile/#/playback/" + cid
-                                      + (pid == null ? "" : "/" + pid);
-            log.info("mobile promotion url = " + mobilePromotionUrl);
-            return "redirect:" + mobilePromotionUrl;
-        } else if (mso.getType() == Mso.TYPE_FANAPP) {            
+        if (mso.getType() == Mso.TYPE_FANAPP) {            
             log.info("Fan app sharing");
             MsoConfig androidConfig = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.STORE_ANDROID);
             MsoConfig iosConfig = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.STORE_IOS);
@@ -243,17 +166,8 @@ public class PlayerController {
             model = service.prepareChannel(model, cid, mso.getName(), resp);
             model = service.prepareEpisode(model, pid, mso.getName(), resp);
             
-            String playerPromotionUrl = "http://" + context.getAppDomain()
-                                      + "/tv#/promotion/" + cid
-                                      + (pid == null ? "" : "/" + pid);
-            log.info("player promotion url = " + playerPromotionUrl);
-            
-            String brandSharingUrl = "http://" + context.getAppDomain() + "/view?mso="
-                    + context.getMso().getName() + "&ch=" + cid
-                    + (pid == null ? "" : "&ep=" + pid);
+            String brandSharingUrl = NnStringUtil.getSharingUrl(false, context, cid, pid);
             log.info("brand sharing url = " + brandSharingUrl);
-            
-            model.addAttribute("playerPromotionUrl", NnStringUtil.htmlSafeChars(playerPromotionUrl));
             model.addAttribute(PlayerService.META_URL, NnStringUtil.htmlSafeChars(brandSharingUrl));
             
             return "player/crawled";
@@ -266,58 +180,11 @@ public class PlayerController {
         return "player/android";
     }
     
-    @RequestMapping("flview")
-    public String flview(@RequestParam(value="mso",required=false) String mso, 
-                       HttpServletRequest req, HttpServletResponse resp, Model model,                       
-                       @RequestParam(value="channel", required=false) String channel,
-                       @RequestParam(value="episode", required=false) String episode,
-                       @RequestParam(value="js",required=false) String js,
-                       @RequestParam(value="jsp",required=false) String jsp,
-                       @RequestParam(value="ch", required=false) String ch,
-                       @RequestParam(value="ep", required=false) String ep) {
-        PlayerService service = new PlayerService();
-        try {
-            String queryStr = req.getQueryString();
-            log.info("query str:" + queryStr);
-            if (queryStr != null && queryStr.contains("fb")) {
-                log.info("extra stuff from fb" + queryStr);
-                String cid = channel != null ? channel : ch;
-                String pid = episode != null ? episode : ep;
-                boolean isIos = service.isIos(req);
-                if (isIos) {
-                    //pid = service.findFirstSubepisodeId(pid);
-                    String iosStr = service.getFliprUrl(cid, pid, mso, req);
-                    model.addAttribute("fliprUrl", iosStr);
-                    return "player/ios";
-                }
-                String str = js != null ? "js=" + js : "";
-                str += str.length() != 0 ? "&" : "";
-                str += cid != null ? "#!ch=" + cid : "";
-                str += cid != null ? "" : "#";
-                str += pid != null ? "!ep=" + pid : "";
-                log.info("redirect to url:" + str);
-                return "redirect:/" + str;
-            }
-            String cid = channel != null ? channel : ch;
-            String pid = episode != null ? episode : ep;
-            model = service.prepareBrand(model, mso, resp);
-            model = service.preparePlayer(model, js, jsp, req);
-            model = service.prepareChannel(model, cid, mso, resp);
-            model = service.prepareEpisode(model, pid, mso, resp);
-            if (jsp != null && jsp.length() > 0) {
-                return "player/" + jsp;
-            }        
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return "player/zooatomics";        
-    }
-    
     @RequestMapping("support")
     public String support() {
         return "general/support";
     }    
-
+    
     @RequestMapping("tanks")
     public String tanks() {        
         return "player/tanks";
