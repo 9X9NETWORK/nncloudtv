@@ -20,7 +20,7 @@ public class YtChannelDao extends GenericDao<YtChannel> {
     }    
 
     public YtChannel findById(long id) {
-        PersistenceManager pm = PMF.getAnalytics().getPersistenceManager();        
+        PersistenceManager pm = PMF.getRecommend().getPersistenceManager();        
         YtChannel channel = null;
         try {
             channel = pm.getObjectById(YtChannel.class, id);
@@ -34,7 +34,7 @@ public class YtChannelDao extends GenericDao<YtChannel> {
 
     public List<YtChannel> findRandomTen(String lang) {
         List<YtChannel> detached = new ArrayList<YtChannel>();
-        PersistenceManager pm = PMF.getAnalytics().getPersistenceManager();
+        PersistenceManager pm = PMF.getRecommend().getPersistenceManager();
         try {
             String sql = "select * from ytchannel " + 
                           "where lang = '" + lang + "'" +
