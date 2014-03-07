@@ -961,6 +961,9 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
+        Mso result = apiMsoService.mso(mso.getId());
+        
+        // check if push notification was enabled
         boolean apnsEnabled = true;
         boolean gcmEnabled = true;
         MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
@@ -971,10 +974,8 @@ public class ApiMso extends ApiGeneric {
         if (p12.exists() == false) {
             apnsEnabled = false;
         }
-        mso.setGcmEnabled(gcmEnabled);
-        mso.setApnsEnabled(apnsEnabled);
-        
-        Mso result = apiMsoService.mso(mso.getId());
+        result.setGcmEnabled(gcmEnabled);
+        result.setApnsEnabled(apnsEnabled);
         
         log.info(printExitState(now, req, "ok"));
         return result;
