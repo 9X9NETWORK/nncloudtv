@@ -51,9 +51,15 @@ public class MsoConfigManager {
     	return getProperty("services.properties", "search_pool");
     }
     
-    static public String getP12FilePath(Mso mso) {
+    static public String getP12FilePath(Mso mso, boolean isProduction) {
         
-        return "/var/opt/p12files/" + mso.getName() + "_apns.p12";
+        String path = "/var/opt/p12files/";
+        
+        if (isProduction) {
+            return path + mso.getName() + "_apns.p12";
+        } else {
+            return path + mso.getName() + "_apns_dev.p12";
+        }
     }
     
     static public String getS3UploadBucket() {
