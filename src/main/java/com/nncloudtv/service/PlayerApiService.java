@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +39,7 @@ import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
+import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
@@ -186,7 +188,7 @@ public class PlayerApiService {
             log.info("return db error");
             return this.assembleMsgs(NnStatusCode.DATABASE_ERROR, null);
         } 
-        NnLogUtil.logException((Exception) e);
+        NnLogUtil.logException(e);
         return this.assembleMsgs(NnStatusCode.ERROR, null);
     }    
 
@@ -718,8 +720,13 @@ public class PlayerApiService {
             NnChannel favoriteCh = chMngr.createFavorite(curator);
             channelId = String.valueOf(favoriteCh.getId());
         }
-        long cId = Long.parseLong(channelId);            
-        NnChannel channel = chMngr.findById(cId);            
+        NnChannel channel = null;
+        if (channelId.contains("yt")) {
+        	channel = new YtChannelManager().convert(channelId, req);        	
+        } else {
+	        long cId = Long.parseLong(channelId);            
+	        channel = chMngr.findById(cId);
+        }
         if (channel == null || channel.getStatus() == NnChannel.STATUS_ERROR)
             return this.assembleMsgs(NnStatusCode.CHANNEL_ERROR, null);
         
@@ -742,10 +749,10 @@ public class PlayerApiService {
             if (s != null)
                 return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_POS_OCCUPIED, null);
         }
-        NnUserSubscribe s = subMngr.findByUserAndChannel(user, cId);        
+        NnUserSubscribe s = subMngr.findByUserAndChannel(user, channel.getId());        
         if (s != null)
             return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_DUPLICATE_CHANNEL, null);        
-        s = subMngr.subscribeChannel(user, cId, seq, MsoIpg.TYPE_GENERAL);
+        s = subMngr.subscribeChannel(user, channel.getId(), seq, MsoIpg.TYPE_GENERAL);
         String result[] = {""};
         result[0] = s.getSeq() + "\t" + s.getChannelId();
         
@@ -801,7 +808,9 @@ public class PlayerApiService {
             */
             List<NnChannel> chs = new ArrayList<NnChannel>();
             if (s.equals(Tag.RECOMMEND)) {
-                chs = new RecommendService().findRecommend(userToken, mso.getId(), lang);
+                //chs = new RecommendService().findRecommend(userToken, mso.getId(), lang);
+            	Object obj = new YtChannelManager().findRecommend(userToken, lang, version, this.format);
+            	return this.assembleMsgs(NnStatusCode.SUCCESS, obj);
             } else if (s.equals("mayLike")) {            
                 chs = new RecommendService().findMayLike(userToken, mso.getId(), channel, lang);                
             } else {                
@@ -2069,8 +2078,11 @@ public class PlayerApiService {
             limit = 75;
         startIndex = startIndex - 1;
 
-        //public static List<NnChannel> search(String queryStr, boolean total, boolean all, int start, int count) {
-        List<NnChannel> channels = NnChannelManager.search(text, "store_only", null, false, startIndex, limit);
+        @SuppressWarnings("rawtypes")
+        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, "store_only", null, false, startIndex, limit);        
+        List<NnChannel> channels = (List<NnChannel>) st.pop();
+        long numOfChannelTotal = (Long) st.pop();        
+        
         List<NnUser> users = userMngr.search(null, null, text, mso.getId());
         int endIndex = (users.size() > 9) ? 9: users.size();
         users = users.subList(0, endIndex);
@@ -2082,7 +2094,7 @@ public class PlayerApiService {
         int numOfChannelReturned = channels.size(); 
         int numOfCuratorReturned = users.size();
         int numOfSuggestReturned = suggestion.size();
-        int numOfChannelTotal = (int) NnChannelManager.searchSize(text, false);
+        //int numOfChannelTotal = (int) NnChannelManager.searchSize(text, false);
         int numOfCuratorTotal = users.size();
         int numOfSuggestTotal = suggestion.size();;
         
@@ -2107,7 +2119,7 @@ public class PlayerApiService {
             search.setNumOfChannelReturned(numOfChannelReturned);
             search.setNumOfCuratorReturned(numOfCuratorReturned);
             search.setNumOfSuggestReturned(numOfSuggestReturned);
-            search.setNumOfChannelTotal(numOfChannelTotal);
+            search.setNumOfChannelTotal((int)numOfChannelTotal);
             search.setNumOfCuratorTotal(numOfCuratorTotal);
             search.setNumOfSuggestTotal(numOfSuggestTotal);
             return this.assembleMsgs(NnStatusCode.SUCCESS, search);
@@ -2490,7 +2502,7 @@ public class PlayerApiService {
                 if (u != null) {
                     String content = "";
                     if (umap.containsKey(u.getUserEmail())) {
-                        content = (String)cmap.get(u.getUserEmail()) + ";" + c.getName();
+                        content = cmap.get(u.getUserEmail()) + ";" + c.getName();
                         cmap.put(u.getUserEmail(), content);
                     } else {
                         umap.put(u.getUserEmail(), u);
@@ -2504,7 +2516,7 @@ public class PlayerApiService {
         while(i.hasNext()) { 
             Map.Entry me = (Map.Entry)i.next();
             NnUser u = (NnUser) me.getValue();
-            String ch = (String) cmap.get(u.getUserEmail());
+            String ch = cmap.get(u.getUserEmail());
             String subject = UserInvite.getNotifySubject(ch);
             String content = UserInvite.getNotifyContent(ch);
             log.info("send to " + u.getUserEmail());
@@ -2738,7 +2750,7 @@ public class PlayerApiService {
             data.add(virtualOutput);
             return this.assembleSections(data);
         } catch (Exception e) {
-            NnLogUtil.logException((Exception) e);
+            NnLogUtil.logException(e);
             return this.assembleSections(data);
         }
     }
@@ -2897,7 +2909,7 @@ public class PlayerApiService {
         Iterator<Entry<Long, NnUserSubscribe>> it = map.entrySet().iterator();
         channels.clear();
         while (it.hasNext()) {
-            Map.Entry<Long, NnUserSubscribe> pairs = (Map.Entry<Long, NnUserSubscribe>)it.next();
+            Map.Entry<Long, NnUserSubscribe> pairs = it.next();
             NnUserSubscribe s = pairs.getValue(); 
             NnChannel c = chMngr.findById(s.getChannelId());
             if (c != null && (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 

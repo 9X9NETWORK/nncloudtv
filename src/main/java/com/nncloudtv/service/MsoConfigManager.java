@@ -43,9 +43,12 @@ public class MsoConfigManager {
         return result;
     }
     
-    static public String getSearchServer() {
-        
-    	return getProperty("services.properties", "search");
+    static public String getSearchNnChannelServer() {
+    	return getProperty("services.properties", "search_nncloudtv");
+    }
+
+    static public String getSearchPoolServer() {
+    	return getProperty("services.properties", "search_pool");
     }
     
     static public String getP12FilePath(Mso mso) {
