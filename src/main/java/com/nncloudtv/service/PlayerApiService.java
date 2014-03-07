@@ -546,14 +546,8 @@ public class PlayerApiService {
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
         categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
         
-        Mso nnMso = mso;
-        if (!MsoManager.isNNMso(mso)) {              
-            categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
-            log.info("non 9x9 mso categories:" + mso.getId() + ";" + categories.size());
-            nnMso = msoMngr.findNNMso();
-        }                
-        if (!disableAll) {
-            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, nnMso.getId());
+        if (!disableAll && !MsoManager.isNNMso(mso)) {
+            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, msoMngr.findNNMso().getId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
                 if (map.get(d.getSystagId()) != null) {
