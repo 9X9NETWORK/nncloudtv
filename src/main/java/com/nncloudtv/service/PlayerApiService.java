@@ -534,7 +534,7 @@ public class PlayerApiService {
             String maskStr = mask.getValue();
             String[] str = maskStr.split(",");            
             for (int i=0; i<str.length; i++) {
-                if (str[i].equals(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY)) {
+                if (str[i].equalsIgnoreCase(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY)) {
                     disableAll = true;
                     i = str.length+1;
                 } else { 
