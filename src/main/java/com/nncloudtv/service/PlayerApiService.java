@@ -528,14 +528,14 @@ public class PlayerApiService {
         }        
         
         MsoConfig mask = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
-        //boolean disableAll = false; //to add system categories. this feature is removed. for now
+        boolean disableAll = false;
         HashMap<Long, Long> map = new HashMap<Long, Long>();
         if (mask != null && mask.getValue() != null && mask.getValue().length() > 0) {
             String maskStr = mask.getValue();
             String[] str = maskStr.split(",");            
             for (int i=0; i<str.length; i++) {
                 if (str[i].equals(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY)) {
-                    //disableAll = true;
+                    disableAll = true;
                     i = str.length+1;
                 } else { 
                     Long number = Long.parseLong(str[i].trim());
@@ -545,9 +545,7 @@ public class PlayerApiService {
         }
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
         categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
-
-        //to add system categories. this feature is removed. for now
-        /*
+        
         Mso nnMso = mso;
         if (!MsoManager.isNNMso(mso)) {              
             categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
@@ -564,8 +562,7 @@ public class PlayerApiService {
                 }
             }
          }
-         */
-
+        
         List<Category> playerCategories = new ArrayList<Category>();
         for (SysTagDisplay display : categories) {
             String cId = String.valueOf(display.getId());
