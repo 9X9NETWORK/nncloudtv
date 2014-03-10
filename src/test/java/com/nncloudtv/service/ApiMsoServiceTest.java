@@ -66,8 +66,7 @@ public class ApiMsoServiceTest {
         Set result = apiMsoService.set(null);
         assertNull(result);
         
-        verify(setService, never()).findById(anyLong());
-        verify(setService, never()).findById(null);
+        verifyZeroInteractions(setService);
     }
 
 }
