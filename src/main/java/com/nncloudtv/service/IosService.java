@@ -117,7 +117,7 @@ public class IosService {
                             String.valueOf(c.getStatus()),
                             String.valueOf(c.getContentType()),
                             youtubeId,
-                            NnChannelManager.convertEpochToTime(c.getTranscodingUpdateDate(), c.getUpdateDate()),
+                            String.valueOf(c.getUpdateDate().getTime()),
                             String.valueOf(c.getSorting()),
                             c.getPiwik(),
                             String.valueOf(c.getRecentlyWatchedProgram()),
