@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -943,6 +944,7 @@ public class ApiContent extends ApiGeneric {
         return program;
     }
     
+    @SuppressWarnings("unchecked")
     @RequestMapping(value = "channels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> channelsSearch(HttpServletRequest req,
@@ -1054,8 +1056,18 @@ public class ApiContent extends ApiGeneric {
                 sphereFilter = "sphere in (" + StringUtils.join(sphereList, ',') + ")";
                 log.info("sphere filter = " + sphereFilter);
             }
-            
-            List<NnChannel> channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+            String type = req.getParameter("type");
+            List<NnChannel> channels = new ArrayList<NnChannel>();
+            if (type != null && type.equalsIgnoreCase("solr")) {
+                log.info("search from Solr");
+                @SuppressWarnings("rawtypes")
+                Stack stack = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+                channels.addAll((List<NnChannel>) stack.pop());
+                long solrNum = (Long) stack.pop();
+                log.info("counts from solr = " + solrNum);
+            } else {
+                channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+            }
             log.info("found channels = " + channels.size());
             
             if (sphereFilter == null) {
