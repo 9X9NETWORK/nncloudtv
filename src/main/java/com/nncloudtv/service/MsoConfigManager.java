@@ -67,11 +67,6 @@ public class MsoConfigManager {
         return getProperty("aws.properties", "s3_upload_bucket");
     }
     
-    static public String getPiwikDomain() {
-        
-        return getProperty("piwik.properties", "piwik_server");
-    }
-    
     static public String getServerDomain() {
         
         if (serverDomain == null) {
