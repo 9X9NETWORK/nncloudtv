@@ -13,9 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
@@ -196,6 +198,7 @@ public class ApiGeneric {
 	public User userResponse(NnUser user) {
 	    //Map<String, Object> result = new TreeMap<String, Object>();
 	    User userResp = new User();
+	    MsoManager msoMngr = new MsoManager();
 	    
 	    //result.put("id", user.getId());
 	    userResp.setId(user.getId());
@@ -234,6 +237,11 @@ public class ApiGeneric {
 	        userResp.setPriv("000111"); // TODO hard coded default
 	    } else {
 	        userResp.setPriv(user.getProfile().getPriv());
+	    }
+	    
+	    Mso mso = msoMngr.findById(user.getProfile().getMsoId());
+	    if (mso != null) {
+	        userResp.setMsoName(mso.getName());
 	    }
 	    
 	    return userResp;
