@@ -174,6 +174,7 @@ public class APNSLib {
         
         List<EnhancedApnsNotification> notifications = new ArrayList<EnhancedApnsNotification>();
         int count = 1;
+        log.info("sending APNs notification with content = " + msoNotification.getContent());
         for (NnDevice device : fetchedDevices) {
             try {
                 Date now = new Date();
