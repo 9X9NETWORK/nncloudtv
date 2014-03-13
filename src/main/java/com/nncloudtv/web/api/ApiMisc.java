@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,10 +41,30 @@ import com.nncloudtv.web.json.facebook.FBPost;
 @Controller
 @RequestMapping("api")
 public class ApiMisc extends ApiGeneric {
-	
-	protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
-	
-	@RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
+    
+    protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
+    
+    private NnUserManager userMngr;
+    private NnUserProfileManager profileMngr;
+    private MsoManager msoMngr;
+    
+    public ApiMisc() {
+        
+        userMngr = new NnUserManager();
+        profileMngr = new NnUserProfileManager();
+        msoMngr = new MsoManager();
+    }
+    
+    @Autowired
+    public ApiMisc(NnUserManager userMngr, NnUserProfileManager profileMngr,
+            MsoManager msoMngr) {
+        
+        this.userMngr = userMngr;
+        this.profileMngr = profileMngr;
+        this.msoMngr = msoMngr;
+    }
+    
+    @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
 	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
 		
 	    Long verifiedUserId = userIdentify(req);
@@ -142,9 +163,8 @@ public class ApiMisc extends ApiGeneric {
 		String password = req.getParameter("password");
 		String mso = req.getParameter("mso");
 		
-		NnUserManager userMngr = new NnUserManager();
 		NnUser user = null;
-		Mso brand = new MsoManager().findOneByName(mso);
+		Mso brand = msoMngr.findOneByName(mso);
 		if (token != null) {			
 			log.info("token = " + token);			
 			user = userMngr.findByToken(token, brand.getId());
@@ -167,7 +187,7 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-		NnUserProfile profile = new NnUserProfileManager().pickSuperProfile(user.getId());
+		NnUserProfile profile = profileMngr.pickSuperProfile(user.getId());
 		if (profile != null) {
 		    user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());

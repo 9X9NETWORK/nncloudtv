@@ -46,6 +46,8 @@ public class User implements Serializable {
     
     private long msoId;
     
+    private String msoName;
+    
     private String priv;
     
     public String toString() {
@@ -205,6 +207,14 @@ public class User implements Serializable {
 
     public void setMsoId(long msoId) {
         this.msoId = msoId;
+    }
+
+    public String getMsoName() {
+        return msoName;
+    }
+
+    public void setMsoName(String msoName) {
+        this.msoName = msoName;
     }
 
     public String getPriv() {

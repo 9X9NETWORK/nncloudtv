@@ -91,6 +91,7 @@ public class GCMLib {
                     .build();
                 MulticastResult multicastResult;
                 try {
+                    log.info("sending GCM notification with content = " + notification.getContent());
                     multicastResult = sender.send(message, devices, 5);
                 } catch (IOException e) {
                     log.log(Level.SEVERE, "Error posting messages", e);

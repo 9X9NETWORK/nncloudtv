@@ -938,6 +938,7 @@ public class ApiMso extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
+        ApiContext context = new ApiContext(req, msoMngr);
         
         Mso mso = null;
         
@@ -961,6 +962,20 @@ public class ApiMso extends ApiGeneric {
         }
         
         Mso result = apiMsoService.mso(mso.getId());
+        
+        // check if push notification was enabled
+        boolean apnsEnabled = true;
+        boolean gcmEnabled = true;
+        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
+        if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
+            gcmEnabled = false;
+        }
+        if (p12.exists() == false) {
+            apnsEnabled = false;
+        }
+        result.setGcmEnabled(gcmEnabled);
+        result.setApnsEnabled(apnsEnabled);
         
         log.info(printExitState(now, req, "ok"));
         return result;
@@ -1659,7 +1674,7 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
     
-        
+        ApiContext context = new ApiContext(req, msoMngr);
         Mso mso = null;
         
         if (msoIdStr.matches("^\\d+$")) {
@@ -1727,7 +1742,7 @@ public class ApiMso extends ApiGeneric {
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-            File p12 = new File(MsoConfigManager.getP12FilePath(mso));
+            File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
                 QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);

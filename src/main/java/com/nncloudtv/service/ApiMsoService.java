@@ -1,6 +1,5 @@
 package com.nncloudtv.service;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -388,19 +387,6 @@ public class ApiMsoService {
             } catch (NumberFormatException e) {
             }
         }
-        
-        boolean apnsEnabled = true;
-        boolean gcmEnabled = true;
-        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-        File p12 = new File(MsoConfigManager.getP12FilePath(mso));
-        if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
-            gcmEnabled = false;
-        }
-        if (p12.exists() == false) {
-            apnsEnabled = false;
-        }
-        mso.setGcmEnabled(gcmEnabled);
-        mso.setApnsEnabled(apnsEnabled);
         
         MsoManager.normalize(mso);
         return mso;

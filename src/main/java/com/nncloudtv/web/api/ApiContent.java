@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -44,7 +45,6 @@ import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
-import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnAdManager;
@@ -943,6 +943,7 @@ public class ApiContent extends ApiGeneric {
         return program;
     }
     
+    @SuppressWarnings("unchecked")
     @RequestMapping(value = "channels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> channelsSearch(HttpServletRequest req,
@@ -1054,8 +1055,18 @@ public class ApiContent extends ApiGeneric {
                 sphereFilter = "sphere in (" + StringUtils.join(sphereList, ',') + ")";
                 log.info("sphere filter = " + sphereFilter);
             }
-            
-            List<NnChannel> channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+            String type = req.getParameter("type");
+            List<NnChannel> channels = new ArrayList<NnChannel>();
+            if (type != null && type.equalsIgnoreCase("solr")) {
+                log.info("search from Solr");
+                @SuppressWarnings("rawtypes")
+                Stack stack = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+                channels.addAll((List<NnChannel>) stack.pop());
+                long solrNum = (Long) stack.pop();
+                log.info("counts from solr = " + solrNum);
+            } else {
+                channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+            }
             log.info("found channels = " + channels.size());
             
             if (sphereFilter == null) {
@@ -2594,60 +2605,4 @@ public class ApiContent extends ApiGeneric {
         return null;
     }
     
-    @RequestMapping(value = "weifilm", method = RequestMethod.GET)
-    public @ResponseBody List<Map<String, Object>> weifilm(HttpServletRequest req, HttpServletResponse resp) {
-        
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        long channelId = 9010;
-        log.info("weifilm channel = " + channelId);
-        
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> programs = programMngr.findByChannelId(channelId); // input hard coded Channel ID
-        if (programs == null || programs.size() == 0) {
-            return results;
-        }
-        log.info("program size = " + programs.size());
-        
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        List<NnEpisode> episodes = episodeMngr.findByChannelId(channelId); // input hard coded Channel ID
-        if (episodes == null || episodes.size() == 0) {
-            return results;
-        }
-        log.info("episode size = " + episodes.size());
-        
-        Map<Long, NnEpisode> episodeMap = new TreeMap<Long, NnEpisode>();
-        for (NnEpisode episode : episodes) {
-            episodeMap.put(episode.getId(), episode);
-        }
-
-        Map<String, Object> result;
-        NnEpisode episode;
-        CounterFactory factory = new CounterFactory();
-        for (NnProgram program : programs) {
-            result = new TreeMap<String, Object>();
-            String[] fragment = program.getFileUrl().split("watch\\?v=");
-            if (fragment.length > 1) {
-                String youtubeId = fragment[1];
-                result.put("youtubeId", youtubeId); // youtubeId YouTube ID
-            }
-            episode = episodeMap.get(program.getEpisodeId());
-            if (episode != null) {
-                String counterName = "s_ch" + episode.getChannelId() + "_e" + episode.getId();
-                double score = (double)factory.getCount(counterName) / 10;
-                log.info("counter name = " + counterName);
-                log.info(episode.getName() + ", score = " + score);
-                result.put("score", score); // score: 得分
-                // shareUrl 用於分享及點擊觀看的網址
-                String url = "http://" + Mso.NAME_CTS + "."
-                           + MsoConfigManager.getServerDomain().replaceAll("^www\\.", "")
-                           + "/view?mso=cts&ch=" + episode.getChannelId()
-                           + "&ep=e" + episode.getId();
-                result.put("shareUrl", url);
-                result.put("updateDate", episode.getAdId()); // updateDate 更新日期 (timestamp)
-            }
-            results.add(result);
-        }
-        
-        return results;
-    }
 }

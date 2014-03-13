@@ -76,7 +76,7 @@ public class NotifyService {
             return ;
         }
         
-        String fileRoot = MsoConfigManager.getP12FilePath(mso);
+        String fileRoot = MsoConfigManager.getP12FilePath(mso, isProduction);
         File p12 = new File(fileRoot);
         if (p12.exists() == false) {
             log.info("APNS p12 file not approrite set for mso : " + mso.getName());

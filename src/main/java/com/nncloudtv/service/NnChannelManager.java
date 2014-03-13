@@ -851,22 +851,6 @@ public class NnChannelManager {
     		return lineups;
     	}
     }    
-        
-    public static String convertEpochToTime(String transcodingUpdateDate, Date updateDate) {
-        String output = "";
-        try {
-            if (transcodingUpdateDate != null) {
-                long epoch = Long.parseLong(transcodingUpdateDate);
-                Date myDate = new Date (epoch*1000);
-                output = String.valueOf(myDate.getTime());
-            } else if (updateDate != null){
-                output = String.valueOf(updateDate.getTime());
-            }
-        } catch (NumberFormatException e) {
-            log.info("convertEpochToTime fails:" + transcodingUpdateDate + ";" + updateDate);
-        }
-        return output;
-    } 
     
     //put user's customized sorting and watched into channel
     public List<NnChannel> getUserChannels(NnUser user, List<NnChannel> channels) {
@@ -1165,7 +1149,7 @@ public class NnChannelManager {
             ori.add(String.valueOf(c.getStatus()));
             ori.add(String.valueOf(c.getContentType()));
             ori.add(c.getPlayerPrefSource());
-            ori.add(convertEpochToTime(c.getTranscodingUpdateDate(), c.getUpdateDate()));
+            ori.add(String.valueOf(c.getUpdateDate().getTime()));
             ori.add(String.valueOf(getPlayerDefaultSorting(c))); //use default sorting for all
             ori.add(c.getPiwik());
             ori.add(""); //recently watched program
@@ -1203,7 +1187,7 @@ public class NnChannelManager {
 	        lineup.setStatus(c.getStatus());
 	        lineup.setContentType(c.getContentType());
 	        lineup.setChannelSource(c.getPlayerPrefSource());
-	        lineup.setLastUpdateTime(Long.parseLong(convertEpochToTime(c.getTranscodingUpdateDate(), c.getUpdateDate())));
+	        lineup.setLastUpdateTime(c.getUpdateDate().getTime());
 	        lineup.setSorting(getPlayerDefaultSorting(c)); //use default sorting for all
 	        lineup.setPiwikId(c.getPiwik());
 	        lineup.setRecentlyWatchedPrograms(""); //recently watched program
