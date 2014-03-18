@@ -218,14 +218,15 @@ public class SetService {
      * @param timeStart optional, set a period start that Channel appear in the Set
      * @param timeEnd optional, set a period end that Channel appear in the Set
      * @param alwaysOnTop optional, indicate the Channel is set on top in Set or not
+     * @param featured TODO
      */
-    public void addChannelToSet(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop) {
+    public void addChannelToSet(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Boolean featured) {
         
         if (setId == null || channelId == null) {
             return ;
         }
         
-        containerService.addChannel(setId, channelId, timeStart, timeEnd, alwaysOnTop, null);
+        containerService.addChannel(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured, null);
     }
     
     public Set create(Set set) {

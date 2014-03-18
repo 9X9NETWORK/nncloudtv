@@ -101,6 +101,8 @@ public class ContainerService {
                 result.setTimeEnd(sysTagMap.getTimeEnd());
                 result.setSeq(sysTagMap.getSeq());
                 result.setAlwaysOnTop(sysTagMap.isAlwaysOnTop());
+                result.setFeatured(sysTagMap.isFeatured());
+                
                 results.add(result);
             } else {
                 // TODO : Channel not exist, delete SysTagMap ?
@@ -144,7 +146,7 @@ public class ContainerService {
         return results;
     }
     
-    public void addChannel(Long sysTagId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Short seq) {
+    public void addChannel(Long sysTagId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Boolean featured, Short seq) {
         
         if (sysTagId == null || channelId == null) {
             return ;
@@ -158,6 +160,7 @@ public class ContainerService {
             sysTagMap.setTimeStart((short) 0);
             sysTagMap.setTimeEnd((short) 0);
             sysTagMap.setAlwaysOnTop(false);
+            sysTagMap.setFeatured(false);
         }
         
         if (timeStart != null) {
@@ -168,6 +171,9 @@ public class ContainerService {
         }
         if (alwaysOnTop != null) {
             sysTagMap.setAlwaysOnTop(alwaysOnTop);
+        }
+        if (featured != null) {
+            sysTagMap.setFeatured(featured);
         }
         if (seq != null) {
             sysTagMap.setSeq(seq);

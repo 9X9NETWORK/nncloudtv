@@ -221,17 +221,18 @@ public class ApiMsoService {
     /** service for ApiMso.setChannelAdd
      *  add Channel to Set
      *  @param setId required, SysTag's Id with SysTag's type = Set
-     *  @param channelId required, Channel's Id
-     *  @param timeStart optional, set a period start that Channel appear in the Set
-     *  @param timeEnd optional, set a period end that Channel appear in the Set
-     *  @param alwaysOnTop optional, put this Channel in the head when Channels sorting by update time get from Set */
-    public void setChannelAdd(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop) {
+     * @param channelId required, Channel's Id
+     * @param timeStart optional, set a period start that Channel appear in the Set
+     * @param timeEnd optional, set a period end that Channel appear in the Set
+     * @param alwaysOnTop optional, put this Channel in the head when Channels sorting by update time get from Set 
+     * @param featured TODO*/
+    public void setChannelAdd(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Boolean featured) {
         
         if (setId == null || channelId == null) {
             return ;
         }
         
-        setService.addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        setService.addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
     }
     
     /** service for ApiMso.setChannelRemove

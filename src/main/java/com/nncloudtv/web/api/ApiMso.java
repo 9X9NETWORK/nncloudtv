@@ -599,7 +599,14 @@ public class ApiMso extends ApiGeneric {
             alwaysOnTop = Boolean.valueOf(alwaysOnTopStr);
         }
         
-        apiMsoService.setChannelAdd(set.getId(), channel.getId(), timeStart, timeEnd, alwaysOnTop);
+        // featured
+        String featuredStr = req.getParameter("featured");
+        Boolean featured = null;
+        if (featuredStr != null) {
+            featured = Boolean.valueOf(featuredStr);
+        }
+        
+        apiMsoService.setChannelAdd(set.getId(), channel.getId(), timeStart, timeEnd, alwaysOnTop, featured);
         okResponse(resp);
         log.info(printExitState(now, req, "ok"));
         return null;
