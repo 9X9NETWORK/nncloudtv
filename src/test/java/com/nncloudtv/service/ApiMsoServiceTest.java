@@ -4,7 +4,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,8 @@ import com.nncloudtv.web.json.cms.Set;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ApiMsoServiceTest {
+    
+    protected static final Logger log = Logger.getLogger(ApiMsoServiceTest.class.getName());
     
     /** target class for testing */
     private ApiMsoService apiMsoService;
@@ -95,40 +99,48 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(setService);
     }
     
+    // given arguments and return wanted result
     @Test
     public void setUpdate_0() {
         
         // input arguments
-        Long setId = (long) 1;
-        String name = "name";
-        Short seq = 1;
-        String tag = "tag";
-        Short sortingType = SysTag.SORT_SEQ;
+        final Long setId = (long) 1;
+        final String name = "name";
+        final short seq = 1;
+        final String tag = "tag";
+        final short sortingType = SysTag.SORT_SEQ;
         
-        SysTag sysTag = new SysTag();
-        sysTag.setId(setId);
-        when(sysTagMngr.findById(setId)).thenReturn(sysTag);
+        SysTag fetched_systag = new SysTag();
+        fetched_systag.setId(setId);
+        when(sysTagMngr.findById(setId)).thenReturn(fetched_systag);
         
-        SysTagDisplay sysTagDisplay = new SysTagDisplay();
-        when(sysTagDisplayMngr.findBySysTagId(setId)).thenReturn(sysTagDisplay);
+        SysTagDisplay fetched_display = new SysTagDisplay();
+        fetched_display.setSystagId(setId);
+        when(sysTagDisplayMngr.findBySysTagId(setId)).thenReturn(fetched_display);
         when(sysTagMapMngr.findBySysTagId(setId)).thenReturn(new ArrayList<SysTagMap>());
         
-        sysTag.setSeq(seq);
-        sysTag.setSorting(sortingType);
-        when(sysTagMngr.save(sysTag)).thenReturn(sysTag);
+        SysTag wanted_systag = (SysTag) SerializationUtils.clone(fetched_systag);
+        wanted_systag.setSeq(seq);
+        wanted_systag.setSorting(sortingType);
+        SysTag saved_systag = (SysTag) SerializationUtils.clone(wanted_systag);
+        when(sysTagMngr.save(wanted_systag)).thenReturn(saved_systag);
         
-        sysTagDisplay.setName(name);
-        sysTagDisplay.setPopularTag(tag);
-        sysTagDisplay.setCntChannel(0);
-        when(sysTagDisplayMngr.save(sysTagDisplay)).thenReturn(sysTagDisplay);
+        SysTagDisplay wanted_display = (SysTagDisplay) SerializationUtils.clone(fetched_display);
+        wanted_display.setName(name);
+        wanted_display.setPopularTag(tag);
+        wanted_display.setCntChannel(0);
+        SysTagDisplay saved_display = (SysTagDisplay) SerializationUtils.clone(wanted_display);
+        when(sysTagDisplayMngr.save(wanted_display)).thenReturn(saved_display);
         
-        Set expected = new Set();
-        expected.setName(name);
-        expected.setSeq(seq);
-        expected.setTag(tag);
-        expected.setSortingType(sortingType);
-        expected.setChannelCnt(0);
-        when(setService.composeSet(sysTag, sysTagDisplay)).thenReturn(expected);
+        Set set = new Set();
+        set.setName(name);
+        set.setSeq(seq);
+        set.setTag(tag);
+        set.setSortingType(sortingType);
+        set.setChannelCnt(0);
+        set.setId(setId);
+        Set expected = (Set) SerializationUtils.clone(set);
+        when(setService.composeSet(wanted_systag, wanted_display)).thenReturn(set);
         
         Set actual = apiMsoService.setUpdate(setId, name, seq, tag, sortingType);
         assertEquals(expected, actual);
@@ -136,9 +148,9 @@ public class ApiMsoServiceTest {
         verify(sysTagMngr).findById(setId);
         verify(sysTagDisplayMngr).findBySysTagId(setId);
         verify(sysTagMapMngr).findBySysTagId(setId);
-        verify(sysTagMngr).save(sysTag);
-        verify(sysTagDisplayMngr).save(sysTagDisplay);
-        verify(setService).composeSet(sysTag, sysTagDisplay);
+        verify(sysTagMngr).save(wanted_systag);
+        verify(sysTagDisplayMngr).save(wanted_display);
+        verify(setService).composeSet(wanted_systag, wanted_display);
     }
 
 }
