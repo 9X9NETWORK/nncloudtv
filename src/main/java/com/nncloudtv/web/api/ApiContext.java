@@ -20,7 +20,7 @@ import com.nncloudtv.service.MsoManager;
 
 public class ApiContext {
     
-    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/(www\\.)?9x9\\.tv$";
+    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/(www\\.)?(9x9|flipr)\\.tv$";
     public final static String DEFAULT_VERSION = "31";
     public final static String HEADER_USER_AGENT = "user-agent";
     public final static String HEADER_REFERRER = "referer";
