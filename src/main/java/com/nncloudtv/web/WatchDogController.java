@@ -134,6 +134,25 @@ public class WatchDogController {
        return NnNetUtil.textReturn(result);
     }    
     
+    @RequestMapping(value="urlSubmitWithMeta")
+    public ResponseEntity<String> urlSubmitWithMeta(HttpServletRequest req) {
+        String url = req.getParameter("url");
+        String lang = req.getParameter("lang");
+        String name = req.getParameter("name");
+        String intro = req.getParameter("intro");
+        String imageUrl = req.getParameter("imageUrl");
+        
+        if (url == null)
+           return NnNetUtil.textReturn("error\nurl empty");
+        if (lang == null)
+           lang = "en";
+        url = url.trim();               
+        NnChannelManager chMngr = new NnChannelManager();
+        NnChannel c = chMngr.createYouTubeWithMeta(url, name, intro, lang, imageUrl, req);
+        return NnNetUtil.textReturn(c.getIdStr());
+
+    }
+    
     @RequestMapping(value="urlSubmit")
     public ResponseEntity<String> urlSubmit(HttpServletRequest req) {
        String url = req.getParameter("url");

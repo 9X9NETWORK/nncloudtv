@@ -541,7 +541,7 @@ public class NnProgramManager {
         try {
             String result = (String)CacheFactory.get(cacheKey);
             if (result != null) {
-                log.info("cached programInfo, channelId = " + channelId);
+                log.info("cached programInfo, channelId = " + cacheKey);
                 return result;
             } 
         } catch (Exception e) {
