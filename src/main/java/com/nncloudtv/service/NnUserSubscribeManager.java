@@ -83,8 +83,14 @@ public class NnUserSubscribeManager {
     }
     */
     
-    public NnUserSubscribe findByUserAndChannel(NnUser user, long channelId) {
-        NnUserSubscribe s = subDao.findByUserAndChannel(user, channelId);
+    public NnUserSubscribe findByUserAndChannel(NnUser user, String channelId) {
+    	long cId = 0;
+    	if (channelId.contains("yt")) {
+    		NnChannel c = new YtChannelManager().convert(channelId);
+    		if (c != null)
+    			cId = c.getId();
+    	}
+        NnUserSubscribe s = subDao.findByUserAndChannel(user, cId);
         return s;
     }
     

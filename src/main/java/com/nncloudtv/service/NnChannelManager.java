@@ -146,6 +146,34 @@ public class NnChannelManager {
         return channel;
     }
 
+    public NnChannel createYouTubeWithMeta(String sourceUrl, String name, String intro, String lang, String imageUrl, HttpServletRequest req) {
+        if (sourceUrl == null) 
+            return null;
+        String url = this.verifyUrl(sourceUrl);
+        log.info("valid url=" + url);
+        if (url == null) 
+            return null;
+        
+        NnChannel channel = this.findBySourceUrl(url);        
+        if (channel != null) {
+            log.info("submit a duplicate channel:" + channel.getId());
+            return channel; 
+        }
+        channel = new NnChannel(url);
+        channel.setName(name);
+        channel.setIntro(intro);
+        channel.setImageUrl(imageUrl);
+        channel.setContentType(this.getContentTypeByUrl(url));
+        channel.setPublic(true);
+        channel.setLang(lang);
+        channel.setSphere(lang);
+        Date now = new Date();
+        channel.setCreateDate(now);
+        channel.setUpdateDate(now);
+        channel = this.save(channel);
+        return channel;
+    }
+    
     //check existence is your responsibility (for now)
     //passing a good url is your responsibility (for now) 
     public NnChannel createYoutubeChannel(String url) {
@@ -173,11 +201,11 @@ public class NnChannelManager {
     //example: nnchannel(channel_id)
     /*
     public static String getCacheKey(long channelId, int version) {
-    	if (version == 32)
-    		return "nnchannel-v32(" + channelId + ")";
-    	if (version < 32) {
-        	return "nnchannel-v31(" + channelId + ")";
-    	}			
+        if (version == 32)
+            return "nnchannel-v32(" + channelId + ")";
+        if (version < 32) {
+            return "nnchannel-v31(" + channelId + ")";
+        }            
         String str = "nnchannel(" + channelId + ")"; 
         return str;
     }
@@ -407,12 +435,12 @@ public class NnChannelManager {
 
     //stack => NnChannel, total number found
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
+    public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
         Stack st = SearchLib.search(core, keyword, content, extra, all, start, limit);
         List<Long> ids = (List<Long>) st.pop();
-		List<NnChannel> channels = new NnChannelDao().findByIds(ids);
-		st.push(channels);
-		return st;
+        List<NnChannel> channels = new NnChannelDao().findByIds(ids);
+        st.push(channels);
+        return st;
     }
  
     public static long searchSize(String queryStr, boolean all) {
@@ -682,16 +710,16 @@ public class NnChannelManager {
     
     public static short getPlayerDefaultSorting(NnChannel c) {
         //short sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
-    	short sorting = c.getSorting(); 
+        short sorting = c.getSorting(); 
         if (c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP || 
             c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY || 
             c.getContentType() == NnChannel.CONTENTTYPE_MIXED)
             sorting = NnChannel.SORT_DESIGNATED;
         if (c.getSorting() == 0) {
-	        if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL)
-	        	sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
-	        if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST)
-	        	sorting = NnChannel.SORT_POSITION_FORWARD;	        
+            if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL)
+                sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
+            if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST)
+                sorting = NnChannel.SORT_POSITION_FORWARD;            
         }
         return sorting;
     }           
@@ -735,15 +763,15 @@ public class NnChannelManager {
         String output = "";
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-        	if (format == PlayerApiService.FORMAT_PLAIN)
-        		output += (String)this.composeEachReducedChannelLineup(c, format) + "\n";
-        	else 
-        		channelLineup.add((ChannelLineup)this.composeEachReducedChannelLineup(c, format));
+            if (format == PlayerApiService.FORMAT_PLAIN)
+                output += (String)this.composeEachReducedChannelLineup(c, format) + "\n";
+            else 
+                channelLineup.add((ChannelLineup)this.composeEachReducedChannelLineup(c, format));
         }
         if (format == PlayerApiService.FORMAT_PLAIN)
-        	return output;
+            return output;
         else
-        	return channelLineup;
+            return channelLineup;
     }    
 
     
@@ -773,83 +801,83 @@ public class NnChannelManager {
     }
     
     public Object chAdjust(List<NnChannel> channels, String channelInfo, List<ChannelLineup>channelLineup, short format) {
-    	if (format == PlayerApiService.FORMAT_PLAIN) {
-	        String adjust = "";            
-	        String[] lines = channelInfo.split("\n");
-	        if (channels.size() > 0) {
-	            for (int i=0; i<lines.length; i++) {                   
-	                lines[i] = lines[i].replaceAll("^\\d+\\t", channels.get(i).getSeq() + "\t");
-	                //log.info("ch id:" + channels.get(i).getId() + "; seq = " + channels.get(i).getSeq());
-	                adjust += lines[i] + "\n";
-	            }
-	        }
-	        return adjust;
-    	} else {
-    		for (int i=0; i<channelLineup.size(); i++) {
-    			channelLineup.get(i).setPosition(channels.get(i).getSeq());
-    		}
-    		return channelLineup;
-    	}
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            String adjust = "";            
+            String[] lines = channelInfo.split("\n");
+            if (channels.size() > 0) {
+                for (int i=0; i<lines.length; i++) {                   
+                    lines[i] = lines[i].replaceAll("^\\d+\\t", channels.get(i).getSeq() + "\t");
+                    //log.info("ch id:" + channels.get(i).getId() + "; seq = " + channels.get(i).getSeq());
+                    adjust += lines[i] + "\n";
+                }
+            }
+            return adjust;
+        } else {
+            for (int i=0; i<channelLineup.size(); i++) {
+                channelLineup.get(i).setPosition(channels.get(i).getSeq());
+            }
+            return channelLineup;
+        }
     }
     
     //return List<ChannelLineup>
     @SuppressWarnings("unchecked")
-	public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
-    	NnProgramManager programMngr = new NnProgramManager();
+    public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
+        NnProgramManager programMngr = new NnProgramManager();
         //List<String> result = new ArrayList<String>();
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
             if (format == PlayerApiService.FORMAT_PLAIN) {
-            	channelOutput += (String)this.composeReducedChannelLineup(channels, format);
+                channelOutput += (String)this.composeReducedChannelLineup(channels, format);
             } else {
-            	channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, format);
+                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, format);
             }
         } else {
             if (format == PlayerApiService.FORMAT_PLAIN)
-            	channelOutput += this.composeChannelLineup(channels, version, format);
+                channelOutput += this.composeChannelLineup(channels, version, format);
             else
-            	channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, version, format));
+                channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, version, format));
         }
         
         if (channelPos) {
-        	if (format == PlayerApiService.FORMAT_PLAIN)
-        		channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, format);
-        	else
-        		channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, format);
+            if (format == PlayerApiService.FORMAT_PLAIN)
+                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, format);
+            else
+                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, format);
             
         }
         if (format == PlayerApiService.FORMAT_PLAIN) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-    	        programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
-    	        result.add(programStr);
+                programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+                result.add(programStr);
             } 
             String size[] = new String[result.size()];
-        	return result.toArray(size);
+            return result.toArray(size);
         } else { 
-        	return channelLineup;
+            return channelLineup;
         }
     }
     
     //List<ChannelLineup> or String
     public Object composeChannelLineup(List<NnChannel> channels, int version, short format) {
         String output = "";
-		List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
+        List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-        	if (format == PlayerApiService.FORMAT_PLAIN)  {
-        		output += this.composeEachChannelLineup(c, version, format) + "\n";
-        	} else { 
-        		lineups.add((ChannelLineup)this.composeEachChannelLineup(c, version, format));
-        	}
+            if (format == PlayerApiService.FORMAT_PLAIN)  {
+                output += this.composeEachChannelLineup(c, version, format) + "\n";
+            } else { 
+                lineups.add((ChannelLineup)this.composeEachChannelLineup(c, version, format));
+            }
         }
-    	if (format == PlayerApiService.FORMAT_PLAIN)  {
-    		return output;
-    	} else {
-    		return lineups;
-    	}
+        if (format == PlayerApiService.FORMAT_PLAIN)  {
+            return output;
+        } else {
+            return lineups;
+        }
     }    
     
     //put user's customized sorting and watched into channel
@@ -1164,46 +1192,46 @@ public class NnChannelManager {
             ori.add(""); //subscriberProfile, used to be subscriber profile urls, will be removed
             ori.add(""); //subscriberImage, used to be subscriber image urls
             if (version == 32)
-            	ori.add(" ");
+                ori.add(" ");
             else
-            	ori.add(""); //lastEpisodeTitle
+                ori.add(""); //lastEpisodeTitle
             if (version > 32)
                 ori.add(poiStr);
             String size[] = new String[ori.size()];    
             String output = NnStringUtil.getDelimitedStr(ori.toArray(size));
             output = output.replaceAll("null", "");
             log.info("set channelLineup cahce for cacheKey:" + cacheKey);
-            CacheFactory.set(cacheKey, output);        	
+            CacheFactory.set(cacheKey, output);            
             return output;
         } else {
-	        ChannelLineup lineup = new ChannelLineup();
-	        lineup.setPosition((short)0);
-	        lineup.setId(c.getId());
-	        lineup.setName(name);
-	        lineup.setDescription(c.getPlayerIntro());
-	        lineup.setThumbnail(imageUrl); //c.getPlayerPrefImageUrl());                        
-	        lineup.setNumberOfEpisode(c.getCntEpisode());
-	        lineup.setType(c.getType());
-	        lineup.setStatus(c.getStatus());
-	        lineup.setContentType(c.getContentType());
-	        lineup.setChannelSource(c.getPlayerPrefSource());
-	        lineup.setLastUpdateTime(c.getUpdateDate().getTime());
-	        lineup.setSorting(getPlayerDefaultSorting(c)); //use default sorting for all
-	        lineup.setPiwikId(c.getPiwik());
-	        lineup.setRecentlyWatchedPrograms(""); //recently watched program
-	        lineup.setYoutubeName(c.getOriName());
-	        lineup.setNumberOfSubscribers(c.getCntSubscribe()); //cnt subscribe, replace
-	        lineup.setNumberOfViews(c.getCntView());
-	        lineup.setTags(c.getTag());
-	        lineup.setCuratorProfile(""); //ciratorProfile, curator id
-	        lineup.setCuratorName(""); //userName
-	        lineup.setCuratorDescription(""); //userIntro
-	        lineup.setCuratorThumbnail(""); //userImageUrl
-	        lineup.setSubscriberProfiles(""); //subscriberProfile, used to be subscriber profile urls, will be removed
-	        lineup.setSubscriberThumbnails(""); //subscriberImage, used to be subscriber image urls                
-	        log.info("set channelLineup cahce for cacheKey:" + cacheKey);
-	        CacheFactory.set(cacheKey, lineup);
-	        return lineup;
+            ChannelLineup lineup = new ChannelLineup();
+            lineup.setPosition((short)0);
+            lineup.setId(c.getId());
+            lineup.setName(name);
+            lineup.setDescription(c.getPlayerIntro());
+            lineup.setThumbnail(imageUrl); //c.getPlayerPrefImageUrl());                        
+            lineup.setNumberOfEpisode(c.getCntEpisode());
+            lineup.setType(c.getType());
+            lineup.setStatus(c.getStatus());
+            lineup.setContentType(c.getContentType());
+            lineup.setChannelSource(c.getPlayerPrefSource());
+            lineup.setLastUpdateTime(c.getUpdateDate().getTime());
+            lineup.setSorting(getPlayerDefaultSorting(c)); //use default sorting for all
+            lineup.setPiwikId(c.getPiwik());
+            lineup.setRecentlyWatchedPrograms(""); //recently watched program
+            lineup.setYoutubeName(c.getOriName());
+            lineup.setNumberOfSubscribers(c.getCntSubscribe()); //cnt subscribe, replace
+            lineup.setNumberOfViews(c.getCntView());
+            lineup.setTags(c.getTag());
+            lineup.setCuratorProfile(""); //ciratorProfile, curator id
+            lineup.setCuratorName(""); //userName
+            lineup.setCuratorDescription(""); //userIntro
+            lineup.setCuratorThumbnail(""); //userImageUrl
+            lineup.setSubscriberProfiles(""); //subscriberProfile, used to be subscriber profile urls, will be removed
+            lineup.setSubscriberThumbnails(""); //subscriberImage, used to be subscriber image urls                
+            log.info("set channelLineup cahce for cacheKey:" + cacheKey);
+            CacheFactory.set(cacheKey, lineup);
+            return lineup;
         }
     }
             
