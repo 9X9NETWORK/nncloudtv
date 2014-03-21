@@ -32,6 +32,61 @@ public class Set implements Serializable {
     private short sortingType;
     public static final short SORT_DEFAULT = SysTag.SORT_SEQ;
     
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + channelCnt;
+        result = prime * result + (int) (displayId ^ (displayId >>> 32));
+        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + ((lang == null) ? 0 : lang.hashCode());
+        result = prime * result + (int) (msoId ^ (msoId >>> 32));
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + seq;
+        result = prime * result + sortingType;
+        result = prime * result + ((tag == null) ? 0 : tag.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Set other = (Set) obj;
+        if (channelCnt != other.channelCnt)
+            return false;
+        if (displayId != other.displayId)
+            return false;
+        if (id != other.id)
+            return false;
+        if (lang == null) {
+            if (other.lang != null)
+                return false;
+        } else if (!lang.equals(other.lang))
+            return false;
+        if (msoId != other.msoId)
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (seq != other.seq)
+            return false;
+        if (sortingType != other.sortingType)
+            return false;
+        if (tag == null) {
+            if (other.tag != null)
+                return false;
+        } else if (!tag.equals(other.tag))
+            return false;
+        return true;
+    }
+
     public String toString() {
         return new ToStringBuilder(this).
             append("id", id).

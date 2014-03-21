@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.nncloudtv.dao.YtChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
@@ -24,7 +22,7 @@ public class YtChannelManager {
 		return Long.valueOf(id);
 	}
     
-	public NnChannel convert(String ytId, HttpServletRequest req) {
+	public NnChannel convert(String ytId) {
 		YtChannel yt = this.findById(ytId);
 		NnChannelManager chMngr = new NnChannelManager();
 		NnChannel c = chMngr.findBySourceUrl(yt.getSourceUrl());
@@ -32,7 +30,7 @@ public class YtChannelManager {
 			log.info("pool channel already existing in nnchannel. ytId:" + yt.getId() + ";nnId:" + c.getId());
 			return c;
 		}
-        c = chMngr.create(yt.getSourceUrl(), null, yt.getSphere(), req);		
+        c = chMngr.create(yt.getSourceUrl(), null, yt.getSphere(), null);		
 		if (c != null) {
 	        c.setStatus(NnChannel.STATUS_SUCCESS);
 	        c.setPublic(true);

@@ -101,6 +101,7 @@ public class PlayerApiService {
     
     private Mso mso;
     private int version = 32;
+    public static int LATEST_VERSION = 42;
     private Locale locale = Locale.ENGLISH;
     public static short FORMAT_JSON = 1;
     public static short FORMAT_PLAIN = 2;
@@ -662,7 +663,7 @@ public class PlayerApiService {
             if (chArr.length == 1) {
                 log.info("unsubscribe single channel");
                 NnUserSubscribe s = null;
-                s = subMngr.findByUserAndChannel(user, Long.parseLong(channelId));
+                s = subMngr.findByUserAndChannel(user, channelId);
                 /*
                 if (grid == null) {
                     s = subMngr.findByUserAndChannel(user, Long.parseLong(channelId));
@@ -713,7 +714,7 @@ public class PlayerApiService {
         }
         NnChannel channel = null;
         if (channelId.contains("yt")) {
-        	channel = new YtChannelManager().convert(channelId, req);        	
+        	channel = new YtChannelManager().convert(channelId);        	
         } else {
 	        long cId = Long.parseLong(channelId);            
 	        channel = chMngr.findById(cId);
@@ -740,7 +741,7 @@ public class PlayerApiService {
             if (s != null)
                 return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_POS_OCCUPIED, null);
         }
-        NnUserSubscribe s = subMngr.findByUserAndChannel(user, channel.getId());        
+        NnUserSubscribe s = subMngr.findByUserAndChannel(user, String.valueOf(channel.getId()));        
         if (s != null)
             return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_DUPLICATE_CHANNEL, null);        
         s = subMngr.subscribeChannel(user, channel.getId(), seq, MsoIpg.TYPE_GENERAL);

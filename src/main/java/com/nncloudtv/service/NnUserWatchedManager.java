@@ -39,7 +39,7 @@ public class NnUserWatchedManager {
     public void savePersonalHistory(NnUser user, NnUserWatched watched) {
         NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
         //discard if it's already in the guide
-        if (subMngr.findByUserAndChannel(user, watched.getChannelId()) == null &&
+        if (subMngr.findByUserAndChannel(user, String.valueOf(watched.getChannelId())) == null &&
         	(this.findInDefaultIpg(user, watched.getChannelId()) == true) ) {
             List<NnUserWatched> watches = dao.findHistory(user);
             log.info("history size:" + watches.size());
