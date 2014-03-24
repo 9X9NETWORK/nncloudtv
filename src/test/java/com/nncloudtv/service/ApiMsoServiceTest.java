@@ -143,7 +143,6 @@ public class ApiMsoServiceTest {
         when(setService.composeSet(wanted_systag, wanted_display)).thenReturn(set);
         
         Set actual = apiMsoService.setUpdate(setId, name, seq, tag, sortingType);
-        assertEquals(expected, actual);
         
         verify(sysTagMngr).findById(setId);
         verify(sysTagDisplayMngr).findBySysTagId(setId);
@@ -151,6 +150,7 @@ public class ApiMsoServiceTest {
         verify(sysTagMngr).save(wanted_systag);
         verify(sysTagDisplayMngr).save(wanted_display);
         verify(setService).composeSet(wanted_systag, wanted_display);
+        assertEquals(expected, actual);
     }
 
 }
