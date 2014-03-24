@@ -11,6 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -110,28 +111,11 @@ public class ApiMsoServiceTest {
         final String tag = "tag";
         final short sortingType = SysTag.SORT_SEQ;
         
-        SysTag fetched_systag = new SysTag();
-        fetched_systag.setId(setId);
-        when(sysTagMngr.findById(setId)).thenReturn(fetched_systag);
-        
-        SysTagDisplay fetched_display = new SysTagDisplay();
-        fetched_display.setSystagId(setId);
-        when(sysTagDisplayMngr.findBySysTagId(setId)).thenReturn(fetched_display);
-        when(sysTagMapMngr.findBySysTagId(setId)).thenReturn(new ArrayList<SysTagMap>());
-        
-        SysTag wanted_systag = (SysTag) SerializationUtils.clone(fetched_systag);
-        wanted_systag.setSeq(seq);
-        wanted_systag.setSorting(sortingType);
-        SysTag saved_systag = (SysTag) SerializationUtils.clone(wanted_systag);
-        when(sysTagMngr.save(wanted_systag)).thenReturn(saved_systag);
-        
-        SysTagDisplay wanted_display = (SysTagDisplay) SerializationUtils.clone(fetched_display);
-        wanted_display.setName(name);
-        wanted_display.setPopularTag(tag);
-        wanted_display.setCntChannel(0);
-        SysTagDisplay saved_display = (SysTagDisplay) SerializationUtils.clone(wanted_display);
-        when(sysTagDisplayMngr.save(wanted_display)).thenReturn(saved_display);
-        
+        // mock data
+        SysTag systag = new SysTag();
+        systag.setId(setId);
+        SysTagDisplay display = new SysTagDisplay();
+        display.setSystagId(setId);
         Set set = new Set();
         set.setName(name);
         set.setSeq(seq);
@@ -139,17 +123,36 @@ public class ApiMsoServiceTest {
         set.setSortingType(sortingType);
         set.setChannelCnt(0);
         set.setId(setId);
-        Set expected = (Set) SerializationUtils.clone(set);
-        when(setService.composeSet(wanted_systag, wanted_display)).thenReturn(set);
         
+        // stubs
+        when(sysTagMngr.findById((Long) anyLong())).thenReturn(systag);
+        when(sysTagDisplayMngr.findBySysTagId((Long) anyLong())).thenReturn(display);
+        when(sysTagMapMngr.findBySysTagId((Long) anyLong())).thenReturn(new ArrayList<SysTagMap>());
+        when(sysTagMngr.save((SysTag) anyObject())).thenReturn(systag);
+        when(sysTagDisplayMngr.save((SysTagDisplay) anyObject())).thenReturn(display);
+        when(setService.composeSet((SysTag) anyObject(), (SysTagDisplay) anyObject())).thenReturn(set);
+        
+        // execute
+        Set expected = (Set) SerializationUtils.clone(set);
         Set actual = apiMsoService.setUpdate(setId, name, seq, tag, sortingType);
         
+        // verify
         verify(sysTagMngr).findById(setId);
         verify(sysTagDisplayMngr).findBySysTagId(setId);
         verify(sysTagMapMngr).findBySysTagId(setId);
-        verify(sysTagMngr).save(wanted_systag);
-        verify(sysTagDisplayMngr).save(wanted_display);
-        verify(setService).composeSet(wanted_systag, wanted_display);
+        
+        ArgumentCaptor<SysTag> systag_arg = ArgumentCaptor.forClass(SysTag.class);
+        verify(sysTagMngr).save(systag_arg.capture());
+        assertEquals(seq, systag_arg.getValue().getSeq());
+        assertEquals(sortingType, systag_arg.getValue().getSorting());
+        
+        ArgumentCaptor<SysTagDisplay> display_arg = ArgumentCaptor.forClass(SysTagDisplay.class);
+        verify(sysTagDisplayMngr).save(display_arg.capture());
+        assertEquals(name, display_arg.getValue().getName());
+        assertEquals(tag, display_arg.getValue().getPopularTag());
+        assertEquals(0, display_arg.getValue().getCntChannel());
+        
+        verify(setService).composeSet(systag, display);
         assertEquals(expected, actual);
     }
 
