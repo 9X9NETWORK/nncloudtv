@@ -80,9 +80,9 @@ public class ApiContent extends ApiGeneric {
         this.channelMngr = new NnChannelManager();
         this.channelPrefMngr = new NnChannelPrefManager();
         this.storeService = new StoreService();
-        this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager());
-        this.userMngr = new NnUserManager();
         this.programMngr = new NnProgramManager();
+        this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
+        this.userMngr = new NnUserManager();
     }
     
     @Autowired
