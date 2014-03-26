@@ -60,6 +60,7 @@ import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TitleCardManager;
+import com.nncloudtv.service.YtChannelManager;
 import com.nncloudtv.web.json.cms.Category;
 
 @Controller
@@ -1115,7 +1116,7 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     NnChannel channel(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
-        
+    	/*
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
@@ -1125,9 +1126,16 @@ public class ApiContent extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
+        */
+
+        channelIdStr = NnChannelManager.convertChannelId(channelIdStr);
+        if (channelIdStr == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
         
         NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;
