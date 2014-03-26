@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.SerializationUtils;
@@ -64,6 +65,89 @@ public class ApiMsoServiceTest {
         configMngr = null;
         
         apiMsoService = null;
+    }
+    
+    // normal case and provide lang
+    @Test
+    public void msoSets_0() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final String lang = "zh";
+        
+        // stubs
+        when(setService.findByMsoIdAndLang((Long) anyLong(), anyString())).thenReturn(new ArrayList<Set>());
+        
+        // execute
+        List<Set> actual = apiMsoService.msoSets(msoId, lang);
+        
+        // verify
+        verify(setService).findByMsoIdAndLang(msoId, lang);
+        assertEquals(new ArrayList<Set>(), actual);
+    }
+    
+    // when bad result returned, should obey contract
+    @Test
+    public void msoSets_1() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final String lang = "zh";
+        
+        // stubs
+        when(setService.findByMsoIdAndLang((Long) anyLong(), anyString())).thenReturn(null);// bad result
+        
+        // execute
+        List<Set> actual = apiMsoService.msoSets(msoId, lang);
+        
+        // verify
+        verify(setService).findByMsoIdAndLang(msoId, lang);
+        assertEquals(new ArrayList<Set>(), actual);
+    }
+    
+    // normal case but not provide lang
+    @Test
+    public void msoSets_2() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final String lang = null;
+        
+        // stubs
+        when(setService.findByMsoId((Long) anyLong())).thenReturn(new ArrayList<Set>());
+        
+        // execute
+        List<Set> actual = apiMsoService.msoSets(msoId, lang);
+        
+        // verify
+        verify(setService).findByMsoId(msoId);
+        assertEquals(new ArrayList<Set>(), actual);
+    }
+    
+    // invalid input
+    @Test
+    public void msoSets_3() {
+        
+        // input arguments
+        final Long msoId = null;
+        final String lang = null;
+        
+        // execute
+        List<Set> actual = apiMsoService.msoSets(msoId, lang);
+        
+        // verify
+        assertEquals(new ArrayList<Set>(), actual);
+    }
+    
+    @Test
+    public void msoSetCreate_0() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final Short seq = 1;
+        final String tag = "tag";
+        final String name = "name";
+        final Short sortingType = SysTag.SORT_SEQ;
     }
     
     // if NnSet exist
