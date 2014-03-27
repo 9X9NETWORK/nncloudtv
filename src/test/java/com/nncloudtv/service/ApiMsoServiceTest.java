@@ -14,8 +14,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -25,7 +29,8 @@ import com.nncloudtv.web.json.cms.Set;
  * This is unit test for ApiMsoService's method, use Mockito mock dependence object.
  * Each test case naming begin with target method name, plus dash and a serial number. 
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(MsoConfigManager.class)
 public class ApiMsoServiceTest {
     
     protected static final Logger log = Logger.getLogger(ApiMsoServiceTest.class.getName());
@@ -45,7 +50,7 @@ public class ApiMsoServiceTest {
     @Mock private MsoConfigManager configMngr;
     
     @Before  
-    public void setUp() {  
+    public void setUp() {
         apiMsoService = new ApiMsoService(setService, sysTagMngr, sysTagDisplayMngr,
                 sysTagMapMngr, channelMngr, storeService, storeListingMngr, msoMngr,
                 categoryService, configMngr);
@@ -144,10 +149,61 @@ public class ApiMsoServiceTest {
         
         // input arguments
         final Long msoId = (long) 1;
-        final Short seq = 1;
+        final short seq = 1;
         final String tag = "tag";
         final String name = "name";
-        final Short sortingType = SysTag.SORT_SEQ;
+        final short sortingType = SysTag.SORT_SEQ;
+        
+        // mock data
+        Mso mso = new Mso("name", "intro", "contactEmail", Mso.TYPE_MSO);
+        mso.setId(msoId);
+        
+        MsoConfig supportedRegion = new MsoConfig();
+        supportedRegion.setMsoId(msoId);
+        supportedRegion.setItem(MsoConfig.SUPPORTED_REGION);
+        supportedRegion.setValue("zh 台灣");
+        
+        List<String> spheres = new ArrayList<String>();
+        spheres.add("zh");
+        
+        Set set = new Set();
+        set.setMsoId(msoId);
+        set.setName(name);
+        set.setSeq(seq);
+        set.setTag(tag);
+        set.setSortingType(sortingType);
+        set.setLang("zh");
+        
+        // stubs
+        when(msoMngr.findById((Long) anyLong())).thenReturn(mso);
+        when(configMngr.findByMsoAndItem((Mso) anyObject(), anyString())).thenReturn(supportedRegion);
+        
+        PowerMockito.mockStatic(MsoConfigManager.class);
+        when(MsoConfigManager.parseSupportedRegion(anyString())).thenReturn(spheres);
+        
+        when(setService.create((Set) anyObject())).thenReturn(set);
+        
+        // execute
+        Set expected = (Set) SerializationUtils.clone(set);
+        Set actual = apiMsoService.msoSetCreate(msoId, seq, tag, name, sortingType);
+        
+        // verify
+        verify(msoMngr).findById(msoId);
+        verify(configMngr).findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        
+        PowerMockito.verifyStatic();
+        MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+        
+        ArgumentCaptor<Set> set_arg = ArgumentCaptor.forClass(Set.class);
+        verify(setService).create(set_arg.capture());
+        assertEquals((Object) msoId, set_arg.getValue().getMsoId());
+        assertEquals(name, set_arg.getValue().getName());
+        assertEquals(seq, set_arg.getValue().getSeq());
+        assertEquals(tag, set_arg.getValue().getTag());
+        assertEquals(sortingType, set_arg.getValue().getSortingType());
+        assertEquals("zh", set_arg.getValue().getLang());
+        
+        assertEquals(expected, actual);
     }
     
     // if NnSet exist
