@@ -58,6 +58,28 @@ public class NnChannelManager {
         
         this.configMngr = new MsoConfigManager();
     }
+
+    public static String convertChannelId(String channelIdStr) {
+    	if (channelIdStr != null && channelIdStr.contains("yt")) {
+    		channelIdStr = channelIdStr.replace("yt", "");
+    	}
+        try {
+            Long.valueOf(channelIdStr);
+            return channelIdStr;
+        } catch (NumberFormatException e) {
+        }            
+        return null;
+    }
+    
+    public NnChannel findById(String channelId) {
+    	NnChannel c = null;
+    	if (channelId.contains("yt")) {
+        	c = new YtChannelManager().convert(channelId);        	
+    	} else {
+            c = this.findById(Long.parseLong(channelId));
+    	}
+    	return c;
+    }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {
         if (sourceUrl == null) 

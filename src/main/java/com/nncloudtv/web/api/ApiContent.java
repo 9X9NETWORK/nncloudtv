@@ -1116,18 +1116,14 @@ public class ApiContent extends ApiGeneric {
     NnChannel channel(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
+        channelIdStr = NnChannelManager.convertChannelId(channelIdStr);
+        if (channelIdStr == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
         NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;

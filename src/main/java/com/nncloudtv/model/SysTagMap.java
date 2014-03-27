@@ -37,6 +37,9 @@ public class SysTagMap implements Serializable {
     private boolean alwaysOnTop;
     
     @Persistent
+    private boolean featured;
+    
+    @Persistent
     private short seq;
     
     @Persistent 
@@ -130,6 +133,14 @@ public class SysTagMap implements Serializable {
 
     public void setAlwaysOnTop(boolean alwaysOnTop) {
         this.alwaysOnTop = alwaysOnTop;
+    }
+
+    public boolean isFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     } 
     
 }
