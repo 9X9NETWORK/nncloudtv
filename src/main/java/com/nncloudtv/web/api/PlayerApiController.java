@@ -1112,7 +1112,7 @@ public class PlayerApiController {
             @RequestParam(value="sidx", required = false) String sidx,
             @RequestParam(value="limit", required = false) String limit,
             @RequestParam(value="start", required = false) String start,
-            @RequestParam(value="count", required = false) String count,            
+            @RequestParam(value="count", required = false) String count,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -1121,9 +1121,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {        	
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status, null);
-            }         
+            }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, start, count);
         } catch (Exception e){

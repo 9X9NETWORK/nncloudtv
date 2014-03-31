@@ -222,6 +222,40 @@ public class CacheFactory {
         return retObj;
     }    
     
+    public static void delete(List<String> keys) {
+        
+        if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
+        
+        boolean isDeleted = false;
+        long now = new Date().getTime();
+        MemcachedClient cache = getClient();
+        if (cache == null) return;
+        
+        try {
+            for (String key : keys) {
+                cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+            }
+            isDeleted = true;
+        } catch (CheckedOperationTimeoutException e){
+            log.warning("get CheckedOperationTimeoutException");
+        } catch (OperationTimeoutException e) {
+            log.severe("memcache OperationTimeoutException");
+        } catch (NullPointerException e) {
+            log.warning("there is no future");
+        } catch (Exception e) {
+            log.severe("get Exception");
+            e.printStackTrace();
+        } finally {
+            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+        }
+        log.info("delete operation costs " + (new Date().getTime() - now) + " milliseconds");
+        if (isDeleted) {
+            log.info("cache [" + keys + "] --> deleted");
+        } else {
+            log.info("cache [" + keys + "] --> not deleted");
+        }
+    }
+    
     public static void delete(String key) {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;

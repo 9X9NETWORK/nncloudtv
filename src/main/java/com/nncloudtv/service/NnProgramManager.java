@@ -330,18 +330,19 @@ public class NnProgramManager {
         return dao.findByChannelAndSeq(channelId, NnStringUtil.seqToStr(seq));
     }
     
-    public void resetCache(long channelId) {        
-        log.info("reset program info cache: " + channelId);    
+    public void resetCache(long channelId) {
+        log.info("reset program info cache: " + channelId);
         //programInfo version 40, format json
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_JSON));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_JSON));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));       
-        //programInfo, version 40, format json
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_PLAIN));       
+        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));
+        //programInfo, version 40, format text, landing page (Qoo)
+        List<String> keys = new ArrayList<String>();
+        for (int i = 0; i < 200; i++) {
+            keys.add(CacheFactory.getProgramInfoKey(channelId, i, 40, PlayerApiService.FORMAT_PLAIN));
+        }
+        CacheFactory.delete(keys);
         //programInfo, version 31
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 31, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 32, PlayerApiService.FORMAT_PLAIN));
@@ -352,7 +353,7 @@ public class NnProgramManager {
         String cId = String.valueOf(channelId);
         CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_JSON));        
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_JSON));
     }           
     
     public int total() {
