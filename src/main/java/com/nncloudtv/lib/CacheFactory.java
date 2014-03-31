@@ -233,7 +233,9 @@ public class CacheFactory {
         
         try {
             for (String key : keys) {
-                cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                if (key != null && !key.isEmpty()) {
+                    cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                }
             }
             isDeleted = true;
         } catch (CheckedOperationTimeoutException e){
@@ -250,9 +252,9 @@ public class CacheFactory {
         }
         log.info("delete operation costs " + (new Date().getTime() - now) + " milliseconds");
         if (isDeleted) {
-            log.info("cache [" + keys + "] --> deleted");
+            log.info("cache [mass: " + keys.size() + "] --> deleted");
         } else {
-            log.info("cache [" + keys + "] --> not deleted");
+            log.info("cache [mass: " + keys.size() + "] --> not deleted");
         }
     }
     
