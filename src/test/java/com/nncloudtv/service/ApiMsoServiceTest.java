@@ -295,5 +295,31 @@ public class ApiMsoServiceTest {
         verify(setService).composeSet(systag, display);
         assertEquals(expected, actual);
     }
+    
+    @Test
+    public void setDelete_0() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        
+        // execute
+        apiMsoService.setDelete(setId);
+        
+        // verify
+        verify(setService).delete(setId);
+    }
+    
+    @Test
+    public void setDelete_1() {
+        
+        // input arguments
+        final Long setId = null;
+        
+        // execute
+        apiMsoService.setDelete(setId);
+        
+        // verify
+        verifyZeroInteractions(setService);
+    }
 
 }
