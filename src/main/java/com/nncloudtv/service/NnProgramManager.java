@@ -337,9 +337,9 @@ public class NnProgramManager {
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_JSON));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_JSON));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));
-        //programInfo, version 40, format text, landing page (Qoo)
+        //programInfo, version 40, format text
         List<String> keys = new ArrayList<String>();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
             keys.add(CacheFactory.getProgramInfoKey(channelId, i, 40, PlayerApiService.FORMAT_PLAIN));
         }
         CacheFactory.delete(keys);
@@ -449,111 +449,30 @@ public class NnProgramManager {
         log.info("no favorite channel");
         return empty;
     }
-            
-    /**
-     * player programInfo entry for iOS
-     * @param channelId system channel id
-     * @param episodeIds specified episodes
-     * @param sidx start index
-     * @param limit number of records
-     * @return program info string 
-     */    
-    public Object findPlayerProgramInfoByChannel(long channelId, String episodeIds, int start, int end, int version, short format) {
-        Object result = this.findPlayerProgramInfoByChannel(channelId, start, end, version, format);
-        if (episodeIds != null && !episodeIds.isEmpty()) return composeSpecifiedProgramInfoStr(result, channelId, episodeIds, format);
-        if (channelId == 28087) return result; // weifilm, temporary workaround
-        return result;
-        //return this.composeLimitProgramInfoStr(result, start, end, format);
-    }    
-        
-    private Object composeSpecifiedProgramInfoStr(Object input, long channelId, String episodeIds, short format) {        
-        if (episodeIds == null || episodeIds.isEmpty())
-            return input;
-        String[] episodeIdArr = episodeIds.split(",");
-        if (format == PlayerApiService.FORMAT_PLAIN) {
-            String inputStr = (String)input;
-            String[] lines = inputStr.split("\n");
-            String result = "";
-            for (String episodeId : episodeIdArr) {                
-                String regex = "^" + channelId + "\t" + episodeId + "\t.*";
-                log.info("regex = " + regex);
-                for (String line : lines) {                
-                    if (line.matches(regex)) {
-                        result += line + "\n";
-                    }
-                }
-            }
-            return result;
-        } else {
-            @SuppressWarnings("unchecked")
-            List<ProgramInfo> json = (List<ProgramInfo>) input;
-            List<ProgramInfo> result = new ArrayList<ProgramInfo>();
-            int i=0;
-            for (String episodeId : episodeIdArr) {                
-                if (json.get(i).getId().equals(episodeId)) {
-                    result.add(json.get(i));
-                }
-            }
-            return result;
-        }
-    }
-    
-    //for iOS
-    /*
-    private Object composeLimitProgramInfoStr(Object input, long sidx, long limit, short format) {
-        if (sidx == 0 && limit == 0) {
-            return input;
-        }
-        long start = sidx - 1;
-        long end = start + limit;
-        if (format == PlayerApiService.FORMAT_PLAIN) {
-            String inputStr = (String) input;
-            String[] lines = inputStr.split("\n");
-            String result = "";
-            for (int i=0; i<lines.length; i++) {
-                if (i>=start && i<end) {
-                    result += lines[i] + "\n";
-                }
-                if (i > end) {
-                    return result;
-                }
-            }
-            return result;
-        } else {
-            @SuppressWarnings("unchecked")
-            List<ProgramInfo> json = (ArrayList<ProgramInfo>) input; 
-            List<ProgramInfo> result = new ArrayList<ProgramInfo>();
-            for (int i=0; i<json.size(); i++) {
-                if (i>=start && i<end) {
-                    result.add(json.get(i));
-                }
-                if (i > end) {
-                    return result;
-                }                
-            }
-            return result;
-        }
-    }
-    */
     
     //player programInfo entry
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format) {
+        
         String cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
-        try {
-            String result = (String)CacheFactory.get(cacheKey);
-            if (result != null) {
-                log.info("cached programInfo, channelId = " + cacheKey);
-                return result;
-            } 
-        } catch (Exception e) {
-            log.info("memcache error");
+        if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
+            try {
+                String result = (String)CacheFactory.get(cacheKey);
+                if (result != null) {
+                    log.info("cached programInfo, channelId = " + cacheKey);
+                    return result;
+                } 
+            } catch (Exception e) {
+                log.info("memcache error");
+            }
         }
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
         Object output = this.assembleProgramInfo(c, format, start, end);
-        log.info("store programInfo, key = " + cacheKey);
-        CacheFactory.set(cacheKey, output);
+        if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
+            log.info("store programInfo, key = " + cacheKey);
+            CacheFactory.set(cacheKey, output);
+        }
         return output;
     }
     
