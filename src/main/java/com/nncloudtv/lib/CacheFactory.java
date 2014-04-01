@@ -318,7 +318,22 @@ public class CacheFactory {
         log.info("programInfo cache key:" + str);
         return str;
     }
+    
+    public static List<String> getAllprogramInfoKeys(long channelId, short format) {
         
+        List<String> keys = new ArrayList<String>();
+        
+        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
+            
+            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == PlayerApiService.FORMAT_JSON) ? "json" : "text"); 
+            
+            keys.add(str);
+        }
+        
+        return keys;
+    }
+    
+    
     /**
      * cache the 1st program of channel
      * format: nnprogramLatest-channel_id-format

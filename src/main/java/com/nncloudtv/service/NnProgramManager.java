@@ -333,16 +333,9 @@ public class NnProgramManager {
     public void resetCache(long channelId) {
         log.info("reset program info cache: " + channelId);
         //programInfo version 40, format json
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 0,   40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 50,  40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 100, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId, 150, 40, PlayerApiService.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, PlayerApiService.FORMAT_JSON));
         //programInfo, version 40, format text
-        List<String> keys = new ArrayList<String>();
-        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
-            keys.add(CacheFactory.getProgramInfoKey(channelId, i, 40, PlayerApiService.FORMAT_PLAIN));
-        }
-        CacheFactory.delete(keys);
+        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, PlayerApiService.FORMAT_PLAIN));
         //programInfo, version 31
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 31, PlayerApiService.FORMAT_PLAIN));
         CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 32, PlayerApiService.FORMAT_PLAIN));
