@@ -20,6 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
+import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -320,6 +321,77 @@ public class ApiMsoServiceTest {
         
         // verify
         verifyZeroInteractions(setService);
+    }
+    
+    @Test
+    public void setChannels_0() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        
+        // mock data
+        SysTag systag = new SysTag();
+        systag.setId(setId);
+        systag.setType(SysTag.TYPE_SET);
+        systag.setSorting(SysTag.SORT_SEQ);
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        
+        // stubs
+        when(sysTagMngr.findById((Long) anyLong())).thenReturn(systag);
+        when(setService.getChannelsOrderBySeq((Long) anyLong())).thenReturn(channels);
+        when(channelMngr.responseNormalization(anyListOf(NnChannel.class))).thenReturn(channels);
+        
+        // execute
+        List<NnChannel> actual = apiMsoService.setChannels(setId);
+        
+        // verify
+        verify(sysTagMngr).findById(setId);
+        verify(setService).getChannelsOrderBySeq(setId);
+        verify(setService, never()).getChannelsOrderByUpdateTime((Long) anyLong());
+        verify(channelMngr).responseNormalization(anyListOf(NnChannel.class));
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void setChannels_1() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        
+        // mock data
+        SysTag systag = new SysTag();
+        systag.setId(setId);
+        systag.setType(SysTag.TYPE_SET);
+        systag.setSorting(SysTag.SORT_DATE);
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        
+        // stubs
+        when(sysTagMngr.findById((Long) anyLong())).thenReturn(systag);
+        when(setService.getChannelsOrderByUpdateTime((Long) anyLong())).thenReturn(channels);
+        when(channelMngr.responseNormalization(anyListOf(NnChannel.class))).thenReturn(channels);
+        
+        // execute
+        List<NnChannel> actual = apiMsoService.setChannels(setId);
+        
+        // verify
+        verify(sysTagMngr).findById(setId);
+        verify(setService).getChannelsOrderByUpdateTime(setId);
+        verify(setService, never()).getChannelsOrderBySeq((Long) anyLong());
+        verify(channelMngr).responseNormalization(anyListOf(NnChannel.class));
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void setChannels_2() {
+        
+        // input arguments
+        final Long setId = null;
+        
+        // execute
+        List<NnChannel> actual = apiMsoService.setChannels(setId);
+        
+        // verify
+        assertNotNull(actual);
     }
 
 }
