@@ -519,7 +519,7 @@ public class NnProgramManager {
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else {
             List<NnProgram> programs = this.findPlayerProgramsByChannel(c.getId());
-            log.info("channel id:" + c.getId() + "; program size:" + programs.size());            
+            log.info("channel id:" + c.getId() + "; program size:" + programs.size());
             return this.composeProgramInfo(c, programs, format);
         }
     }
