@@ -1116,10 +1116,16 @@ public class PlayerApiController {
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
+        
+        // workaround: to prevent massiely querying
+        if (start != null && Integer.valueOf(start) > 200) {
+            return null;
+        }
+        
         log.info("params: channel:" + channelIds + ";episode:" + episodeIds + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
-        try {        	
+        try {
             int status = playerApiService.prepService(req, resp, true);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
