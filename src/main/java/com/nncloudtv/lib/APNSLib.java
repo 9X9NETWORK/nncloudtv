@@ -191,7 +191,7 @@ public class APNSLib {
                 
                 EnhancedApnsNotification notification = new EnhancedApnsNotification(
                         count,                                 /* Next ID */
-                        (int) new Date().getTime() + 60 * 60,  /* Expire in one hour */
+                        (int) (new Date().getTime()/1000 + 60 * 60 * 24 * 7),  /* Expire in one week */
                         device.getToken(),                     /* Device Token */
                         payloadBuilder.build());
                 
