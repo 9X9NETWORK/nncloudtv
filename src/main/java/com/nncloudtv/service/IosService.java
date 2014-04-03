@@ -149,7 +149,6 @@ public class IosService {
 
     public String findPlayerProgramInfoByChannel(long channelId, long sidx, long limit) {
         String result = this.findPlayerProgramInfoByChannel(channelId);
-        if (channelId == 28087) return result; // weifilm, temporary workaround
         return this.composeLimitProgramInfoStr(result, sidx, limit);
     }    
     
@@ -165,9 +164,9 @@ public class IosService {
         if (result != null && channelId != 0) { //id = 0 means fake channel, it is dynamic
             log.info("get programInfo from v31 cache");
             return result;
-        }        
+        }
         List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(channelId);
-        log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());        
+        log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());
         String str = this.composeProgramInfoStr(programs);
         CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 21, PlayerApiService.FORMAT_PLAIN), str);
         return str;
