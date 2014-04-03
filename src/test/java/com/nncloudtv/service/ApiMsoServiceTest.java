@@ -393,5 +393,74 @@ public class ApiMsoServiceTest {
         // verify
         assertNotNull(actual);
     }
+    
+    @Test
+    public void setChannelAdd_0() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        final Long channelId = (long) 1;
+        final Short timeStart = null;
+        final Short timeEnd = null;
+        final Boolean alwaysOnTop = null;
+        
+        // execute
+        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        
+        // verify
+        verify(setService).addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+    }
+    
+    @Test
+    public void setChannelAdd_1() {
+        
+        // input arguments
+        final Long setId = null;
+        final Long channelId = null;
+        final Short timeStart = null;
+        final Short timeEnd = null;
+        final Boolean alwaysOnTop = null;
+        
+        // execute
+        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        
+        // verify
+        verifyZeroInteractions(setService);
+    }
+    
+    @Test
+    public void setChannelRemove_0() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        final Long channelId = (long) 1;
+        
+        // mocks
+        SysTagMap sysTagMap = new SysTagMap(setId, channelId);
+        
+        // stubs
+        when(sysTagMapMngr.findBySysTagIdAndChannelId((Long) anyLong(), (Long) anyLong())).thenReturn(sysTagMap);
+        
+        // execute
+        apiMsoService.setChannelRemove(setId, channelId);
+        
+        // verify
+        verify(sysTagMapMngr).findBySysTagIdAndChannelId(setId, channelId);
+        verify(sysTagMapMngr).delete(sysTagMap);
+    }
+    
+    @Test
+    public void setChannelRemove_1() {
+        
+        // input arguments
+        final Long setId = null;
+        final Long channelId = null;
+        
+        // execute
+        apiMsoService.setChannelRemove(setId, channelId);
+        
+        // verify
+        verifyZeroInteractions(sysTagMapMngr);
+    }
 
 }
