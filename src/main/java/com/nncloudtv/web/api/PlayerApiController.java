@@ -1105,14 +1105,14 @@ public class PlayerApiController {
     public @ResponseBody Object programInfo(
             @RequestParam(value="v", required=false) String v,
             @RequestParam(value="channel", required=false) String channelIds,
-            @RequestParam(value="episode", required=false) String episodeIds,
+            @RequestParam(value="episode", required=false) String episodeIdStr,
             @RequestParam(value="user", required = false) String userToken,
             @RequestParam(value="userInfo", required=false) String userInfo,
             @RequestParam(value="ipg", required = false) String ipgId,
             @RequestParam(value="sidx", required = false) String sidx,
             @RequestParam(value="limit", required = false) String limit,
             @RequestParam(value="start", required = false) String start,
-            @RequestParam(value="count", required = false) String count,            
+            @RequestParam(value="count", required = false) String count,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -1122,16 +1122,16 @@ public class PlayerApiController {
             return null;
         }
         
-        log.info("params: channel:" + channelIds + ";episode:" + episodeIds + ";user:" + userToken + ";ipg:" + ipgId);
+        log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(status, null);
-            }         
+            }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIds, userToken, ipgId, isUserInfo, sidx, limit, start, count);
+            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
