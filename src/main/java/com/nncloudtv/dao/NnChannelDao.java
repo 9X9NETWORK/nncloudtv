@@ -361,7 +361,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         try {
             Query q = pm.newQuery(NnChannel.class, ":p.contains(id)");
-            q.setOrdering("updateDate desc");
+            //q.setOrdering("updateDate desc");
             channels = ((List<NnChannel>) q.execute(ids));        
             channels = (List<NnChannel>) pm.detachCopyAll(channels);
         } finally {

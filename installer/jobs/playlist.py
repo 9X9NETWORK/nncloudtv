@@ -3,6 +3,7 @@ import MySQLdb
 
 msoname = raw_input('mso name:')
 ytname = raw_input('youtube name:')
+sysType = raw_input('(1)category(2)set') 
 
 #parsing channel meta
 url = "http://gdata.youtube.com/feeds/api/users/" + ytname + "?v=2.1&prettyprint=true&alt=json"
@@ -95,8 +96,8 @@ systagId = 0
 if display == None:
    # get seq
    cursor.execute("""
-       select max(seq) from systag where msoId = %s and type = 2
-       """, (msoId))
+       select max(seq) from systag where msoId = %s and type = %s
+       """, (msoId, sysType))
    seq = cursor.fetchone()[0] + 1
    print "max seq: " + str(seq)
    # insert to systag

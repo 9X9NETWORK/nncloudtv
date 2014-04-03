@@ -43,6 +43,7 @@ public class SearchLib {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Stack search(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
+    	log.info("search content:" + content);
         SolrServer server = getSolrServer(core);
         SolrQuery query = new SolrQuery();
         String queryStr = "\"" + keyword + "\"";
@@ -52,19 +53,25 @@ public class SearchLib {
         query.addSort("updateDate", SolrQuery.ORDER.desc);
         query.set("qf", "name^5 intro");
         if (!all) {
-            query.setFilterQueries("isPublic:true");
-            query.setFilterQueries("status:(" + NnChannel.STATUS_SUCCESS + " OR " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")");
+        	query.addFilterQuery("isPublic:true");
+            query.addFilterQuery("status:(" + NnChannel.STATUS_SUCCESS + " OR " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")");
         }        
         if (content != null) {
-            if (content.equals("youtube")) {
-                query.setFilterQueries("contentType:" + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL);
-            } else if (content.equals("store_only")) {
-                query.setFilterQueries("status:" + NnChannel.STATUS_SUCCESS);
+            if (content.contains("youtube")) {
+                query.addFilterQuery("contentType:(" + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL + " OR " + NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST + ")");
+                log.info("query youtube only");
+            }
+            if (content.contains("9x9")) {
+                query.addFilterQuery("contentType:" + NnChannel.CONTENTTYPE_MIXED);
+                log.info("query 9x9 only");
+            }
+            if (content.contains("store_only")) {
+                query.addFilterQuery("status:" + NnChannel.STATUS_SUCCESS);
             }
         }
         if (extra != null) {
             //example: extra = "sphere:(zh or other)" 
-            query.setFilterQueries(extra);
+            query.addFilterQuery(extra);
         }
         query.setStart(start);
         query.setRows(limit);             
@@ -84,6 +91,7 @@ public class SearchLib {
                  JSONObject json = new JSONObject(docList.get(i));
                  jArray.put(json);                   
                  ids.add(json.getLong("id"));
+System.out.println("return ids:" + json.getLong("id"));                 
             }
             st.push(ids);
         } catch (SolrServerException e) {

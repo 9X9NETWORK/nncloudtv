@@ -1116,10 +1116,16 @@ public class PlayerApiController {
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
+        
+        // workaround: to prevent massiely querying
+        if (start != null && Integer.valueOf(start) > 200) {
+            return null;
+        }
+        
         log.info("params: channel:" + channelIds + ";episode:" + episodeIds + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
-        try {        	
+        try {
             int status = playerApiService.prepService(req, resp, true);
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
@@ -1151,6 +1157,8 @@ public class PlayerApiController {
     @RequestMapping(value="channelSubmit")
     public @ResponseBody Object channelSubmit(HttpServletRequest req, HttpServletResponse resp) {
         String url = req.getParameter("url") ;
+        String name = req.getParameter("name") ;
+        String image = req.getParameter("image") ;
         String userToken= req.getParameter("user");
         String grid = req.getParameter("grid");
         String categoryIds = req.getParameter("category");
@@ -1168,7 +1176,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
             }
-            output = playerApiService.channelSubmit(categoryIds, userToken, url, grid, tags, lang, req);
+            output = playerApiService.channelSubmit(categoryIds, userToken, url, grid, name, image, tags, lang, req);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1993,6 +2001,7 @@ public class PlayerApiController {
     @RequestMapping(value="search")
     public @ResponseBody Object search(
             @RequestParam(value="text", required=false) String text,
+            @RequestParam(value="type", required=false) String type,
             @RequestParam(value="start", required=false) String start,
             @RequestParam(value="count", required=false) String count,            
             @RequestParam(value="stack", required=false) String stack,
@@ -2006,7 +2015,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);        
             }            
-            output = playerApiService.search(text, stack, start, count, req);
+            output = playerApiService.search(text, stack, type, start, count, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
