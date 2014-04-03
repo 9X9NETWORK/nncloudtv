@@ -98,6 +98,7 @@ public class PlayerApiService {
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
     private NnDeviceManager deviceMngr;
+    private NnEpisodeManager epMngr;
     
     private Mso mso;
     private int version = 32;
@@ -109,6 +110,8 @@ public class PlayerApiService {
     private HttpServletRequest req;
     private HttpServletResponse resp;
     private ApiContext context = null;
+    public static int PAGING_ROWS = 50;
+    public static int MAX_EPISODES = 200;
     
     public PlayerApiService() {
         configMngr = new MsoConfigManager();
@@ -117,13 +120,14 @@ public class PlayerApiService {
         chMngr = new NnChannelManager();
         profileMngr = new NnUserProfileManager();
         deviceMngr = new NnDeviceManager();
+        epMngr = new NnEpisodeManager();
     }
     
     @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
             NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
-            NnDeviceManager deviceMngr) {
+            NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
         
         this.configMngr = configMngr;
         this.userMngr = userMngr;
@@ -131,6 +135,7 @@ public class PlayerApiService {
         this.chMngr = chMngr;
         this.profileMngr = profileMngr;
         this.deviceMngr = deviceMngr;
+        this.epMngr = epMngr;
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
@@ -1183,15 +1188,15 @@ public class PlayerApiService {
     }
     
     @SuppressWarnings("unchecked")
-    public Object programInfo(String channelIds, String episodeIds, 
+    public Object programInfo(String channelIds, String episodeIdStr, 
                                   String userToken, String ipgId,
                                   boolean userInfo, String sidx, String limit,
-                                  String start, String count) {                                                                    
-        if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {           
+                                  String start, String count) {
+        if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         NnProgramManager programMngr = new NnProgramManager();
-        PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();        
+        PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();
         String[] chArr = channelIds.split(",");
         NnUser user = null;
         
@@ -1203,20 +1208,42 @@ public class PlayerApiService {
             count = limit;
         }
         int startI = 1;
-        int countI = 50;
-        if (start != null) { startI = Integer.parseInt(start); } 
-        if (count != null) { countI = Integer.parseInt(count);}
+        int countI = PAGING_ROWS;
+        if (start != null) { startI = Integer.parseInt(start); }
+        if (count != null) { countI = Integer.parseInt(count); }
         
-        int end = 50;
-        countI = 50; //overwrite the input value
+        int end = PAGING_ROWS;
+        countI = PAGING_ROWS; //overwrite the input value
         startI = startI - 1;
-        startI  = startI / 50;        
-        startI = startI * 50;
+        startI = startI / PAGING_ROWS;
+        startI = startI * PAGING_ROWS;
         end = startI + countI; 
-        log.info("sidx = " + startI + ";" + "end = " + end);
-            
+        
         String programInfoStr = "";
         String paginationStr = "";
+        
+        // to rewrite start/end, if episode was specified
+        if (episodeIdStr != null && !episodeIdStr.isEmpty()) {
+            
+            NnEpisode episode = epMngr.findById(Long.valueOf(episodeIdStr));
+            
+            if (episode != null && episode.getSeq() > 0) {
+                
+                if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
+                    
+                    pagination = true;
+                    startI = episode.getSeq() - 1;
+                    end = startI + PAGING_ROWS;
+                    
+                } else if (episode.getChannelId() == 0) {
+                    
+                    // orphan episode
+                    
+                }
+            }
+        }
+        
+        log.info("sidx = " + startI + ";" + "end = " + end);
         
         List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
@@ -1228,7 +1255,7 @@ public class PlayerApiService {
                 else
                     return this.assembleMsgs(NnStatusCode.SUCCESS, null);
             }
-        } else if (chArr.length > 1) {            
+        } else if (chArr.length > 1) {
             List<Long> list = new ArrayList<Long>();
             for (int i=0; i<chArr.length; i++) { list.add(Long.valueOf(chArr[i]));}
             for (Long l : list) {
@@ -1236,19 +1263,19 @@ public class PlayerApiService {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
-                        programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, episodeIds, startI, end, version, this.format);
+                        programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
                         if (pagination) {
                             NnChannel c = new NnChannelManager().findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                        }                        
-                    } else { 
-                        programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, episodeIds, startI, end, version, this.format);
+                        }
+                    } else {
+                        programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
                     }
                 }
             }
         } else {
-            if (version < 32) {                
+            if (version < 32) {
                 programInfoStr = new IosService().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end);
                 if (programInfoStr != null && context.isIos()) {
                     String[] lines = programInfoStr.split("\n");
@@ -1261,24 +1288,23 @@ public class PlayerApiService {
                         }
                     }
                     log.info("ios program info debug string:" + debugStr);
-                }                                   
-            } else {          
+                }
+            } else {
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String)programMngr.findPlayerProgramInfoByChannel(cId, episodeIds, startI, end, version, this.format);
+                    programInfoStr = (String)programMngr.findPlayerProgramInfoByChannel(cId, startI, end, version, this.format);
                     if (pagination) {
-                        NnChannel c = new NnChannelManager().findById(cId);
+                        NnChannel c = chMngr.findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
-
                 } else {
-                    programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(Long.parseLong(channelIds), episodeIds, startI, end, version, this.format);
+                    programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format);
                     playerProgramInfo.setProgramInfo(programInfoJson);
-                }                
-            }            
-        }        
-                
+                }
+            }
+        }
+        
         String userInfoStr = "";
         List<String> result = new ArrayList<String>();
         if (userInfo) {
@@ -1289,14 +1315,14 @@ public class PlayerApiService {
                     result.add(userInfoStr);
                 } else {
                     playerProgramInfo.setUserInfo((UserInfo)this.prepareUserInfo(user, null, req, true));
-                }                        
+                }
             }
         }
         if (pagination && this.format == PlayerApiService.FORMAT_PLAIN)
             result.add(paginationStr);
             
         if (this.format == PlayerApiService.FORMAT_JSON) {
-            return this.assembleMsgs(NnStatusCode.SUCCESS, playerProgramInfo);                        
+            return this.assembleMsgs(NnStatusCode.SUCCESS, playerProgramInfo);
         } else {
             result.add(programInfoStr);
             String size[] = new String[result.size()];

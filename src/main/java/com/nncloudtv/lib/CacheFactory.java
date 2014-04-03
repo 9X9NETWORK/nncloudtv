@@ -222,6 +222,42 @@ public class CacheFactory {
         return retObj;
     }    
     
+    public static void delete(List<String> keys) {
+        
+        if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
+        
+        boolean isDeleted = false;
+        long now = new Date().getTime();
+        MemcachedClient cache = getClient();
+        if (cache == null) return;
+        
+        try {
+            for (String key : keys) {
+                if (key != null && !key.isEmpty()) {
+                    cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                }
+            }
+            isDeleted = true;
+        } catch (CheckedOperationTimeoutException e){
+            log.warning("get CheckedOperationTimeoutException");
+        } catch (OperationTimeoutException e) {
+            log.severe("memcache OperationTimeoutException");
+        } catch (NullPointerException e) {
+            log.warning("there is no future");
+        } catch (Exception e) {
+            log.severe("get Exception");
+            e.printStackTrace();
+        } finally {
+            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+        }
+        log.info("delete operation costs " + (new Date().getTime() - now) + " milliseconds");
+        if (isDeleted) {
+            log.info("cache [mass: " + keys.size() + "] --> deleted");
+        } else {
+            log.info("cache [mass: " + keys.size() + "] --> not deleted");
+        }
+    }
+    
     public static void delete(String key) {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
@@ -282,7 +318,24 @@ public class CacheFactory {
         log.info("programInfo cache key:" + str);
         return str;
     }
+    
+    public static List<String> getAllprogramInfoKeys(long channelId, short format) {
         
+        List<String> keys = new ArrayList<String>();
+        
+        log.info("get all programInfo keys from ch" + channelId + " in " + format + " format");
+        
+        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
+            
+            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == PlayerApiService.FORMAT_JSON) ? "json" : "text"); 
+            
+            keys.add(str);
+        }
+        
+        return keys;
+    }
+    
+    
     /**
      * cache the 1st program of channel
      * format: nnprogramLatest-channel_id-format

@@ -201,6 +201,9 @@ public class NnChannel implements Serializable {
     // used in set, mark as true means the results sorting that this channel will put in the first
     @NotPersistent
     private boolean alwaysOnTop;
+
+    @NotPersistent
+    private boolean featured;
     
     // used in YouTube Sync Channel, true means back-end is sync with YouTube and Channel can't modify at this moment 
     @Persistent
@@ -685,5 +688,13 @@ public class NnChannel implements Serializable {
     public void setPlaybackUrl(String playbackUrl) {
     
         this.playbackUrl = playbackUrl;
+    }
+
+    public boolean isFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     }
 }

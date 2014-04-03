@@ -291,7 +291,7 @@ public class CategoryService {
             return ;
         }
         
-        containerService.addChannel(categoryId, channelId, null, null, alwaysOnTop, seq);
+        containerService.addChannel(categoryId, channelId, null, null, alwaysOnTop, null, seq);
     }
     
     /**
