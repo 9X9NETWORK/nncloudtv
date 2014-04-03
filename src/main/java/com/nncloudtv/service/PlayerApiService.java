@@ -1021,7 +1021,8 @@ public class PlayerApiService {
     }
 
     public Object channelSubmit(String categoryIds, String userToken, 
-                                String url, String grid, 
+                                String url, String grid,
+                                String name, String image,
                                 String tags, String lang, 
                                 HttpServletRequest req) {
         //verify input
@@ -1056,7 +1057,11 @@ public class PlayerApiService {
         //create a new channel
         lang = this.checkLang(lang);
         if (channel == null) {
-            channel = chMngr.create(url, null, lang, req);
+        	if (name != null && image != null) {
+        		channel = chMngr.createYouTubeWithMeta(url, name, null, lang, image, req);
+        	} else {
+        		channel = chMngr.create(url, null, lang, req);
+        	}
             if (channel == null) {
                 return this.assembleMsgs(NnStatusCode.CHANNEL_URL_INVALID, null);
             }            
@@ -1066,10 +1071,19 @@ public class PlayerApiService {
         
         //subscribe
         NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
-        subMngr.subscribeChannel(user, channel.getId(), Short.parseShort(grid), MsoIpg.TYPE_GENERAL);
+        short seq = Short.parseShort(grid);
+        if (seq != 0) {
+            NnUserSubscribe s = subMngr.findByUserAndSeq(user, seq);
+            if (s != null)
+                return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_POS_OCCUPIED, null);
+        }
+        NnUserSubscribe s = subMngr.findByUserAndChannel(user, String.valueOf(channel.getId()));        
+        if (s != null)
+            return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_DUPLICATE_CHANNEL, null);        
+        s = subMngr.subscribeChannel(user, channel.getId(), seq, MsoIpg.TYPE_GENERAL);
         String result[] = {""};
         String channelName = "";
-        if (channel.getSourceUrl() != null && channel.getSourceUrl().contains("http://www.youtube.com"))
+        if (channel.getSourceUrl() != null && channel.getSourceUrl().contains("http://www.youtube.com") && name == null)
             channelName = YouTubeLib.getYouTubeChannelName(channel.getSourceUrl());
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FACEBOOK) 
             channelName = channel.getSourceUrl();            
@@ -2059,7 +2073,7 @@ public class PlayerApiService {
     }
 
     @SuppressWarnings("unchecked")
-    public Object search(String text, String stack, String start, String count, HttpServletRequest req) {                       
+    public Object search(String text, String stack, String type, String start, String count, HttpServletRequest req) {                       
         if (text == null || text.length() == 0)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         if (version < 32) {
@@ -2096,8 +2110,16 @@ public class PlayerApiService {
             limit = 75;
         startIndex = startIndex - 1;
 
+        String searchContent = "store_only";
+        if (type != null && type.equals("9x9")) {
+        	searchContent = searchContent + ",9x9";
+        }
+        if (type != null && type.equals("youtube")) {
+        	searchContent = searchContent + ",youtube";
+        }
+        
         @SuppressWarnings("rawtypes")
-        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, "store_only", null, false, startIndex, limit);        
+        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
         List<NnChannel> channels = (List<NnChannel>) st.pop();
         long numOfChannelTotal = (Long) st.pop();        
         
