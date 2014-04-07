@@ -462,5 +462,41 @@ public class ApiMsoServiceTest {
         // verify
         verifyZeroInteractions(sysTagMapMngr);
     }
+    
+    @Test
+    public void setChannelsSorting_0() {
+        
+        // input arguments
+        final Long setId = (long) 1;
+        final List<Long> sortedChannels = new ArrayList<Long>();
+        sortedChannels.add((long) 3);
+        sortedChannels.add((long) 2);
+        sortedChannels.add((long) 1);
+        
+        // mocks
+        List<SysTagMap> setChannels = new ArrayList<SysTagMap>();
+        for(int count = 1; count <= 3; count++) {
+            SysTagMap sysTagMap = new SysTagMap(setId, count);
+            sysTagMap.setSeq((short) count);
+            setChannels.add(sysTagMap);
+        }
+        
+        // stubs
+        when(sysTagMapMngr.findBySysTagId((Long) anyLong())).thenReturn(setChannels);
+        
+        // execute
+        apiMsoService.setChannelsSorting(setId, sortedChannels);
+        
+        // verify
+        verify(sysTagMapMngr).findBySysTagId(setId);
+        
+        ArgumentCaptor<List<SysTagMap>> sysTagMaps_arg = ArgumentCaptor.forClass((Class) List.class);
+        verify(sysTagMapMngr).saveAll(sysTagMaps_arg.capture());
+        List<SysTagMap> sysTagMaps = sysTagMaps_arg.getValue();
+        assertEquals(3, sysTagMaps.size());
+        assertEquals(3, sysTagMaps.get(0).getChannelId());
+        assertEquals(2, sysTagMaps.get(1).getChannelId());
+        assertEquals(1, sysTagMaps.get(2).getChannelId());
+    }
 
 }
