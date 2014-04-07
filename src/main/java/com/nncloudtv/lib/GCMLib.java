@@ -85,7 +85,7 @@ public class GCMLib {
                 
                 Date now = new Date();
                 Message message = new Message.Builder()
-                    .addData("message", notification.getMessage()) // message
+                    .addData("message", NnStringUtil.urlencode(notification.getMessage(), NnStringUtil.UTF8)) // message
                     .addData("content", notification.getContent()) // content
                     .addData("ts", String.valueOf(now.getTime()))  // ts
                     .build();
