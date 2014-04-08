@@ -16,7 +16,8 @@ public class AppDao extends GenericDao<App> {
         String query = " select * from app"
                 +       " where sphere = '" + sphere + "'"
                 +         " and msoId != " + msoId
-                +         " and featured = " + false;
+                +         " and featured = " + false
+                +    " order by position1 asc";
    
         return sql(query);
     }    
@@ -25,7 +26,8 @@ public class AppDao extends GenericDao<App> {
         String query = " select * from app"
                 +       " where sphere = '" + sphere + "'"
                 +         " and msoId != " + msoId
-                +         " and featured = " + true;
+                +         " and featured = " + true
+                +    " order by position2 asc";
    
         return sql(query);
     }    
