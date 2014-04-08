@@ -24,7 +24,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
@@ -48,7 +47,6 @@ public class ApiMso extends ApiGeneric {
     private MsoManager msoMngr;
     private NnChannelManager channelMngr;
     private StoreService storeService;
-    private NnUserProfileManager userProfileMngr;
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
@@ -65,44 +63,12 @@ public class ApiMso extends ApiGeneric {
         this.msoMngr = msoMngr;
         this.channelMngr = channelMngr;
         this.storeService = storeService;
-        this.userProfileMngr = userProfileMngr;
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
         this.userMngr = userMngr;
         this.notificationMngr = notificationMngr;
         this.configMngr = configMngr;
-    }
-    
-    /** indicate logging user has access right to target mso in PCS API
-     *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
-     */
-    private boolean hasRightAccessPCS(Long userId, Long msoId, String requirePriv) {
-        
-        if (userId == null || msoId == null || requirePriv == null || requirePriv.matches("[01]{3}") == false) {
-            return false;
-        }
-        
-        NnUserProfile profile = userProfileMngr.findByUserIdAndMsoId(userId, msoId);
-        if (profile == null) {
-            profile = new NnUserProfile();
-            profile.setPriv("000111");
-        }
-        if (profile.getPriv() == null) {
-            profile.setPriv("000111");
-        }
-        
-        if (requirePriv.charAt(0) == '1' && profile.getPriv().charAt(0) != '1') {
-            return false;
-        }
-        if (requirePriv.charAt(1) == '1' && profile.getPriv().charAt(1) != '1') {
-            return false;
-        }
-        if (requirePriv.charAt(2) == '1' && profile.getPriv().charAt(2) != '1') {
-            return false;
-        }
-        
-        return true;
     }
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.GET)

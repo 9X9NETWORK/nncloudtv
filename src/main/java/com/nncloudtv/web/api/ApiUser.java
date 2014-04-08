@@ -30,6 +30,7 @@ import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserLibrary;
 import com.nncloudtv.model.NnUserPref;
+import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -39,6 +40,7 @@ import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
@@ -59,16 +61,18 @@ public class ApiUser extends ApiGeneric {
     private StoreService storeService;
     private ApiUserService apiUserService;
     private NnChannelPrefManager channelPrefMngr;
+    private NnUserProfileManager userProfileMngr;
     
     @Autowired
     public ApiUser(NnChannelManager channelMngr, MsoManager msoMngr, NnUserManager userMngr, StoreService storeService,
-            ApiUserService apiUserService, NnChannelPrefManager channelPrefMngr) {
+            ApiUserService apiUserService, NnChannelPrefManager channelPrefMngr, NnUserProfileManager userProfileMngr) {
         this.channelMngr = channelMngr;
         this.msoMngr = msoMngr;
         this.userMngr = userMngr;
         this.storeService = storeService;
         this.apiUserService = apiUserService;
         this.channelPrefMngr = channelPrefMngr;
+        this.userProfileMngr = userProfileMngr;
     }
     
     /** 
@@ -726,8 +730,18 @@ public class ApiUser extends ApiGeneric {
             sorting = evaluateShort(sortingStr);
         }
         
+        // status
+        Short status = null;
+        String statusStr = req.getParameter("status");
+        if (statusStr != null) {
+            NnUserProfile superProfile = userProfileMngr.pickSuperProfile(verifiedUserId);
+            if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+                status = evaluateShort(statusStr);
+            }
+        }
+        
         NnChannel savedChannel = apiUserService.userChannelCreate(user, name, intro, imageUrl, lang, isPublic, sphere, tag,
-                categoryId, req.getParameter("autoSync"), sourceUrl, sorting);
+                categoryId, req.getParameter("autoSync"), sourceUrl, sorting, status);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));

@@ -74,6 +74,7 @@ public class ApiContent extends ApiGeneric {
     private NnChannelPrefManager channelPrefMngr;
     private NnUserManager userMngr;
     private NnProgramManager programMngr;
+    private NnUserProfileManager userProfileMngr;
     
     public ApiContent() {
         
@@ -83,6 +84,7 @@ public class ApiContent extends ApiGeneric {
         this.programMngr = new NnProgramManager();
         this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
         this.userMngr = new NnUserManager();
+        this.userProfileMngr = new NnUserProfileManager();
     }
     
     @Autowired
@@ -1234,8 +1236,18 @@ public class ApiContent extends ApiGeneric {
             sorting = evaluateShort(sortingStr);
         }
         
+        // status
+        Short status = null;
+        String statusStr = req.getParameter("status");
+        if (statusStr != null) {
+            NnUserProfile superProfile = userProfileMngr.pickSuperProfile(verifiedUserId);
+            if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+                status = evaluateShort(statusStr);
+            }
+        }
+        
         NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,
-                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting);
+                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting, status);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));

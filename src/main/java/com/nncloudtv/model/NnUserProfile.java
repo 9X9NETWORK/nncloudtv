@@ -76,8 +76,9 @@ public class NnUserProfile implements Serializable {
     private Date updateDate;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=6)
+    @Column(jdbcType="VARCHAR", length=20)
     private String priv; // indicate pcs read write delete and ccs read write delete
+                         // 7th digit indicate the permission of nnchannel.status
 
     public long getMsoId() {
         return msoId;

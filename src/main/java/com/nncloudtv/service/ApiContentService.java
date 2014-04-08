@@ -76,7 +76,7 @@ public class ApiContentService {
     }
     
     public NnChannel channelUpdate(Long channelId, String name, String intro, String lang, String sphere, Boolean isPublic,
-            String tag, String imageUrl, Long categoryId, Date updateDate, String autoSync, Short sorting) {
+            String tag, String imageUrl, Long categoryId, Date updateDate, String autoSync, Short sorting, Short status) {
         
         if (channelId == null) {
             return null;
@@ -85,7 +85,9 @@ public class ApiContentService {
         if (channel == null) {
             return null;
         }
-        
+        if (status != null) {
+            channel.setStatus(status);
+        }
         if (name != null) {
             channel.setName(name);
         }

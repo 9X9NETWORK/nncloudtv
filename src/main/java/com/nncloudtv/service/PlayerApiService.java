@@ -298,7 +298,8 @@ public class PlayerApiService {
                  a.getImageUrl(),
                  storeUrl
               };
-              result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
+              if (storeUrl != null)
+                 result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
            }         
         }
         if (format == PlayerApiService.FORMAT_JSON)

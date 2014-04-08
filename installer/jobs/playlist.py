@@ -1,9 +1,21 @@
 import urllib, urllib2, json, urlparse
 import MySQLdb
+import sys
 
-msoname = raw_input('mso name:')
-ytname = raw_input('youtube name:')
-sysType = raw_input('(1)category(2)set') 
+pwd = ""
+host = "localhost:8080"
+
+# input examples: python playlist.py 9x9 PewDiePie 1
+total = len(sys.argv)
+
+if total < 3:
+  msoname = raw_input('mso name:')
+  ytname = raw_input('youtube name:')
+  sysType = raw_input('1.category  2.set:')
+else:
+  msoname = sys.argv[1]
+  ytname = sys.argv[2]
+  sysType = sys.argv[3]
 
 #parsing channel meta
 url = "http://gdata.youtube.com/feeds/api/users/" + ytname + "?v=2.1&prettyprint=true&alt=json"
@@ -47,7 +59,7 @@ while not foundAll:
         print "name:" + name
         print "intro:" + intro
         print "thumbnail:" + thumbnail
-        postUrl = "http://localhost:8080/wd/urlSubmitWithMeta?url=" 
+        postUrl = "http://" + host + "/wd/urlSubmitWithMeta?url=" 
         param = yturl + "&lang=en" + "&name=" + name + "&intro=" + intro + "&imageUrl=" + thumbnail
         postUrl = postUrl + urllib.quote(param.encode('utf8'))
         #postUrl = postUrl + urllib.quote(param)
@@ -66,7 +78,7 @@ print "idx: " + str(idx)
 print "channel size:" + str(len(channels))
 #process channel
 ytchannel = "http://www.youtube.com/user/" + ytname
-postUrl = "http://localhost:8080/wd/urlSubmit?url=" + ytchannel + "&lang=en&sphere=en"
+postUrl = "http://" + host + "/wd/urlSubmit?url=" + ytchannel + "&lang=en&sphere=en"
 response = urllib2.urlopen(postUrl)
 cId = response.readline()
 channels.append(cId)
@@ -76,21 +88,26 @@ print "------------------"
 #insert data to db
 dbcontent = MySQLdb.connect (host = "localhost",
                              user = "root",
-                             passwd = "",
+                             passwd = pwd,
                              charset = "utf8",
                              use_unicode = True,
                              db = "nncloudtv_content")
 cursor = dbcontent.cursor()
 # get msoId
 cursor.execute("""
-    select id from mso where name = %s
+    select id 
+      from mso where name = %s
     """, (msoname))
 msoId = cursor.fetchone()[0]
 print "msoId: " + str(msoId)
 
 cursor.execute("""
-   select systagId from systag_display where name = %s
-    """, (channelname))
+   select s.id
+     from systag_display d, systag s
+    where d.name = %s
+      and s.id = d.systagId
+      and type = %s
+      """, (channelname, sysType))
 display = cursor.fetchone()
 systagId = 0
 if display == None:
