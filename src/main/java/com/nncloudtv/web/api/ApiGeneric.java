@@ -15,10 +15,12 @@ import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
@@ -368,4 +370,34 @@ public class ApiGeneric {
 	    return null;
 	}
 	
+    /** indicate logging user has access right to target mso in PCS API
+     *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
+     */
+    protected boolean hasRightAccessPCS(Long userId, Long msoId, String requirePriv) {
+        
+        if (userId == null || msoId == null || requirePriv == null || requirePriv.matches("[01]+") == false) {
+            return false;
+        }
+        
+        NnUserProfileManager userProfileMngr = new NnUserProfileManager();
+        
+        NnUserProfile profile = userProfileMngr.findByUserIdAndMsoId(userId, msoId);
+        if (profile == null) {
+            profile = new NnUserProfile();
+            profile.setPriv("000111");
+        }
+        if (profile.getPriv() == null) {
+            profile.setPriv("000111");
+        }
+        
+        for (int i = 0; i < requirePriv.length(); i++) {
+            
+            if (requirePriv.charAt(i) == '1' && profile.getPriv().charAt(i) != '1') {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
 }
