@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -497,6 +498,99 @@ public class ApiMsoServiceTest {
         assertEquals(3, sysTagMaps.get(0).getChannelId());
         assertEquals(2, sysTagMaps.get(1).getChannelId());
         assertEquals(1, sysTagMaps.get(2).getChannelId());
+    }
+    
+    @Test
+    public void storeChannels_0() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final java.util.Set<Long> channelIds = new HashSet<Long>();
+        channelIds.add(new Long(1));
+        channelIds.add(new Long(2));
+        channelIds.add(new Long(3));
+        final Long categoryId = null;
+        
+        // mocks
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        
+        // stubs
+        when(channelMngr.findByIds(anyListOf(Long.class))).thenReturn(channels);
+        when(storeService.checkChannelsInMsoStore(anyListOf(NnChannel.class), (Long) anyLong()))
+        .thenReturn(new ArrayList<Long>());
+        
+        // execute
+        List<Long> actual = apiMsoService.storeChannels(msoId, channelIds, categoryId);
+        
+        // verify
+        ArgumentCaptor<List<Long>> arg = ArgumentCaptor.forClass((Class) List.class);
+        verify(channelMngr).findByIds(arg.capture());
+        List<Long> channelIds_arg = arg.getValue();
+        assertEquals(3, channelIds_arg.size());
+        assertEquals(1, (long) channelIds_arg.get(0));
+        assertEquals(2, (long) channelIds_arg.get(1));
+        assertEquals(3, (long) channelIds_arg.get(2));
+        
+        verify(storeService).checkChannelsInMsoStore(channels, msoId);
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void storeChannels_1() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final java.util.Set<Long> channelIds = null;
+        final Long categoryId = (long) 1;
+        
+        // stubs
+        when(storeService.getChannelIdsFromMsoStoreCategory((Long) anyLong(), (Long) anyLong()))
+        .thenReturn(new ArrayList<Long>());
+        
+        // execute
+        List<Long> actual = apiMsoService.storeChannels(msoId, channelIds, categoryId);
+        
+        // verify
+        verifyZeroInteractions(channelMngr);
+        verify(storeService).getChannelIdsFromMsoStoreCategory(categoryId, msoId);
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void storeChannels_2() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final java.util.Set<Long> channelIds = null;
+        final Long categoryId = null;
+        
+        // stubs
+        when(storeService.getChannelIdsFromMsoStore((Long) anyLong())).thenReturn(new ArrayList<Long>());
+        
+        // execute
+        List<Long> actual = apiMsoService.storeChannels(msoId, channelIds, categoryId);
+        
+        // verify
+        verifyZeroInteractions(channelMngr);
+        verify(storeService).getChannelIdsFromMsoStore(msoId);
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void storeChannels_3() {
+        
+        // input arguments
+        final Long msoId = null;
+        final java.util.Set<Long> channelIds = null;
+        final Long categoryId = null;
+        
+        // execute
+        List<Long> actual = apiMsoService.storeChannels(msoId, channelIds, categoryId);
+        
+        // verify
+        verifyZeroInteractions(channelMngr);
+        verifyZeroInteractions(storeService);
+        assertNotNull(actual);
     }
 
 }
