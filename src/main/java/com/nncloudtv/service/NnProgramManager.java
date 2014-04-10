@@ -857,6 +857,8 @@ public class NnProgramManager {
         if (imageUrl != null) {
             imageUrl = imageUrl.replaceFirst(regexCache, cache);
             imageUrl = imageUrl.replaceAll(regexPod, pod);
+            if (imageUrl.equals("") || imageUrl.equals("|"))
+            	imageUrl = "https://s3-us-west-2.amazonaws.com/9x9pm1/blank.jpeg";
         }
         if (p.getPublishDate() == null)
             p.setPublishDate(new Date()); //should not happen, just in case
