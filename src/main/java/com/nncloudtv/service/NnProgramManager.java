@@ -235,7 +235,7 @@ public class NnProgramManager {
                 if (yt != null) {
                     programs.add(yt);
                     log.info("find latest yt program:" + yt.getId());
-                    programInfo = this.composeYtProgramInfo(c, programs, format);
+                    programInfo = this.composeYtProgramInfo(programs, format);
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
@@ -517,14 +517,13 @@ public class NnProgramManager {
         }
     }
     
-    public Object composeYtProgramInfo(NnChannel c, List<YtProgram> programs, short format) {
+    public Object composeYtProgramInfo(List<YtProgram> programs, short format) {
         if (programs.size() == 0) {
             if (format == PlayerApiService.FORMAT_JSON)
                 return null;
             else
                 return "";        
         }
-        if (c == null) return null;
         String result = "";
         List<ProgramInfo> json = new ArrayList<ProgramInfo>();
         for (YtProgram p : programs) {
@@ -857,6 +856,8 @@ public class NnProgramManager {
         if (imageUrl != null) {
             imageUrl = imageUrl.replaceFirst(regexCache, cache);
             imageUrl = imageUrl.replaceAll(regexPod, pod);
+            if (imageUrl.equals("") || imageUrl.equals("|"))
+            	imageUrl = "https://s3-us-west-2.amazonaws.com/9x9pm1/blank.jpeg";            	
         }
         if (p.getPublishDate() == null)
             p.setPublishDate(new Date()); //should not happen, just in case
