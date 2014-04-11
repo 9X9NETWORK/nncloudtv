@@ -659,6 +659,13 @@ public class NnProgramManager {
                 int i=1;                
                 String poiStr = "";     
                 ProgramInfo info = new ProgramInfo();
+                if (imageUrl != null) {
+                   if (imageUrl.equals("") || imageUrl.equals("|")) {
+                      imageUrl = "https://s3-us-west-2.amazonaws.com/9x9pm1/blank.jpeg";
+                   } 
+                } else {
+                      imageUrl = "https://s3-us-west-2.amazonaws.com/9x9pm1/blank.jpeg";
+                }
                 if (format == PlayerApiService.FORMAT_JSON) {
                     info.setId(String.valueOf(e.getId()));
                     info.setChannelId(e.getChannelId());
@@ -804,7 +811,16 @@ public class NnProgramManager {
         String eId = "e" + String.valueOf(e.getId());
         long publishTime = e.getPublishDate().getTime();
         
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+if (imageUrl != null) {
+   if (imageUrl.equals(""))
+       System.out.println("imageUrl: emtpy");
+   if (imageUrl.equals("|"))
+       System.out.println("imageUrl |");
+}
+if (imageUrl == null)
+   System.out.println("image url null");
+            
+         if (format == PlayerApiService.FORMAT_PLAIN) {
             String[] ori = {String.valueOf(channelId), 
                             eId, 
                             name, 
@@ -856,8 +872,6 @@ public class NnProgramManager {
         if (imageUrl != null) {
             imageUrl = imageUrl.replaceFirst(regexCache, cache);
             imageUrl = imageUrl.replaceAll(regexPod, pod);
-            if (imageUrl.equals("") || imageUrl.equals("|"))
-            	imageUrl = "https://s3-us-west-2.amazonaws.com/9x9pm1/blank.jpeg";            	
         }
         if (p.getPublishDate() == null)
             p.setPublishDate(new Date()); //should not happen, just in case
