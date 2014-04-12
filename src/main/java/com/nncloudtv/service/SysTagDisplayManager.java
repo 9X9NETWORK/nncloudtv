@@ -223,6 +223,8 @@ public class SysTagDisplayManager {
         	}
             List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);            
             programInfo = (String) programMngr.composeYtProgramInfo(ytprograms, format);
+        } else {
+           return new String[]{"", "", ""};
         }
         //find whaton systag
         SysTagDisplay whatson = this.findByType(mso.getId(), SysTag.TYPE_WHATSON, lang);
@@ -232,6 +234,8 @@ public class SysTagDisplayManager {
             listingChannels.addAll(whatsonChannels);
             List<YtProgram> ytprograms = dao.findByChannels(whatsonChannels);            
             programInfo += programMngr.composeYtProgramInfo(ytprograms, format);            	                            
+        } else {
+            return new String[]{"", "", ""};
         }
         String setStr = "";
         System.out.println("whatson:" + whatson.getName());
