@@ -5,22 +5,24 @@ import os
 from array import *
 import time
 import MySQLdb
-                                          
+                    
+pwd = ""
+root = "http://localhost:8080"
+                      
 themes = ['daypart', 'daytime', 'downtime', 'evening', 'primetime', 'latenight', 'nightowl']
-                                                    
+tagIds = [372, 373, 374, 375, 376, 377, 378] 
+
 dbcontent = MySQLdb.connect (host = "localhost",
                              user = "root",
-                             passwd = "",
+                             passwd = pwd,
                              charset = "utf8",
                              use_unicode = True,
                              db = "nncloudtv_content")
 
-root = "http://localhost:8080"
+cursor = dbcontent.cursor()
+tagId = 0
 for theme in themes:      
-   # get tagId
-   tagurl = root + "/wd/tag?name=" + theme + "(9x9en)"                
-   tagId = urllib2.urlopen(tagurl).read()
-   print theme + ";tagId:" + str(tagId)            
+   print theme + ";tagId:" + str(tagIds[tagId])            
    # submit channels           
    filename = theme + ".txt"                                                                    
    feed = open(filename, "rU")   
@@ -36,13 +38,18 @@ for theme in themes:
       posturl = posturl.replace('\n', '')
       print posturl
       cid = urllib2.urlopen(posturl).read()
-      #print cid   
+      print cid   
       # submit tagId and channelId
-      tagmapurl = root + "/wd/tagMap?tagId=" + tagId + "&chId=" + cid
-      print tagmapurl
-      urllib2.urlopen(tagmapurl).read()
-      #print tagmapurl
+      try:
+         cursor.execute("""
+            insert into systag_map(systagId, channelId, createDate, updateDate) values (%s, %s, now(), now());
+            """, (tagIds[tagId], cid))
+      except MySQLdb.IntegrityError as e:
+         print "--->SQL Error: %s" % e  
       i = i+1      
+   tagId = tagId + 1
  
 print "record done:" + str(i)
 feed.close()
+dbcontent.commit() 
+

@@ -112,6 +112,71 @@ public class SysTagDao extends GenericDao<SysTag> {
         return detached;                
     }    
 
+    public List<NnChannel> findPlayerHiddenChannelsById(long id, String lang, boolean limitRows, int start, int count, short sort, long msoId) {
+        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        List<NnChannel> detached = new ArrayList<NnChannel>();
+        try {
+            /*
+            select * 
+              from nnchannel a1  
+            inner join ( 
+             select distinct c.id  
+               from systag_display d, systag_map m, nnchannel c  
+              where d.systagId = 3 
+                and d.systagId = m.systagId 
+                and c.id = m.channelId
+                and c.id not in (select channelId from store_listing where msoId=3)
+                and (c.sphere = 'en' or c.sphere = 'other')
+                order by c.updateDate desc
+                limit 3, 5                
+              ) a2 on a1.id=a2.id
+            */
+            
+            // (alwaysOnTop == true)  ==>  order by 'seq'
+            // (alwaysOntop == flase) ==>  order by 'sphere', 'updateDate'
+            String orderStr = " order by m.alwaysOnTop desc, " +
+                                       " case m.alwaysOnTop when true then m.seq else (case c.sphere when '" + lang + "' then 1 else 2 end) end, " +
+                                       " c.updateDate desc ";
+            if (sort == SysTag.SORT_SEQ) {
+            	orderStr = " order by m.seq ";
+            }
+            if (limitRows)
+                orderStr = " order by rand() limit 9";
+            if (start >= 0 && count > 0) {
+            	//start = start - 1;
+                orderStr += " limit " + start + ", " + count;
+            }
+            String langStr = "";
+            if (lang != null)
+            	langStr = " and (c.sphere = '" + lang + "' or c.sphere = 'other')";
+            String blackList = "";
+            if (msoId != 0) {
+            	blackList = " and c.id not in (select channelId from store_listing where msoId=" + msoId + ") ";
+            }
+            String sql = "select * from nnchannel a1 " +
+                         " inner join " + 
+                       " (select distinct c.id " + 
+                          " from systag_display d, systag_map m, nnchannel c " +
+                         " where d.systagId = " + id + 
+                           " and d.systagId = m.systagId " +                           
+                           " and c.id = m.channelId " +
+                           " and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE +
+                           blackList +   
+                           langStr + 
+                           orderStr +
+                           ") a2 on a1.id=a2.id";
+            log.info("sql:" + sql);
+            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
+            q.setClass(NnChannel.class);
+            @SuppressWarnings("unchecked")
+            List<NnChannel> results = (List<NnChannel>) q.execute();            
+            detached = (List<NnChannel>)pm.detachCopyAll(results);
+        } finally {
+            pm.close();
+        }
+        return detached;                
+    }    
+
     public long findPlayerChannelsCountById(long id, String lang, long msoId) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         long size = 0;

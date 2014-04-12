@@ -86,6 +86,11 @@ public class SysTagManager {
         return channels;
     }
 
+    public List<NnChannel> findPlayerHiddenChannelsById(long id, String lang, short sort, long msoId) {
+        List<NnChannel> channels = dao.findPlayerHiddenChannelsById(id, lang, false, 0, 0, sort, msoId);
+        return channels;
+    }
+
     //find channels for dayparting
     public List<NnChannel> findPlayerChannelsById(long id, String lang, boolean rand, long msoId) {
         List<NnChannel> channels = dao.findPlayerChannelsById(id, lang, true, 0, 0, SysTag.SORT_DATE, 0);

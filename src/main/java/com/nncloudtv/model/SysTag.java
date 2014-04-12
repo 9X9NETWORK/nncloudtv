@@ -32,7 +32,8 @@ public class SysTag implements Serializable {
     public static final short TYPE_ACCOUNT = 6;
     public static final short TYPE_33SET = 7;
     public static final short TYPE_DESTROYED = 8;
-    
+    public static final short TYPE_WHATSON = 9;
+
     @Persistent
     private short sorting; // indicate how to sort SysTagMaps that belong to this SysTag
     public static final short SORT_SEQ = 1; //default

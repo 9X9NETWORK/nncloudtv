@@ -2654,7 +2654,41 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-    
+   
+    /**
+     * Used by Android device. Things to list on the front page
+     * 
+     * @param time hour, 0-23
+     * @param stack reserved
+     * @param user user token
+     * @return <p>Two sections, First is things to disply, see the following. 
+     *            Second is the list of episodes, please reference VirtualChannel.
+     *         <p>Things to display: name, type(*1), stack name, default open(1) or closed(0), icon   
+     *         <p>*1: 0 stack, 1 subscription, 2 account, 3 channel, 4 directory, 5 search  
+     */
+    @RequestMapping(value="whatson")
+    public @ResponseBody Object whatson(                      
+            @RequestParam(value="time", required=false) String time,
+            @RequestParam(value="lang", required=false) String lang,
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
+                playerApiService.assembleMsgs(status, null);                        
+            }
+            output = playerApiService.whatson(lang, time);    
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);        
+    }
+ 
     /**
      * Used by Android device. Things to list on the front page
      * 
@@ -2703,6 +2737,7 @@ public class PlayerApiController {
     public @ResponseBody Object portal(                      
             @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="time", required=false) String time,
+            @RequestParam(value="type", required=false) String type,
             @RequestParam(value="minimal", required=false) String minimal,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
@@ -2715,7 +2750,7 @@ public class PlayerApiController {
                 playerApiService.assembleMsgs(status, null);                        
             }
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.portal(lang, time, isMinimal);    
+            output = playerApiService.portal(lang, time, isMinimal, type);        
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
