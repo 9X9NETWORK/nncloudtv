@@ -1151,7 +1151,9 @@ public class PlayerApiController {
      * @param category category id, not mandatory
      * @param langCode language code, en or zh.
      * @param tag tag string, separated by comma
-     * 
+     * @param name separated by "|". they are names of channel|episode1|episode2|episode3 
+     * @param image separated by "|". they are thumbnails of channel|episode1|episode2|episode3 
+     *  
      * @return channel id, channel name, image url. <br/>
      */    
     @RequestMapping(value="channelSubmit")
@@ -1978,7 +1980,8 @@ public class PlayerApiController {
     /**
      * Search channel name and description, curator name and description
      * 
-     * @param search search text
+     * @param text search text
+     * @param type if not specified return all types. "9x9" returns 9x9 channels, type 6. "youtube" returns youtube channels and playlists, type 3 or 4. 
      * @param start start index
      * @param count number of records returned. Returns 9 if not specified. Max is 20.
      * @return matched channels and curators
@@ -2729,6 +2732,7 @@ public class PlayerApiController {
      * 
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
+     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned. 
      * @return <p>Three sections, First is sets. Format please reference listRecommended. <br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
      *            Third is the first episode of every channel from the second section. Format please reference programInfo.
