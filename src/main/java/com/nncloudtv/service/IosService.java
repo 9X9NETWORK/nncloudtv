@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -215,7 +216,9 @@ public class IosService {
                 imageLargeUrl = imageLargeUrl.replaceFirst(regexCache, cache);
                 imageLargeUrl = imageLargeUrl.replaceAll(regexPod, pod);
             }
-                    
+            if (p.getUpdateDate() == null)
+            	p.setUpdateDate(new Date());
+            
             //the rest
             String[] ori = {String.valueOf(p.getChannelId()), 
                             String.valueOf(p.getId()), 
