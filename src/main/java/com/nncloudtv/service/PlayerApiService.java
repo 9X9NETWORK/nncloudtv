@@ -1284,7 +1284,7 @@ public class PlayerApiService {
                 
                 programInfoStr = (String) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
                 if (pagination && channel != null) {
-                    paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
+                    paginationStr += assembleKeyValue(channel.getIdStr(), "1\t1");
                 }
             } else {
                 
