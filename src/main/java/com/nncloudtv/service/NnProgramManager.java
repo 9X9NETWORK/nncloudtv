@@ -513,7 +513,7 @@ public class NnProgramManager {
         
         List<NnEpisode> episodes = new ArrayList<NnEpisode>();
         episodes.add(episode);
-        List<NnProgram> programs = findPlayerNnProgramsByChannel(channel.getId());
+        List<NnProgram> programs = findByEpisodeId(episode.getId());
         
         return composeNnProgramInfo(channel, episodes, programs, format);
     }

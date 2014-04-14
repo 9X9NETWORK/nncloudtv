@@ -1241,6 +1241,7 @@ public class PlayerApiService {
                     
                     // orphan episode
                     orphanEpisode = episode;
+                    log.info("orphan episode " + episode.getId());
                 }
             }
         }
