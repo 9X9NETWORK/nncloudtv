@@ -1202,6 +1202,7 @@ public class PlayerApiService {
         NnUser user = null;
         
         boolean pagination = false;
+        NnEpisode orphanEpisode = null;
         if (start != null)
             pagination = true;
         if (sidx != null) {
@@ -1239,7 +1240,9 @@ public class PlayerApiService {
                 } else if (episode.getChannelId() == 0) {
                     
                     // orphan episode
-                    
+                    pagination = true;
+                    orphanEpisode = episode;
+                    log.info("orphan episode " + episode.getId());
                 }
             }
         }
@@ -1274,6 +1277,21 @@ public class PlayerApiService {
                         programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
                     }
                 }
+            }
+        } else if (orphanEpisode != null) {
+            
+            long cId = Long.parseLong(channelIds);
+            NnChannel channel = chMngr.findById(cId);
+            if (format == PlayerApiService.FORMAT_PLAIN) {
+                
+                programInfoStr = (String) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                if (pagination && channel != null) {
+                    paginationStr += assembleKeyValue(channel.getIdStr(), "1\t1");
+                }
+            } else {
+                
+                programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                playerProgramInfo.setProgramInfo(programInfoJson);
             }
         } else {
             if (version < 32) {
