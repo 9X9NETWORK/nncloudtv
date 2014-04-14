@@ -592,5 +592,34 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(storeService);
         assertNotNull(actual);
     }
+    
+    @Test
+    public void storeChannelRemove_0() {
+        
+        // input arguments
+        final Long msoId = (long) 1;
+        final List<Long> channelIds = new ArrayList<Long>();
+        channelIds.add(new Long(1));
+        
+        // execute
+        apiMsoService.storeChannelRemove(msoId, channelIds);
+        
+        // verify
+        verify(storeListingMngr).addChannelsToBlackList(channelIds, msoId);
+    }
+    
+    @Test
+    public void storeChannelRemove_1() {
+        
+        // input arguments
+        final Long msoId = null;
+        final List<Long> channelIds = null;
+        
+        // execute
+        apiMsoService.storeChannelRemove(msoId, channelIds);
+        
+        // verify
+        verifyZeroInteractions(storeListingMngr);
+    }
 
 }
