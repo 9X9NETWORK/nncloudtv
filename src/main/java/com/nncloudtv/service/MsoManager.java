@@ -198,6 +198,14 @@ public class MsoManager {
             }
         }
         
+        if (!os.equals(PlayerService.OS_WEB)) {
+            MsoConfig homepage = configMngr.findByMsoAndItem(mso, MsoConfig.HOMEPAGE);
+            if (homepage != null)
+                result += PlayerApiService.assembleKeyValue("homepage", homepage.getValue());
+            else
+                result += PlayerApiService.assembleKeyValue("homepage", "portal");            	
+        }        
+
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
         return result;
     }

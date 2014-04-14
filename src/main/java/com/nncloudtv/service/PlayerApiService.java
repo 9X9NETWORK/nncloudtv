@@ -1202,6 +1202,7 @@ public class PlayerApiService {
         NnUser user = null;
         
         boolean pagination = false;
+        NnEpisode orphanEpisode = null;
         if (start != null)
             pagination = true;
         if (sidx != null) {
@@ -1239,7 +1240,9 @@ public class PlayerApiService {
                 } else if (episode.getChannelId() == 0) {
                     
                     // orphan episode
-                    
+                    pagination = true;
+                    orphanEpisode = episode;
+                    log.info("orphan episode " + episode.getId());
                 }
             }
         }
@@ -1274,6 +1277,21 @@ public class PlayerApiService {
                         programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
                     }
                 }
+            }
+        } else if (orphanEpisode != null) {
+            
+            long cId = Long.parseLong(channelIds);
+            NnChannel channel = chMngr.findById(cId);
+            if (format == PlayerApiService.FORMAT_PLAIN) {
+                
+                programInfoStr = (String) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                if (pagination && channel != null) {
+                    paginationStr += assembleKeyValue(channel.getIdStr(), "1\t1");
+                }
+            } else {
+                
+                programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                playerProgramInfo.setProgramInfo(programInfoJson);
             }
         } else {
             if (version < 32) {
@@ -2122,6 +2140,7 @@ public class PlayerApiService {
         @SuppressWarnings("rawtypes")
         Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
         List<NnChannel> channels = (List<NnChannel>) st.pop();
+System.out.println("solr search channel size:" + channels.size());
         long numOfChannelTotal = (Long) st.pop();        
         
         List<NnUser> users = userMngr.search(null, null, text, mso.getId());
@@ -2137,21 +2156,29 @@ public class PlayerApiService {
         int numOfSuggestReturned = suggestion.size();
         //int numOfChannelTotal = (int) NnChannelManager.searchSize(text, false);
         int numOfCuratorTotal = users.size();
-        int numOfSuggestTotal = suggestion.size();;
+        int numOfSuggestTotal = suggestion.size();
         
         if (format == PlayerApiService.FORMAT_PLAIN) {
             String[] result = {"", "", "", ""}; //count, curator, curator's channels, channels, suggestion channels
+            //matched curators && their channels [important, two sections]
+            result[1] = (String) userMngr.composeCuratorInfo(users, true, false, req, version);
+            //matched channels
             result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
-            //matched curators
-            result[1] += userMngr.composeCuratorInfo(users, true, false, req, version);
-            
+            System.out.println("result 3:" + result[3]);
+            //suggested channels
             if (channels.size() == 0 && users.size() == 0) {
                 result[3] = (String) chMngr.composeChannelLineup(suggestion, version, this.format);
             }
-                       
+            //statistics           
             result[0] = assembleKeyValue("curator", String.valueOf(numOfCuratorReturned) + "\t" + String.valueOf(numOfCuratorTotal));
             result[0] += assembleKeyValue("channel", String.valueOf(numOfChannelReturned) + "\t" + String.valueOf(numOfChannelTotal));
             result[0] += assembleKeyValue("suggestion", String.valueOf(numOfSuggestReturned) + "\t" + String.valueOf(numOfSuggestTotal));
+
+            //statistics           
+            result[0] = assembleKeyValue("curator", String.valueOf(numOfCuratorReturned) + "\t" + String.valueOf(numOfCuratorTotal));
+            result[0] += assembleKeyValue("channel", String.valueOf(numOfChannelReturned) + "\t" + String.valueOf(numOfChannelTotal));
+            result[0] += assembleKeyValue("suggestion", String.valueOf(numOfSuggestReturned) + "\t" + String.valueOf(numOfSuggestTotal));
+System.out.println("result 0:" + result[0]);
             
             return this.assembleMsgs(NnStatusCode.SUCCESS, result);
         } else {
@@ -2709,7 +2736,7 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, result.toArray(size));        
     }
     
-    public Object portal(String lang, String time, boolean minimal) {
+    public Object portal(String lang, String time, boolean minimal, String type) {
         lang = this.checkLang(lang);    
         if (lang == null)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
@@ -2717,23 +2744,28 @@ public class PlayerApiService {
         if (baseTime > 23 || baseTime < 0)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
-        //1: list of sets, including dayparting 
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        List<SysTagDisplay> displays = displayMngr.findRecommendedSets(lang, mso.getId());
-        //The dayparting set is system set, always shows up
-        Mso nnMso = msoMngr.findNNMso();
-        SysTagDisplay dayparting = displayMngr.findDayparting(baseTime, lang, nnMso.getId());
-        if (dayparting != null) {
-            displays.add(dayparting);
-        }
-        SysTagDisplay previously = displayMngr.findPrevious(nnMso.getId(), lang, dayparting);
-        if (previously != null) {
-            displays.add(previously);
-        }
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerPortal(displays, lang, minimal, version, format));    
+
+        if (type == null)
+           type = "portal";
+        if (type != null && type.equals("whatson"))
+            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso));
         
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerPortal(lang, minimal, version, format, mso));            
     }
-    
+
+    public Object whatson(String lang, String time) {
+        lang = this.checkLang(lang);    
+        if (lang == null)
+            return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
+        short baseTime = Short.valueOf(time);
+        if (baseTime > 23 || baseTime < 0)
+            return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
+        
+        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso));                    
+    }
+  
     public Object frontpage(String time, String stack, String user) {
         short baseTime = Short.valueOf(time);
         String lang = LangTable.LANG_EN;
@@ -2756,11 +2788,11 @@ public class PlayerApiService {
         //2.5. newly added        
         displays.addAll(displayMngr.findRecommendedSets(lang, mso.getId()));
         //3. following
-        SysTagDisplay follow = displayMngr.findFrontpage(mso.getId(), SysTag.TYPE_SUBSCRIPTION, lang);
+        SysTagDisplay follow = displayMngr.findByType(mso.getId(), SysTag.TYPE_SUBSCRIPTION, lang);
         if (follow != null)
             displays.add(follow);
         //4 account
-        SysTagDisplay account = displayMngr.findFrontpage(mso.getId(), SysTag.TYPE_ACCOUNT, lang);        
+        SysTagDisplay account = displayMngr.findByType(mso.getId(), SysTag.TYPE_ACCOUNT, lang);        
         displays.add(account);   
         for (int i=0; i<displays.size(); i++) {            
             SysTagDisplay d = displays.get(i);

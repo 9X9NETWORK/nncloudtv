@@ -1151,7 +1151,9 @@ public class PlayerApiController {
      * @param category category id, not mandatory
      * @param langCode language code, en or zh.
      * @param tag tag string, separated by comma
-     * 
+     * @param name separated by "|". they are names of channel|episode1|episode2|episode3 
+     * @param image separated by "|". they are thumbnails of channel|episode1|episode2|episode3 
+     *  
      * @return channel id, channel name, image url. <br/>
      */    
     @RequestMapping(value="channelSubmit")
@@ -1978,7 +1980,8 @@ public class PlayerApiController {
     /**
      * Search channel name and description, curator name and description
      * 
-     * @param search search text
+     * @param text search text
+     * @param type if not specified return all types. "9x9" returns 9x9 channels, type 6. "youtube" returns youtube channels and playlists, type 3 or 4. 
      * @param start start index
      * @param count number of records returned. Returns 9 if not specified. Max is 20.
      * @return matched channels and curators
@@ -2654,7 +2657,41 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-    
+   
+    /**
+     * Used by Android device. Things to list on the front page
+     * 
+     * @param time hour, 0-23
+     * @param stack reserved
+     * @param user user token
+     * @return <p>Two sections, First is things to disply, see the following. 
+     *            Second is the list of episodes, please reference VirtualChannel.
+     *         <p>Things to display: name, type(*1), stack name, default open(1) or closed(0), icon   
+     *         <p>*1: 0 stack, 1 subscription, 2 account, 3 channel, 4 directory, 5 search  
+     */
+    @RequestMapping(value="whatson")
+    public @ResponseBody Object whatson(                      
+            @RequestParam(value="time", required=false) String time,
+            @RequestParam(value="lang", required=false) String lang,
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
+                playerApiService.assembleMsgs(status, null);                        
+            }
+            output = playerApiService.whatson(lang, time);    
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);        
+    }
+ 
     /**
      * Used by Android device. Things to list on the front page
      * 
@@ -2695,6 +2732,7 @@ public class PlayerApiController {
      * 
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
+     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned. 
      * @return <p>Three sections, First is sets. Format please reference listRecommended. <br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
      *            Third is the first episode of every channel from the second section. Format please reference programInfo.
@@ -2703,6 +2741,7 @@ public class PlayerApiController {
     public @ResponseBody Object portal(                      
             @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="time", required=false) String time,
+            @RequestParam(value="type", required=false) String type,
             @RequestParam(value="minimal", required=false) String minimal,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
@@ -2715,7 +2754,7 @@ public class PlayerApiController {
                 playerApiService.assembleMsgs(status, null);                        
             }
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.portal(lang, time, isMinimal);    
+            output = playerApiService.portal(lang, time, isMinimal, type);        
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

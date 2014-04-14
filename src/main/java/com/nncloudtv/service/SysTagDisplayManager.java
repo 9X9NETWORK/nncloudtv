@@ -8,12 +8,14 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagDisplayDao;
+import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.web.json.player.CategoryInfo;
 import com.nncloudtv.web.json.player.ChannelLineup;
 import com.nncloudtv.web.json.player.PlayerSetInfo;
@@ -60,15 +62,15 @@ public class SysTagDisplayManager {
         return null;
     } 
 
-    public SysTagDisplay findFrontpage(long msoId, short type, String lang) {
-        List<SysTagDisplay> sets = dao.findFrontpage(msoId, type, lang);
+    public SysTagDisplay findByType(long msoId, short type, String lang) {
+        List<SysTagDisplay> sets = dao.findByType(msoId, type, lang);
         if (sets.size() > 0)
             return sets.get(0);            
         return null;
     } 
 
     public SysTagDisplay findPrevious(long msoId, String lang, SysTagDisplay dayparting) {
-        List<SysTagDisplay> display = dao.findFrontpage(msoId, SysTag.TYPE_PREVIOUS, lang);
+        List<SysTagDisplay> display = dao.findByType(msoId, SysTag.TYPE_PREVIOUS, lang);
         if (display.size() > 0) {
             SysTag systag = new SysTagManager().findById(dayparting.getSystagId());
             if (systag != null ) { 
@@ -201,9 +203,85 @@ public class SysTagDisplayManager {
     		return categoryInfo;
     	}
     }
-    
+   
+    public Object getPlayerWhatson(String lang, short time, short format, Mso mso) {
+        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
+        SysTagManager systagMngr = new SysTagManager();
+        List<NnChannel> listingChannels = new ArrayList<NnChannel>();
+        NnProgramManager programMngr = new NnProgramManager();
+        YtProgramDao dao = new YtProgramDao();
+        String programInfo = "";
+
+        //special handling for dayparting channels
+        //the real dayparting channel section
+        SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
+        if (dayparting != null) {
+        	System.out.println("dayparting:" + dayparting.getName());
+        	List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), lang, true, 0);
+        	for (NnChannel d : daypartingChannels) {
+        		System.out.println("dayparting channels:" + d.getId() + ";" + d.getName());
+        	}
+            List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);            
+            programInfo = (String) programMngr.composeYtProgramInfo(ytprograms, format);
+        } else {
+           return new String[]{"", "", ""};
+        }
+        //find whaton systag
+        SysTagDisplay whatson = this.findByType(mso.getId(), SysTag.TYPE_WHATSON, lang);
+        if (whatson != null ) {
+            List<NnChannel> whatsonChannels = systagMngr.findPlayerHiddenChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
+            System.out.println("whatsonchannels:" + whatsonChannels.size());
+            listingChannels.addAll(whatsonChannels);
+            List<YtProgram> ytprograms = dao.findByChannels(whatsonChannels);            
+            programInfo += programMngr.composeYtProgramInfo(ytprograms, format);            	                            
+        } else {
+            return new String[]{"", "", ""};
+        }
+        String setStr = "";
+        System.out.println("whatson:" + whatson.getName());
+    	String id = whatson.getId() + "-" + whatson.getSystagId();
+    	String name = whatson.getName();
+    	String intro = "";
+    	String imageUrl = whatson.getImageUrl();
+    	int cntChannel = whatson.getCntChannel();
+    	String imageUrl2 = whatson.getImageUrl2();
+    	String bannerImageUrl = whatson.getBannerImageUrl();
+    	String bannerImageUrl2 = whatson.getBannerImageUrl2();
+        String[] obj = {
+            id,
+            name,
+            intro, //description
+            imageUrl,
+            String.valueOf(cntChannel),
+            imageUrl2,
+            bannerImageUrl,
+            bannerImageUrl2,
+        };
+	    setStr += NnStringUtil.getDelimitedStr(obj) + "\n";
+        //}                
+        NnChannelManager chMngr = new NnChannelManager();
+        String channelInfo = (String)chMngr.composeReducedChannelLineup(listingChannels, PlayerApiService.FORMAT_PLAIN);        	
+        String result[] = {setStr, channelInfo, programInfo};
+        return result;    	
+    }
+ 
     @SuppressWarnings("unchecked")
-	public Object getPlayerPortal(List<SysTagDisplay>displays, String lang, boolean minimal, int version, short format) {
+	public Object getPlayerPortal(String lang, boolean minimal, int version, short format, Mso mso) {
+        /*
+        //1: list of sets, including dayparting     	
+        //The dayparting set is system set, always shows up
+        Mso nnMso = msoMngr.findNNMso();
+        SysTagDisplay dayparting = displayMngr.findDayparting(baseTime, lang, nnMso.getId());
+        if (dayparting != null) {
+            displays.add(dayparting);
+        }
+        SysTagDisplay previously = displayMngr.findPrevious(nnMso.getId(), lang, dayparting);
+        if (previously != null) {
+            displays.add(previously);
+        }
+        */
+    	
+        List<SysTagDisplay> displays = this.findRecommendedSets(lang, mso.getId());
         String setStr = "";
     	List<SetInfo> setInfo = new ArrayList<SetInfo>();
         for (SysTagDisplay display : displays) {

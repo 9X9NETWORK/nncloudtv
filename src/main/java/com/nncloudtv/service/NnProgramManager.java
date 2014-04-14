@@ -443,6 +443,11 @@ public class NnProgramManager {
         return empty;
     }
     
+    public Object findPlayerProgramInfoByEpisode(NnEpisode episode, NnChannel channel, short format) {
+        
+        return assembleProgramInfo(episode, channel, format);
+    }
+    
     //player programInfo entry
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format) {
         
@@ -503,7 +508,16 @@ public class NnProgramManager {
         }           
         return obj;
     }
-                
+    
+    public Object assembleProgramInfo(NnEpisode episode, NnChannel channel, short format) {
+        
+        List<NnEpisode> episodes = new ArrayList<NnEpisode>();
+        episodes.add(episode);
+        List<NnProgram> programs = findByEpisodeId(episode.getId());
+        
+        return composeNnProgramInfo(channel, episodes, programs, format);
+    }
+    
     //based on channel type, assemble programInfo string
     public Object assembleProgramInfo(NnChannel c, short format, int start, int end) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
@@ -807,7 +821,7 @@ public class NnProgramManager {
         String output = "";
         if (e.getPublishDate() == null)
             e.setPublishDate(new Date()); //should not happen, just in case
-        long channelId = e.getChannelId();
+        long channelId = (e.getChannelId() == 0) ? e.getAdId() : e.getChannelId(); // orphan episode
         String eId = "e" + String.valueOf(e.getId());
         long publishTime = e.getPublishDate().getTime();
         

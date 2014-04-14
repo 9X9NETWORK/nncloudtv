@@ -20,7 +20,7 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
         super(SysTagDisplay.class);
     }    
 
-    public List<SysTagDisplay> findFrontpage(long msoId, short type, String lang) {
+    public List<SysTagDisplay> findByType(long msoId, short type, String lang) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<SysTagDisplay> detached = new ArrayList<SysTagDisplay>();
         try {
