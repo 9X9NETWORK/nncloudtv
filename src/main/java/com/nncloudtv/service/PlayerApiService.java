@@ -1240,6 +1240,7 @@ public class PlayerApiService {
                 } else if (episode.getChannelId() == 0) {
                     
                     // orphan episode
+                    pagination = true;
                     orphanEpisode = episode;
                     log.info("orphan episode " + episode.getId());
                 }
