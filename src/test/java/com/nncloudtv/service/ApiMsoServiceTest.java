@@ -32,7 +32,7 @@ import com.nncloudtv.web.json.cms.Set;
  * Each test case naming begin with target method name, plus dash and a serial number. 
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(MsoConfigManager.class)
+@PrepareForTest({MsoConfigManager.class, MsoManager.class})
 public class ApiMsoServiceTest {
     
     protected static final Logger log = Logger.getLogger(ApiMsoServiceTest.class.getName());
@@ -649,6 +649,40 @@ public class ApiMsoServiceTest {
         
         // verify
         verifyZeroInteractions(storeListingMngr);
+    }
+    
+    @Test
+    public void mso_0() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        
+        // mocks
+        Mso mso = new Mso("testName", "testIntro", "testEmail", Mso.TYPE_MSO);
+        MsoConfig maxSets = new MsoConfig(msoId, MsoConfig.MAX_SETS, String.valueOf(MsoConfig.MAXSETS_DEFAULT + 1));
+        MsoConfig maxChPerSet = new MsoConfig(msoId, MsoConfig.MAX_CH_PER_SET,
+                String.valueOf(MsoConfig.MAXCHPERSET_DEFAULT + 1));
+        
+        // stubs
+        when(msoMngr.findById((Long) anyLong(), anyBoolean())).thenReturn(mso);
+        when(configMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS)).thenReturn(maxSets);
+        when(configMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET)).thenReturn(maxChPerSet);
+        
+        PowerMockito.mockStatic(MsoManager.class);
+        
+        // execute
+        Mso actual = apiMsoService.mso(msoId);
+        
+        // verify
+        verify(msoMngr).findById(msoId, true);
+        verify(configMngr).findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        verify(configMngr).findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        
+        PowerMockito.verifyStatic();
+        MsoManager.normalize(mso);
+        
+        assertEquals(MsoConfig.MAXSETS_DEFAULT + 1, actual.getMaxSets());
+        assertEquals(MsoConfig.MAXCHPERSET_DEFAULT + 1, actual.getMaxChPerSet());
     }
 
 }
