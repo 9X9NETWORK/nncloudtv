@@ -91,7 +91,7 @@ public class ApiContent extends ApiGeneric {
     public ApiContent(ApiContentService apiContentService,
             NnChannelManager channelMngr, StoreService storeService,
             NnChannelPrefManager channelPrefMngr, NnUserManager userMngr,
-            NnProgramManager programMngr) {
+            NnProgramManager programMngr, NnUserProfileManager userProfileMngr) {
         
         this.apiContentService = apiContentService;
         this.channelMngr = channelMngr;
@@ -99,6 +99,7 @@ public class ApiContent extends ApiGeneric {
         this.channelPrefMngr = channelPrefMngr;
         this.userMngr = userMngr;
         this.programMngr = programMngr;
+        this.userProfileMngr = userProfileMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
