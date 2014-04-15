@@ -205,6 +205,7 @@ public class SysTagDisplayManager {
     }
    
     public Object getPlayerWhatson(String lang, short time, short format, Mso mso) {
+    	log.info("get player whatson");
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         SysTagManager systagMngr = new SysTagManager();
         List<NnChannel> listingChannels = new ArrayList<NnChannel>();
@@ -212,6 +213,20 @@ public class SysTagDisplayManager {
         YtProgramDao dao = new YtProgramDao();
         String programInfo = "";
 
+        //find whaton systag
+        SysTagDisplay whatson = this.findByType(mso.getId(), SysTag.TYPE_WHATSON, lang);
+        NnChannel daypartingChannel = null;
+        if (whatson != null ) {
+            List<NnChannel> whatsonChannels = systagMngr.findPlayerHiddenChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
+            listingChannels.addAll(whatsonChannels);
+            for (NnChannel c : whatsonChannels) {
+            	if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
+                    daypartingChannel = c;            		
+            }
+            List<YtProgram> ytprograms = dao.findByChannels(whatsonChannels);            
+            programInfo += programMngr.composeYtProgramInfo(null, ytprograms, format);            	                            
+        }
+        
         //special handling for dayparting channels
         //the real dayparting channel section
         SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
@@ -222,24 +237,12 @@ public class SysTagDisplayManager {
         		System.out.println("dayparting channels:" + d.getId() + ";" + d.getName());
         	}
             List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);            
-            programInfo = (String) programMngr.composeYtProgramInfo(ytprograms, format);
+            programInfo = (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
         } else {
-           return new String[]{"", "", ""};
-        }
-        //find whaton systag
-        SysTagDisplay whatson = this.findByType(mso.getId(), SysTag.TYPE_WHATSON, lang);
-        if (whatson != null ) {
-            List<NnChannel> whatsonChannels = systagMngr.findPlayerHiddenChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
-            System.out.println("whatsonchannels:" + whatsonChannels.size());
-            listingChannels.addAll(whatsonChannels);
-            List<YtProgram> ytprograms = dao.findByChannels(whatsonChannels);            
-            programInfo += programMngr.composeYtProgramInfo(ytprograms, format);            	                            
-        } else {
-            return new String[]{"", "", ""};
+        	return new String[]{"", "", ""};
         }
         String setStr = "";
-        System.out.println("whatson:" + whatson.getName());
-    	String id = whatson.getId() + "-" + whatson.getSystagId();
+        String id = whatson.getId() + "-" + whatson.getSystagId();
     	String name = whatson.getName();
     	String intro = "";
     	String imageUrl = whatson.getImageUrl();
@@ -258,7 +261,6 @@ public class SysTagDisplayManager {
             bannerImageUrl2,
         };
 	    setStr += NnStringUtil.getDelimitedStr(obj) + "\n";
-        //}                
         NnChannelManager chMngr = new NnChannelManager();
         String channelInfo = (String)chMngr.composeReducedChannelLineup(listingChannels, PlayerApiService.FORMAT_PLAIN);        	
         String result[] = {setStr, channelInfo, programInfo};

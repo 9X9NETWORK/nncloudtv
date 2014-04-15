@@ -1234,7 +1234,7 @@ public class PlayerApiService {
                 if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
                     
                     pagination = true;
-                    startI = episode.getSeq() - 1;
+                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : episode.getSeq() - 1;
                     end = startI + PAGING_ROWS;
                     
                 } else if (episode.getChannelId() == 0) {

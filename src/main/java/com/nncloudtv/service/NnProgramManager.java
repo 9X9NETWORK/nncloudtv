@@ -235,7 +235,7 @@ public class NnProgramManager {
                 if (yt != null) {
                     programs.add(yt);
                     log.info("find latest yt program:" + yt.getId());
-                    programInfo = this.composeYtProgramInfo(programs, format);
+                    programInfo = this.composeYtProgramInfo(c, programs, format);
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
@@ -531,7 +531,7 @@ public class NnProgramManager {
         }
     }
     
-    public Object composeYtProgramInfo(List<YtProgram> programs, short format) {
+    public Object composeYtProgramInfo(NnChannel c, List<YtProgram> programs, short format) {
         if (programs.size() == 0) {
             if (format == PlayerApiService.FORMAT_JSON)
                 return null;
@@ -542,9 +542,9 @@ public class NnProgramManager {
         List<ProgramInfo> json = new ArrayList<ProgramInfo>();
         for (YtProgram p : programs) {
             if (format == PlayerApiService.FORMAT_PLAIN)
-                result += (String)this.composeEachYtProgramInfo(p, format);
+                result += (String)this.composeEachYtProgramInfo(c, p, format);
             else {
-                json.add((ProgramInfo)this.composeEachYtProgramInfo(p, format));
+                json.add((ProgramInfo)this.composeEachYtProgramInfo(c, p, format));
             }
         }
         if (format == PlayerApiService.FORMAT_PLAIN)
@@ -682,7 +682,7 @@ public class NnProgramManager {
                 }
                 if (format == PlayerApiService.FORMAT_JSON) {
                     info.setId(String.valueOf(e.getId()));
-                    info.setChannelId(e.getChannelId());
+                    info.setChannelId(String.valueOf(e.getChannelId()));
                     info.setDuration(duration);
                     info.setName(name);
                     info.setThumbnail(imageUrl);
@@ -824,17 +824,8 @@ public class NnProgramManager {
         long channelId = (e.getChannelId() == 0) ? e.getAdId() : e.getChannelId(); // orphan episode
         String eId = "e" + String.valueOf(e.getId());
         long publishTime = e.getPublishDate().getTime();
-        
-if (imageUrl != null) {
-   if (imageUrl.equals(""))
-       System.out.println("imageUrl: emtpy");
-   if (imageUrl.equals("|"))
-       System.out.println("imageUrl |");
-}
-if (imageUrl == null)
-   System.out.println("image url null");
-            
-         if (format == PlayerApiService.FORMAT_PLAIN) {
+         
+        if (format == PlayerApiService.FORMAT_PLAIN) {
             String[] ori = {String.valueOf(channelId), 
                             eId, 
                             name, 
@@ -857,7 +848,7 @@ if (imageUrl == null)
             return output;
         } else {            
             ProgramInfo info = new ProgramInfo();
-            info.setChannelId(channelId);
+            info.setChannelId(String.valueOf(channelId));
             info.setId(eId);
             info.setName(name);
             info.setDescription(intro);
@@ -921,7 +912,7 @@ if (imageUrl == null)
             return output;
         } else {
             ProgramInfo json = new ProgramInfo();
-            json.setChannelId(channelId);
+            json.setChannelId(String.valueOf(channelId));
             json.setId(String.valueOf(pid));
             json.setName(name);
             json.setDescription(intro);
@@ -936,8 +927,10 @@ if (imageUrl == null)
         }
     }        
 
-    public Object composeEachYtProgramInfo(YtProgram p, short format) {
-        long channelId = p.getChannelId();
+    public Object composeEachYtProgramInfo(NnChannel c, YtProgram p, short format) {
+    	String cIdStr = String.valueOf(p.getChannelId());
+        if (c != null && c.getId() != p.getChannelId())
+        	cIdStr = c.getId() + ":" + p.getChannelId(); 
         String pId = String.valueOf(p.getId());
         String name = p.getPlayerName();
         String intro = p.getPlayerIntro();
@@ -950,7 +943,7 @@ if (imageUrl == null)
             url1 = "http://www.youtube.com/watch?v=" + p.getYtVideoId();
         if (format == PlayerApiService.FORMAT_PLAIN) {
             String output = "";        
-            String[] ori = {String.valueOf(channelId), 
+            String[] ori = {cIdStr, 
                             pId, 
                             name, 
                             intro,
@@ -971,7 +964,7 @@ if (imageUrl == null)
             return output;
         } else {
             ProgramInfo info = new ProgramInfo();
-            info.setChannelId(channelId);
+            info.setChannelId(cIdStr);
             info.setId(pId);
             info.setName(name);
             info.setContentType(String.valueOf(contentType));

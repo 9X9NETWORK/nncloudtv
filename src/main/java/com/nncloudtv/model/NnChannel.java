@@ -102,7 +102,8 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_FAVORITE = 11;
     public static final short CONTENTTYPE_FAKE_FAVORITE = 12;
     public static final short CONTENTTYPE_YOUTUBE_LIVE = 13;
-    
+    public static final short CONTENTTYPE_DAYPARTING_MASK = 14;
+ 
     @Persistent
     @Column(jdbcType="VARCHAR", length=255)
     private String piwik;
