@@ -231,15 +231,16 @@ public class SysTagDisplayManager {
         //the real dayparting channel section
         SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
         if (dayparting != null) {
-        	System.out.println("dayparting:" + dayparting.getName());
-        	List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), lang, true, 0);
-        	for (NnChannel d : daypartingChannels) {
-        		System.out.println("dayparting channels:" + d.getId() + ";" + d.getName());
-        	}
-            List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);            
-            programInfo = (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
+            log.info("dayparting:" + dayparting.getName());
+            List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), lang, true, 0);
+            /* 
+            for (NnChannel d : daypartingChannels) {
+        	System.out.println("dayparting channels:" + d.getId() + ";" + d.getName());
+            }*/
+            List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);           
+            programInfo += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
         } else {
-        	return new String[]{"", "", ""};
+            return new String[]{"", "", ""};
         }
         String setStr = "";
         String id = whatson.getId() + "-" + whatson.getSystagId();
