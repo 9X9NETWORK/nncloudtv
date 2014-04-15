@@ -7,7 +7,7 @@ import java.util.List;
 public class ProgramInfo implements Serializable {
 	private static final long serialVersionUID = 8833105022476444279L;
 	private String id;
-	private long channelId;
+	private String channelId;
 	private String name;
 	private String description;
 	private String contentType;
@@ -32,13 +32,10 @@ public class ProgramInfo implements Serializable {
 	public void setThumbnailLarge(String thumbnailLarge) {
 		this.thumbnailLarge = thumbnailLarge;
 	}
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-	public long getChannelId() {
+	public String getChannelId() {
 		return channelId;
 	}
-	public void setChannelId(long channelId) {
+	public void setChannelId(String channelId) {
 		this.channelId = channelId;
 	}
 	public String getName() {
