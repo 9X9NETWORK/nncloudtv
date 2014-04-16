@@ -25,6 +25,7 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
+import com.nncloudtv.web.json.cms.Category;
 import com.nncloudtv.web.json.cms.Set;
 
 /**
@@ -716,6 +717,40 @@ public class ApiMsoServiceTest {
         
         assertEquals(title, actual.getTitle());
         assertEquals(logoUrl, actual.getLogoUrl());
+    }
+    
+    @Test
+    public void msoCategories_0() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        
+        // mocks
+        List<Category> categories = new ArrayList<Category>();
+        
+        // stubs
+        when(categoryService.findByMsoId((Long) anyLong())).thenReturn(categories);
+        
+        // execute
+        List<Category> actual = apiMsoService.msoCategories(msoId);
+        
+        // verify
+        verify(categoryService).findByMsoId(msoId);
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void msoCategories_1() {
+        
+        // input argument
+        final Long msoId = null;
+        
+        // execute
+        List<Category> actual = apiMsoService.msoCategories(msoId);
+        
+        // verify
+        verifyZeroInteractions(categoryService);
+        assertNotNull(actual);
     }
 
 }
