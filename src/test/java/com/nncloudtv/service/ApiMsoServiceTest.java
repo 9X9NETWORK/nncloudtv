@@ -659,6 +659,7 @@ public class ApiMsoServiceTest {
         
         // mocks
         Mso mso = new Mso("testName", "testIntro", "testEmail", Mso.TYPE_MSO);
+        mso.setId(msoId);
         MsoConfig maxSets = new MsoConfig(msoId, MsoConfig.MAX_SETS, String.valueOf(MsoConfig.MAXSETS_DEFAULT + 1));
         MsoConfig maxChPerSet = new MsoConfig(msoId, MsoConfig.MAX_CH_PER_SET,
                 String.valueOf(MsoConfig.MAXCHPERSET_DEFAULT + 1));
@@ -683,6 +684,38 @@ public class ApiMsoServiceTest {
         
         assertEquals(MsoConfig.MAXSETS_DEFAULT + 1, actual.getMaxSets());
         assertEquals(MsoConfig.MAXCHPERSET_DEFAULT + 1, actual.getMaxChPerSet());
+    }
+    
+    @Test
+    public void msoUpdate() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        final String title = "modifyTitle";
+        final String logoUrl = "modifyLogo";
+        
+        // mocks
+        Mso mso = new Mso("testName", "testIntro", "testEmail", Mso.TYPE_MSO);
+        mso.setId(msoId);
+        
+        // stubs
+        when(msoMngr.findById((Long) anyLong())).thenReturn(mso);
+        when(msoMngr.save((Mso) anyObject())).thenReturn(mso);
+        
+        PowerMockito.mockStatic(MsoManager.class);
+        
+        // execute
+        Mso actual = apiMsoService.msoUpdate(msoId, title, logoUrl);
+        
+        // verify
+        verify(msoMngr).findById(msoId);
+        verify(msoMngr).save(mso);
+        
+        PowerMockito.verifyStatic();
+        MsoManager.normalize(mso);
+        
+        assertEquals(title, actual.getTitle());
+        assertEquals(logoUrl, actual.getLogoUrl());
     }
 
 }
