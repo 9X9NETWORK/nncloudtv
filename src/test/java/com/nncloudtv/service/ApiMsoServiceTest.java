@@ -752,5 +752,69 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(categoryService);
         assertNotNull(actual);
     }
+    
+    @Test
+    public void msoCategoryCreate_0() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        final Short seq = 1;
+        final String zhName = "中文名";
+        final String enName ="english name";
+        
+        // mock
+        Category category = new Category();
+        
+        // stubs
+        when(categoryService.create((Category) anyObject())).thenReturn(category);
+        
+        // execute
+        Category actual = apiMsoService.msoCategoryCreate(msoId, seq, zhName, enName);
+        
+        // verify
+        ArgumentCaptor<Category> arg = ArgumentCaptor.forClass(Category.class);
+        verify(categoryService).create(arg.capture());
+        Category category_arg = arg.getValue();
+        assertEquals(msoId, (Long) category_arg.getMsoId());
+        assertEquals(seq, (Short) category_arg.getSeq());
+        assertEquals(zhName, category_arg.getZhName());
+        assertEquals(enName, category_arg.getEnName());
+        
+        assertEquals(category, actual);
+    }
+    
+    @Test
+    public void category_0() {
+        
+        // input argument
+        final Long categoryId = (long) 1;
+        
+        // mock
+        Category category = new Category();
+        
+        // stubs
+        when(categoryService.findById((Long) anyLong())).thenReturn(category);
+        
+        // execute
+        Category actual = apiMsoService.category(categoryId);
+        
+        // verify
+        verify(categoryService).findById(categoryId);
+        assertEquals(category, actual);
+    }
+    
+    @Test
+    public void category_1() {
+        
+        // input argument
+        final Long categoryId = null;
+        
+        // execute
+        Category actual = apiMsoService.category(categoryId);
+        
+        // verify
+        verifyZeroInteractions(categoryService);
+        assertNull(actual);
+    }
 
 }
