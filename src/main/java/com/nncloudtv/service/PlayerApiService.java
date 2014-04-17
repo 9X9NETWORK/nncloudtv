@@ -1192,7 +1192,8 @@ public class PlayerApiService {
     public Object programInfo(String channelIds, String episodeIdStr, 
                                   String userToken, String ipgId,
                                   boolean userInfo, String sidx, String limit,
-                                  String start, String count) {
+                                  String start, String count,
+                                  String time) {
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
@@ -1208,7 +1209,7 @@ public class PlayerApiService {
         if (sidx != null) {
             start = sidx;
             count = limit;
-        }
+        }       
         int startI = 1;
         int countI = PAGING_ROWS;
         if (start != null) { startI = Integer.parseInt(start); }
@@ -1220,6 +1221,10 @@ public class PlayerApiService {
         startI = startI / PAGING_ROWS;
         startI = startI * PAGING_ROWS;
         end = startI + countI; 
+
+        Short shortTime = 24;
+        if (time != null)
+        	shortTime = Short.valueOf(time);        	
         
         String programInfoStr = "";
         String paginationStr = "";
@@ -1234,7 +1239,20 @@ public class PlayerApiService {
                 if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
                     
                     pagination = true;
-                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : episode.getSeq() - 1;
+                    int unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq < " + episode.getSeq() + " && isPublic == false");
+                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - 1) - unPublicCnt;
+                    
+                    NnChannel channel = chMngr.findById(channelIds);
+                    if (channel != null && channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+                        
+                        // reversed playlist
+                        int totalCnt = epMngr.total("channelId == " + channelIds);
+                        unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq > " + episode.getSeq() + " && isPublic == false");
+                        startI = totalCnt - episode.getSeq() - unPublicCnt;
+                        if (startI < PAGING_ROWS) startI = 0;
+                    }
+                    
+                    if (startI < 0) startI = 0;
                     end = startI + PAGING_ROWS;
                     
                 } else if (episode.getChannelId() == 0) {
@@ -1267,14 +1285,14 @@ public class PlayerApiService {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
-                        programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
+                        programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                         if (pagination) {
                             NnChannel c = new NnChannelManager().findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
                     } else {
-                        programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format);
+                        programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                     }
                 }
             }
@@ -1311,14 +1329,14 @@ public class PlayerApiService {
             } else {
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String)programMngr.findPlayerProgramInfoByChannel(cId, startI, end, version, this.format);
+                    programInfoStr = (String)programMngr.findPlayerProgramInfoByChannel(cId, startI, end, version, this.format, shortTime, mso);
                     if (pagination) {
                         NnChannel c = chMngr.findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
                 } else {
-                    programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format);
+                    programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format, shortTime, mso);
                     playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
@@ -3105,7 +3123,7 @@ System.out.println("result 0:" + result[0]);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
 
-    public Object setInfo(String id, String name) {
+    public Object setInfo(String id, String name, String time) {
         if (id == null && name == null) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
@@ -3144,31 +3162,22 @@ System.out.println("result 0:" + result[0]);
         List<NnChannel> channels = new ArrayList<NnChannel>();
         if (systag.getType() == SysTag.TYPE_DAYPARTING) {
             channels.addAll(systagMngr.findPlayerChannelsById(systagId, display.getLang(), true, 0));
+        } else if (systag.getType() == SysTag.TYPE_WHATSON) {
+            channels.addAll(systagMngr.findPlayerHiddenChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));
+            
         } else {
             channels.addAll(systagMngr.findPlayerChannelsById(systagId, null, systag.getSorting(), 0));
         }
-//        String result[] = {"", "", "", ""};
-//        //mso info
-//        result[0] += PlayerApiService.assembleKeyValue("name", mso.getName());
-//        result[0] += PlayerApiService.assembleKeyValue("imageUrl", mso.getLogoUrl()); 
-//        result[0] += PlayerApiService.assembleKeyValue("intro", mso.getIntro());            
-//        //set info
-//        result[1] += PlayerApiService.assembleKeyValue("id", String.valueOf(display.getId()));
-//        result[1] += PlayerApiService.assembleKeyValue("name", display.getName());
-//        result[1] += PlayerApiService.assembleKeyValue("imageUrl", display.getImageUrl());
         //channel info
         for (NnChannel c : channels) {
             if (c.getStatus() == NnChannel.STATUS_SUCCESS && c.isPublic())
-                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
-        }
-//        result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
-        //program info
-        //NnProgramManager programMngr = new NnProgramManager();
-        //String programStr = programMngr.findLatestProgramInfoByChannels(channels, version, this.format);
-        //result[3] = programStr;        
+                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));           
+        }        
         List<NnProgram> programs = new ArrayList<NnProgram>();
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, display, channels, programs, version, this.format));
-        //return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
+        Short shortTime = 24;
+        if (time != null)
+            shortTime = Short.valueOf(time);        	        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime));
     }
 
     public Object endpointRegister(String userToken, String token, String vendor, String action) {

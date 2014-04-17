@@ -375,7 +375,7 @@ public class SysTagDisplayManager {
         }     	
     }       
     
-    public Object getPlayerSetInfo(Mso mso, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format) {
+    public Object getPlayerSetInfo(Mso mso, SysTag systag, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format, short time) {
     	String name = mso.getName();
     	String imageUrl = mso.getLogoUrl();
     	String intro = mso.getIntro();
@@ -390,44 +390,63 @@ public class SysTagDisplayManager {
                 c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
         }
     	if (format == PlayerApiService.FORMAT_PLAIN) {
-	        String result[] = {"", "", "", ""};
-	        //mso info
-	        result[0] += PlayerApiService.assembleKeyValue("name", name);
-	        result[0] += PlayerApiService.assembleKeyValue("imageUrl", imageUrl); 
-	        result[0] += PlayerApiService.assembleKeyValue("intro", intro);            
-	        //set info
-	        result[1] += PlayerApiService.assembleKeyValue("id", setId);
-	        result[1] += PlayerApiService.assembleKeyValue("name", setName);
-	        result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
-	        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
-	        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);	        
-	        //channel info
-	        result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
-	        //program info
-	        String programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
-	        result[3] = programStr;
-	        return result;
-    	} else {
-    		PlayerSetInfo json = new PlayerSetInfo();
-    		json.setMsoName(name);
-    		json.setMsoImageUrl(imageUrl);
-    		json.setMsoDescription(intro);
-    		SetInfo setInfo = new SetInfo();
-    		setInfo.setId(setId);
-    		setInfo.setName(setName);
-    		setInfo.setThumbnail(setImageUrl);
-    		setInfo.setBannerImageUrl(bannerImageUrl);
-    		setInfo.setBannerImageUrl2(bannerImageUrl2);
-    		List<SetInfo> setInfoList = new ArrayList<SetInfo>();
-    		setInfoList.add(setInfo);
-    		json.setSetInfo(setInfoList);
-    		@SuppressWarnings("unchecked")
-			List<ChannelLineup> lineups = (List<ChannelLineup>)new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_JSON);
-    		json.setChannels(lineups);    		
-    		@SuppressWarnings("unchecked")
-    		List<ProgramInfo> programInfo = (List<ProgramInfo>) programMngr.findLatestProgramInfoByChannels(channels, format);
-    		json.setPrograms(programInfo);
-    		return json; 
+	    String result[] = {"", "", "", ""};
+	    //mso info
+	    result[0] += PlayerApiService.assembleKeyValue("name", name);
+	    result[0] += PlayerApiService.assembleKeyValue("imageUrl", imageUrl); 
+	    result[0] += PlayerApiService.assembleKeyValue("intro", intro);            
+	    //set info
+	    result[1] += PlayerApiService.assembleKeyValue("id", setId);
+	    result[1] += PlayerApiService.assembleKeyValue("name", setName);
+	    result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
+	    result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
+	    result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);	        
+	    //channel info
+	    result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
+	    //program info
+	    String programStr = null;
+	    if (systag.getType() != SysTag.TYPE_WHATSON) {
+	        programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);	        
+	    } else {
+	        log.info("enter whats on systag");
+	        NnChannel daypartingChannel = null;
+	        for (NnChannel c : channels) {
+                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
+                   daypartingChannel = c;            		
+                }	        		       
+	        SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
+                if (dayparting != null) {
+                   log.info("dayparting:" + dayparting.getName());
+                   List<NnChannel> daypartingChannels = new SysTagManager().findPlayerChannelsById(dayparting.getSystagId(), display.getLang(), true, 0);
+                   List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
+                   programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
+		}
+	           List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);            
+	           programStr += programMngr.composeYtProgramInfo(null, ytprograms, format);            	                            		        
+	    }
+	    result[3] = programStr;
+            return result;
+       } else {
+    	    PlayerSetInfo json = new PlayerSetInfo();
+    	    json.setMsoName(name);
+    	    json.setMsoImageUrl(imageUrl);
+            json.setMsoDescription(intro);
+    	    SetInfo setInfo = new SetInfo();
+    	    setInfo.setId(setId);
+    	    setInfo.setName(setName);
+    	    setInfo.setThumbnail(setImageUrl);
+    	    setInfo.setBannerImageUrl(bannerImageUrl);
+    	    setInfo.setBannerImageUrl2(bannerImageUrl2);
+    	    List<SetInfo> setInfoList = new ArrayList<SetInfo>();
+    	    setInfoList.add(setInfo);
+    	    json.setSetInfo(setInfoList);
+    	    @SuppressWarnings("unchecked")
+            List<ChannelLineup> lineups = (List<ChannelLineup>)new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_JSON);
+    	    json.setChannels(lineups);    		
+    	    @SuppressWarnings("unchecked")
+    	    List<ProgramInfo> programInfo = (List<ProgramInfo>) programMngr.findLatestProgramInfoByChannels(channels, format);
+    	    json.setPrograms(programInfo);
+    	    return json; 
     	}
     }
     

@@ -282,4 +282,12 @@ public class NnEpisodeManager {
         }
     }
     
+    
+    public int total() {
+        return dao.total();
+    }
+    
+    public int total(String filter) {
+        return dao.total(filter);
+    }
 }
