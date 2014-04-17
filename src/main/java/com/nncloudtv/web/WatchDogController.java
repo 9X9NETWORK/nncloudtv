@@ -212,7 +212,7 @@ public class WatchDogController {
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel) {
         NnProgramManager mngr = new NnProgramManager();
-        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN);        
+        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN, (short) 0, null);
         if (result == null)
             return "null, error";
         String output = "";

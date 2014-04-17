@@ -628,6 +628,7 @@ public class PlayerApiController {
             @RequestParam(value="set", required=false) String id,
             @RequestParam(value="v", required=false) String v,
             @RequestParam(value="landing", required=false) String name,
+            @RequestParam(value="time", required = false) String time,            
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -639,7 +640,7 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
                 return playerApiService.assembleMsgs(status, null);
             }                    	
-            output = playerApiService.setInfo(id, name);
+            output = playerApiService.setInfo(id, name, time);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1113,6 +1114,7 @@ public class PlayerApiController {
             @RequestParam(value="limit", required = false) String limit,
             @RequestParam(value="start", required = false) String start,
             @RequestParam(value="count", required = false) String count,
+            @RequestParam(value="time", required = false) String time,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -1131,7 +1133,7 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count);
+            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

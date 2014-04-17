@@ -375,7 +375,7 @@ public class SysTagDisplayManager {
         }     	
     }       
     
-    public Object getPlayerSetInfo(Mso mso, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format) {
+    public Object getPlayerSetInfo(Mso mso, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format, short time) {
     	String name = mso.getName();
     	String imageUrl = mso.getLogoUrl();
     	String intro = mso.getIntro();
@@ -404,7 +404,25 @@ public class SysTagDisplayManager {
 	        //channel info
 	        result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
 	        //program info
-	        String programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+	        String programStr = null;
+	        if (time > 23) {
+	        	programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);	        
+	        } else {
+	            NnChannel daypartingChannel = null;
+	            for (NnChannel c : channels) {
+                	if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
+                        daypartingChannel = c;            		
+                }	        		       
+		        SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
+		        if (dayparting != null) {
+		            log.info("dayparting:" + dayparting.getName());
+		            List<NnChannel> daypartingChannels = new SysTagManager().findPlayerChannelsById(dayparting.getSystagId(), display.getLang(), true, 0);
+		            List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
+		            programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
+		        }
+	            List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);            
+	            programStr += programMngr.composeYtProgramInfo(null, ytprograms, format);            	                            		        
+	        }
 	        result[3] = programStr;
 	        return result;
     	} else {
