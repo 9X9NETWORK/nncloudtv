@@ -1243,9 +1243,10 @@ public class PlayerApiService {
                         // reversed playlist
                         int totalCnt = epMngr.total("channelId == " + channelIds);
                         unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq > " + episode.getSeq() + " && isPublic == false");
-                        startI = totalCnt - (episode.getSeq() - 1) - unPublicCnt;
+                        startI = totalCnt - episode.getSeq() - unPublicCnt;
                         if (startI < PAGING_ROWS) startI = 0;
                     }
+                    
                     if (startI < 0) startI = 0;
                     end = startI + PAGING_ROWS;
                     
