@@ -1239,7 +1239,20 @@ public class PlayerApiService {
                 if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
                     
                     pagination = true;
-                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : episode.getSeq() - 1;
+                    int unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq < " + episode.getSeq() + " && isPublic == false");
+                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - 1) - unPublicCnt;
+                    
+                    NnChannel channel = chMngr.findById(channelIds);
+                    if (channel != null && channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+                        
+                        // reversed playlist
+                        int totalCnt = epMngr.total("channelId == " + channelIds);
+                        unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq > " + episode.getSeq() + " && isPublic == false");
+                        startI = totalCnt - episode.getSeq() - unPublicCnt;
+                        if (startI < PAGING_ROWS) startI = 0;
+                    }
+                    
+                    if (startI < 0) startI = 0;
                     end = startI + PAGING_ROWS;
                     
                 } else if (episode.getChannelId() == 0) {
@@ -3163,8 +3176,8 @@ System.out.println("result 0:" + result[0]);
         List<NnProgram> programs = new ArrayList<NnProgram>();
         Short shortTime = 24;
         if (time != null)
-        	shortTime = Short.valueOf(time);        	        
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, display, channels, programs, version, this.format, shortTime));
+            shortTime = Short.valueOf(time);        	        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime));
     }
 
     public Object endpointRegister(String userToken, String token, String vendor, String action) {

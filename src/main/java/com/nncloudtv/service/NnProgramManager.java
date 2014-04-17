@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnProgramDao;
@@ -42,6 +43,21 @@ public class NnProgramManager {
     
     private NnProgramDao dao = new NnProgramDao();
     private YtProgramDao ytDao = new YtProgramDao();
+    private NnChannelManager chMngr;
+    private NnEpisodeManager epMngr;
+    
+    public NnProgramManager() {
+        
+        this.chMngr = new NnChannelManager();
+        this.epMngr = new NnEpisodeManager();
+    }
+    
+    @Autowired
+    public NnProgramManager(NnChannelManager chMngr, NnEpisodeManager epMngr) {
+        
+        this.chMngr = chMngr;
+        this.epMngr = epMngr;
+    }
     
     public NnProgram create(NnEpisode episode, NnProgram program) {
         
@@ -453,26 +469,26 @@ public class NnProgramManager {
     //player programInfo entry
     //don't cache dayparting for now. dayparting means time = 0 ~ 23
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format, short time, Mso mso) {
-    	//don't cache dayparting for now
-    	log.info("time:" + time);
-    	String cacheKey = null;
-        if (time > 23) {
-	        cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
-	        if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
-	            try {
-	                String result = (String)CacheFactory.get(cacheKey);
-	                if (result != null) {
-	                    log.info("cached programInfo, channelId = " + cacheKey);
-	                    return result;
-	                } 
-	            } catch (Exception e) {
-	                log.info("memcache error");
-	            }
-	        }
-        }
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
+    	//don't cache dayparting for now
+    	log.info("time:" + time);
+    	String cacheKey = null;
+        if (c.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
+	    cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
+	    if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
+	        try {
+	            String result = (String)CacheFactory.get(cacheKey);
+	            if (result != null) {
+	                log.info("cached programInfo, channelId = " + cacheKey);
+	                return result;
+	            } 
+	        } catch (Exception e) {
+	            log.info("memcache error");
+	        }
+	    }
+        }
         Object output = this.assembleProgramInfo(c, format, start, end, time, mso);
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
         	if (cacheKey != null) {
@@ -486,7 +502,7 @@ public class NnProgramManager {
     //find "good" programs, to find nnchannel type of programs, use findPlayerNnProgramsByChannel
     public List<NnProgram> findPlayerProgramsByChannel(long channelId) {
         List<NnProgram> programs = new ArrayList<NnProgram>();
-        NnChannel c = new NnChannelManager().findById(channelId);
+        NnChannel c = chMngr.findById(channelId);
         if (c == null)
             return programs;
         programs = dao.findPlayerProgramsByChannel(c); //sort by seq and subSeq
@@ -530,7 +546,7 @@ public class NnProgramManager {
     //based on channel type, assemble programInfo string
     public Object assembleProgramInfo(NnChannel c, short format, int start, int end, short time, Mso mso) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
-            List<NnEpisode> episodes = new NnEpisodeManager().findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
+            List<NnEpisode> episodes = epMngr.findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
