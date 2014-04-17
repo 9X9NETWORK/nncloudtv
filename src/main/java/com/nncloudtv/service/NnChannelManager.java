@@ -667,7 +667,7 @@ public class NnChannelManager {
     public int total(String filter) {
         return dao.total(filter);
     }
-
+    
     public String verifyUrl(String url) {
         if (url == null) return null;
         if (!url.contains("http://") && !url.contains("https://"))

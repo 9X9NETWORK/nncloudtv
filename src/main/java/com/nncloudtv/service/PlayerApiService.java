@@ -1233,8 +1233,10 @@ public class PlayerApiService {
                 
                 if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
                     
+                    int unPublicCnt = epMngr.total("seq < " + episode.getSeq() + " && isPublic == false");
                     pagination = true;
-                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : episode.getSeq() - 1;
+                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - unPublicCnt - 1);
+                    if (startI < 0) startI = 0;
                     end = startI + PAGING_ROWS;
                     
                 } else if (episode.getChannelId() == 0) {
