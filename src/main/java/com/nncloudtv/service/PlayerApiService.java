@@ -1233,9 +1233,19 @@ public class PlayerApiService {
                 
                 if (channelIds.equals(String.valueOf(episode.getChannelId()))) {
                     
-                    int unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq < " + episode.getSeq() + " && isPublic == false");
                     pagination = true;
-                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - unPublicCnt - 1);
+                    int unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq < " + episode.getSeq() + " && isPublic == false");
+                    startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - 1) - unPublicCnt;
+                    
+                    NnChannel channel = chMngr.findById(channelIds);
+                    if (channel != null && channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+                        
+                        // reversed playlist
+                        int totalCnt = epMngr.total("channelId == " + channelIds);
+                        unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq > " + episode.getSeq() + " && isPublic == false");
+                        startI = totalCnt - (episode.getSeq() - 1) - unPublicCnt;
+                        if (startI < PAGING_ROWS) startI = 0;
+                    }
                     if (startI < 0) startI = 0;
                     end = startI + PAGING_ROWS;
                     
