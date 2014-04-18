@@ -816,5 +816,102 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(categoryService);
         assertNull(actual);
     }
+    
+    @Test
+    public void categoryUpdate_0() {
+        
+        // input argument
+        final Long categoryId = (long) 1;
+        final Short seq = 1;
+        final String zhName = "修改的中文名";
+        final String enName = "modified english name";
+        
+        // mocks
+        Category category = new Category();
+        category.setId(categoryId);
+        
+        // stubs
+        when(categoryService.findById((Long) anyLong())).thenReturn(category);
+        when(categoryService.getCntChannel((Long) anyLong())).thenReturn(3);
+        when(categoryService.save((Category) anyObject())).thenReturn(category);
+        
+        // execute
+        Category actual = apiMsoService.categoryUpdate(categoryId, seq, zhName, enName);
+        
+        // verify
+        verify(categoryService).findById(categoryId);
+        verify(categoryService).getCntChannel(categoryId);
+        
+        ArgumentCaptor<Category> arg = ArgumentCaptor.forClass(Category.class);
+        verify(categoryService).save(arg.capture());
+        Category category_arg = arg.getValue();
+        assertEquals(seq, (Short) category_arg.getSeq());
+        assertEquals(zhName, category_arg.getZhName());
+        assertEquals(enName, category_arg.getEnName());
+        assertEquals(3, category_arg.getCntChannel());
+        
+        assertEquals(category, actual);
+    }
+    
+    @Test
+    public void categoryDelete_0() {
+        
+        // input argument
+        final Long categoryId = (long) 1;
+        
+        // execute
+        apiMsoService.categoryDelete(categoryId);
+        
+        // verify
+        verify(categoryService).delete(categoryId);
+    }
+    
+    @Test
+    public void categoryDelete_1() {
+        
+        // input argument
+        final Long categoryId = null;
+        
+        // execute
+        apiMsoService.categoryDelete(categoryId);
+        
+        // verify
+        verifyZeroInteractions(categoryService);
+    }
+    
+    @Test
+    public void categoryChannels_0() {
+        
+        // input argument
+        final Long categoryId = (long) 1;
+        
+        // mocks
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        
+        // stubs
+        when(categoryService.getChannelsOrderByUpdateTime((Long) anyLong())).thenReturn(channels);
+        when(channelMngr.responseNormalization(anyListOf(NnChannel.class))).thenReturn(channels);
+        
+        // execute
+        List<NnChannel> actual = apiMsoService.categoryChannels(categoryId);
+        
+        // verify
+        verify(categoryService).getChannelsOrderByUpdateTime(categoryId);
+        verify(channelMngr).responseNormalization(channels);
+        assertEquals(channels, actual);
+    }
+    
+    @Test
+    public void categoryChannels_1() {
+        
+        // input argument
+        final Long categoryId = null;
+        
+        // execute
+        List<NnChannel> actual = apiMsoService.categoryChannels(categoryId);
+        
+        // verify
+        assertNotNull(actual);
+    }
 
 }
