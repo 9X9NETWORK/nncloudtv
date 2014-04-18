@@ -2763,7 +2763,6 @@ System.out.println("result 0:" + result[0]);
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-
         if (type == null)
            type = "portal";
         if (type != null && type.equals("whatson"))
