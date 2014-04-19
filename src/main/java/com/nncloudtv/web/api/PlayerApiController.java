@@ -2734,10 +2734,13 @@ public class PlayerApiController {
      * 
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
-     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned. 
-     * @return <p>Three sections, First is sets. Format please reference listRecommended. <br/> 
+     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned.
+     * @return <p>Three sections, First is sets. It has set id, set name, set description, set image, set channel count, banner image 1, banner image 2, channel tag. 
+     *            Channel tag format in the note.<br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
      *            Third is the first episode of every channel from the second section. Format please reference programInfo.
+     *         <p>Note: channel format: tag name separated by ";", channel id separated by ",".
+     *            Example: TAG_NAME1:channelId1,channelId;TAG_NAME2:channelId1,channelId2   
      */    
     @RequestMapping(value="portal")
     public @ResponseBody Object portal(                      
