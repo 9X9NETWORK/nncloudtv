@@ -157,13 +157,7 @@ public class SysTagDisplayManager {
     	NnProgramManager programMngr = new NnProgramManager();        
         //在Store裡, "最新上架"就是"alwaysOnTop".	        
         SysTagMapManager mapMngr = new SysTagMapManager();
-        List<SysTagMap> maps = mapMngr.findBySysTagId(display.getId());
-        String latest = "latest:";
-        for (SysTagMap map : maps) {
-        	latest += map.getChannelId() + ",";
-        }       	
-        latest = latest.replaceAll(",$", "");
-
+        String latest = this.getTag(display.getSystagId(), "store");
         //1. category info            	
     	if (format == PlayerApiService.FORMAT_PLAIN) {
 	        List<String> result = new ArrayList<String>();	        
@@ -279,24 +273,40 @@ public class SysTagDisplayManager {
         return result;    	
     }
     
-    private String getTag(long systagId) {
-        List<SysTagMap> maps = new SysTagMapManager().findBySysTagId(systagId);    	
-        //在Home裡, "推薦"就是"alwaysOnTop", "熱門"就是"featured".
+    private String getTag(long systagId, String type) {
+    	//在Home裡, "推薦"就是"alwaysOnTop", "熱門"就是"featured".
+    	//在Store裡, "最新上架"就是"alwaysOnTop".
+    	
+        List<SysTagMap> maps = new SysTagMapManager().findBySysTagId(systagId);
+        List<String> tags = new ArrayList<String>();
         String hot = "hot:";
-        String recommended = "recommended:";
+        String alwaysOnTop = "recommended:";
+        if (type.equals("store"))
+        	alwaysOnTop = "latest:";
+
         for (SysTagMap map : maps) {
-        	System.out.println("map tagId:" + map.getSysTagId() + ";channelId:" + map.getChannelId() + ";isFeatured:" + map.isFeatured() + ";always:" + map.isAlwaysOnTop());
-        	if (map.isFeatured()) {
+        	if (map.isFeatured() && type.equals("portal")) {        		
         		hot += map.getChannelId() + ",";
         	}
         	if (map.isAlwaysOnTop()) {
-        		recommended += map.getChannelId() + ",";
+        		alwaysOnTop += map.getChannelId() + ",";
         	}
         }
         hot = hot.replaceAll(",$", "");
-        recommended = recommended.replaceAll(",$", "");
-        String tag = hot + ";" + recommended;
-        return tag;
+        alwaysOnTop = alwaysOnTop.replaceAll(",$", "");
+        if (hot.endsWith(":"))
+        	hot = "";
+        if (alwaysOnTop.endsWith(":"))
+        	alwaysOnTop = "";
+        tags.add(hot);
+        tags.add(alwaysOnTop);
+        String tagStr = "";     
+        for (String tag : tags) {
+        	if (tag.length() > 0)
+        		tagStr += tag + ";";
+        }
+        tagStr = tagStr.replaceAll(";$", "");
+        return tagStr;
     }
     
     @SuppressWarnings("unchecked")
@@ -326,7 +336,7 @@ public class SysTagDisplayManager {
         	String imageUrl2 = display.getImageUrl2();
         	String bannerImageUrl = display.getBannerImageUrl();
         	String bannerImageUrl2 = display.getBannerImageUrl2();
-	        String channeltag = this.getTag(display.getSystagId());
+	        String channeltag = this.getTag(display.getSystagId(), "portal");
         	if (format == PlayerApiService.FORMAT_PLAIN) {
 	            String[] obj = {
 	                id,
@@ -434,7 +444,7 @@ public class SysTagDisplayManager {
 	    result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
 	    result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
 	    result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);
-	    result[1] += PlayerApiService.assembleKeyValue("channeltag", this.getTag(display.getSystagId()));
+	    result[1] += PlayerApiService.assembleKeyValue("channeltag", this.getTag(display.getSystagId(), "portal"));
 	    //channel info
 	    result[2] = (String) new NnChannelManager().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
 	    //program info
