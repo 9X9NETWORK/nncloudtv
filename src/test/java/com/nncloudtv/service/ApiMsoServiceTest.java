@@ -913,5 +913,173 @@ public class ApiMsoServiceTest {
         // verify
         assertNotNull(actual);
     }
+    
+    @Test
+    public void categoryChannelAdd_0() {
+        
+        // input argument
+        final Category category = new Category();
+        category.setId(1);
+        category.setMsoId(1);
+        
+        final List<Long> channelIds = new ArrayList<Long>();
+        channelIds.add((long) 1);
+        channelIds.add((long) 2);
+        channelIds.add((long) 3);
+        
+        final Long channelId = null;
+        final Short seq = null;
+        final Boolean alwaysOnTop = null;
+        
+        // mocks
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        List<Long> verifiedChannelIds = new ArrayList<Long>();
+        
+        // stubs
+        when(channelMngr.findByIds(anyListOf(Long.class))).thenReturn(channels);
+        when(msoMngr.getPlayableChannels(anyListOf(NnChannel.class), (Long) anyLong())).thenReturn(verifiedChannelIds);
+        
+        // execute
+        apiMsoService.categoryChannelAdd(category, channelIds, channelId, seq, alwaysOnTop);
+        
+        // verify
+        verify(channelMngr).findByIds(channelIds);
+        verify(msoMngr).getPlayableChannels(channels, category.getMsoId());
+        verify(categoryService).addChannelsToCategory(category.getId(), verifiedChannelIds);
+    }
+    
+    @Test
+    public void categoryChannelAdd_1() {
+        
+        // input argument
+        final Category category = new Category();
+        category.setId(1);
+        category.setMsoId(1);
+        
+        final List<Long> channelIds = null;
+        
+        final Long channelId = (long) 1;
+        final Short seq = 1;
+        final Boolean alwaysOnTop = true;
+        
+        // mocks
+        NnChannel channel = new NnChannel("name", "intro", "imageUrl");
+        
+        // stubs
+        when(channelMngr.findById((Long) anyLong())).thenReturn(channel);
+        when(msoMngr.isPlayableChannel((NnChannel) anyObject(), (Long) anyLong())).thenReturn(true);
+        
+        // execute
+        apiMsoService.categoryChannelAdd(category, channelIds, channelId, seq, alwaysOnTop);
+        
+        // verify
+        verify(channelMngr).findById(channelId);
+        verify(msoMngr).isPlayableChannel(channel, category.getMsoId());
+        verify(categoryService).addChannelToCategory(category.getId(), channelId, seq, alwaysOnTop);
+    }
+    
+    @Test
+    public void categoryChannelRemove_0() {
+        
+        // input argument
+        final Long categoryId = (long) 1;
+        final List<Long> channelIds = new ArrayList<Long>();
+        channelIds.add((long) 1);
+        channelIds.add((long) 2);
+        channelIds.add((long) 3);
+        
+        // execute
+        apiMsoService.categoryChannelRemove(categoryId, channelIds);
+        
+        // verify
+        verify(categoryService).removeChannelsFromCategory(categoryId, channelIds);
+    }
+    
+    @Test
+    public void categoryChannelRemove_1() {
+        
+        // input argument
+        final Long categoryId = null;
+        final List<Long> channelIds = null;
+        
+        // execute
+        apiMsoService.categoryChannelRemove(categoryId, channelIds);
+        
+        // verify
+        verifyZeroInteractions(categoryService);
+    }
+    
+    @Test
+    public void msoSystemCategoryLocks_0() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        
+        // mocks
+        List<String> locks = new ArrayList<String>();
+        
+        // stubs
+        when(storeService.getStoreCategoryLocks((Long) anyLong())).thenReturn(locks);
+        
+        // execute
+        List<String> actual = apiMsoService.msoSystemCategoryLocks(msoId);
+        
+        // verify
+        verify(storeService).getStoreCategoryLocks(msoId);
+        assertEquals(locks, actual);
+    }
+    
+    @Test
+    public void msoSystemCategoryLocks_1() {
+        
+        // input argument
+        final Long msoId = null;
+        
+        // execute
+        List<String> actual = apiMsoService.msoSystemCategoryLocks(msoId);
+        
+        // verify
+        verifyZeroInteractions(storeService);
+        assertNotNull(actual);
+    }
+    
+    @Test
+    public void msoSystemCategoryLocksUpdate_0() {
+        
+        // input argument
+        final Long msoId = (long) 1;
+        final List<String> systemCategoryLocks = new ArrayList<String>();
+        systemCategoryLocks.add("1");
+        systemCategoryLocks.add("2");
+        systemCategoryLocks.add("3");
+        
+        // mocks
+        List<String> locks = new ArrayList<String>();
+        
+        // stubs
+        when(storeService.setStoreCategoryLocks((Long) anyLong(), anyListOf(String.class))).thenReturn(locks);
+        
+        // execute
+        List<String> actual = apiMsoService.msoSystemCategoryLocksUpdate(msoId, systemCategoryLocks);
+        
+        // verify
+        verify(storeService).setStoreCategoryLocks(msoId, systemCategoryLocks);
+        assertEquals(locks, actual);
+    }
+    
+    @Test
+    public void msoSystemCategoryLocksUpdate_1() {
+        
+        // input argument
+        final Long msoId = null;
+        final List<String> systemCategoryLocks = null;
+        
+        // execute
+        List<String> actual = apiMsoService.msoSystemCategoryLocksUpdate(msoId, systemCategoryLocks);
+        
+        // verify
+        verifyZeroInteractions(storeService);
+        assertNotNull(actual);
+    }
 
 }
