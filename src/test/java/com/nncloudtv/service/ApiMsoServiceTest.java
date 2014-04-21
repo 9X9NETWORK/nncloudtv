@@ -405,12 +405,13 @@ public class ApiMsoServiceTest {
         final Short timeStart = null;
         final Short timeEnd = null;
         final Boolean alwaysOnTop = null;
+        final Boolean featured = null;
         
         // execute
-        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
         
         // verify
-        verify(setService).addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        verify(setService).addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
     }
     
     @Test
@@ -422,9 +423,10 @@ public class ApiMsoServiceTest {
         final Short timeStart = null;
         final Short timeEnd = null;
         final Boolean alwaysOnTop = null;
+        final Boolean featured = null;
         
         // execute
-        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop);
+        apiMsoService.setChannelAdd(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
         
         // verify
         verifyZeroInteractions(setService);
