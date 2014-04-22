@@ -273,32 +273,37 @@ public class SysTagDisplayManager {
         return result;    	
     }
     
+    //type: "store", "portal"
     private String getTag(long systagId, String type) {
-    	//在Home裡, "推薦"就是"alwaysOnTop", "熱門"就是"featured".
-    	//在Store裡, "最新上架"就是"alwaysOnTop".
-    	
+    	//在portal裡, "best"就是"alwaysOnTop", "hot"就是"featured".
+    	//在portal的 Program, 如果排序是根據 seq (手動排序) 的話，要把「BEST」標籤的資訊隱藏起來
+    	//在Store裡, best"就是"alwaysOnTop".
+    	String TYPE_STORE = "store";
+    	String TYPE_PORTAL = "portal";
+    	SysTag systag = new SysTagManager().findById(systagId);
+    	if (systag == null)
+    		return "";
         List<SysTagMap> maps = new SysTagMapManager().findBySysTagId(systagId);
         List<String> tags = new ArrayList<String>();
-        String hot = "hot:";
-        String alwaysOnTop = "recommended:";
-        if (type.equals("store"))
-        	alwaysOnTop = "latest:";
+        String featured = "hot:";
+        String alwaysOnTop = "best:";
 
         for (SysTagMap map : maps) {
-        	if (map.isFeatured() && type.equals("portal")) {        		
-        		hot += map.getChannelId() + ",";
+        	if (map.isFeatured() && type.equals(TYPE_PORTAL)) {        		
+        		featured += map.getChannelId() + ",";
         	}
         	if (map.isAlwaysOnTop()) {
-        		alwaysOnTop += map.getChannelId() + ",";
+        		if (type.equals(TYPE_STORE) || (type.equals(TYPE_PORTAL) && systag.getSorting() != SysTag.SORT_SEQ))
+        			alwaysOnTop += map.getChannelId() + ",";
         	}
         }
-        hot = hot.replaceAll(",$", "");
+        featured = featured.replaceAll(",$", "");
         alwaysOnTop = alwaysOnTop.replaceAll(",$", "");
-        if (hot.endsWith(":"))
-        	hot = "";
+        if (featured.endsWith(":"))
+        	featured = "";
         if (alwaysOnTop.endsWith(":"))
         	alwaysOnTop = "";
-        tags.add(hot);
+        tags.add(featured);
         tags.add(alwaysOnTop);
         String tagStr = "";     
         for (String tag : tags) {
