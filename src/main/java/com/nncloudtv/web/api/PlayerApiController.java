@@ -980,7 +980,8 @@ public class PlayerApiController {
      *                      YOUTUBE_CHANNEL=3; YOUTUBE_PLAYERLIST=4                        
      *                      FACEBOOK_CHANNEL=5; 
      *                      MIX_CHANNEL=6; SLIDE=7;
-     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9    
+     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9  
+     *                      DAYPARTING = 14; TRENDING = 15;  
      *         <p>
      *         channel episodes last update time: it does not always accurate on Youtube channels. It will pass channel create date on FB channels.
      *         <p>
@@ -1077,7 +1078,8 @@ public class PlayerApiController {
      * @param  sidx [deprecated]the start index for pagination
      * @param  limit [deprecated] the count of records
      * @param  start the start index for pagination. If "start" param is presented, the pagination info will be shown in the return data in the 2nd block.
-     * @param  count the count of records. Currently server always sets it 50. 
+     * @param  count the count of records. Currently server always sets it 50.
+     * @time   0-23, required for dayparting channels (channel type 14). 
      * @return <p>If "start" is presented, data returns in two blocks. First block is pagination information. Second block is program information.
      *         <p>First block (if pagination enabled): channelId, number of return records, total number of records. Example:<br/>
      *            25096    50    121 <br/> 
