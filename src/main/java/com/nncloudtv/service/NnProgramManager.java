@@ -467,34 +467,34 @@ public class NnProgramManager {
     }
     
     //player programInfo entry
-    //don't cache dayparting for now. dayparting means time = 0 ~ 23
+    //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format, short time, Mso mso) {
         NnChannel c = new NnChannelManager().findById(channelId);
         if (c == null)
             return "";
-    	//don't cache dayparting for now
-    	log.info("time:" + time);
-    	String cacheKey = null;
+        //don't cache dayparting for now
+        log.info("time:" + time);
+        String cacheKey = null;
         if (c.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
-	    cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
-	    if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
-	        try {
-	            String result = (String)CacheFactory.get(cacheKey);
-	            if (result != null) {
-	                log.info("cached programInfo, channelId = " + cacheKey);
-	                return result;
-	            } 
-	        } catch (Exception e) {
-	            log.info("memcache error");
-	        }
-	    }
+            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
+            if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
+                try {
+                    String result = (String)CacheFactory.get(cacheKey);
+                    if (result != null) {
+                        log.info("cached programInfo, channelId = " + cacheKey);
+                        return result;
+                    } 
+                } catch (Exception e) {
+                    log.info("memcache error");
+                }
+            }
         }
         Object output = this.assembleProgramInfo(c, format, start, end, time, mso);
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
-        	if (cacheKey != null) {
-	            log.info("store programInfo, key = " + cacheKey);
-	            CacheFactory.set(cacheKey, output);
-        	}
+            if (cacheKey != null) {
+                log.info("store programInfo, key = " + cacheKey);
+                CacheFactory.set(cacheKey, output);
+            }
         }
         return output;
     }
@@ -550,22 +550,22 @@ public class NnProgramManager {
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
-        	SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        	SysTagManager systagMngr = new SysTagManager();
+            SysTagDisplayManager displayMngr = new SysTagDisplayManager();
+            SysTagManager systagMngr = new SysTagManager();
             SysTagDisplay dayparting = displayMngr.findDayparting(time, c.getLang(), mso.getId());
-        	List<YtProgram> ytprograms = new ArrayList<YtProgram>();
+            List<YtProgram> ytprograms = new ArrayList<YtProgram>();
             if (dayparting != null) {
                 log.info("dayparting:" + dayparting.getName());
                 long msoId = 0;
                 if (mso != null)
-                	msoId = mso.getId();
+                    msoId = mso.getId();
                 List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), c.getLang(), true, msoId);
                 ytprograms = new YtProgramDao().findByChannels(daypartingChannels);
-        	}
+            }
             return this.composeYtProgramInfo(c, ytprograms, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_TRENDING) {
-        	List<NnChannel> channels = new ArrayList<NnChannel>();
-        	channels.add(c);
+            List<NnChannel> channels = new ArrayList<NnChannel>();
+            channels.add(c);
             List<YtProgram> ytprograms =  new YtProgramDao().findByChannels(channels);
             return this.composeYtProgramInfo(c, ytprograms, format);
         } else {
@@ -972,9 +972,9 @@ public class NnProgramManager {
     }        
 
     public Object composeEachYtProgramInfo(NnChannel c, YtProgram p, short format) {
-    	String cIdStr = String.valueOf(p.getChannelId());
+        String cIdStr = String.valueOf(p.getChannelId());
         if (c != null && c.getId() != p.getChannelId())
-        	cIdStr = c.getId() + ":" + p.getChannelId(); 
+            cIdStr = c.getId() + ":" + p.getChannelId(); 
         String pId = String.valueOf(p.getId());
         String name = p.getPlayerName();
         String intro = p.getPlayerIntro();

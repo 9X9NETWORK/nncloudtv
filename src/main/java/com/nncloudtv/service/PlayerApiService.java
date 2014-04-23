@@ -720,10 +720,10 @@ public class PlayerApiService {
         }
         NnChannel channel = null;
         if (channelId.contains("yt")) {
-        	channel = new YtChannelManager().convert(channelId);        	
+            channel = new YtChannelManager().convert(channelId);            
         } else {
-	        long cId = Long.parseLong(channelId);            
-	        channel = chMngr.findById(cId);
+            long cId = Long.parseLong(channelId);            
+            channel = chMngr.findById(cId);
         }
         if (channel == null || channel.getStatus() == NnChannel.STATUS_ERROR)
             return this.assembleMsgs(NnStatusCode.CHANNEL_ERROR, null);
@@ -807,8 +807,8 @@ public class PlayerApiService {
             List<NnChannel> chs = new ArrayList<NnChannel>();
             if (s.equals(Tag.RECOMMEND)) {
                 //chs = new RecommendService().findRecommend(userToken, mso.getId(), lang);
-            	Object obj = new YtChannelManager().findRecommend(userToken, lang, version, this.format);
-            	return this.assembleMsgs(NnStatusCode.SUCCESS, obj);
+                Object obj = new YtChannelManager().findRecommend(userToken, lang, version, this.format);
+                return this.assembleMsgs(NnStatusCode.SUCCESS, obj);
             } else if (s.equals("mayLike")) {            
                 chs = new RecommendService().findMayLike(userToken, mso.getId(), channel, lang);                
             } else {                
@@ -1058,11 +1058,11 @@ public class PlayerApiService {
         //create a new channel
         lang = this.checkLang(lang);
         if (channel == null) {
-        	if (name != null && image != null) {
-        		channel = chMngr.createYouTubeWithMeta(url, name, null, lang, image, req);
-        	} else {
-        		channel = chMngr.create(url, null, lang, req);
-        	}
+            if (name != null && image != null) {
+                channel = chMngr.createYouTubeWithMeta(url, name, null, lang, image, req);
+            } else {
+                channel = chMngr.create(url, null, lang, req);
+            }
             if (channel == null) {
                 return this.assembleMsgs(NnStatusCode.CHANNEL_URL_INVALID, null);
             }            
@@ -1224,7 +1224,7 @@ public class PlayerApiService {
 
         Short shortTime = 24;
         if (time != null)
-        	shortTime = Short.valueOf(time);        	
+            shortTime = Short.valueOf(time);            
         
         String programInfoStr = "";
         String paginationStr = "";
@@ -2149,10 +2149,10 @@ public class PlayerApiService {
 
         String searchContent = "store_only";
         if (type != null && type.equals("9x9")) {
-        	searchContent = searchContent + ",9x9";
+            searchContent = searchContent + ",9x9";
         }
         if (type != null && type.equals("youtube")) {
-        	searchContent = searchContent + ",youtube";
+            searchContent = searchContent + ",youtube";
         }
         
         @SuppressWarnings("rawtypes")
@@ -2766,12 +2766,12 @@ System.out.println("result 0:" + result[0]);
         if (type == null)
            type = "portal";
         if (type != null && type.equals("whatson"))
-            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso));
+            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal));
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerPortal(lang, minimal, version, format, mso));            
     }
 
-    public Object whatson(String lang, String time) {
+    public Object whatson(String lang, String time, boolean minimal) {
         lang = this.checkLang(lang);    
         if (lang == null)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
@@ -2780,7 +2780,7 @@ System.out.println("result 0:" + result[0]);
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso));                    
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal));                    
     }
   
     public Object frontpage(String time, String stack, String user) {
@@ -3122,7 +3122,7 @@ System.out.println("result 0:" + result[0]);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
 
-    public Object setInfo(String id, String name, String time) {
+    public Object setInfo(String id, String name, String time, boolean isProgramInfo) {
         if (id == null && name == null) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
@@ -3175,8 +3175,8 @@ System.out.println("result 0:" + result[0]);
         List<NnProgram> programs = new ArrayList<NnProgram>();
         Short shortTime = 24;
         if (time != null)
-            shortTime = Short.valueOf(time);        	        
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime));
+            shortTime = Short.valueOf(time);        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime, isProgramInfo));
     }
 
     public Object endpointRegister(String userToken, String token, String vendor, String action) {
