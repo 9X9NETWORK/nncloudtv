@@ -601,10 +601,12 @@ public class PlayerApiController {
      * Retrieves set information. A "set" can be a dayparting, or a set.
      * 
      * @param set set id
-     * @param landing the name used as part of the URL. query with either set or landing 
+     * @param landing the name used as part of the URL. query with either set or landing
+     * @param programInfo set to  
      * @return first block: status <br/>
      *         second block: brand info, returns in key and value pair. <br/>                     
-     *         third block: set info, returns in key and value pair <br/>
+     *         third block: set info, returns in key and value pair. 
+     *         Examples: id, name, imageUrl, bannerImageUrl, bannerImageUrl2, channeltag. "channeltag" format please reference "portal" <br/>
      *         4th block: channel details. reference "channelLineup". <br/>
      *         5th block: first episode of every channel from the 4th block. reference "programInfo". <br/>
      *         <p>
@@ -2741,6 +2743,7 @@ public class PlayerApiController {
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
      * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned.
+     * @param minimal set minimal to true returns only set information. ie: no channel nor program information
      * @return <p>Three sections, First is sets. It has set id, set name, set description, set image, set channel count, banner image 1, banner image 2, channel tag. 
      *            Channel tag format in the note.<br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
