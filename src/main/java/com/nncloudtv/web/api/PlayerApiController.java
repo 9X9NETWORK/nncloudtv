@@ -179,7 +179,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.guestRegister(req, resp);
@@ -263,7 +263,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, isTemp, req, resp);
@@ -309,7 +309,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.fbDeviceSignup(me, expire, msoString, req, resp);
@@ -407,7 +407,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                    
             output = playerApiService.brandInfo(os, req);
@@ -430,26 +430,26 @@ public class PlayerApiController {
     //@RequestMapping(value="detect")    
     @RequestMapping(value="detect")
     public @ResponseBody Object detect(String format, HttpServletResponse resp, HttpServletRequest req) {
-    	System.out.println("content-type:" + req.getContentType());
-    	String contentType = req.getContentType();
-    	if (contentType == null || (contentType != null && !contentType.contains("json"))  ) {
-    		return "hello world\n";
-    		/*
+        System.out.println("content-type:" + req.getContentType());
+        String contentType = req.getContentType();
+        if (contentType == null || (contentType != null && !contentType.contains("json"))  ) {
+            return "hello world\n";
+            /*
             try {
-            	resp.setContentType("text/plain;charset=utf-8");                
+                resp.setContentType("text/plain;charset=utf-8");                
                 resp.getWriter().print("hello world\n");
                 resp.flushBuffer();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-    		return "empty\n";
-    		*/
-    	}
+            return "empty\n";
+            */
+        }
         NnChannelManager chMngr = new NnChannelManager();
         NnChannel c = chMngr.findById(1);
         ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
         return json;
-    	//return "player/api";
+        //return "player/api";
     }
     
     /**   
@@ -481,7 +481,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                        
             boolean flatten = Boolean.parseBoolean(isFlatten);
@@ -538,7 +538,7 @@ public class PlayerApiController {
         if (playerApiService.isProductionSite()) {
             pdrServer = "http://v32d.9x9.tv";
         } else {
-        	log.info("at pdr devel server");
+            log.info("at pdr devel server");
         }
         try {
             String urlStr = pdrServer + path;
@@ -628,19 +628,23 @@ public class PlayerApiController {
             @RequestParam(value="set", required=false) String id,
             @RequestParam(value="v", required=false) String v,
             @RequestParam(value="landing", required=false) String name,
-            @RequestParam(value="time", required = false) String time,            
+            @RequestParam(value="time", required = false) String time,
+            @RequestParam(value="programInfo", required=false) String programInfo,                  
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("setInfo: id =" + id + ";landing=" + name);
+        if (programInfo == null)
+            programInfo = "true";
+        boolean isProgramInfo = Boolean.parseBoolean(programInfo);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, resp, true);        	
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            int status = playerApiService.prepService(req, resp, true);            
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
-            }                    	
-            output = playerApiService.setInfo(id, name, time);
+            }                        
+            output = playerApiService.setInfo(id, name, time, isProgramInfo);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -688,7 +692,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.tagInfo(name, start, count);
@@ -738,7 +742,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
@@ -779,7 +783,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.subscribe(userToken, channelId, gridId);
@@ -821,7 +825,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.unsubscribe(userToken, channelId, grid, pos);    
@@ -1011,7 +1015,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
@@ -1221,7 +1225,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.login(email, password, req, resp);
@@ -1288,7 +1292,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }
             output = playerApiService.setSetInfo(userToken, name, pos);
@@ -1318,7 +1322,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.staticContent(key, lang);
@@ -1377,7 +1381,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.listRecommended(lang);
@@ -1406,7 +1410,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.deviceTokenVerify(token, req);
@@ -2661,7 +2665,7 @@ public class PlayerApiController {
     }
    
     /**
-     * Used by Android device. Things to list on the front page
+     * Used by Android device. Things to list on the front page. Current main entrance for this API is portal?type=whatson.
      * 
      * @param time hour, 0-23
      * @param stack reserved
@@ -2675,6 +2679,7 @@ public class PlayerApiController {
     public @ResponseBody Object whatson(                      
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="lang", required=false) String lang,
+            @RequestParam(value="minimal", required=false) String minimal,            
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -2685,7 +2690,8 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 playerApiService.assembleMsgs(status, null);                        
             }
-            output = playerApiService.whatson(lang, time);    
+            boolean isMinimal = Boolean.parseBoolean(minimal);
+            output = playerApiService.whatson(lang, time, isMinimal);    
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
