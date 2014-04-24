@@ -292,9 +292,14 @@ public class CacheFactory {
             
 	//example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
-    	if (format == PlayerApiService.FORMAT_PLAIN)
-    		return "brandInfo(" + mso.getName() + ")(" + os + ")";
-    	return "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
+    	String key = "";
+    	if (format == PlayerApiService.FORMAT_PLAIN) {
+    		key = "brandInfo(" + mso.getName() + ")(" + os + ")";
+    	} else {
+    		key = "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
+    	}
+    	log.info("brandInfoKey:" + key);
+    	return key;
     }
     
     /**
