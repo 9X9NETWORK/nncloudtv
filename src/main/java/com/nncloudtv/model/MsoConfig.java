@@ -54,7 +54,8 @@ public class MsoConfig {
     public static String GCM_SENDER_ID = "gcm-sender-id";
     public static String GCM_API_KEY = "gcm-api-key";
     public static String SHAKE_DISCOVER = "shake-discover";
-    public static String HOMEPAGE = "homepage";   
+    public static String HOMEPAGE = "homepage";
+    public static String ABOUT_US = "aboutus";
  
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT = 3;
