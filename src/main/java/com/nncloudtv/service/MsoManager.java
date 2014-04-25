@@ -154,7 +154,8 @@ public class MsoManager {
             	result += PlayerApiService.assembleKeyValue(MsoConfig.SHAKE_DISCOVER, c.getValue());
             }
             if (c.getItem().equals(MsoConfig.ABOUT_US)) {
-                result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, c.getValue());
+                String aboutus = c.getValue().replaceAll("\t", "").replaceAll("\n", "{BR}");
+                result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, aboutus);
             }
         }
         if (regionSet == false) {
