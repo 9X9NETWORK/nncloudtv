@@ -150,7 +150,10 @@ public class PlayerApiService {
         String returnFormat = req.getParameter("format");
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
             this.format = FORMAT_PLAIN;
+        } else {
+            this.format = FORMAT_JSON;        	
         }
+        
         HttpSession session = this.req.getSession();
         session.setMaxInactiveInterval(60);
 

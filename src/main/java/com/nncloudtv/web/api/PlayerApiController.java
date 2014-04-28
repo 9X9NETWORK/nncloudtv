@@ -601,10 +601,12 @@ public class PlayerApiController {
      * Retrieves set information. A "set" can be a dayparting, or a set.
      * 
      * @param set set id
-     * @param landing the name used as part of the URL. query with either set or landing 
+     * @param landing the name used as part of the URL. query with either set or landing
+     * @param programInfo set to  
      * @return first block: status <br/>
      *         second block: brand info, returns in key and value pair. <br/>                     
-     *         third block: set info, returns in key and value pair <br/>
+     *         third block: set info, returns in key and value pair. 
+     *         Examples: id, name, imageUrl, bannerImageUrl, bannerImageUrl2, channeltag. "channeltag" format please reference "portal" <br/>
      *         4th block: channel details. reference "channelLineup". <br/>
      *         5th block: first episode of every channel from the 4th block. reference "programInfo". <br/>
      *         <p>
@@ -978,7 +980,8 @@ public class PlayerApiController {
      *                      YOUTUBE_CHANNEL=3; YOUTUBE_PLAYERLIST=4                        
      *                      FACEBOOK_CHANNEL=5; 
      *                      MIX_CHANNEL=6; SLIDE=7;
-     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9    
+     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9  
+     *                      DAYPARTING = 14; TRENDING = 15;  
      *         <p>
      *         channel episodes last update time: it does not always accurate on Youtube channels. It will pass channel create date on FB channels.
      *         <p>
@@ -1075,7 +1078,8 @@ public class PlayerApiController {
      * @param  sidx [deprecated]the start index for pagination
      * @param  limit [deprecated] the count of records
      * @param  start the start index for pagination. If "start" param is presented, the pagination info will be shown in the return data in the 2nd block.
-     * @param  count the count of records. Currently server always sets it 50. 
+     * @param  count the count of records. Currently server always sets it 50.
+     * @param  time   0-23, required for dayparting channels (channel type 14). 
      * @return <p>If "start" is presented, data returns in two blocks. First block is pagination information. Second block is program information.
      *         <p>First block (if pagination enabled): channelId, number of return records, total number of records. Example:<br/>
      *            25096    50    121 <br/> 
@@ -2741,6 +2745,7 @@ public class PlayerApiController {
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
      * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned.
+     * @param minimal set minimal to true returns only set information. ie: no channel nor program information
      * @return <p>Three sections, First is sets. It has set id, set name, set description, set image, set channel count, banner image 1, banner image 2, channel tag. 
      *            Channel tag format in the note.<br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
