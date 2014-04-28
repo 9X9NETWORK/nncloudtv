@@ -153,6 +153,10 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.SHAKE_DISCOVER) && (!os.equals(PlayerService.OS_WEB)) && c.getValue() != null && c.getValue().equals("on")) {
             	result += PlayerApiService.assembleKeyValue(MsoConfig.SHAKE_DISCOVER, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.ABOUT_US)) {
+                String aboutus = c.getValue().replaceAll("\t", "").replaceAll("\n", "{BR}");
+                result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, aboutus);
+            }
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -241,6 +245,9 @@ public class MsoManager {
             }
             if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
                 info.setGcmSenderId(c.getValue());
+            }
+            if (c.getItem().equals(MsoConfig.ABOUT_US)) {
+                info.setAboutus(c.getValue());
             }
         }
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON), info);
