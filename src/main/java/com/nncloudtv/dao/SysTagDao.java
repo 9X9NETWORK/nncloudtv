@@ -41,7 +41,7 @@ public class SysTagDao extends GenericDao<SysTag> {
         
         return detached;
     }
-    
+        
     //player channels means status=true and isPublic=true
     public List<NnChannel> findPlayerChannelsById(long id, String lang, boolean limitRows, int start, int count, short sort, long msoId) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -112,7 +112,7 @@ public class SysTagDao extends GenericDao<SysTag> {
         return detached;                
     }    
 
-    public List<NnChannel> findPlayerHiddenChannelsById(long id, String lang, boolean limitRows, int start, int count, short sort, long msoId) {
+    public List<NnChannel> findPlayerAllChannelsById(long id, String lang, boolean limitRows, int start, int count, short sort, long msoId) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>();
         try {

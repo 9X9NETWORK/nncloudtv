@@ -45,6 +45,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.player.ChannelLineup;
@@ -372,6 +373,14 @@ public class WatchDogController {
         return "OK";                
     }
 
+    @RequestMapping(value="daypartCache", produces = "text/plain; charset=utf-8")
+    public @ResponseBody String daypartCache(@RequestParam(value="mso", required=false) long msoId, 
+    		                                 @RequestParam(value="lang", required=false) String lang) {
+    	SysTagManager mngr = new SysTagManager();
+        mngr.resetDaypartingCache(msoId, lang); 
+        return "OK";                
+    }
+    
     @RequestMapping(value="channelSubmit", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelCache(
             HttpServletRequest req,

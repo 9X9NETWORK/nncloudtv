@@ -222,11 +222,9 @@ public class SysTagDisplayManager {
      *    those programs are crawled by ytwritter.py under ytcrawler project.
      */
     public Object getPlayerWhatson(String lang, short time, short format, Mso mso, boolean minimal) {
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         SysTagManager systagMngr = new SysTagManager();
+        YtProgramManager ytprogramMngr = new YtProgramManager();
         List<NnChannel> listingChannels = new ArrayList<NnChannel>();
-        NnProgramManager programMngr = new NnProgramManager();
-        YtProgramDao dao = new YtProgramDao();
         String programInfo = "";
         String channelInfo = "";
         //find whaton systag and its channels
@@ -234,23 +232,26 @@ public class SysTagDisplayManager {
         if (!minimal) {
 	        NnChannel daypartingChannel = null;
 	        if (whatson != null ) {
-	            List<NnChannel> whatsonChannels = systagMngr.findPlayerHiddenChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
+	            List<NnChannel> whatsonChannels = systagMngr.findPlayerAllChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
 	            listingChannels.addAll(whatsonChannels);
 	            for (NnChannel c : whatsonChannels) {
-	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
+	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
 	                    daypartingChannel = c;                    
-	            }
-	            List<YtProgram> ytprograms = dao.findByChannels(whatsonChannels);            
-	            programInfo += programMngr.composeYtProgramInfo(null, ytprograms, format);                                            
-	        }
-	        
+	                } else {
+	                    programInfo += (String)ytprogramMngr.findByChannel(c);
+	                }
+	            }	            
+	            //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(whatsonChannels);            
+	            //programInfo += programMngr.composeYtProgramInfo(null, ytprograms, format);                                            
+	        }	        
 	        //find the real dayparting channels
-	        SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
+	        SysTagDisplay dayparting = this.findDayparting(time, lang, mso.getId());
 	        if (dayparting != null) {
 	            log.info("dayparting:" + dayparting.getName());
-	            List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), lang, true, 0);
-	            List<YtProgram> ytprograms = dao.findByChannels(daypartingChannels);           
-	            programInfo += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
+	            List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), lang, mso.getId(), time);
+	            programInfo += (String)ytprogramMngr.findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);	            
+	            //List<YtProgram> ytprograms = new YtProgramManager().findByDaypartingChannels(daypartingChannels, mso.getId(), time, lang);
+	            //programInfo += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
 	        } else {
 	            return new String[]{"", "", ""};
 	        }
@@ -476,9 +477,10 @@ public class SysTagDisplayManager {
 	            SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
 	            if (dayparting != null) {
 	               log.info("dayparting:" + dayparting.getName());
-	               List<NnChannel> daypartingChannels = new SysTagManager().findPlayerChannelsById(dayparting.getSystagId(), display.getLang(), true, 0);
-	               List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
-	               programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
+	               List<NnChannel> daypartingChannels = new SysTagManager().findDaypartingChannelsById(dayparting.getSystagId(), display.getLang(), mso.getId(), time);
+	               //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
+	               //programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
+	               programStr += (String) new YtProgramManager().findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, display.getLang());
 	            }
 	            //find trending channels' programs
 	            List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);            
