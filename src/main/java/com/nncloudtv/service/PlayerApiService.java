@@ -2708,7 +2708,7 @@ System.out.println("result 0:" + result[0]);
                         if (display != null)
                             systagId = display.getSystagId();
                     }                    
-                    channels.addAll(systagMngr.findPlayerChannelsById(systagId, null, true, 0));
+                    channels.addAll(systagMngr.findPlayerChannelsById(systagId, lang, true, 0));
                 }
             }
         } else if (channel != null) {
@@ -3163,10 +3163,9 @@ System.out.println("result 0:" + result[0]);
         SysTag systag = systagMngr.findById(systagId);
         List<NnChannel> channels = new ArrayList<NnChannel>();
         if (systag.getType() == SysTag.TYPE_DAYPARTING) {
-            channels.addAll(systagMngr.findPlayerChannelsById(systagId, display.getLang(), true, 0));
+            channels.addAll(systagMngr.findDaypartingChannelsById(systagId, display.getLang(), mso.getId(), Short.parseShort(time)));
         } else if (systag.getType() == SysTag.TYPE_WHATSON) {
-            channels.addAll(systagMngr.findPlayerHiddenChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));
-            
+            channels.addAll(systagMngr.findPlayerAllChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));            
         } else {
             channels.addAll(systagMngr.findPlayerChannelsById(systagId, null, systag.getSorting(), 0));
         }

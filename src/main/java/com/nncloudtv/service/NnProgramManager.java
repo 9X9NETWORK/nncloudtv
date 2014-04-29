@@ -549,7 +549,7 @@ public class NnProgramManager {
             List<NnEpisode> episodes = epMngr.findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
-        } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
+        } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {        	
             SysTagDisplayManager displayMngr = new SysTagDisplayManager();
             SysTagManager systagMngr = new SysTagManager();
             SysTagDisplay dayparting = displayMngr.findDayparting(time, c.getLang(), mso.getId());
@@ -559,8 +559,9 @@ public class NnProgramManager {
                 long msoId = 0;
                 if (mso != null)
                     msoId = mso.getId();
-                List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), c.getLang(), true, msoId);
-                ytprograms = new YtProgramDao().findByChannels(daypartingChannels);
+                List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), c.getLang(), msoId, time);
+                return new YtProgramManager().findByDaypartingChannels(daypartingChannels, c, mso.getId(), time, c.getLang());
+                //ytprograms = new YtProgramDao().findByChannels(daypartingChannels);
             }
             return this.composeYtProgramInfo(c, ytprograms, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_TRENDING) {
@@ -573,6 +574,26 @@ public class NnProgramManager {
             log.info("channel id:" + c.getId() + "; program size:" + programs.size());
             return this.composeProgramInfo(c, programs, format);
         }
+    }
+    
+    //provide cache
+    public Object findYtProgramInfoByChannel(NnChannel c, List<YtProgram> programs, short format) {
+        if (programs.size() == 0) {
+            if (format == PlayerApiService.FORMAT_JSON)
+                return null;
+            else
+                return "";        
+        }
+        String cacheKey = CacheFactory.getYtProgramInfoKey(c.getId());
+        Object programInfo = CacheFactory.get(cacheKey);
+        if (programInfo != null) {
+        	return programInfo;
+        }
+    	String result = ""; 
+        for (YtProgram p : programs) {
+            result += (String)this.composeEachYtProgramInfo(c, p, format);
+        }   
+        return result;
     }
     
     public Object composeYtProgramInfo(NnChannel c, List<YtProgram> programs, short format) {

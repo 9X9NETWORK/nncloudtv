@@ -380,5 +380,27 @@ public class CacheFactory {
         log.info("channelLineup key:" + key);
         return key;
     }
-        
+ 
+    /**
+     * format: daypartChannel-msoId-lang-time
+     * example: daypartChannel-1-en-2
+     */
+    public static String getDayPartingChannelKey(long msoId, short time, String lang) {
+    	String key = "daypartChannel" + msoId + "-" + lang + "-" + time;
+    	log.info("daypartChannel cache key:" + key);
+    	return key;
+    }
+
+    public static String getDaypartingProgramsKey(long msoId, short time, String lang) {
+    	String key = "daypartProgram" + msoId + "-" + lang + "-" + time;
+    	log.info("daypartProgram cache key:" + key);
+    	return key;    	
+    }
+
+    public static String getYtProgramInfoKey(long channelId) {
+        String key = "ytprogram-" + channelId; 
+        log.info("ytprogram key:" + key);
+        return key;
+    }
+    
 }
