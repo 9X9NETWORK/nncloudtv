@@ -23,6 +23,7 @@ public class BrandInfo  implements Serializable {
 	private String upgradeMessage;
 	private String tutorialVideo;
 	private String gcmSenderId;
+	private String aboutus;
 	
 	public String getTutorialVideo() {
 		return tutorialVideo;
@@ -131,6 +132,12 @@ public class BrandInfo  implements Serializable {
     }
     public void setGcmSenderId(String gcmSenderId) {
         this.gcmSenderId = gcmSenderId;
+    }
+    public String getAboutus() {
+        return aboutus;
+    }
+    public void setAboutus(String aboutus) {
+        this.aboutus = aboutus;
     }
 
 }
