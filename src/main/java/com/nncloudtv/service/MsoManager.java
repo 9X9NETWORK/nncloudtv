@@ -209,6 +209,13 @@ public class MsoManager {
             else
                 result += PlayerApiService.assembleKeyValue("homepage", "portal");            	
         }        
+        if (!os.equals(PlayerService.OS_WEB)) {
+            MsoConfig sound = configMngr.findByMsoAndItem(mso, MsoConfig.NOTIFICATION_SOUND_VIBRATION);
+            String value = "sound off;vibration off";
+            if (sound != null)
+            	value = sound.getValue();
+            result += PlayerApiService.assembleKeyValue(MsoConfig.NOTIFICATION_SOUND_VIBRATION, value);
+        }        
 
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
         return result;

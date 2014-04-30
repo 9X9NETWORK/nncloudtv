@@ -56,6 +56,7 @@ public class MsoConfig {
     public static String SHAKE_DISCOVER = "shake-discover";
     public static String HOMEPAGE = "homepage";
     public static String ABOUT_US = "aboutus";
+    public static String NOTIFICATION_SOUND_VIBRATION = "notification-sound-vibration";
  
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT = 3;
