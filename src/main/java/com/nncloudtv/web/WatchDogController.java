@@ -374,10 +374,12 @@ public class WatchDogController {
     }
 
     @RequestMapping(value="daypartCache", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String daypartCache(@RequestParam(value="mso", required=false) long msoId, 
+    public @ResponseBody String daypartCache(@RequestParam(value="mso", required=false) String mso, 
     		                                 @RequestParam(value="lang", required=false) String lang) {
+    	MsoManager msoMngr = new MsoManager();
+    	Mso brand = msoMngr.findByName(mso);
     	SysTagManager mngr = new SysTagManager();
-        mngr.resetDaypartingCache(msoId, lang); 
+        mngr.resetDaypartingCache(brand.getId(), lang); 
         return "OK";                
     }
     
