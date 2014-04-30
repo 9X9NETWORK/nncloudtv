@@ -213,7 +213,7 @@ public class SysTagDisplayManager {
      * 1. a dayparting channel: channel type 14:
      *    It is a "mask" channel. The real channels based on the "time" can only be found through:
      *      (1) Find the real systag for dayparting based by time, language and mso: SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
-     *      (2) Based on step 1, find channels: List<NnChannel> daypartingChannels = systagMngr.findPlayerChannelsById(dayparting.getSystagId(), lang, true, 0);
+     *      (2) Based on step 1, find channels: List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), lang, msoId, time);
      *      <note 1> Its programs is from ytprograms.
      *      <note 2> mask channel id is used to tell player it's a mask channel. If users want to subscribe such channel, they go to the "real one".
      *         the channel id format is: "mask channel id:real channelid". Reference composeEachYtProgramInfo in NnProgramManager.
