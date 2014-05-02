@@ -36,7 +36,7 @@ public class NnEpisode implements Serializable {
     private String imageUrl;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType="VARCHAR", length=1500)
     private String intro;
 
     @Persistent
