@@ -379,7 +379,8 @@ public class WatchDogController {
     	MsoManager msoMngr = new MsoManager();
     	Mso brand = msoMngr.findByName(mso);
     	SysTagManager mngr = new SysTagManager();
-        mngr.resetDaypartingCache(brand.getId(), lang); 
+        mngr.resetDaypartingCache(brand.getId(), lang);
+        this.channelCache(32777); 
         return "OK";                
     }
     
