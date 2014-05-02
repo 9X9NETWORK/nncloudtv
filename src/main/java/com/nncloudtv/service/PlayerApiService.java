@@ -2769,7 +2769,7 @@ System.out.println("result 0:" + result[0]);
         if (type == null)
            type = "portal";
         if (type != null && type.equals("whatson"))
-            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal));
+            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerPortal(lang, minimal, version, format, mso));            
     }
@@ -2783,7 +2783,7 @@ System.out.println("result 0:" + result[0]);
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal));                    
+        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));                    
     }
   
     public Object frontpage(String time, String stack, String user) {

@@ -212,7 +212,7 @@ public class SysTagDisplayManager {
      * SysTag type TYPE_WHATSON. It maps to: 
      * 1. a dayparting channel: channel type 14:
      *    It is a "mask" channel. The real channels based on the "time" can only be found through:
-     *      (1) Find the real systag for dayparting based by time, language and mso: SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
+     *      (1) Find the real dayparting systag based by time, language and mso: SysTagDisplay dayparting = displayMngr.findDayparting(time, lang, mso.getId());
      *      (2) Based on step 1, find channels: List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), lang, msoId, time);
      *      <note 1> Its programs is from ytprograms.
      *      <note 2> mask channel id is used to tell player it's a mask channel. If users want to subscribe such channel, they go to the "real one".
@@ -220,8 +220,12 @@ public class SysTagDisplayManager {
      * 2. two trending channels: 
      *    channel type 15. its program is from ytprogram. they are "hidden" channels meaning they are not meant to be searchable.
      *    those programs are crawled by ytwritter.py under ytcrawler project.
+     * 3. cache:
+     *    (1) findDaypartingChannelsById in SysTagManager caches list of NnChannels.
+     *    (2) findByDaypartingChannels caches programInfo string based on dayparting channels.
+     *    (3) cronjob on "channelwatch" machine wipes out the cache hourly by the python program, /var/www/ytcrawler/dayparting_cache.py
      */
-    public Object getPlayerWhatson(String lang, short time, short format, Mso mso, boolean minimal) {
+    public Object getPlayerWhatson(String lang, short time, short format, Mso mso, boolean minimal, int version) {
         SysTagManager systagMngr = new SysTagManager();
         YtProgramManager ytprogramMngr = new YtProgramManager();
         List<NnChannel> listingChannels = new ArrayList<NnChannel>();
@@ -249,14 +253,29 @@ public class SysTagDisplayManager {
 	        if (dayparting != null) {
 	            log.info("dayparting:" + dayparting.getName());
 	            List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), lang, mso.getId(), time);
-	            programInfo += (String)ytprogramMngr.findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);	            
+	            programInfo += (String)ytprogramMngr.findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);
 	            //List<YtProgram> ytprograms = new YtProgramManager().findByDaypartingChannels(daypartingChannels, mso.getId(), time, lang);
 	            //programInfo += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format); 
 	        } else {
 	            return new String[]{"", "", ""};
 	        }
 	        NnChannelManager chMngr = new NnChannelManager();
-	        channelInfo = (String)chMngr.composeReducedChannelLineup(listingChannels, PlayerApiService.FORMAT_PLAIN);            
+	        //temporarily fix the channel image issue. to give the dayparting mask channel 4 thumbnails
+            if (listingChannels.get(0).getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
+	            String[] lines = programInfo.split("\n");
+	            String imageUrl = "";
+	            if (lines.length > 4) {
+		            for (int i=0; i<4; i++) {
+		            	String l = lines[i];
+		                String[] data = l.split("\t");
+		                imageUrl += "|" + data[6];
+		            }
+		            imageUrl = imageUrl.replaceFirst("\\|", "");
+		            listingChannels.get(0).setImageUrl(imageUrl);
+	            }
+            }
+	        channelInfo = (String)chMngr.composeChannelLineup(listingChannels, version, PlayerApiService.FORMAT_PLAIN);
+	        //channelInfo = (String)chMngr.composeReducedChannelLineup(listingChannels, PlayerApiService.FORMAT_PLAIN);  
         }
         String setStr = "";
         String id = whatson.getId() + "-" + whatson.getSystagId();
