@@ -525,30 +525,36 @@ public class ApiUser extends ApiGeneric {
             @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        List<NnChannel> results = new ArrayList<NnChannel>();
+        Date now = new Date();
+        log.info(printEnterState(now, req));
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = evaluateLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
             return null;
         }
+        
         Mso brand = msoMngr.findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
+            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        results = channelMngr.findByUser(user, 0, true);
+        List<NnChannel> results = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : results) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
                 results.remove(channel);
-                break;
             }
+        }
+        
+        List<Long> channelIds = msoMngr.getPlayableChannels(results, brand.getId());
+        if (channelIds != null && channelIds.size() > 0) {
+            results = channelMngr.findByIds(channelIds);
+        } else {
+            results = new ArrayList<NnChannel>();
         }
         
         for (NnChannel channel : results) {
@@ -561,6 +567,7 @@ public class ApiUser extends ApiGeneric {
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));
         
+        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
