@@ -518,6 +518,52 @@ public class ApiUser extends ApiGeneric {
         return results;
     }
     
+    @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
+    public @ResponseBody
+    List<NnChannel> userPlayableChannels(HttpServletRequest req,
+            HttpServletResponse resp,
+            @RequestParam(required = false) String mso,
+            @PathVariable("userId") String userIdStr) {
+        
+        List<NnChannel> results = new ArrayList<NnChannel>();
+        
+        Long userId = null;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        Mso brand = msoMngr.findOneByName(mso);
+        NnUser user = userMngr.findById(userId, brand.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            return null;
+        }
+        
+        results = channelMngr.findByUser(user, 0, true);
+        for (NnChannel channel : results) {
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                results.remove(channel);
+                break;
+            }
+        }
+        
+        for (NnChannel channel : results) {
+            
+            channelMngr.normalize(channel);
+            channelMngr.populateMoreImageUrl(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
+        }
+        
+        Collections.sort(results, channelMngr.getChannelComparator("seq"));
+        
+        return results;
+    }
+    
     @RequestMapping(value = "users/{userId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
     String userChannelsSorting(HttpServletRequest req,
