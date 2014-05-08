@@ -518,6 +518,59 @@ public class ApiUser extends ApiGeneric {
         return results;
     }
     
+    @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
+    public @ResponseBody
+    List<NnChannel> userPlayableChannels(HttpServletRequest req,
+            HttpServletResponse resp,
+            @RequestParam(required = false) String mso,
+            @PathVariable("userId") String userIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long userId = evaluateLong(userIdStr);
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        Mso brand = msoMngr.findOneByName(mso);
+        NnUser user = userMngr.findById(userId, brand.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        List<NnChannel> results = channelMngr.findByUser(user, 0, true);
+        for (NnChannel channel : results) {
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                results.remove(channel);
+            }
+        }
+        
+        List<Long> channelIds = msoMngr.getPlayableChannels(results, brand.getId());
+        if (channelIds != null && channelIds.size() > 0) {
+            results = channelMngr.findByIds(channelIds);
+        } else {
+            results = new ArrayList<NnChannel>();
+        }
+        
+        for (NnChannel channel : results) {
+            
+            channelMngr.normalize(channel);
+            channelMngr.populateMoreImageUrl(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
+        }
+        
+        Collections.sort(results, channelMngr.getChannelComparator("seq"));
+        
+        log.info(printExitState(now, req, "ok"));
+        return results;
+    }
+    
     @RequestMapping(value = "users/{userId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
     String userChannelsSorting(HttpServletRequest req,
