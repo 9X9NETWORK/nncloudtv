@@ -11,10 +11,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
-import com.nncloudtv.service.CounterFactory;
 
 /**
  * a Channel
@@ -498,7 +496,8 @@ public class NnChannel implements Serializable {
         this.cntSubscribe = cntSubscribe;
     }
 
-    public long getCntView() {      
+    public long getCntView() {
+        /* TODO move out
         try {
             String name = "u_ch" + id;        
             String result = (String)CacheFactory.get(name);
@@ -513,6 +512,7 @@ public class NnChannel implements Serializable {
             e.printStackTrace();
             return 0;
         }
+        */
         return cntView;
     }
     
@@ -620,6 +620,7 @@ public class NnChannel implements Serializable {
     }
 
     public long getCntVisit() {
+        /* TODO move out
         try {
             String name = "u_ch" + id;        
             String result = (String)CacheFactory.get(name);
@@ -636,6 +637,7 @@ public class NnChannel implements Serializable {
             System.out.println("cause:" + e.getCause());
             return 0;
         }
+        */
         return cntVisit;
     }
 
