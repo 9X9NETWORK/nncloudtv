@@ -2051,7 +2051,7 @@ public class PlayerApiService {
         //String link = NnNetUtil.getUrlRoot(req) + "/#!resetpwd!e=" + email + "!pass=" + userMngr.forgotPwdToken(user);
         //signin.html?ac=resetpwd&e=marshsu.9x9@gmail.com&pass=b38ea3c1e56135827a6e4343d6ac4ea3
         String link = NnNetUtil.getUrlRoot(req);
-        link.replaceAll("^http://", "https://");
+        link.replaceAll("^http:\\/\\/", "https://");
         link += "/cms/signin.html?ac=resetpwd&e=" + email + "&pass=" + userMngr.forgotPwdToken(user);
         log.info("link:" + link);
         
