@@ -26,7 +26,8 @@ public class ApiUserService {
     }
     
     public NnChannel userChannelCreate(NnUser user, String name, String intro, String imageUrl, String lang, Boolean isPublic,
-                String sphere, String tag, Long categoryId, String autoSync, String sourceUrl, Short sorting, Short status) {
+                String sphere, String tag, Long categoryId, String autoSync, String sourceUrl, Short sorting, Short status,
+                Short contentType) {
         
         if (user == null || name == null) {
             return null;
@@ -68,6 +69,9 @@ public class ApiUserService {
         }
         if (status != null) {
             newChannel.setStatus(status);
+        }
+        if (contentType != null) {
+            newChannel.setContentType(contentType);
         }
         
         NnChannel savedChannel = channelMngr.save(newChannel);
