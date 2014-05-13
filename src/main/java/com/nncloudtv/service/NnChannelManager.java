@@ -1205,7 +1205,7 @@ public class NnChannelManager {
             ori.add(""); //recently watched program
             ori.add(c.getOriName());
             ori.add(String.valueOf(c.getCntSubscribe())); //cnt subscribe, replace
-            ori.add(String.valueOf(c.getCntView()));
+            ori.add(String.valueOf(populateCntView(c).getCntView()));
             ori.add(c.getTag());
             ori.add(""); //ciratorProfile, curator id
             ori.add(""); //userName
@@ -1243,7 +1243,7 @@ public class NnChannelManager {
             lineup.setRecentlyWatchedPrograms(""); //recently watched program
             lineup.setYoutubeName(c.getOriName());
             lineup.setNumberOfSubscribers(c.getCntSubscribe()); //cnt subscribe, replace
-            lineup.setNumberOfViews(c.getCntView());
+            lineup.setNumberOfViews(populateCntView(c).getCntView());
             lineup.setTags(c.getTag());
             lineup.setCuratorProfile(""); //ciratorProfile, curator id
             lineup.setCuratorName(""); //userName
@@ -1266,6 +1266,49 @@ public class NnChannelManager {
             return true;
         }
         return false;
+    }
+    
+    public NnChannel populateCntView(NnChannel channel) {
+        
+        try {
+            String name = "u_ch" + channel.getId();
+            String result = (String)CacheFactory.get(name);
+            if (result != null) {
+                channel.setCntView(Integer.parseInt(result));
+                return channel;
+            }
+            log.info("cnt view not in the cache:" + name);
+            CounterFactory factory = new CounterFactory();            
+            long cntView = factory.getCount(name);
+            channel.setCntView(cntView);
+            CacheFactory.set(name, String.valueOf(cntView));
+        } catch (Exception e) {
+            e.printStackTrace();
+            channel.setCntView(0);
+        }
+        return channel;
+    }
+    
+    public NnChannel populateCntVisit(NnChannel channel) { // is CntVisit == CntView ??
+        try {
+            String name = "u_ch" + channel.getId();
+            String result = (String)CacheFactory.get(name);
+            if (result != null) {
+                channel.setCntVisit(Integer.parseInt(result));
+                return channel;
+            }
+            log.info("cnt view not in the cache:" + name);
+            CounterFactory factory = new CounterFactory();            
+            long cntVisit = factory.getCount(name);
+            channel.setCntVisit(cntVisit);
+            CacheFactory.set(name, String.valueOf(cntVisit));
+        } catch (Exception e){
+            //e.printStackTrace();
+            System.out.println("msg:" + e.getMessage());
+            System.out.println("cause:" + e.getCause());
+            channel.setCntVisit(0);
+        }
+        return channel;
     }
     
 }
