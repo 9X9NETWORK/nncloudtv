@@ -497,30 +497,12 @@ public class NnChannel implements Serializable {
     }
 
     public long getCntView() {
-        /* TODO move out
-        try {
-            String name = "u_ch" + id;        
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                return Integer.parseInt(result);
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            cntView = factory.getCount(name); 
-            CacheFactory.set(name, String.valueOf(cntView));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-        */
         return cntView;
     }
     
-    /*
-    public void setCntView(int cntView) {
+    public void setCntView(long cntView) {
         this.cntView = cntView;
     }
-    */
 
     public short getShard(String userId) {
         if (userId == null)
@@ -620,28 +602,10 @@ public class NnChannel implements Serializable {
     }
 
     public long getCntVisit() {
-        /* TODO move out
-        try {
-            String name = "u_ch" + id;        
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                return Integer.parseInt(result);
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            cntVisit = factory.getCount(name);
-            CacheFactory.set(name, String.valueOf(cntVisit));
-        } catch (Exception e){
-            //e.printStackTrace();
-            System.out.println("msg:" + e.getMessage());
-            System.out.println("cause:" + e.getCause());
-            return 0;
-        }
-        */
         return cntVisit;
     }
 
-    public void setCntVisit(int cntVisit) {
+    public void setCntVisit(long cntVisit) {
         this.cntVisit = cntVisit;
     }
 
