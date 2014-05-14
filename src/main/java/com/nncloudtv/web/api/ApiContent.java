@@ -797,10 +797,13 @@ public class ApiContent extends ApiGeneric {
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
+        // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
             intro = NnStringUtil.htmlSafeAndTruncated(intro);
         }
+        
+        // imageUrl
         String imageUrl = req.getParameter("imageUrl");
         if (imageUrl == null) {
             imageUrl = NnChannel.IMAGE_WATERMARK_URL;
@@ -839,15 +842,11 @@ public class ApiContent extends ApiGeneric {
         String durationStr = req.getParameter("duration");
         if (durationStr == null) {
             
-            program.setDuration((short)0);
+            program.setDuration((short) 0);
             
         } else {
-            Short duration = null;
-            try {
-                duration = Short.valueOf(durationStr);
-            } catch (NumberFormatException e) {
-            }
-            if ((duration == null) || (duration <= 0)) {
+            Short duration = evaluateShort(durationStr);
+            if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -862,11 +861,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short startTime = null;
-            try {
-                startTime = Short.valueOf(startTimeStr);
-            } catch (NumberFormatException e) {
-            }
+            Short startTime = evaluateShort(startTimeStr);
             if ((startTime == null) || (startTime < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -877,20 +872,12 @@ public class ApiContent extends ApiGeneric {
         // endTime
         String endTimeStr = req.getParameter("endTime");
         if (endTimeStr == null) {
-            if (program.getDurationInt() == 0) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
             
+            program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
         } else {
             
-            Short endTime = null;
-            try {
-                endTime = Short.valueOf(endTimeStr);
-            } catch (NumberFormatException e) {
-            }
-            if ((endTime == null) || (endTime <= program.getStartTimeInt()) ) {
+            Short endTime = evaluateShort(endTimeStr);
+            if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -898,9 +885,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // duration = endTime - startTime
-        if (program.getDurationInt() == 0) {
-            program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
-        }
+        program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
         
         NnProgramManager programMngr = new NnProgramManager();
         
