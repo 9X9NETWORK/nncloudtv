@@ -1851,16 +1851,12 @@ public class ApiContent extends ApiGeneric {
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
-            Integer duration = null;
-            try {
-                duration = Integer.valueOf(durationStr);
-            } catch (NumberFormatException e) {
+            Integer duration = evaluateInt(durationStr);
+            if (duration != null && duration >= 0) {
+                episode.setDuration(duration);
+            } else {
+                episode.setDuration(episodeMngr.calculateEpisodeDuration(episode));
             }
-            if ((duration == null) || (duration <= 0)) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            episode.setDuration(duration);
         } else {
             episode.setDuration(episodeMngr.calculateEpisodeDuration(episode));
         }
