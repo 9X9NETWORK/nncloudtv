@@ -579,32 +579,20 @@ public class ApiContent extends ApiGeneric {
         
         // startTime
         String startTimeStr = req.getParameter("startTime");
-        if (startTimeStr != null && startTimeStr.length() > 0) {
-            Integer startTime = null;
-            try {
-                startTime = Integer.valueOf(startTimeStr);
-            } catch (NumberFormatException e) {
+        if (startTimeStr != null) {
+            Integer startTime = evaluateInt(startTimeStr);
+            if (startTime != null && startTime >= 0) {
+                program.setStartTime(startTime);
             }
-            if ((startTime == null) || (startTime < 0)) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            program.setStartTime(startTime);
         }
         
         // endTime
         String endTimeStr = req.getParameter("endTime");
-        if (endTimeStr != null && endTimeStr.length() > 0) {
-            Integer endTime = null;
-            try {
-                endTime = Integer.valueOf(endTimeStr);
-            } catch (NumberFormatException e) {
+        if (endTimeStr != null) {
+            Integer endTime = evaluateInt(endTimeStr);
+            if (endTime != null && endTime >= program.getStartTimeInt()) {
+                program.setEndTime(endTime);
             }
-            if ((endTime == null) || (endTime <= program.getStartTimeInt())) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            program.setEndTime(endTime);
         }
         
         // TODO poiPoint collision
@@ -616,7 +604,7 @@ public class ApiContent extends ApiGeneric {
         */
         
         // update duration = endTime - startTime
-        if ((program.getEndTimeInt() - program.getStartTimeInt()) > 0) {
+        if (program.getEndTimeInt() - program.getStartTimeInt() >= 0) {
             program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
         } else {
             // ex : new start = 10, old end = 5
