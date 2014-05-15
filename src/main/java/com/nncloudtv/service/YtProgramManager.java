@@ -66,4 +66,8 @@ public class YtProgramManager {
         return result;
     }
     
+    public YtProgram findById(long id) {
+        return dao.findById(id);
+    }
+    
 }
