@@ -208,13 +208,16 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("homepage", homepage.getValue());
             else
                 result += PlayerApiService.assembleKeyValue("homepage", "portal");            	
-        }        
-        if (!os.equals(PlayerService.OS_WEB)) {
             MsoConfig sound = configMngr.findByMsoAndItem(mso, MsoConfig.NOTIFICATION_SOUND_VIBRATION);
             String value = "sound off;vibration off";
             if (sound != null)
             	value = sound.getValue();
             result += PlayerApiService.assembleKeyValue(MsoConfig.NOTIFICATION_SOUND_VIBRATION, value);
+            MsoConfig signup = configMngr.findByMsoAndItem(mso, MsoConfig.SIGNUP_ENFORCE);
+            value = "never";
+            if (signup != null)
+            	value = signup.getValue();
+            result += PlayerApiService.assembleKeyValue(MsoConfig.SIGNUP_ENFORCE, value);            
         }        
 
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
