@@ -229,6 +229,7 @@ public class GenericDao<T> {
             @SuppressWarnings("unchecked")
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
+            query.closeAll();
         } finally {
             pm.close();
         }
