@@ -47,6 +47,11 @@ public class GCMLib {
         
         Sender sender = new Sender(apiKey);
         
+        GCMessage gcMessage = buildGCMessage(msoNotification);
+        if (gcMessage == null) {
+            return ;
+        }
+        
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         // used to handle NnDevice if send failed event occur
         Map<String, NnDevice> deviceMap = new HashMap<String, NnDevice>();
@@ -69,7 +74,7 @@ public class GCMLib {
             partialDevices.add(device);
             int partialSize = partialDevices.size();
             if (partialSize == MULTICAST_SIZE || counter == total) {
-                asyncSend(sender, partialDevices, msoNotification, deviceMap);
+                asyncSend(sender, partialDevices, msoNotification, gcMessage, deviceMap);
                 partialDevices.clear();
                 tasks++;
             }
@@ -78,22 +83,24 @@ public class GCMLib {
     }
     
     private void asyncSend(Sender gcmSender, List<String> partialDevices, MsoNotification msoNotification,
-            Map<String, NnDevice> allDeviceMap) {
+            GCMessage gcMessage, Map<String, NnDevice> allDeviceMap) {
         
         // make a copy
         final List<String> devices = new ArrayList<String>(partialDevices);
         final MsoNotification notification = msoNotification;
+        final GCMessage gcmessage = gcMessage;
         final Sender sender = gcmSender;
         final Map<String, NnDevice> deviceMap = allDeviceMap;
         
         threadPool.execute(new Runnable() {
             public void run() {
                 
-                Date now = new Date();
                 Message message = new Message.Builder()
-                    .addData("message", NnStringUtil.urlencode(notification.getMessage(), NnStringUtil.UTF8)) // message
-                    .addData("content", notification.getContent()) // content
-                    .addData("ts", String.valueOf(now.getTime()))  // ts
+                    .addData("message", gcmessage.getMessage()) // message
+                    .addData("content", gcmessage.getContent()) // content
+                    .addData("ts", gcmessage.getTs())  // ts
+                    .addData("logo", gcmessage.getLogo()) // logo
+                    .addData("title", gcmessage.getTitle()) // title
                     .build();
                 MulticastResult multicastResult;
                 try {
@@ -220,6 +227,10 @@ public class GCMLib {
     }
     
     private GCMessage buildGCMessage(MsoNotification msoNotification) {
+        
+        if (msoNotification == null) {
+            return null;
+        }
         
         GCMessage message = new GCMessage();
         
