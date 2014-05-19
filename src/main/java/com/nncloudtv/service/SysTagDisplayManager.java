@@ -461,10 +461,6 @@ public class SysTagDisplayManager {
         String bannerImageUrl = display.getBannerImageUrl();
         String bannerImageUrl2 = display.getBannerImageUrl2();
         NnProgramManager programMngr = new NnProgramManager();
-        for (NnChannel c : channels) {
-            if (c.getStatus() == NnChannel.STATUS_SUCCESS && c.isPublic())
-                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
-        }
         if (format == PlayerApiService.FORMAT_PLAIN) {
         String result[] = {"", "", "", ""};
         //mso info

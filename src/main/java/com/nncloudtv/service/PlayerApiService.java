@@ -3167,11 +3167,6 @@ System.out.println("result 0:" + result[0]);
         } else {
             channels.addAll(systagMngr.findPlayerChannelsById(systagId, null, systag.getSorting(), 0));
         }
-        //channel info
-        for (NnChannel c : channels) {
-            if (c.getStatus() == NnChannel.STATUS_SUCCESS && c.isPublic())
-                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));           
-        }        
         List<NnProgram> programs = new ArrayList<NnProgram>();
         Short shortTime = 24;
         if (time != null)
