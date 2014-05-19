@@ -246,6 +246,7 @@ public class PlayerApiController {
         String password = req.getParameter("password");
         String mso = req.getParameter("mso");
         String name = req.getParameter("name");
+        String gender = req.getParameter("gender");
         String userToken = req.getParameter("user");
         String captcha = req.getParameter("captcha");
         String text = req.getParameter("text");
@@ -266,7 +267,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
-            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, isTemp, req, resp);
+            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, gender, isTemp, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
