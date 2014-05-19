@@ -181,6 +181,7 @@ public class APNSLib {
                 PayloadBuilder payloadBuilder = APNS.newPayload()
                         .alertBody(msoNotification.getMessage())
                         .badge(device.getBadge() + 1)
+                        .sound("default")
                         .customField("content", msoNotification.getContent())
                         .customField("ts", now);
                 // check size 256 bytes

@@ -21,6 +21,10 @@ import com.google.android.gcm.server.Sender;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
+import com.nncloudtv.model.NnEpisode;
+import com.nncloudtv.model.YtProgram;
+import com.nncloudtv.service.NnEpisodeManager;
+import com.nncloudtv.service.YtProgramManager;
 
 @Service
 public class GCMLib {
@@ -30,6 +34,8 @@ public class GCMLib {
     private static final int MULTICAST_SIZE = 1000;
     
     private NnDeviceDao deviceDao = new NnDeviceDao();
+    private NnEpisodeManager episodeMngr = new NnEpisodeManager();
+    private YtProgramManager ytProgramMngr = new YtProgramManager();
     
     public void doPost(MsoNotification msoNotification, String apiKey) {
         
@@ -40,6 +46,11 @@ public class GCMLib {
         log.info("gcm sender, send to mso id = " + msoNotification.getMsoId());
         
         Sender sender = new Sender(apiKey);
+        
+        GCMessage gcMessage = buildGCMessage(msoNotification);
+        if (gcMessage == null) {
+            return ;
+        }
         
         List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         // used to handle NnDevice if send failed event occur
@@ -63,7 +74,7 @@ public class GCMLib {
             partialDevices.add(device);
             int partialSize = partialDevices.size();
             if (partialSize == MULTICAST_SIZE || counter == total) {
-                asyncSend(sender, partialDevices, msoNotification, deviceMap);
+                asyncSend(sender, partialDevices, msoNotification, gcMessage, deviceMap);
                 partialDevices.clear();
                 tasks++;
             }
@@ -72,22 +83,24 @@ public class GCMLib {
     }
     
     private void asyncSend(Sender gcmSender, List<String> partialDevices, MsoNotification msoNotification,
-            Map<String, NnDevice> allDeviceMap) {
+            GCMessage gcMessage, Map<String, NnDevice> allDeviceMap) {
         
         // make a copy
         final List<String> devices = new ArrayList<String>(partialDevices);
         final MsoNotification notification = msoNotification;
+        final GCMessage gcmessage = gcMessage;
         final Sender sender = gcmSender;
         final Map<String, NnDevice> deviceMap = allDeviceMap;
         
         threadPool.execute(new Runnable() {
             public void run() {
                 
-                Date now = new Date();
                 Message message = new Message.Builder()
-                    .addData("message", NnStringUtil.urlencode(notification.getMessage(), NnStringUtil.UTF8)) // message
-                    .addData("content", notification.getContent()) // content
-                    .addData("ts", String.valueOf(now.getTime()))  // ts
+                    .addData("message", gcmessage.getMessage()) // message
+                    .addData("content", gcmessage.getContent()) // content
+                    .addData("ts", gcmessage.getTs())  // ts
+                    .addData("logo", gcmessage.getLogo()) // logo
+                    .addData("title", gcmessage.getTitle()) // title
                     .build();
                 MulticastResult multicastResult;
                 try {
@@ -171,6 +184,127 @@ public class GCMLib {
                 deviceDao.deleteAll(deleteDevices);
             }
         }
+    }
+    
+    private class GCMessage {
+        
+        private String ts;
+        private String content;
+        private String title;
+        private String logo;
+        private String message;
+        
+        public String getTs() {
+            return ts;
+        }
+        public void setTs(String ts) {
+            this.ts = ts;
+        }
+        public String getContent() {
+            return content;
+        }
+        public void setContent(String content) {
+            this.content = content;
+        }
+        public String getTitle() {
+            return title;
+        }
+        public void setTitle(String title) {
+            this.title = title;
+        }
+        public String getLogo() {
+            return logo;
+        }
+        public void setLogo(String logo) {
+            this.logo = logo;
+        }
+        public String getMessage() {
+            return message;
+        }
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+    
+    private GCMessage buildGCMessage(MsoNotification msoNotification) {
+        
+        if (msoNotification == null) {
+            return null;
+        }
+        
+        GCMessage message = new GCMessage();
+        
+        Date now = new Date();
+        message.setTs(String.valueOf(now.getTime()));
+        message.setContent(msoNotification.getContent());
+        message.setMessage(NnStringUtil.urlencode(msoNotification.getMessage(), NnStringUtil.UTF8));
+        message.setLogo("");
+        message.setTitle("");
+        
+        if (msoNotification.getContent() == null) {
+            return message;
+        }
+        String[] splits = msoNotification.getContent().split(":");
+        if (splits.length < 3) {
+            return message;
+        }
+        String idStr = splits[2];
+        if (idStr.contains("yt")) { // ex: "cts:1236:ytXXXXXXXXXXX"
+            return message;
+        }
+        if (idStr.contains("e")) { // ex: "cts:1235:e6789", NnEpisode
+            
+            idStr = idStr.replace("e", "");
+            Long episodeId = evaluateLong(idStr);
+            if (episodeId == null) {
+                return message;
+            }
+            NnEpisode episode = episodeMngr.findById(episodeId);
+            if (episode == null) {
+                return message;
+            }
+            if (episode.getImageUrl() != null) {
+                message.setLogo(NnStringUtil.urlencode(episode.getImageUrl(), NnStringUtil.UTF8));
+            }
+            if (episode.getName() != null) {
+                message.setTitle(NnStringUtil.urlencode(episode.getName(), NnStringUtil.UTF8));
+            }
+        } else { // ex: "cts:1234:5678", YtProgram // ex: "cts:1234:"
+            
+            Long ytProgramId = evaluateLong(idStr);
+            if (ytProgramId == null) {
+                return message;
+            }
+            YtProgram ytProgram = ytProgramMngr.findById(ytProgramId);
+            if (ytProgram == null) {
+                return message;
+            }
+            if (ytProgram.getImageUrl() != null) {
+                message.setLogo(NnStringUtil.urlencode(ytProgram.getImageUrl(), NnStringUtil.UTF8));
+            }
+            if (ytProgram.getName() != null) {
+                message.setTitle(NnStringUtil.urlencode(ytProgram.getName(), NnStringUtil.UTF8));
+            }
+        }
+        
+        return message;
+    }
+    
+    private Long evaluateLong(String stringValue) {
+        
+        if (stringValue == null) {
+            return null;
+        }
+        
+        Long longValue = null;
+        try {
+            longValue = Long.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            log.info("String value \"" + stringValue + "\" can't evaluate to type Long.");
+            return null;
+        }
+        
+        return longValue;
     }
 
 }
