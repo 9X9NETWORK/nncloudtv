@@ -31,7 +31,6 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserChannelSorting;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
@@ -210,28 +209,6 @@ public class NnChannelManager {
         this.save(channel);
         return channel;
     }
-    
-    /*
-    public String processCache(NnChannel c) {
-        String cacheKey = NnChannelManager.getCacheKey(c.getId());
-        String str = this.composeChannelLineupStr(c); 
-        CacheFactory.set(cacheKey, str);
-        return str;
-    }
-    */
-
-    //example: nnchannel(channel_id)
-    /*
-    public static String getCacheKey(long channelId, int version) {
-        if (version == 32)
-            return "nnchannel-v32(" + channelId + ")";
-        if (version < 32) {
-            return "nnchannel-v31(" + channelId + ")";
-        }            
-        String str = "nnchannel(" + channelId + ")"; 
-        return str;
-    }
-    */
     
     //process tag text enter by users
     //TODO or move to TagManager
@@ -761,26 +738,6 @@ public class NnChannelManager {
         CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_PLAIN));
     }
     
-    /*
-    public String composeChannelLineupCache(List<NnChannel> channels) {
-        String output = "";
-        for (NnChannel c : channels) {
-            String cacheKey = "nnchannel(" + c.getId() + ")";
-            String result = (String)CacheFactory.get(cacheKey);
-            if (CacheFactory.isRunning && result != null) {
-                log.info("channel lineup from cache");
-                output += result;
-            } else {
-                String str = this.composeChannelLineupStr(c) + "\n";
-                if (CacheFactory.isRunning)
-                    CacheFactory.set(cacheKey, str);
-                output += str + "\n";
-            }
-        }
-        return output;
-    }
-    */
-
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {
         String output = "";
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
@@ -900,30 +857,7 @@ public class NnChannelManager {
         } else {
             return lineups;
         }
-    }    
-    
-    //put user's customized sorting and watched into channel
-    public List<NnChannel> getUserChannels(NnUser user, List<NnChannel> channels) {
-        NnUserChannelSortingManager sortingMngr = new NnUserChannelSortingManager();        
-        List<NnUserChannelSorting> sorts = new ArrayList<NnUserChannelSorting>();
-        
-        HashMap<Long, Short> sortMap = new HashMap<Long, Short>();
-        HashMap<Long, String> watchedMap = new HashMap<Long, String>();
-        sorts = sortingMngr.findByUser(user);
-        for (NnUserChannelSorting s : sorts) {
-            sortMap.put(s.getChannelId(), s.getSort());
-        }
-        for (NnChannel c : channels) {
-            if (user != null && sortMap.containsKey(c.getId()))
-                c.setSorting(sortMap.get(c.getId()));
-            else 
-                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
-            if (user != null && watchedMap.containsKey(c.getId())) {
-                c.setRecentlyWatchedProgram(watchedMap.get(c.getId()));
-            }
-        }
-        return channels;
-    }        
+    }
     
     public void populateMoreImageUrl(NnChannel channel) {
         
