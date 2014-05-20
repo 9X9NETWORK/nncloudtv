@@ -262,7 +262,7 @@ public class NnEpisodeManager {
         }
         log.info("episode.getName():"+episode.getName());
         log.info("fbPost.getName():"+fbPost.getName());
-        log.fine(fbPost.toString());
+        log.info(fbPost.toString());
     }
     
     /** adapt NnEpisode to format that CMS API required */
