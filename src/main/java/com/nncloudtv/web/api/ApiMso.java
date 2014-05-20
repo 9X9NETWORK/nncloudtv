@@ -1724,6 +1724,10 @@ public class ApiMso extends ApiGeneric {
                 
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
+            
+            Date now = new Date();
+            notification.setPublishDate(now);
+            notification = notificationMngr.save(notification);
         }
         
         return notification;
