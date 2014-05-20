@@ -245,8 +245,8 @@ public class NnEpisodeManager {
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;
-	
-	fbPost.setCaption(" ");
+        
+        fbPost.setCaption(" ");
         
         for (NnChannelPref pref : prefList) {
             parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
@@ -262,7 +262,7 @@ public class NnEpisodeManager {
         }
         log.info("episode.getName():"+episode.getName());
         log.info("fbPost.getName():"+fbPost.getName());
-        log.info(fbPost.toString());
+        log.fine(fbPost.toString());
     }
     
     /** adapt NnEpisode to format that CMS API required */
