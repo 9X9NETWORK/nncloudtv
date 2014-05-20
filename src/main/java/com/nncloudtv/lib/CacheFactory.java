@@ -154,7 +154,7 @@ public class CacheFactory {
             log.info("memcache reconfig costs " + (new Date().getTime() - now) + " milliseconds");
             
             System.gc(); // trigger garbage collection
-            log.info("memory: max = " + Runtime.getRuntime().maxMemory()
+            log.fine("memory: max = " + Runtime.getRuntime().maxMemory()
                        + ", total = " + Runtime.getRuntime().totalMemory()
                         + ", free = " + Runtime.getRuntime().freeMemory()
                         + ", used = " + Runtime.getRuntime().freeMemory());
