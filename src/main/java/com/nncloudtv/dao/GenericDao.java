@@ -240,6 +240,6 @@ public class GenericDao<T> {
     @Override
     protected void finalize() throws Throwable {
         
-        log.info(daoClass.getName() + " is recycled");
+        log.info(this.getClass().getName() + " is recycled");
     }
 }
