@@ -833,10 +833,6 @@ public class ApiContent extends ApiGeneric {
             
             program.setContentType(contentType);
         }
-        if (program.getContentType() == NnProgram.CONTENTTYPE_YOUTUBE && !YouTubeLib.isVideoUrlNormalized(fileUrl)) {
-            badRequest(resp, INVALID_YOUTUBE_URL);
-            return null;
-        }
         
         // duration
         String durationStr = req.getParameter("duration");
