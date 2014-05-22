@@ -36,5 +36,11 @@ public class MsoNotificationManager {
         return dao.findById(id);
     }
     
+    public void delete(MsoNotification notification) {
+        if (notification != null) {
+            dao.delete(notification);
+        }
+    }
+    
 }
 

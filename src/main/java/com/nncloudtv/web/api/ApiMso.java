@@ -1848,7 +1848,7 @@ public class ApiMso extends ApiGeneric {
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1898,6 +1898,46 @@ public class ApiMso extends ApiGeneric {
         
         log.info(printExitState(now, req, "ok"));
         return savedNotification;
+    }
+    
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)
+    public @ResponseBody void notificationDelete(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return ;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return ;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return ;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "101") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return ;
+        }
+        
+        notificationMngr.delete(notification);
+        
+        okResponse(resp);
+        log.info(printExitState(now, req, "ok"));
+        return ;
     }
     
 }
