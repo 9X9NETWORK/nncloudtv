@@ -1782,4 +1782,42 @@ public class ApiMso extends ApiGeneric {
             return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
         }
     }
+    
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.GET)
+    public @ResponseBody MsoNotification notification(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return null;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "100") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return null;
+        }
+        
+        log.info(printExitState(now, req, "ok"));
+        return notification;
+    }
+    
 }
