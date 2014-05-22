@@ -28,6 +28,10 @@ public class MsoNotificationManager {
         return dao.list(page, limit, sidx, sord, filter);
     }
     
+    public List<MsoNotification> listScheduled(int page, int limit, String filter) {
+        return dao.listScheduled(page, limit, filter);
+    }
+    
     public MsoNotification findById(long id) {
         return dao.findById(id);
     }

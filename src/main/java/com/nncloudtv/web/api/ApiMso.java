@@ -1770,6 +1770,16 @@ public class ApiMso extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+        
+        // type
+        String type = req.getParameter("type");
+        
+        if ("history".equals(type)) {
+            return notificationMngr.list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
+        } else if ("schedule".equals(type)) {
+            return notificationMngr.listScheduled(1, 20, "msoId == " + mso.getId());
+        } else {
+            return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+        }
     }
 }
