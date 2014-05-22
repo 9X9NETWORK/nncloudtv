@@ -1820,4 +1820,84 @@ public class ApiMso extends ApiGeneric {
         return notification;
     }
     
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.PUT)
+    public @ResponseBody MsoNotification notificationUpdate(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        ApiContext context = new ApiContext(req, msoMngr);
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return null;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "100") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return null;
+        }
+        
+        // message
+        String message = req.getParameter("message");
+        if (message != null) {
+            notification.setMessage(message);
+        }
+        
+        // content
+        String content = req.getParameter("content");
+        if (content != null) {
+            notification.setContent(content);
+        }
+        
+        // scheduleDate
+        String scheduleDateStr = req.getParameter("scheduleDate");
+        if (scheduleDateStr != null && !"NOW".equalsIgnoreCase(scheduleDateStr)) {
+            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            if (scheduleDateLong != null) {
+                notification.setScheduleDate(new Date(scheduleDateLong));
+            }
+        }
+        
+        MsoNotification savedNotification = notificationMngr.save(notification);
+        
+        if ("NOW".equalsIgnoreCase(scheduleDateStr)) {
+            
+            Mso mso = msoMngr.findById(savedNotification.getMsoId());
+            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
+            if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
+                
+                QueueFactory.add("/notify/gcm?id=" + savedNotification.getId(), null);
+            }
+            if (p12.exists() == true) {
+                
+                QueueFactory.add("/notify/apns?id=" + savedNotification.getId(), null);
+            }
+            
+            savedNotification.setPublishDate(new Date());
+            savedNotification.setScheduleDate(null);
+            savedNotification = notificationMngr.save(savedNotification);
+        }
+        
+        log.info(printExitState(now, req, "ok"));
+        return savedNotification;
+    }
+    
 }
