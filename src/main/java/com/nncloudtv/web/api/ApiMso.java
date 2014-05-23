@@ -1647,7 +1647,6 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
     
-        ApiContext context = new ApiContext(req, msoMngr);
         Mso mso = null;
         
         if (msoIdStr.matches("^\\d+$")) {
@@ -1715,6 +1714,7 @@ public class ApiMso extends ApiGeneric {
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            ApiContext context = new ApiContext(req, msoMngr);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
@@ -1826,7 +1826,6 @@ public class ApiMso extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
-        ApiContext context = new ApiContext(req, msoMngr);
         
         Long notificationId = evaluateLong(notificationIdStr);
         if (notificationId == null) {
@@ -1881,6 +1880,7 @@ public class ApiMso extends ApiGeneric {
             
             Mso mso = msoMngr.findById(savedNotification.getMsoId());
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            ApiContext context = new ApiContext(req, msoMngr);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
