@@ -50,4 +50,31 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
         return detached;        
     }
     
+    public List<MsoNotification> listScheduled(long page, long limit, String filter) {
+        
+        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        List<MsoNotification> results;
+        Date now = new Date();
+        try {
+            Query query = pm.newQuery(MsoNotification.class);
+            String dateFilter = "scheduleDate > now";
+            if (filter != null && filter != "") {
+                filter = filter + " && " + dateFilter;
+            } else {
+                filter = dateFilter;
+            }
+            query.setFilter(filter);
+            query.declareImports("import java.util.Date");
+            query.declareParameters("Date now");
+            query.setOrdering("scheduleDate asc");
+            query.setRange((page - 1) * limit, page * limit);
+            @SuppressWarnings("unchecked")
+            List<MsoNotification> tmp = (List<MsoNotification>)query.execute(now);
+            results = (List<MsoNotification>)pm.detachCopyAll(tmp);
+        } finally {
+            pm.close();
+        }
+        return results;
+    }
+    
 }
