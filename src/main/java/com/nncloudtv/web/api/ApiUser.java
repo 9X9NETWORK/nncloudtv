@@ -791,8 +791,20 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
+        // contentType
+        Short contentType = null;
+        String contentTypeStr = req.getParameter("contentType");
+        if (contentTypeStr != null) {
+            contentType = evaluateShort(contentTypeStr);
+            if (contentType != null &&
+                    contentType != NnChannel.CONTENTTYPE_MIXED &&
+                    contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {
+                contentType = null; // invalid value to see as skip
+            }
+        }
+        
         NnChannel savedChannel = apiUserService.userChannelCreate(user, name, intro, imageUrl, lang, isPublic, sphere, tag,
-                categoryId, req.getParameter("autoSync"), sourceUrl, sorting, status);
+                categoryId, req.getParameter("autoSync"), sourceUrl, sorting, status, contentType);
         if (savedChannel == null) {
             internalError(resp);
             log.warning(printExitState(now, req, "500"));
