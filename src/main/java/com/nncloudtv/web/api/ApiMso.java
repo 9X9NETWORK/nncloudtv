@@ -1783,6 +1783,31 @@ public class ApiMso extends ApiGeneric {
         }
     }
     
+    @RequestMapping(value = "push_notifications/scheduled", method = RequestMethod.PUT)
+    public @ResponseBody void notificationsScheduled(HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Date dueDate = new Date(now.getTime() + 60*10*1000); // 10 mins interval
+        List<MsoNotification> notifications = notificationMngr.listScheduled(dueDate);
+        
+        for (MsoNotification notification : notifications) {
+            QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
+            QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
+            
+            notification.setScheduleDate(null);
+            notification.setPublishDate(new Date());
+        }
+        
+        notificationMngr.saveAll(notifications);
+        
+        okResponse(resp);
+        log.info(printExitState(now, req, "ok"));
+        return ;
+    }
+    
     @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.GET)
     public @ResponseBody MsoNotification notification(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
