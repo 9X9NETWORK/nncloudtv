@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
-    <version>4.4.6-develop</version>
+    <version>4.4.7-devel</version>
     <name>nncloudtv</name>
     <reporting>
         <outputDirectory>doc</outputDirectory>
@@ -114,7 +114,7 @@
                 -->
                 <groupId>org.datanucleus</groupId>
                 <artifactId>maven-datanucleus-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>${org.datanucleus.version}</version>
                 <configuration>
                     <verbose>true</verbose>
                     <fork>false</fork>
@@ -130,23 +130,23 @@
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-core</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-enhancer</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>5.1.15</version>
+                        <version>5.1.30</version>
                         <scope>compile</scope>
                     </dependency>
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-rdbms</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -205,8 +205,9 @@
     <properties>
         <!-- versions -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.springframework.version>3.1.2.RELEASE</org.springframework.version>
-        <servlet.version>2.5</servlet.version>
+        <org.springframework.version>4.0.5.RELEASE</org.springframework.version>
+        <org.springframework.security.version>3.2.0.RELEASE</org.springframework.security.version>
+        <org.datanucleus.version>3.0.1</org.datanucleus.version>
     </properties>
 
     <!--
@@ -242,17 +243,17 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -279,8 +280,8 @@
         <!-- servlet -->
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servlet.version}</version>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -299,7 +300,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.15</version>
+            <version>5.1.30</version>
             <!-- <scope>runtime</scope> --> <!-- runtime fails -->
         </dependency>
         <!-- datanucleus jdo -->
@@ -312,31 +313,31 @@
         <dependency>
         <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-api-jdo</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-core</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-jdo-query</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-enhancer</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-rdbms</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <!-- dbcp -->
