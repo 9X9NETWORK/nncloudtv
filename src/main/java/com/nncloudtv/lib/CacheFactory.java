@@ -156,8 +156,7 @@ public class CacheFactory {
             System.gc(); // trigger garbage collection
             log.info("memory: max = " + Runtime.getRuntime().maxMemory()
                        + ", total = " + Runtime.getRuntime().totalMemory()
-                        + ", free = " + Runtime.getRuntime().freeMemory()
-                        + ", used = " + Runtime.getRuntime().freeMemory());
+                        + ", free = " + Runtime.getRuntime().freeMemory());
         } else if (!isRunning) {
             // cache is temporarily not running
             return null;
