@@ -1783,6 +1783,10 @@ public class ApiMso extends ApiGeneric {
         }
     }
     
+    /**
+     * Set crontab to trigger scheduled push notification
+     * ex : 28,58 * * * * curl -X PUT localhost:8080/api/push_notifications/scheduled
+     */
     @RequestMapping(value = "push_notifications/scheduled", method = RequestMethod.PUT)
     public @ResponseBody void notificationsScheduled(HttpServletRequest req,
             HttpServletResponse resp) {
