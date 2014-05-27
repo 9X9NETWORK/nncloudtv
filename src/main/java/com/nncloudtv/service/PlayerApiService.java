@@ -398,7 +398,7 @@ public class PlayerApiService {
     public Object signup(String email, String password, String name, String token,
                          String captchaFilename, String captchaText,
                          String sphere, String lang,
-                         String year,
+                         String year, String gender,
                          boolean isTemp,
                          HttpServletRequest req, HttpServletResponse resp) {        
         //validate basic inputs
@@ -432,8 +432,10 @@ public class PlayerApiService {
             type = NnUser.TYPE_YOUTUBE_CONNECT;
         }        
         NnUser user = new NnUser(email, password, type, mso.getId());
-        user.setTemp(isTemp);
+        user.setTemp(isTemp);        
         NnUserProfile profile = new NnUserProfile(mso.getId(), name, sphere, lang, year);
+        if (gender != null)
+            profile.setGender(Short.parseShort(gender));                        
         user.setProfile(profile);
         status = userMngr.create(user, req, (short)0);
         if (status != NnStatusCode.SUCCESS)

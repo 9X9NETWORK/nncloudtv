@@ -341,6 +341,23 @@ public class ApiGeneric {
 	    return longValue;
 	}
 	
+	public Integer evaluateInt(String stringValue) {
+        
+        if (stringValue == null) {
+            return null;
+        }
+        
+        Integer intValue = null;
+        try {
+            intValue = Integer.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            log.info("String value \"" + stringValue + "\" can't evaluate to type Int.");
+            return null;
+        }
+        
+        return intValue;
+    }
+	
 	public Short evaluateShort(String stringValue) {
         
         if (stringValue == null) {

@@ -1647,7 +1647,6 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
     
-        ApiContext context = new ApiContext(req, msoMngr);
         Mso mso = null;
         
         if (msoIdStr.matches("^\\d+$")) {
@@ -1715,6 +1714,7 @@ public class ApiMso extends ApiGeneric {
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            ApiContext context = new ApiContext(req, msoMngr);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
@@ -1724,6 +1724,10 @@ public class ApiMso extends ApiGeneric {
                 
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
+            
+            Date now = new Date();
+            notification.setPublishDate(now);
+            notification = notificationMngr.save(notification);
         }
         
         return notification;
@@ -1766,6 +1770,203 @@ public class ApiMso extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+        
+        // type
+        String type = req.getParameter("type");
+        
+        if ("history".equals(type)) {
+            return notificationMngr.list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
+        } else if ("schedule".equals(type)) {
+            return notificationMngr.listScheduled(1, 20, "msoId == " + mso.getId());
+        } else {
+            return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+        }
     }
+    
+    /**
+     * Set crontab to trigger scheduled push notification
+     * ex : 28,58 * * * * curl -X PUT localhost:8080/api/push_notifications/scheduled
+     */
+    @RequestMapping(value = "push_notifications/scheduled", method = RequestMethod.PUT)
+    public @ResponseBody void notificationsScheduled(HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Date dueDate = new Date(now.getTime() + 60*10*1000); // 10 mins interval
+        List<MsoNotification> notifications = notificationMngr.listScheduled(dueDate);
+        
+        for (MsoNotification notification : notifications) {
+            QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
+            QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
+            
+            notification.setScheduleDate(null);
+            notification.setPublishDate(new Date());
+        }
+        
+        notificationMngr.saveAll(notifications);
+        
+        okResponse(resp);
+        log.info(printExitState(now, req, "ok"));
+        return ;
+    }
+    
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.GET)
+    public @ResponseBody MsoNotification notification(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return null;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "100") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return null;
+        }
+        
+        log.info(printExitState(now, req, "ok"));
+        return notification;
+    }
+    
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.PUT)
+    public @ResponseBody MsoNotification notificationUpdate(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return null;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return null;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "110") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return null;
+        }
+        
+        // message
+        String message = req.getParameter("message");
+        if (message != null) {
+            notification.setMessage(message);
+        }
+        
+        // content
+        String content = req.getParameter("content");
+        if (content != null) {
+            notification.setContent(content);
+        }
+        
+        // scheduleDate
+        String scheduleDateStr = req.getParameter("scheduleDate");
+        if (scheduleDateStr != null && !"NOW".equalsIgnoreCase(scheduleDateStr)) {
+            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            if (scheduleDateLong != null) {
+                notification.setScheduleDate(new Date(scheduleDateLong));
+            }
+        }
+        
+        MsoNotification savedNotification = notificationMngr.save(notification);
+        
+        if ("NOW".equalsIgnoreCase(scheduleDateStr)) {
+            
+            Mso mso = msoMngr.findById(savedNotification.getMsoId());
+            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            ApiContext context = new ApiContext(req, msoMngr);
+            File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
+            if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
+                
+                QueueFactory.add("/notify/gcm?id=" + savedNotification.getId(), null);
+            }
+            if (p12.exists() == true) {
+                
+                QueueFactory.add("/notify/apns?id=" + savedNotification.getId(), null);
+            }
+            
+            savedNotification.setPublishDate(new Date());
+            savedNotification.setScheduleDate(null);
+            savedNotification = notificationMngr.save(savedNotification);
+        }
+        
+        log.info(printExitState(now, req, "ok"));
+        return savedNotification;
+    }
+    
+    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)
+    public @ResponseBody void notificationDelete(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+        
+        Date now = new Date();
+        log.info(printEnterState(now, req));
+        
+        Long notificationId = evaluateLong(notificationIdStr);
+        if (notificationId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            log.info(printExitState(now, req, "404"));
+            return ;
+        }
+        
+        MsoNotification notification = notificationMngr.findById(notificationId);
+        if (notification == null) {
+            notFound(resp, "Notification Not Found");
+            log.info(printExitState(now, req, "404"));
+            return ;
+        }
+        
+        Long verifiedUserId = userIdentify(req);
+        if (verifiedUserId == null) {
+            unauthorized(resp);
+            log.info(printExitState(now, req, "401"));
+            return ;
+        }
+        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "101") == false) {
+            forbidden(resp);
+            log.info(printExitState(now, req, "403"));
+            return ;
+        }
+        
+        notificationMngr.delete(notification);
+        
+        okResponse(resp);
+        log.info(printExitState(now, req, "ok"));
+        return ;
+    }
+    
 }
