@@ -17,6 +17,8 @@
 
     <mvc:annotation-driven/>
 
+    <task:annotation-driven />
+
     <context:component-scan base-package=" com.nncloudtv.web.api
                                          , com.nncloudtv.web
                                          , com.nncloudtv.service

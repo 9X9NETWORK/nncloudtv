@@ -15,6 +15,8 @@ public class NnApplicationListenerTask implements ApplicationListener<ContextRef
         
         log.info("EVENT: " + event.toString());
         
+        
+        
     }
     
 }
