@@ -1,4 +1,4 @@
-package task;
+package com.nncloudtv.task;
 
 import java.util.logging.Logger;
 
