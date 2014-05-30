@@ -19,7 +19,11 @@ public class App  implements Serializable {
 
     @Persistent
     private long msoId; //maybe different mso wants different
-   
+
+    @Persistent
+    @Column(jdbcType="VARCHAR", length=255)
+    private String msoName;
+    
     public static final short TYPE_IOS = 1;
     public static final short TYPE_ANDROID = 2;
 
@@ -43,6 +47,10 @@ public class App  implements Serializable {
     @Column(jdbcType="VARCHAR", length=255)
     private String androidStoreUrl;
 
+    @Persistent
+    @Column(jdbcType="VARCHAR", length=255)
+    private String androidPackageName;
+    
     @Persistent
     @Column(jdbcType="VARCHAR", length=5)
     private String sphere;
@@ -143,5 +151,23 @@ public class App  implements Serializable {
     public void setPosition2(int position2) {
        this.position2 = position2;
     }
-       
+
+	public String getMsoName() {
+		return msoName;
+	}
+
+	public void setMsoName(String msoName) {
+		this.msoName = msoName;
+	}
+
+	public String getAndroidPackageName() {
+		return androidPackageName;
+	}
+
+	public void setAndroidPackageName(String androidPackageName) {
+		this.androidPackageName = androidPackageName;
+	}
+
+
+    
 }

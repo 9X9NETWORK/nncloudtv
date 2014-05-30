@@ -299,7 +299,9 @@ public class PlayerApiService {
                  a.getName(),
                  a.getIntro(),
                  a.getImageUrl(),
-                 storeUrl
+                 storeUrl,
+                 a.getMsoName(),
+                 a.getAndroidPackageName(),
               };
               if (storeUrl != null)
                  result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
@@ -607,12 +609,14 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        boolean readOnly = configMngr.isInReadonlyMode(false);
+        //boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
+        /*
         if (!readOnly)
-            counter = this.addMsoInfoVisitCounter(readOnly);     
+            counter = this.addMsoInfoVisitCounter(readOnly);
+            */     
         String acceptLang = req.getHeader("Accept-Language");
         String piwik = "http://piwik.9x9.tv/";
         Object result = msoMngr.getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
