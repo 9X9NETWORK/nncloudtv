@@ -14,6 +14,8 @@ public class NnApplicationListenerTask implements ApplicationListener<Applicatio
     
     public void onApplicationEvent(ApplicationEvent event) {
         
+        log.info("EVENT" + event.toString());
+        
         if (event instanceof ContextStartedEvent) {
             
             log.info("Application started!");
