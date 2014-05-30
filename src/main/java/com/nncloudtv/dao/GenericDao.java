@@ -28,7 +28,7 @@ public class GenericDao<T> {
             cache.evictAll();
         }
     }
-
+    
     public void evict(T dao) {
         DataStoreCache cache = PMF.getContent().getDataStoreCache();
         if (cache != null) {
@@ -95,7 +95,7 @@ public class GenericDao<T> {
     /**
      * Get total number of objects
      */
-
+    
     public int total() {
         PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
         int result = 0;
@@ -237,4 +237,9 @@ public class GenericDao<T> {
         return detached;
     }
     
+    @Override
+    protected void finalize() throws Throwable {
+        
+        log.info(this.getClass().getName() + " is recycled");
+    }
 }

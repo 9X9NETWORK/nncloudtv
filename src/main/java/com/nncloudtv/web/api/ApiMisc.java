@@ -199,7 +199,6 @@ public class ApiMisc extends ApiGeneric {
 	@RequestMapping("echo")
 	public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
 		
-		@SuppressWarnings("unchecked")
 		Map<String, String[]> names = req.getParameterMap();
 		Map<String, String> result = new TreeMap<String, String>();
 		

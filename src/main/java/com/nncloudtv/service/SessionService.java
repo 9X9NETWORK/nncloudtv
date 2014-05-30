@@ -54,7 +54,7 @@ public class SessionService {
     
     public void saveSession(HttpServletResponse resp) {
         HashMap<String, Object> map = new HashMap<String, Object>();
-        for (@SuppressWarnings("unchecked") Enumeration<String> enu = (Enumeration<String>)session.getAttributeNames(); enu.hasMoreElements();) {
+        for (Enumeration<String> enu = (Enumeration<String>)session.getAttributeNames(); enu.hasMoreElements();) {
             String name = (String)enu.nextElement();
             log.info("put to cache = " + name);
             map.put(name, session.getAttribute(name));
