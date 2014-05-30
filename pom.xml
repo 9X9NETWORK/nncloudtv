@@ -61,45 +61,7 @@
                         <contextPath>/</contextPath>
                     </webAppConfig>
                     <reload>manual</reload>
-                    <!--
-                    <scanIntervalSeconds>5</scanIntervalSeconds>
-                    -->
-                    <systemProperties>
-                        <systemProperty>
-                            <name>org.apache.commons.logging.Log</name>
-                            <value>org.apache.commons.logging.impl.Log4JLogger</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>slf4j</name>
-                            <value>false</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>log4j.configuration</name>
-                            <value>file:./target/classes/log4j.properties</value>
-                        </systemProperty>
-                    </systemProperties>
                 </configuration>
-                <dependencies>
-                    <!-- http://docs.codehaus.org/display/JETTY/Maven+Jetty+Plugin -->
-                    <dependency>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                        <version>1.1.1</version>
-                        <type>jar</type>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jcl</artifactId>
-                        <version>1.6.1</version>
-                        <type>jar</type>
-                    </dependency>
-                    <dependency>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                        <version>1.2.16</version>
-                        <type>jar</type>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <!--
@@ -262,20 +224,9 @@
         </dependency>
         <!-- logging -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
-        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
-            <type>jar</type>
         </dependency>
         <!-- servlet -->
         <dependency>
