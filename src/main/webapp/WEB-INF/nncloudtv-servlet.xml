@@ -35,7 +35,9 @@
         <property name="basename">
             <value>classpath:messages</value>
         </property>
-        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="defaultEncoding" value="UTF-8" />
     </bean>
+
+    <bean id="nnEventListener" class="com.nncloudtv.task.NnApplicationListenerTask" />
 
 </beans>
