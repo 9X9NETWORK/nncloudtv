@@ -222,6 +222,11 @@ public class GenericDao<T> {
         
         List<T> detached = new ArrayList<T>();
         
+        if (queryStr == null || queryStr.isEmpty())
+            return detached;
+        
+        queryStr = queryStr.replaceAll(" +", " ");
+        
         try {
             log.info("[sql] " + queryStr);
             Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
