@@ -21,10 +21,17 @@ public class ScheduledTask {
     @Scheduled(fixedRate = GC_INTERVAL)
     public void triggerGC() {
         
+        long max   = Runtime.getRuntime().maxMemory();
+        long total = Runtime.getRuntime().totalMemory();
+        long free  = Runtime.getRuntime().freeMemory();
+        
         System.gc(); // trigger garbage collection
-        log.info("memory: max = " + Runtime.getRuntime().maxMemory()
-                   + ", total = " + Runtime.getRuntime().totalMemory()
-                   +  ", free = " + Runtime.getRuntime().freeMemory());
+        log.info("memory: max = " + max
+                   + ", total = " + total
+                   +  ", free = " + free);
+        if (max == total && free < total / 100) {
+            log.warning("available memory is less than 1%");
+        }
     }
     
     @Scheduled(fixedDelay = MEMCACHE_CHECK_INTERVAL)
