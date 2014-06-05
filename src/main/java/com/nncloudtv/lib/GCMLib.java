@@ -102,19 +102,13 @@ public class GCMLib {
         
         threadPool.execute(new Runnable() {
             public void run() {
-                
-                Builder msgBuilder = new Message.Builder()
+                Message message = new Message.Builder()
                     .addData("message", NnStringUtil.urlencode(msg.getMessage())) // message
                     .addData("content", msg.getContent()) // content
-                    .addData("ts", msg.getTimeStamp());  // timestamp
-                if (msg.getTitle() != null) {
-                    msgBuilder.addData("logo", NnStringUtil.urlencode(msg.getLogo())); // logo
-                }
-                if (msg.getLogo() != null) {
-                    msgBuilder.addData("title", NnStringUtil.urlencode(msg.getTitle())); // title
-                }
-                Message message = msgBuilder.build();
-                
+                    .addData("ts", msg.getTimeStamp())  // timestamp
+                    .addData("logo", NnStringUtil.urlencode(msg.getLogo())) // logo
+                    .addData("title", NnStringUtil.urlencode(msg.getTitle())) // title
+                    .build();
                 MulticastResult multicastResult;
                 try {
                     log.info("sending GCM notification with content = " + msoNotification.getContent());
