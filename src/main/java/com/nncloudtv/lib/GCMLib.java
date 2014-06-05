@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.android.gcm.server.Constants;
 import com.google.android.gcm.server.Message;
-import com.google.android.gcm.server.Message.Builder;
 import com.google.android.gcm.server.MulticastResult;
 import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
@@ -79,7 +78,7 @@ public class GCMLib {
         // send a multicast message using JSON
         // must split in chunks of 1000 devices (due to GCM limitation)
         int total = devices.size();
-        List<String> partialDevices = new ArrayList<String>(total);
+        List<String> partialDevices = new ArrayList<String>();
         int counter = 0;
         int tasks = 0;
         for (String device : devices) {
@@ -88,7 +87,7 @@ public class GCMLib {
             int partialSize = partialDevices.size();
             if (partialSize == MULTICAST_SIZE || counter == total) {
                 asyncSend(sender, partialDevices, msoNotification, msg, deviceMap);
-                partialDevices.clear();
+                partialDevices = new ArrayList<String>();
                 tasks++;
             }
         }
