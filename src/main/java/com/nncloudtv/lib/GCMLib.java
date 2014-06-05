@@ -84,14 +84,13 @@ public class GCMLib {
         for (String device : devices) {
             counter++;
             partialDevices.add(device);
-            int partialSize = partialDevices.size();
-            if (partialSize == MULTICAST_SIZE || counter == total) {
+            if (partialDevices.size() == MULTICAST_SIZE || counter == total) {
                 asyncSend(sender, partialDevices, msoNotification, msg, deviceMap);
                 partialDevices = new ArrayList<String>();
                 tasks++;
             }
         }
-        log.info("Asynchronously sending " + tasks + " multicast messages to " + total + " devices");
+        log.info("asynchronously sending " + tasks + " multicast messages to " + total + " devices");
     }
     
     private void asyncSend(final Sender sender,
