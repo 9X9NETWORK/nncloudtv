@@ -3402,7 +3402,8 @@ System.out.println("result 0:" + result[0]);
             notificationMngr.save(unreadNotifications);
         }
         
-        Object result = notificationMngr.composeNotificationList(notifications);
+        Object output = notificationMngr.composeNotificationList(notifications);
+        String[] result = { (String) output };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
