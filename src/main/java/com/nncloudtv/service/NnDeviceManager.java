@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.NnDevice;
+import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.web.json.player.PlayerDevice;
 
@@ -17,7 +19,8 @@ import com.nncloudtv.web.json.player.PlayerDevice;
 public class NnDeviceManager {
     protected static final Logger log = Logger.getLogger(NnDeviceManager.class.getName());
     
-    private NnDeviceDao deviceDao = new NnDeviceDao();
+    private NnDeviceDao dao = new NnDeviceDao();
+    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     private HttpServletRequest req;
     private NnUserManager userMngr;
             
@@ -30,10 +33,20 @@ public class NnDeviceManager {
     }
     public HttpServletRequest getReq() { return req; }
     public void setReq(HttpServletRequest req) { this.req = req;}
-
+    
     public void save(NnDevice device) {
+        
         device.setUpdateDate(new Date());
-        deviceDao.save(device);
+        dao.save(device);
+    }
+    
+    public void save(List<NnDevice> devices) {
+        
+        Date now = new Date();
+        for (NnDevice device : devices) {
+            device.setCreateDate(now);
+        }
+        dao.saveAll(devices);
     }
     
     //can create device based on user, or device
@@ -63,25 +76,25 @@ public class NnDeviceManager {
         if (device.getCreateDate() == null)
             device.setCreateDate(now);
         device.setUpdateDate(now);       
-        device = deviceDao.save(device);
+        device = dao.save(device);
         return device;
     }
     
     public NnDevice findByTokenAndUser(String token, NnUser user) {
-        return deviceDao.findByTokenAndUser(token, user);
+        return dao.findByTokenAndUser(token, user);
     }
 
     //find a device that's not associated with any user account, which is user id = 0
     public NnDevice findDeviceOpenToken(String token) {
-        return deviceDao.findDeviceOpenToken(token);
+        return dao.findDeviceOpenToken(token);
     }
     
     public List<NnDevice> findByToken(String token) {
-        return deviceDao.findByToken(token);
+        return dao.findByToken(token);
     }
 
     public List<NnDevice> findByUser(NnUser user) {
-        return deviceDao.findByUser(user);
+        return dao.findByUser(user);
     }
     
     public NnDevice addUser(String token, NnUser user) {        
@@ -91,7 +104,7 @@ public class NnDeviceManager {
         NnDevice existed = this.findDeviceOpenToken(token);
         if (existed != null) {
             existed.setUserId(user.getId());            
-            deviceDao.save(existed);
+            dao.save(existed);
             return existed;
         }
         existed = this.findByTokenAndUser(token, user);
@@ -106,9 +119,25 @@ public class NnDeviceManager {
     }    
     
     public void delete(NnDevice device) {
-        deviceDao.delete(device);
+        
+        List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
+        
+        dao.delete(device);
+        notificationMngr.delete(notifications);
     }
-
+    
+    public void delete(List<NnDevice> deleteDevices) {
+        
+        List<NnDeviceNotification> notifications = new ArrayList<NnDeviceNotification>();
+        
+        for (NnDevice device : deleteDevices) {
+            notifications.addAll(notificationMngr.findByDeviceId(device.getId()));
+        }
+        
+        dao.deleteAll(deleteDevices);
+        notificationMngr.delete(notifications);
+    }
+    
     public Object getPlayerDeviceInfo(NnDevice device, short format, List<NnUser> users) {
     	String token = device.getToken();
         if (format == PlayerApiService.FORMAT_PLAIN) {
@@ -144,6 +173,11 @@ public class NnDeviceManager {
     
     public NnDevice findDuplicated(String token, long msoId, String type) {
         
-        return deviceDao.findDuplicated(token, msoId, type);
+        return dao.findDuplicated(token, msoId, type);
+    }
+    
+    public List<NnDevice> findByMsoAndType(long msoId, String type) {
+        
+        return dao.findByMsoAndType(msoId, type);
     }
 }

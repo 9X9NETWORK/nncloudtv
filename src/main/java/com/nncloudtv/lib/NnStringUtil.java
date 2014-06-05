@@ -114,13 +114,18 @@ public class NnStringUtil {
         System.out.println("getUpdateDate() : UDate = " + result);
         return result;
     }
-
+    
     public static String getDelimitedStr(String[] ori) {
         StringBuilder result = new StringBuilder();
         String delimiter = "\t";
+        for (String str : ori) {
+            if (str != null) {
+                str = str.replaceAll("\\t", " ");
+            }
+        }
         if (ori.length > 0) {
             result.append(ori[0]);
-            for (int i=1; i<ori.length; i++) {
+            for (int i = 1; i < ori.length; i++) {
                result.append(delimiter);
                result.append(ori[i]);
             }
