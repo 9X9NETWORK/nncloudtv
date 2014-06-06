@@ -3394,11 +3394,13 @@ System.out.println("result 0:" + result[0]);
         
         if (req.getParameter("clean") != null) {
             
-            List<NnDeviceNotification> unreadNotifications = notificationMngr.findUnread();
+            List<NnDeviceNotification> unreadNotifications = notificationMngr.findUnreadByDeviceId(device.getId());
             
             for (NnDeviceNotification unread : unreadNotifications) {
                 unread.setRead(true);
             }
+            device.setBadge(0);
+            deviceMngr.save(device);
             notificationMngr.save(unreadNotifications);
         }
         

@@ -39,15 +39,16 @@ public class NnDeviceNotificationDao extends GenericDao<NnDeviceNotification> {
         return detached;
     }
     
-    public List<NnDeviceNotification> findUnread() {
+    public List<NnDeviceNotification> findUnreadDeviceId(long deviceId) {
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnDeviceNotification> detached = new ArrayList<NnDeviceNotification>();
         try {
             Query query = pm.newQuery(NnDeviceNotification.class);
-            query.setFilter("read == false");
+            query.setFilter("read == false && deviceId == deviceIdParam");
+            query.declareParameters("long deviceIdParam");
             @SuppressWarnings("unchecked")
-            List<NnDeviceNotification> results = (List<NnDeviceNotification>) query.execute();
+            List<NnDeviceNotification> results = (List<NnDeviceNotification>) query.execute(deviceId);
             detached = (List<NnDeviceNotification>) pm.detachCopyAll(results);
         } finally {
             pm.close();

@@ -101,8 +101,8 @@ public class NnDeviceNotificationManager {
         return dao.list(page, limit, sidx, sord, filter);
     }
     
-    public List<NnDeviceNotification> findUnread() {
+    public List<NnDeviceNotification> findUnreadByDeviceId(long deviceId) {
         
-        return dao.findUnread();
+        return dao.findUnreadDeviceId(deviceId);
     }
 }
