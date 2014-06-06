@@ -77,4 +77,25 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
         return results;
     }
     
+    public List<MsoNotification> listScheduled(Date dueDate) {
+        
+        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        List<MsoNotification> results;
+        Date now = new Date();
+        try {
+            Query query = pm.newQuery(MsoNotification.class);
+            String filter = "scheduleDate > now && scheduleDate < dueDate";
+            query.setFilter(filter);
+            query.declareImports("import java.util.Date");
+            query.declareParameters("Date now, Date dueDate");
+            query.setOrdering("createDate asc");
+            @SuppressWarnings("unchecked")
+            List<MsoNotification> tmp = (List<MsoNotification>)query.execute(now, dueDate);
+            results = (List<MsoNotification>)pm.detachCopyAll(tmp);
+        } finally {
+            pm.close();
+        }
+        return results;
+    }
+    
 }

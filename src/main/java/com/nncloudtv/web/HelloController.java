@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import javax.jdo.JDOFatalDataStoreException;
 import javax.jdo.PersistenceManager;
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,8 +44,7 @@ import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
 @RequestMapping("hello")
 public class HelloController {
 
-    //protected static final Logger log = Logger.getLogger(HelloController.class.getName());
-    protected static final Logger log = Logger.getLogger(HelloController.class);
+    protected static final Logger log = Logger.getLogger(HelloController.class.getName());
 
     //basic test
     @RequestMapping("world")
@@ -81,8 +80,8 @@ public class HelloController {
             System.out.println("img:" + img);
         }
         log.info("----- hello log -----");
-        log.warn("----- hello warning -----");
-        log.fatal("----- hello severe -----");
+        log.warning("----- hello warning -----");
+        log.severe("----- hello severe -----");
         System.out.println("----- hello console -----");
         return new ModelAndView("hello", "message", "log");
     }    
