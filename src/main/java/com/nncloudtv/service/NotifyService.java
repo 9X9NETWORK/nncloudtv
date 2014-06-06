@@ -52,8 +52,8 @@ public class NotifyService {
         
         MsoConfig config = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
         if (config == null || config.getValue() == null || config.getValue().isEmpty()) {
-            log.info("GCM api key not approrite set for mso : " + mso.getName());
-            return ;
+            log.warning("GCM api key not set for mso " + mso.getName());
+            return;
         }
         
         gcmLib.doPost(msoNotification, config.getValue());

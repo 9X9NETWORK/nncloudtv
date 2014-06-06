@@ -51,6 +51,7 @@ import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnContent;
 import com.nncloudtv.model.NnDevice;
+import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnGuest;
@@ -3374,5 +3375,37 @@ System.out.println("result 0:" + result[0]);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);        
     }
     */
+    
+    public Object notificationList(String token, HttpServletRequest req) {
         
+        if (token == null)
+            return this.assembleMsgs(NnStatusCode.SUCCESS, null);
+        
+        NnDeviceManager deviceMngr = new NnDeviceManager();
+        NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+        
+        List<NnDevice> devices = deviceMngr.findByToken(token);
+        if (devices.isEmpty())
+            return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
+        
+        NnDevice device = devices.get(0);
+        
+        List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
+        
+        if (req.getParameter("clean") != null) {
+            
+            List<NnDeviceNotification> unreadNotifications = notificationMngr.findUnread();
+            
+            for (NnDeviceNotification unread : unreadNotifications) {
+                unread.setRead(true);
+            }
+            notificationMngr.save(unreadNotifications);
+        }
+        
+        Object output = notificationMngr.composeNotificationList(notifications);
+        String[] result = { (String) output };
+        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+    
 }

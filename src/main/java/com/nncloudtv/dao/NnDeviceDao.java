@@ -18,7 +18,7 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
     public NnDeviceDao() {
         super(NnDevice.class);
     }
-        
+    
     public List<NnDevice> findByUser(NnUser user) {
         List<NnDevice> detached = new ArrayList<NnDevice>();
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -32,7 +32,7 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
         } finally {
             pm.close();
         }
-        return detached;        
+        return detached;
     }
     
     public List<NnDevice> findByToken(String token) {
@@ -87,7 +87,7 @@ public class NnDeviceDao extends GenericDao<NnDevice> {
         }
         return device;
     }
-
+    
     @SuppressWarnings("unchecked")
     public NnDevice findDeviceOpenToken(String token) {
         NnDevice device = null;
