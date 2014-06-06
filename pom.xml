@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
-    <version>4.4.7-DEVELOPMENT</version>
+    <version>4.4.7-PRODUCTION</version>
     <name>nncloudtv</name>
     <reporting>
         <outputDirectory>doc</outputDirectory>
