@@ -209,7 +209,7 @@ public class GCMLib {
         String[] splits = msoNotification.getContent().split(":");
         if (splits.length < 3) {
             
-            if (splits.length == 2 && splits[1].matches("^\\d+$")) {
+            if (splits.length == 2 && splits[1].matches("^[0-9]+$")) {
                 
                 NnChannelManager chMngr = new NnChannelManager();
                 NnChannel channel = chMngr.findById(Long.valueOf(splits[1]));
@@ -227,7 +227,7 @@ public class GCMLib {
             return message;
         }
         String idStr = splits[2];
-        if (idStr.matches("^e\\d+$")) { // ex: "cts:1235:e6789", NnEpisode
+        if (idStr.matches("^e[0-9]+$")) { // ex: "cts:1235:e6789", NnEpisode
             
             idStr = idStr.replaceAll("^e", "");
             Long episodeId = evaluateLong(idStr);
@@ -244,7 +244,7 @@ public class GCMLib {
             if (episode.getName() != null) {
                 message.setTitle(episode.getName());
             }
-        } else if (idStr.matches("^\\d+$")) { // ex: "cts:1234:5678", YtProgram
+        } else if (idStr.matches("^[0-9]+$")) { // ex: "cts:1234:5678", YtProgram
             
             Long ytProgramId = evaluateLong(idStr);
             if (ytProgramId == null) {
