@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -147,7 +146,6 @@ public class PlayerApiController {
         this.msoMngr = new MsoManager();
     }
     
-    @Autowired
     public PlayerApiController(MsoManager msoMngr) {
         
         this.msoMngr = msoMngr;
