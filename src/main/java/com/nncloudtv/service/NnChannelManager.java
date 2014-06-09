@@ -28,6 +28,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
@@ -975,13 +976,10 @@ public class NnChannelManager {
         if ((channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL ||
                 channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) &&
              channel.getImageUrl() != null) {
-
+            
             String[] imageUrls = channel.getImageUrl().split("\\|");
             channel.setImageUrl(imageUrls[0]);
         }
-        
-        // moreImageUrl
-        // populateMoreImageUrl(channel); // populate its value is optional 
         
         // name
         channel.setName(NnStringUtil.revertHtml(channel.getName()));
@@ -1245,4 +1243,18 @@ public class NnChannelManager {
         return channel;
     }
     
+    public void populateAutoSync(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        
+        List<NnChannelPref> channelPrefs = prefMngr.findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        if (channelPrefs == null || channelPrefs.isEmpty()) {
+            
+            channel.setAutoSync(NnChannelPref.OFF);
+            return;
+        }
+        channel.setAutoSync(channelPrefs.get(0).getValue());
+    }
 }
