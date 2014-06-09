@@ -3389,6 +3389,7 @@ System.out.println("result 0:" + result[0]);
             return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
         
         NnDevice device = devices.get(0);
+        String badge = PlayerApiService.assembleKeyValue("badge", String.valueOf(device.getBadge()));
         
         List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
         
@@ -3405,7 +3406,7 @@ System.out.println("result 0:" + result[0]);
         }
         
         Object output = notificationMngr.composeNotificationList(notifications);
-        String[] result = { (String) output };
+        String[] result = { badge, (String) output };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
