@@ -120,7 +120,7 @@ public class NnStringUtil {
         String delimiter = "\t";
         for (String str : ori) {
             if (str != null) {
-                str = str.replaceAll("\\t", " ");
+                str = str.replaceAll("\\t|\\n", " ");
             }
         }
         if (ori.length > 0) {
