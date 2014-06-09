@@ -60,18 +60,17 @@ public class ApiUser extends ApiGeneric {
     private NnUserManager userMngr;
     private StoreService storeService;
     private ApiUserService apiUserService;
-    private NnChannelPrefManager channelPrefMngr;
     private NnUserProfileManager userProfileMngr;
     
     @Autowired
     public ApiUser(NnChannelManager channelMngr, MsoManager msoMngr, NnUserManager userMngr, StoreService storeService,
-            ApiUserService apiUserService, NnChannelPrefManager channelPrefMngr, NnUserProfileManager userProfileMngr) {
+            ApiUserService apiUserService, NnUserProfileManager userProfileMngr) {
+        
         this.channelMngr = channelMngr;
         this.msoMngr = msoMngr;
         this.userMngr = userMngr;
         this.storeService = storeService;
         this.apiUserService = apiUserService;
-        this.channelPrefMngr = channelPrefMngr;
         this.userProfileMngr = userProfileMngr;
     }
     
@@ -509,6 +508,8 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
+            channelMngr.populateAutoSync(channel);
+            
         }
         
         Collections.sort(results, channelMngr.getChannelComparator("seq"));
@@ -812,7 +813,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         channelMngr.populateCategoryId(savedChannel);
-        savedChannel.setAutoSync(channelPrefMngr.getAutoSync(savedChannel.getId()));
+        channelMngr.populateAutoSync(savedChannel);
         channelMngr.normalize(savedChannel);
         
         log.info(printExitState(now, req, "ok"));

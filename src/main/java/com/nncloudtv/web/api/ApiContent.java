@@ -1104,7 +1104,7 @@ public class ApiContent extends ApiGeneric {
         if (channel.isReadonly() == false) {
             channelMngr.populateMoreImageUrl(channel);
         }
-        channel.setAutoSync(channelPrefMngr.getAutoSync(channel.getId()));
+        channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
         
         return channel;
@@ -1224,7 +1224,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         channelMngr.populateCategoryId(savedChannel);
-        savedChannel.setAutoSync(channelPrefMngr.getAutoSync(savedChannel.getId()));
+        channelMngr.populateAutoSync(savedChannel);
         channelMngr.normalize(savedChannel);
         
         log.info(printExitState(now, req, "ok"));
