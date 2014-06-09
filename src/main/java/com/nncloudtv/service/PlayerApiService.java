@@ -3391,6 +3391,11 @@ System.out.println("result 0:" + result[0]);
         NnDevice device = devices.get(0);
         String badge = PlayerApiService.assembleKeyValue("badge", String.valueOf(device.getBadge()));
         
+        if (req.getParameter("minimal") != null) {
+            String[] result = { badge };
+            return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        }
+        
         List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
         
         if (req.getParameter("clean") != null) {
