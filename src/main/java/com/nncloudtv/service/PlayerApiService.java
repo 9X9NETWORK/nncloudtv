@@ -3416,4 +3416,9 @@ System.out.println("result 0:" + result[0]);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
+    @Override
+    protected void finalize() throws Throwable {
+        
+        log.info(this.getClass().getName() + " is recycled");
+    }
 }
