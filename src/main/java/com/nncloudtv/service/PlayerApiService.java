@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -124,7 +123,6 @@ public class PlayerApiService {
         epMngr = new NnEpisodeManager();
     }
     
-    @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
             NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
@@ -3389,6 +3387,12 @@ System.out.println("result 0:" + result[0]);
             return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
         
         NnDevice device = devices.get(0);
+        String badge = PlayerApiService.assembleKeyValue("badge", String.valueOf(device.getBadge()));
+        
+        if (req.getParameter("minimal") != null) {
+            String[] result = { badge };
+            return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        }
         
         List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
         
@@ -3405,9 +3409,14 @@ System.out.println("result 0:" + result[0]);
         }
         
         Object output = notificationMngr.composeNotificationList(notifications);
-        String[] result = { (String) output };
+        String[] result = { badge, (String) output };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
+    @Override
+    protected void finalize() throws Throwable {
+        
+        log.info(this.getClass().getName() + " is recycled");
+    }
 }
