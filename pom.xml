@@ -407,6 +407,11 @@
         	<artifactId>powermock-module-junit4</artifactId>
         	<version>1.5.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.clearcommerce</groupId>
+            <artifactId>clear-commerce</artifactId>
+            <version>5.10.0.3706</version>
+        </dependency>
     </dependencies>
 
     <!-- ====================================================================== -->
