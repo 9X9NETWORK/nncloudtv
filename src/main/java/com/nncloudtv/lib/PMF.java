@@ -15,6 +15,7 @@ public final class PMF {
     private static PersistenceManagerFactory pmfInstanceContent = null;
     private static PersistenceManagerFactory pmfInstanceAnalytics = null;
     private static PersistenceManagerFactory pmfInstanceRecommend = null;
+    private static PersistenceManagerFactory pmfInstanceBilling = null;
     
     public PMF() {
     }
@@ -33,13 +34,13 @@ public final class PMF {
         }
         return pmfInstanceNnUser1;
     }
-
+    
     public static PersistenceManagerFactory getNnUser2() {
         if (pmfInstanceNnUser2 == null)
             pmfInstanceNnUser2 = JDOHelper.getPersistenceManagerFactory("datanucleus_nnuser2.properties");
         return pmfInstanceNnUser2;
     }
-
+    
     public static PersistenceManagerFactory getContent() {
         if (pmfInstanceContent == null)
             pmfInstanceContent = JDOHelper.getPersistenceManagerFactory("datanucleus_content.properties");
@@ -51,11 +52,17 @@ public final class PMF {
             pmfInstanceAnalytics = JDOHelper.getPersistenceManagerFactory("datanucleus_analytics.properties");
         return pmfInstanceAnalytics;
     }
-
+    
     public static PersistenceManagerFactory getRecommend() {
         if (pmfInstanceRecommend == null)
             pmfInstanceRecommend = JDOHelper.getPersistenceManagerFactory("datanucleus_recommend.properties");
         return pmfInstanceRecommend;
+    }
+    
+    public static PersistenceManagerFactory getBilling() {
+        if (pmfInstanceBilling == null)
+            pmfInstanceBilling = JDOHelper.getPersistenceManagerFactory("datanucleus_billing.properties");
+        return pmfInstanceBilling;
     }
     
 }
