@@ -1,4 +1,4 @@
-package com.nncloudtv.model.billing;
+package com.nncloudtv.model;
 
 import java.util.Date;
 
@@ -26,6 +26,9 @@ public class BillingProfile {
     @Persistent
     @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String token;
+    
+    @Persistent
+    private Date tokenExpDate; // token expiration date
     
     @Persistent
     private short cardStatus;
@@ -205,6 +208,14 @@ public class BillingProfile {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Date getTokenExpDate() {
+        return tokenExpDate;
+    }
+
+    public void setTokenExpDate(Date tokenExpDate) {
+        this.tokenExpDate = tokenExpDate;
     }
     
 }

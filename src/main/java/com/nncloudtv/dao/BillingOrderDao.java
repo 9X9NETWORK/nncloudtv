@@ -2,7 +2,7 @@ package com.nncloudtv.dao;
 
 import java.util.logging.Logger;
 
-import com.nncloudtv.model.billing.BillingOrder;
+import com.nncloudtv.model.BillingOrder;
 
 public class BillingOrderDao extends GenericDao<BillingOrder> {
     

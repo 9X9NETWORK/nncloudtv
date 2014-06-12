@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.nncloudtv.model.billing.BillingOrder;
-import com.nncloudtv.model.billing.BillingPackage;
-import com.nncloudtv.model.billing.BillingProfile;
+import com.nncloudtv.model.BillingOrder;
+import com.nncloudtv.model.BillingPackage;
+import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.service.BillingPackageManager;
 
 @Controller

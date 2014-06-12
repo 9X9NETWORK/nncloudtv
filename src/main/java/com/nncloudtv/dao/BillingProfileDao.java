@@ -3,7 +3,7 @@ package com.nncloudtv.dao;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.GenericDao;
-import com.nncloudtv.model.billing.BillingOrder;
+import com.nncloudtv.model.BillingOrder;
 
 public class BillingProfileDao extends GenericDao<BillingOrder> {
     

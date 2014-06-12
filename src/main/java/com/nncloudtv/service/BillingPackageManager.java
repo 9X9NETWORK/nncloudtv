@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.BillingPackageDao;
-import com.nncloudtv.model.billing.BillingPackage;
+import com.nncloudtv.model.BillingPackage;
 
 @Service
 public class BillingPackageManager {

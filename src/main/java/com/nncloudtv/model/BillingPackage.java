@@ -1,4 +1,4 @@
-package com.nncloudtv.model.billing;
+package com.nncloudtv.model;
 
 import java.util.Date;
 
