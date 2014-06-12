@@ -7,7 +7,7 @@ if choice == "1":
    server = "dev" 
 
 #---- copy property files ----
-list=['datanucleus_analytics.properties', 'datanucleus_content.properties',
+list=['datanucleus_analytics.properties', 'datanucleus_content.properties', 'datanucleus_billing.properties', 'clearcommerce.properties',
       'datanucleus_nnuser1.properties', 'datanucleus_nnuser2.properties', 'datanucleus_recommend.properties', 'aws.properties',
       'memcache.properties', 'queue.properties', 'facebook.properties', 'crawler.properties', 'services.properties']
 

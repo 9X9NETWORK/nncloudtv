@@ -24,9 +24,16 @@ public class BillingProfile {
     private Date updateDate;
     
     @Persistent
+    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String token;
+    
+    @Persistent
     private short cardStatus;
-    public static final short GOOD = 0;
-    public static final short FRAUD = 1;
+    public static final short UNKNOWN  = 0;
+    public static final short VERIFIED = 1;
+    public static final short AUTHED   = 2;
+    public static final short CHARGED  = 3;
+    public static final short FRAUD    = 4;
     
     @Persistent
     @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
@@ -190,6 +197,14 @@ public class BillingProfile {
     
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
     
 }

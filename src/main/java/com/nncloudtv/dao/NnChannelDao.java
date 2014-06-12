@@ -186,20 +186,6 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         }
         return detached;     
     }
-    
-    public List<NnChannel> findAll() {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        try {
-            Query query = pm.newQuery(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> results = (List<NnChannel>) query.execute();
-            detached = (List<NnChannel>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }
         
     public List<NnChannel> findAllByStatus(short status) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();

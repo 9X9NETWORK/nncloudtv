@@ -345,5 +345,15 @@ public class MsoConfigManager {
         }
         return result;
     }
+    
+    public static String getCCClientId() {
+        
+        return getProperty("clearcommerce.properties", "client_id");
+    }
+    
+    public static String getCCBillingGayeway() {
+        
+        return getProperty("clearcommerce.properties", "billing_gateway");
+    }
 }
 
