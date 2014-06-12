@@ -59,7 +59,103 @@ public class BillingOrder {
     private Date expiryDate;
     
     @Persistent
-    @Column(jdbcType="TEXT")
+    @Column(jdbcType = "TEXT")
     private String note;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
+    
+    public Date getCreateDate() {
+        return createDate;
+    }
+    
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+    
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+    
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+    
+    public long getPackageId() {
+        return packageId;
+    }
+    
+    public void setPackageId(long packageId) {
+        this.packageId = packageId;
+    }
+    
+    public long getProfileId() {
+        return profileId;
+    }
+    
+    public void setProfileId(long profileId) {
+        this.profileId = profileId;
+    }
+    
+    public long getItemId() {
+        return itemId;
+    }
+    
+    public void setItemId(long itemId) {
+        this.itemId = itemId;
+    }
+    
+    public int getTotalPaymentAmount() {
+        return totalPaymentAmount;
+    }
+    
+    public void setTotalPaymentAmount(int totalPaymentAmount) {
+        this.totalPaymentAmount = totalPaymentAmount;
+    }
+    
+    public int getCntPayment() {
+        return cntPayment;
+    }
+    
+    public void setCntPayment(int cntPayment) {
+        this.cntPayment = cntPayment;
+    }
+    
+    public short getPaymentMechanism() {
+        return paymentMechanism;
+    }
+    
+    public void setPaymentMechanism(short paymentMechanism) {
+        this.paymentMechanism = paymentMechanism;
+    }
+    
+    public short getStatus() {
+        return status;
+    }
+    
+    public void setStatus(short status) {
+        this.status = status;
+    }
+    
+    public Date getExpiryDate() {
+        return expiryDate;
+    }
+    
+    public void setExpiryDate(Date expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+    
+    public String getNote() {
+        return note;
+    }
+    
+    public void setNote(String note) {
+        this.note = note;
+    }
     
 }

@@ -60,7 +60,103 @@ public class BillingPackage {
     public static final String MONTHLY = "1M";
     
     @Persistent
-    @Column(jdbcType="TEXT")
+    @Column(jdbcType = "TEXT")
     private String note;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
+    
+    public Date getCreateDate() {
+        return createDate;
+    }
+    
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+    
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+    
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+    
+    public Date getStarteDate() {
+        return starteDate;
+    }
+    
+    public void setStarteDate(Date starteDate) {
+        this.starteDate = starteDate;
+    }
+    
+    public Date getEndDate() {
+        return endDate;
+    }
+    
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public int getPrice() {
+        return price;
+    }
+    
+    public void setPrice(int price) {
+        this.price = price;
+    }
+    
+    public int getSetupFees() {
+        return setupFees;
+    }
+    
+    public void setSetupFees(int setupFees) {
+        this.setupFees = setupFees;
+    }
+    
+    public short getStatus() {
+        return status;
+    }
+    
+    public void setStatus(short status) {
+        this.status = status;
+    }
+    
+    public short getChargeType() {
+        return chargeType;
+    }
+    
+    public void setChargeType(short chargeType) {
+        this.chargeType = chargeType;
+    }
+    
+    public String getChargeCycle() {
+        return chargeCycle;
+    }
+    
+    public void setChargeCycle(String chargeCycle) {
+        this.chargeCycle = chargeCycle;
+    }
+    
+    public String getNote() {
+        return note;
+    }
+    
+    public void setNote(String note) {
+        this.note = note;
+    }
     
 }
