@@ -20,9 +20,12 @@ public class NnStringUtil {
     public static final String UTF8 = "UTF-8";
     public static final String ASCII = "US-ASCII";
     
-    protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
-    public static final int MAX_JDO_STRING_LENGTH = 255;
+    public static final int SHORT_STRING_LENGTH    =   20;
+    public static final int NORMAL_STRING_LENGTH   =  255;
+    public static final int EXTENDED_STRING_LENGTH =  500;
+    public static final int LONG_STRING_LENGTH     = 1500;
     
+    protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
     private static NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
     
     public static void setChannelPrefMngr(NnChannelPrefManager mngr) {
@@ -161,7 +164,7 @@ public class NnStringUtil {
     }
     
     public static String htmlSafeAndTruncated(String str) {
-        return htmlSafeAndTruncated(str, MAX_JDO_STRING_LENGTH);
+        return htmlSafeAndTruncated(str, NORMAL_STRING_LENGTH);
     }
     
     public static String htmlSafeAndTruncated(String str, int length) {
