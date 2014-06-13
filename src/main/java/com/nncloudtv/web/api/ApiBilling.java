@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -46,6 +47,110 @@ public class ApiBilling extends ApiGeneric {
     public @ResponseBody List<BillingPackage> login(HttpServletRequest req, HttpServletResponse resp) {
         
         return packageMngr.findAll();
+    }
+    
+    @RequestMapping(value = "profiles/{profileId}", method = RequestMethod.PUT)
+    public @ResponseBody BillingProfile billingProfileUpdate(HttpServletRequest req, HttpServletResponse resp, @PathVariable("profileId") String profileIdStr) {
+        
+        BillingProfile profile = profileMngr.findById(profileIdStr);
+        if (profile == null) {
+            notFound(resp);
+            return null;
+        }
+        String token = req.getParameter("token");
+        if (token == null) {
+            badRequest(resp, MISSING_PARAMETER + " - token");
+            return null;
+        }
+        if (!token.equals(profile.getToken())) {
+            badRequest(resp, INVALID_PARAMETER + " - token");
+            return null;
+        }
+        Date now = new Date();
+        if (profile.getTokenExpDate() == null || !now.before(profile.getTokenExpDate())) {
+            badRequest(resp, INVALID_PARAMETER + " - token expired");
+            return null;
+        }
+        
+        String cardHolderName = req.getParameter("cardHolderName");
+        String cardNumber     = req.getParameter("cardNumber").replaceAll("-", "");
+        String cardExpires    = req.getParameter("cardExpires");
+        String cardVerificationCode = req.getParameter("cardVerificationCode");
+        
+        if (cardHolderName != null && cardNumber != null && cardExpires != null && cardVerificationCode != null) {
+            
+            if (cardHolderName.isEmpty()) {
+                badRequest(resp, INVALID_PARAMETER + " - cardHolderName is empty");
+                return null;
+            }
+            if (!cardNumber.matches("\\d{16}")) {
+                badRequest(resp, INVALID_PARAMETER + " - cardNumber length");
+                return null;
+            }
+            if (!cardExpires.matches("\\d\\d\\/\\d\\d")) {
+                badRequest(resp, INVALID_PARAMETER + " - cardExpires format");
+                return null;
+            }
+            if (!cardVerificationCode.matches("\\d{3,4}")) {
+                badRequest(resp, INVALID_PARAMETER + " - cardVerificationCode");
+                return null;
+            }
+            CreditCard creditCard = new CreditCard(cardNumber, cardHolderName, cardExpires, cardVerificationCode);
+            
+            // Qoo: to verify credit card
+            ClearCommerceLib.verifyCreditCardNumber(creditCard);
+            profile.setCardStatus(BillingProfile.VERIFIED);
+            profile.setCardHolderName(cardHolderName);
+            profile.setCardRemainDigits(cardNumber.substring(cardNumber.length() - 4));
+        }
+        
+        String name  = req.getParameter("name");
+        String email = req.getParameter("email");
+        String phone = req.getParameter("phone");
+        String addr1 = req.getParameter("addr1");
+        String addr2 = req.getParameter("addr2");
+        String city  = req.getParameter("city");
+        String state = req.getParameter("state");
+        String zip   = req.getParameter("zip");
+        String country = req.getParameter("country");
+        if (name != null) {
+            
+            profile.setName(name);
+        }
+        if (email != null) {
+            
+            profile.setEmail(email);
+        }
+        if (phone != null) {
+            
+            profile.setPhone(phone);
+        }
+        if (addr1 != null) {
+            
+            profile.setAddr1(addr1);
+        }
+        if (addr2 != null) {
+            
+            profile.setAddr2(addr2);
+        }
+        if (city != null) {
+            
+            profile.setCity(city);
+        }
+        if (state != null) {
+            
+            profile.setState(state);
+        }
+        if (zip != null) {
+            
+            profile.setZip(zip);
+        }
+        if (country != null) {
+            
+            profile.setCountry(country);
+        }
+        
+        return profileMngr.save(profile);
     }
     
     @RequestMapping(value = "profiles", method = RequestMethod.POST)
