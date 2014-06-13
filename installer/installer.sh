@@ -16,13 +16,11 @@ echo " **    9x9 DevOps Installer  **"
 echo "   **                          *"
 echo "     *****************************"
 echo
-echo -n "Checking your sudo permission ... "
-sudo id
-if test $? -eq 1; then
-    echo "failed."
-    exit
-fi
-echo
+test "$1" != "-n" \
+    && echo -n "Checking your sudo permission ... " \
+    && sudo id \
+    && if test $? -eq 1; then echo "failed."; exit; fi \
+    && echo
 
 cd ..
 mvn clean \
