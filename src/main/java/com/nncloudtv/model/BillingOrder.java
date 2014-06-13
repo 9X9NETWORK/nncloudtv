@@ -2,10 +2,13 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+
+import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "billing_order", detachable = "true")
 public class BillingOrder {
@@ -68,6 +71,7 @@ public class BillingOrder {
     }
 
     @Persistent
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
     private String note;
     
     public long getId() {
