@@ -29,14 +29,15 @@ public class BillingProfile {
     
     @Persistent
     private Date tokenExpDate; // token expiration date
+    public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 3600; // in one hour
     
     @Persistent
     private short cardStatus;
+    public static final short FRAUD    = -1;
     public static final short UNKNOWN  = 0;
     public static final short VERIFIED = 1;
     public static final short AUTHED   = 2;
     public static final short CHARGED  = 3;
-    public static final short FRAUD    = 4;
     
     @Persistent
     @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)

@@ -58,6 +58,16 @@ public class BillingOrder {
     @Persistent
     private Date expiryDate;
     
+    public BillingOrder(long packageId, long profileId, short paymentMechanism) {
+        
+        this.packageId = packageId;
+        this.profileId = profileId;
+        this.paymentMechanism = paymentMechanism;
+        this.totalPaymentAmount = 0;
+        this.cntPayment = 0;
+        this.status = INITIAL;
+    }
+
     @Persistent
     @Column(jdbcType = "TEXT")
     private String note;

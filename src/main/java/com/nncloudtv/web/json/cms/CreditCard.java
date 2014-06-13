@@ -10,6 +10,15 @@ public class CreditCard {
     
     String veridicationCode;
     
+    public CreditCard(String cardNumber, String cardHolderName, String expires,
+            String veridicationCode) {
+        
+        this.cardNumber = cardNumber;
+        this.cardHolderName = cardHolderName;
+        this.expires = expires;
+        this.veridicationCode = veridicationCode;
+    }
+    
     public String getCardNumber() {
         return cardNumber;
     }

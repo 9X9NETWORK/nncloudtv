@@ -24,4 +24,18 @@ public class BillingPackageManager {
         
         return dao.findAll();
     }
+    
+    public BillingPackage findById(String idStr) {
+        
+        if (idStr == null) return null;
+        
+        long packageId = 0;
+        try {
+            packageId = Long.valueOf(idStr);
+            
+        } catch(NumberFormatException e) {
+        }
+        
+        return dao.findById(packageId);
+    }
 }
