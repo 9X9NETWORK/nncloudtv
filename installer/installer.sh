@@ -30,6 +30,7 @@ mvn clean \
     compile \
     datanucleus:enhance \
     install war:war \
+&& test "$1" != "-n" \
 && sudo cp -v target/root.war /usr/share/$jetty/webapps/root.war \
 && (sudo service $jetty restart; sudo service memcached restart)
 
