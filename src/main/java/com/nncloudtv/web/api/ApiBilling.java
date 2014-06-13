@@ -45,6 +45,15 @@ public class ApiBilling extends ApiGeneric {
     @RequestMapping(value = "packages", method = RequestMethod.GET)
     public @ResponseBody List<BillingPackage> login(HttpServletRequest req, HttpServletResponse resp) {
         
+        BillingPackage billingPackage = new BillingPackage();
+        billingPackage.setName("Android App Build & Maintainance (Vidcon)");
+        billingPackage.setPrice(20);
+        billingPackage.setSetupFees(0);
+        billingPackage.setStatus(BillingPackage.PREPARING);
+        billingPackage.setChargeType(BillingPackage.PERIODIC_CHARGE);
+        billingPackage.setChargeCycle(BillingPackage.MONTHLY);
+        packageMngr.save(billingPackage);
+        
         return packageMngr.findAll();
     }
     

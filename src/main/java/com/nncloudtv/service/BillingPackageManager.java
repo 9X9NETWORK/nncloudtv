@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -37,5 +38,17 @@ public class BillingPackageManager {
         }
         
         return dao.findById(packageId);
+    }
+    
+    public BillingPackage save(BillingPackage billingPackage) {
+        
+        Date now = new Date();
+        if (billingPackage.getCreateDate() == null) {
+            
+            billingPackage.setCreateDate(now);
+        }
+        billingPackage.setUpdateDate(now);
+        
+        return dao.save(billingPackage);
     }
 }
