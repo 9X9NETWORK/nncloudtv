@@ -2,7 +2,6 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -69,7 +68,6 @@ public class BillingOrder {
     }
 
     @Persistent
-    @Column(jdbcType = "TEXT")
     private String note;
     
     public long getId() {

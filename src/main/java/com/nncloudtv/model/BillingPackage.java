@@ -60,7 +60,6 @@ public class BillingPackage {
     public static final String MONTHLY = "1M";
     
     @Persistent
-    @Column(jdbcType = "TEXT")
     private String note;
     
     public long getId() {
