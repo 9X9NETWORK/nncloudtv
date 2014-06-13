@@ -3,6 +3,9 @@ package com.nncloudtv.lib;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManagerFactory;
 
+import com.nncloudtv.model.BillingOrder;
+import com.nncloudtv.model.BillingPackage;
+import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.model.Pdr;
 
 public final class PMF {
@@ -23,6 +26,8 @@ public final class PMF {
     public static PersistenceManagerFactory get(@SuppressWarnings("rawtypes") Class c) {
         if (c.equals(Pdr.class)) {
             return PMF.getAnalytics();
+        } else if (c.equals(BillingOrder.class) || c.equals(BillingPackage.class) || c.equals(BillingProfile.class)) {
+            return PMF.getBilling();
         }
         //!!! if NnUser, Subscription, SubscriptionSet, throw exception
         return PMF.getContent();

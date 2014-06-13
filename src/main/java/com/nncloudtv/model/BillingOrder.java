@@ -71,7 +71,7 @@ public class BillingOrder {
     }
 
     @Persistent
-    @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
+    //@Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
     private String note;
     
     public long getId() {
