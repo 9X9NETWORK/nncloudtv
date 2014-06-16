@@ -27,6 +27,8 @@ public class MsoConfigManager {
     static MsoConfigDao configDao = new MsoConfigDao();
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
+    protected static final String PROPERTIES_CLEARCOMMRCE = "clearcommerce.properties";
+    
     protected static String serverDomain = null; 
     
     protected static String getProperty(String propertyFile, String propertyName) {
@@ -348,12 +350,27 @@ public class MsoConfigManager {
     
     public static String getCCClientId() {
         
-        return getProperty("clearcommerce.properties", "client_id");
+        return getProperty(PROPERTIES_CLEARCOMMRCE, "client_id");
     }
     
     public static String getCCBillingGayeway() {
         
-        return getProperty("clearcommerce.properties", "billing_gateway");
+        return getProperty(PROPERTIES_CLEARCOMMRCE, "billing_gateway");
+    }
+    
+    public static String getCCUserName() {
+        
+        return getProperty(PROPERTIES_CLEARCOMMRCE, "user_name");
+    }
+    
+    public static String getCCPassword() {
+        
+        return getProperty(PROPERTIES_CLEARCOMMRCE, "password");
+    }
+    
+    public static String getCCPort() {
+        
+        return getProperty(PROPERTIES_CLEARCOMMRCE, "port");
     }
 }
 

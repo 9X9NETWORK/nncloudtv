@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.web.json.cms.CreditCard;
 
 @Service
 public class BillingProfileManager {
@@ -47,5 +48,13 @@ public class BillingProfileManager {
         }
         
         return dao.findById(profileId);
+    }
+    
+    public void updateCreditCardInfo(BillingProfile profile, CreditCard creditCard, short status) {
+        
+        profile.setCardStatus(status);
+        profile.setCardHolderName(creditCard.getCardHolderName());
+        profile.setCardRemainDigits(creditCard.getCardNumber().substring(creditCard.getCardHolderName().length() - 4));
+        save(profile);
     }
 }

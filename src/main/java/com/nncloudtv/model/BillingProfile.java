@@ -29,7 +29,7 @@ public class BillingProfile {
     
     @Persistent
     private Date tokenExpDate; // token expiration date
-    public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 3600; // in one hour
+    public static final int DEFAULT_TOKEN_EXPIRATION_TIME = 3600; // one hour
     
     @Persistent
     private short cardStatus;

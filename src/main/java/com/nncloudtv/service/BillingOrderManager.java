@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
@@ -35,4 +36,21 @@ public class BillingOrderManager {
         return dao.save(order);
     }
     
+    public List<BillingOrder> save(List<BillingOrder> orders) {
+        
+        if (orders == null) return null;
+        
+        Date now = new Date();
+        
+        for (BillingOrder order : orders) {
+            
+            if (order.getCreateDate() == null) {
+                
+                order.setCreateDate(now);
+            }
+            order.setUpdateDate(now);
+        }
+        
+        return dao.saveAll(orders);
+    }
 }

@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,6 +25,26 @@ public class BillingPackageManager {
     public List<BillingPackage> findAll() {
         
         return dao.findAll();
+    }
+    
+    public List<BillingPackage> findByIds(String[] packageIds) {
+        
+        List<BillingPackage> results = new ArrayList<BillingPackage>();
+        
+        if (packageIds == null) {
+            return results;
+        }
+        
+        for (String packageId : packageIds) {
+            
+            BillingPackage billingPackage = findById(packageId);
+            if (billingPackage != null) {
+                
+                results.add(billingPackage);
+            }
+        }
+        
+        return results;
     }
     
     public BillingPackage findById(String idStr) {

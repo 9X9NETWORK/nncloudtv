@@ -2,8 +2,16 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import com.clearcommerce.ccxclientapi.CcApiBadHostException;
+import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
+import com.clearcommerce.ccxclientapi.CcApiBadPortException;
+import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
-import com.nncloudtv.model.BillingOrder;
+import com.clearcommerce.ccxclientapi.CcApiInvalidDocumentException;
+import com.clearcommerce.ccxclientapi.CcApiProcessException;
+import com.clearcommerce.ccxclientapi.CcApiRecord;
+import com.clearcommerce.ccxclientapi.CcApiServerConnectException;
+import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -11,18 +19,80 @@ public class ClearCommerceLib {
     
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
-    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard) {
+    private static final short CC_PORT = 12000; 
+    private static final int FIRST_TIME_PREAUTH_CHARGE = 1;
+    
+    public static final String USD = "840";
+    public static final String DOC_VERSION = "1.0";
+    public static final String ORDER_FORM_DOC = "OrderFormDoc";
+    public static final String PAYMENT_NO_FRAUD = "PaymentNoFraud";
+    public static final String CREDIT_CARD = "CreditCard";
+    
+    public static final String CC_ENGINE_DOC = "EngineDoc";
+    public static final String CC_OVERVIEW = "Overview";
+    public static final String CC_MESSAGE_LIST = "MessageList";
+    
+    private static CcApiRecord populateCCUserField(CcApiRecord ccRecord) throws CcApiBadKeyException, CcApiBadValueException {
         
-        String ccClientId = MsoConfigManager.getCCClientId();
-        String ccBillingGateway = MsoConfigManager.getCCBillingGayeway();
+        Integer ccClientId = Integer.parseInt(MsoConfigManager.getCCClientId());
         
-        log.info("clearcommerce clientId = " + ccClientId + ", gateway = " + ccBillingGateway);
+        CcApiRecord ccUser = ccRecord.addRecord("User");
+        ccUser.setFieldString("Name", MsoConfigManager.getCCUserName());
+        ccUser.setFieldString("Password", MsoConfigManager.getCCPassword());
+        ccUser.setFieldS32("ClientId", ccClientId);
+        ccUser.setFieldS32("EffectiveClientId", ccClientId);
         
-        if (ccClientId == null || ccBillingGateway == null) return null;
+        return ccRecord;
+    }
+    
+    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard, BillingProfile profile) {
+        
+        CcApiDocument ccResult = null;
+        
+        try {
+            CcApiDocument ccDoc = new CcApiDocument();
+            ccDoc.setFieldString("DocVersion", DOC_VERSION);
+            
+            CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
+            ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
+            ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
+            
+            CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
+            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+            
+            CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
+            CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
+            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+            
+            ccPaymentMech.setFieldString("Type", CREDIT_CARD);
+            CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
+            //ccCreditCard.setFieldS32("Type", 1);
+            ccCreditCard.setFieldS32("Cvv2Indicator", 1);
+            ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
+            ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
+            ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
+            
+            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+            CcApiRecord ccAddress = ccLocation.addRecord("Address");
+            ccAddress.setFieldString("Street1", profile.getAddr1());
+            ccAddress.setFieldString("PostalCode", profile.getZip());
+            
+            ccResult = process(ccDoc);
+            
+        } catch (CcApiBadKeyException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiBadValueException e) {
+            NnLogUtil.logException(e);
+            return null;
+        }
+        
+        return ccResult;
+    }
+    
+    public static CcApiDocument preAuth(BillingProfile profile, CreditCard card) {
         
         // Qoo
-        
-        
         
         
         
@@ -30,15 +100,63 @@ public class ClearCommerceLib {
         return null;
     }
     
-    public static CcApiDocument preAuth(BillingOrder order) {
+    private static CcApiDocument process(CcApiDocument ccDoc) {
         
-        // Qoo
+        CcApiDocument ccResult = null;
         
+        try {
+            ccResult = ccDoc.process(MsoConfigManager.getCCBillingGayeway(), CC_PORT, true);
+            
+        } catch (CcApiServerConnectException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiProcessException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiInvalidDocumentException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiBadHostException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiBadPortException e) {
+            NnLogUtil.logException(e);
+            return null;
+        }
         
+        if (ccResult != null) {
+            try {
+                CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
+                if (ccEngine != null) {
+                    CcApiRecord ccMessageList = ccEngine.getFirstRecord("MessageList");
+                    if (ccMessageList != null) {
+                        log.info(ccMessageList.toString());
+                    }
+                }
+            } catch (CcApiBadKeyException e) {
+            }
+        }
         
-        
-        return null;
+        return ccResult;
     }
     
-    
+    public static CcApiRecord getOverview(CcApiDocument ccResult) {
+        
+        if (ccResult == null) return null;
+        
+        CcApiRecord ccOverview = null;
+        try {
+            CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
+            if (ccEngine != null) {
+                
+                ccOverview = ccEngine.getFirstRecord(CC_OVERVIEW);
+            }
+            
+        } catch (CcApiBadKeyException e) {
+            NnLogUtil.logException(e);
+            return null;
+        }
+        
+        return ccOverview;
+    }
 }
