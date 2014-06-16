@@ -182,7 +182,14 @@ public class ClearCommerceLib {
                 if (ccEngine != null) {
                     CcApiRecord ccMessageList = ccEngine.getFirstRecord("MessageList");
                     if (ccMessageList != null) {
-                        log.info(ccMessageList.toString());
+                        CcApiRecord ccMessage = ccMessageList.getFirstRecord("Message");
+                        if (ccMessage != null) {
+                        	log.info("ccMessage Audience = " + ccMessage.getFieldString("Audience")
+                        			      + ", ContextId = " + ccMessage.getFieldString("ContextId")
+                        			      + ", Component = " + ccMessage.getFieldString("Component")
+                        			            + ", Sev = " + ccMessage.getFieldS32("Sev")
+                              			       + ", Text = " + ccMessage.getFieldString("Text"));
+                        }
                     }
                 }
             } catch (CcApiBadKeyException e) {

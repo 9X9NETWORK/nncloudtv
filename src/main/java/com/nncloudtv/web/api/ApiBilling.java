@@ -336,7 +336,6 @@ public class ApiBilling extends ApiGeneric {
         if (profile.getCardStatus() < BillingProfile.AUTHED) {
             
             CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard);
-            log.info(ccResult.toString());
             if (ccResult == null) {
                 log.warning("ccResult is empty");
                 internalError(resp);
