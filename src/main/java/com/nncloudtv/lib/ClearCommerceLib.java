@@ -128,7 +128,7 @@ public class ClearCommerceLib {
             ccAddress.setFieldString("City", profile.getCity());
             ccAddress.setFieldString("StateProv", profile.getState());
             ccAddress.setFieldString("PostalCode", profile.getZip());
-            ccAddress.setFieldString("Country", profile.getCountry());
+            ccAddress.setFieldString("Country", USD); // Qoo
             
             CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
             ccTransaction.setFieldString("Type", "PreAuth");
