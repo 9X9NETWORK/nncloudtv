@@ -8,6 +8,7 @@ import com.clearcommerce.ccxclientapi.CcApiBadPortException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiInvalidDocumentException;
+import com.clearcommerce.ccxclientapi.CcApiMoney;
 import com.clearcommerce.ccxclientapi.CcApiProcessException;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.clearcommerce.ccxclientapi.CcApiServerConnectException;
@@ -20,7 +21,7 @@ public class ClearCommerceLib {
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
     private static final short CC_PORT = 12000; 
-    private static final int FIRST_TIME_PREAUTH_CHARGE = 1;
+    private static final String FIRST_TIME_PREAUTH_CHARGE = "1";
     
     public static final String USD = "840";
     public static final String DOC_VERSION = "1.0";
@@ -77,6 +78,9 @@ public class ClearCommerceLib {
             ccAddress.setFieldString("Street1", profile.getAddr1());
             ccAddress.setFieldString("PostalCode", profile.getZip());
             
+            CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+            ccTransaction.setFieldString("Type", "PreAuth");
+            
             ccResult = process(ccDoc);
             
         } catch (CcApiBadKeyException e) {
@@ -90,14 +94,62 @@ public class ClearCommerceLib {
         return ccResult;
     }
     
-    public static CcApiDocument preAuth(BillingProfile profile, CreditCard card) {
+    public static CcApiDocument preAuth(BillingProfile profile, CreditCard creditCard) {
         
-        // Qoo
+        CcApiDocument ccResult = null;
         
+        try {
+            CcApiDocument ccDoc = new CcApiDocument();
+            ccDoc.setFieldString("DocVersion", DOC_VERSION);
+            
+            CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
+            ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
+            ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
+            ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
+            
+            CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
+            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+            
+            CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
+            ccCunsumer.setFieldString("Email", profile.getEmail());
+            CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
+            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+            
+            ccPaymentMech.setFieldString("Type", CREDIT_CARD);
+            CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
+            //ccCreditCard.setFieldS32("Type", 1);
+            ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
+            ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
+            
+            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+            CcApiRecord ccAddress = ccLocation.addRecord("Address");
+            ccAddress.setFieldString("Name", profile.getName());
+            ccAddress.setFieldString("Street1", profile.getAddr1());
+            ccAddress.setFieldString("City", profile.getCity());
+            ccAddress.setFieldString("StateProv", profile.getState());
+            ccAddress.setFieldString("PostalCode", profile.getZip());
+            ccAddress.setFieldString("Country", profile.getCountry());
+            
+            CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+            ccTransaction.setFieldString("Type", "PreAuth");
+            
+            CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
+            CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
+            CcApiMoney money = new CcApiMoney();
+            money.setValue(FIRST_TIME_PREAUTH_CHARGE, USD);
+            ccTotals.setFieldMoney("Total", money);
+            
+            ccResult = process(ccDoc);
+            
+        } catch (CcApiBadKeyException e) {
+            NnLogUtil.logException(e);
+            return null;
+        } catch (CcApiBadValueException e) {
+            NnLogUtil.logException(e);
+            return null;
+        }
         
-        
-        
-        return null;
+        return ccResult;
     }
     
     private static CcApiDocument process(CcApiDocument ccDoc) {
