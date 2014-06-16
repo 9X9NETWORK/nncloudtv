@@ -126,9 +126,9 @@ public class ClearCommerceLib {
             ccAddress.setFieldString("Name", profile.getName());
             ccAddress.setFieldString("Street1", profile.getAddr1());
             ccAddress.setFieldString("City", profile.getCity());
-            ccAddress.setFieldString("StateProv", profile.getState());
-            ccAddress.setFieldString("PostalCode", profile.getZip());
-            ccAddress.setFieldString("Country", USD); // Qoo
+            //ccAddress.setFieldString("StateProv", profile.getState());
+            //ccAddress.setFieldString("PostalCode", profile.getZip());
+            //ccAddress.setFieldString("Country", USD); // Qoo
             
             CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
             ccTransaction.setFieldString("Type", "PreAuth");
