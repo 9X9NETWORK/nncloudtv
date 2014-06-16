@@ -117,7 +117,7 @@ public class ClearCommerceLib {
             
             ccPaymentMech.setFieldString("Type", CREDIT_CARD);
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
-            //ccCreditCard.setFieldS32("Type", 1);
+            ccCreditCard.setFieldS32("Type", 1);
             ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
             ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
             
