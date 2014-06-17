@@ -35,6 +35,7 @@ public class ClearCommerceLib {
     static final String CC_ENGINE_DOC   = "EngineDoc";
     static final String CC_OVERVIEW     = "Overview";
     static final String CC_MESSAGE_LIST = "MessageList";
+    static final String CC_ORDER_FORM   = "OrderFormDoc";
     
     private static CcApiRecord populateCCUserField(CcApiRecord ccRecord) throws CcApiBadKeyException, CcApiBadValueException {
         
@@ -241,5 +242,25 @@ public class ClearCommerceLib {
         }
         
         return ccOverview;
+    }
+    
+    public static CcApiRecord getOrderForm(CcApiDocument ccResult) {
+        
+        if (ccResult == null) return null;
+        
+        CcApiRecord ccOrderForm = null;
+        try {
+            CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
+            if (ccEngine != null) {
+                
+                ccOrderForm = ccEngine.getFirstRecord(CC_ORDER_FORM);
+            }
+            
+        } catch (CcApiBadKeyException e) {
+            NnLogUtil.logException(e);
+            return null;
+        }
+        
+        return ccOrderForm;
     }
 }

@@ -41,6 +41,14 @@ public class BillingProfile {
     
     @Persistent
     @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String ccRefTxnId;
+    
+    @Persistent
+    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String ccRefOrderId;
+    
+    @Persistent
+    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String cardHolderName;
     
     @Persistent
@@ -217,6 +225,22 @@ public class BillingProfile {
 
     public void setTokenExpDate(Date tokenExpDate) {
         this.tokenExpDate = tokenExpDate;
+    }
+
+    public String getCcRefTxnId() {
+        return ccRefTxnId;
+    }
+
+    public void setCcRefTxnId(String ccRefTxnId) {
+        this.ccRefTxnId = ccRefTxnId;
+    }
+
+    public String getCcRefOrderId() {
+        return ccRefOrderId;
+    }
+
+    public void setCcRefOrderId(String ccRefOrderId) {
+        this.ccRefOrderId = ccRefOrderId;
     }
     
 }
