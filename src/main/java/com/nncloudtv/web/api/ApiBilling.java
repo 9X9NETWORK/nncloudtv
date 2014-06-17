@@ -166,7 +166,8 @@ public class ApiBilling extends ApiGeneric {
         
         if (profile != null) {
             
-            CcApiDocument ccResult = ClearCommerceLib.verifyCreditCardNumber(creditCard, profile);
+            ApiContext context = new ApiContext(req);
+            CcApiDocument ccResult = ClearCommerceLib.verifyCreditCardNumber(creditCard, profile, context.isProductionSite());
             if (ccResult == null) {
                 log.warning("ccResult is empty");
                 internalError(resp);
@@ -311,8 +312,8 @@ public class ApiBilling extends ApiGeneric {
             if (creditCard == null) {
                 return null;
             }
-            
-            CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard);
+            ApiContext context = new ApiContext(req);
+            CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard, context.isProductionSite());
             profile = profileMngr.updateAuthInfo(profile, creditCard, ccResult);
             if (profile == null) {
                 internalError(resp);

@@ -50,7 +50,7 @@ public class ClearCommerceLib {
         return ccRecord;
     }
     
-    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard, BillingProfile profile) {
+    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard, BillingProfile profile, boolean isProduction) {
         
         CcApiDocument ccResult = null;
         
@@ -85,7 +85,7 @@ public class ClearCommerceLib {
             CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
             ccTransaction.setFieldString("Type", "PreAuth");
             
-            ccResult = process(ccDoc);
+            ccResult = process(ccDoc, isProduction);
             
         } catch (CcApiBadKeyException e) {
             NnLogUtil.logException(e);
@@ -98,7 +98,7 @@ public class ClearCommerceLib {
         return ccResult;
     }
     
-    public static CcApiDocument preAuth(BillingProfile profile, CreditCard creditCard) {
+    public static CcApiDocument preAuth(BillingProfile profile, CreditCard creditCard, boolean isProduction) {
         
         CcApiDocument ccResult = null;
         
@@ -160,7 +160,7 @@ public class ClearCommerceLib {
             CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
             ccTotals.setFieldMoney("Total", oneDollar);
             
-            ccResult = process(ccDoc);
+            ccResult = process(ccDoc, isProduction);
             
         } catch (CcApiBadKeyException e) {
             NnLogUtil.logException(e);
@@ -173,15 +173,17 @@ public class ClearCommerceLib {
         return ccResult;
     }
     
-    private static CcApiDocument process(CcApiDocument ccDoc) {
+    private static CcApiDocument process(CcApiDocument ccDoc, boolean isProduction) {
         
         CcApiDocument ccResult = null;
         
         // NOTE: can only be opened in development site
-        try {
-            Writer outStream = new PrintWriter(System.out);
-            ccDoc.writeTo(outStream);
-        } catch (CcApiWriterException e) {
+        if (!isProduction) {
+            try {
+                Writer outStream = new PrintWriter(System.out);
+                ccDoc.writeTo(outStream);
+            } catch (CcApiWriterException e) {
+            }
         }
         
         try {
@@ -207,10 +209,12 @@ public class ClearCommerceLib {
         if (ccResult != null) {
             
             // NOTE: can only be opened in development site
-            try {
-                Writer outStream = new PrintWriter(System.out);
-                ccResult.writeTo(outStream);
-            } catch (CcApiWriterException e) {
+            if (!isProduction) {
+                try {
+                    Writer outStream = new PrintWriter(System.out);
+                    ccResult.writeTo(outStream);
+                } catch (CcApiWriterException e) {
+                }
             }
             
             try {
