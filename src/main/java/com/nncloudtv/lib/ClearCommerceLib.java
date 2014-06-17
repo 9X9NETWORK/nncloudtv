@@ -23,18 +23,18 @@ public class ClearCommerceLib {
     
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
-    private static final short CC_PORT = 12000; 
-    private static final String FIRST_TIME_PREAUTH_CHARGE = "1";
+    static final short CC_PORT = 12000; 
+    static final String FIRST_TIME_PREAUTH_CHARGE = "100"; // in cent
     
-    public static final String USD = "840";
-    public static final String DOC_VERSION = "1.0";
-    public static final String ORDER_FORM_DOC = "OrderFormDoc";
-    public static final String PAYMENT_NO_FRAUD = "PaymentNoFraud";
-    public static final String CREDIT_CARD = "CreditCard";
+    static final String USD              = "840";
+    static final String DOC_VERSION      = "1.0";
+    static final String ORDER_FORM_DOC   = "OrderFormDoc";
+    static final String PAYMENT_NO_FRAUD = "PaymentNoFraud";
+    static final String CREDIT_CARD      = "CreditCard";
     
-    public static final String CC_ENGINE_DOC = "EngineDoc";
-    public static final String CC_OVERVIEW = "Overview";
-    public static final String CC_MESSAGE_LIST = "MessageList";
+    static final String CC_ENGINE_DOC   = "EngineDoc";
+    static final String CC_OVERVIEW     = "Overview";
+    static final String CC_MESSAGE_LIST = "MessageList";
     
     private static CcApiRecord populateCCUserField(CcApiRecord ccRecord) throws CcApiBadKeyException, CcApiBadValueException {
         
@@ -111,12 +111,12 @@ public class ClearCommerceLib {
             ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
             
             CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+            ccOrderForm.setFieldString("Mode", "Y"); // Qoo: fixme! // "P" is for Production Mode
             
             CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            //ccCunsumer.setFieldString("Email", profile.getEmail());
+            ccCunsumer.setFieldString("Email", profile.getEmail());
             CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
-            //CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
             
             ccPaymentMech.setFieldString("Type", CREDIT_CARD);
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
@@ -126,9 +126,9 @@ public class ClearCommerceLib {
             ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
             ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
             
-            //CcApiRecord ccLocation = ccBillTo.addRecord("Location");
-            //CcApiRecord ccAddress = ccLocation.addRecord("Address");
-            //ccAddress.setFieldString("Name", profile.getName());
+            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+            CcApiRecord ccAddress = ccLocation.addRecord("Address");
+            ccAddress.setFieldString("Name", profile.getName());
             //ccAddress.setFieldString("Street1", profile.getAddr1());
             //ccAddress.setFieldString("City", profile.getCity());
             //ccAddress.setFieldString("StateProv", profile.getState());

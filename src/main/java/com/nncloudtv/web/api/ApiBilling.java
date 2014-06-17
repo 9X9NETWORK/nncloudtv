@@ -204,6 +204,8 @@ public class ApiBilling extends ApiGeneric {
     @RequestMapping(value = "profiles", method = RequestMethod.POST)
     public @ResponseBody BillingProfile billingProfileCreate(HttpServletRequest req, HttpServletResponse resp) {
         
+        final String NAME = "name";
+        final String EMAIL = "email";
         /*
         String[] parameters = {
                 "name",
@@ -223,6 +225,16 @@ public class ApiBilling extends ApiGeneric {
             }
         }
         */
+        String name = req.getParameter(NAME);
+        String email = req.getParameter(EMAIL);
+        if (name == null) {
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + NAME);
+            return null;
+        }
+        if (email == null) {
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + EMAIL);
+            return null;
+        }
         
         BillingProfile profile = new BillingProfile();
         profile.setName(req.getParameter("name"));
