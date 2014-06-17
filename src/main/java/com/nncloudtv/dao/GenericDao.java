@@ -23,14 +23,14 @@ public class GenericDao<T> {
     }
     
     public void evictAll() {
-        DataStoreCache cache = PMF.getContent().getDataStoreCache();
+        DataStoreCache cache = PMF.get(daoClass).getDataStoreCache();
         if (cache != null) {
             cache.evictAll();
         }
     }
     
     public void evict(T dao) {
-        DataStoreCache cache = PMF.getContent().getDataStoreCache();
+        DataStoreCache cache = PMF.get(daoClass).getDataStoreCache();
         if (cache != null) {
             cache.evict(dao);
         }
@@ -38,7 +38,7 @@ public class GenericDao<T> {
     
     public T save(T dao) {
         if (dao == null) {return null;}
-        PersistenceManager pm = PMF.get(dao.getClass()).getPersistenceManager();
+        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
@@ -50,7 +50,7 @@ public class GenericDao<T> {
     
     public List<T> saveAll(List<T> list) {
         if (list == null) {return list;}
-        PersistenceManager pm = PMF.get(list.getClass()).getPersistenceManager();
+        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -67,7 +67,7 @@ public class GenericDao<T> {
     
     public void delete(T dao) {
         if (dao == null) return;
-        PersistenceManager pm = PMF.get(dao.getClass()).getPersistenceManager();
+        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
         try {
             pm.deletePersistent(dao);
         } finally {
@@ -78,7 +78,7 @@ public class GenericDao<T> {
     public void deleteAll(List<T> list) {
         if (list == null || list.isEmpty()) return;
         
-        PersistenceManager pm = PMF.get(list.getClass()).getPersistenceManager();
+        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -215,7 +215,7 @@ public class GenericDao<T> {
     
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, PMF.getContent().getPersistenceManager());
+        return sql(queryStr, PMF.get(daoClass).getPersistenceManager());
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
