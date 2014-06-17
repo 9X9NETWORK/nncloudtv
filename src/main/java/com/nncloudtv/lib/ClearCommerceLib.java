@@ -114,7 +114,6 @@ public class ClearCommerceLib {
             ccOrderForm.setFieldString("Mode", "Y"); // Qoo: fixme! // "P" is for Production Mode
             
             CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            ccCunsumer.setFieldString("Email", profile.getEmail());
             CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
             CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
             
@@ -129,6 +128,7 @@ public class ClearCommerceLib {
             CcApiRecord ccLocation = ccBillTo.addRecord("Location");
             CcApiRecord ccAddress = ccLocation.addRecord("Address");
             ccAddress.setFieldString("Name", profile.getName());
+            ccAddress.setFieldString("Email", profile.getEmail());
             //ccAddress.setFieldString("Street1", profile.getAddr1());
             //ccAddress.setFieldString("City", profile.getCity());
             //ccAddress.setFieldString("StateProv", profile.getState());

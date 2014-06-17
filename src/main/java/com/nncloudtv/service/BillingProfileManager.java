@@ -5,7 +5,11 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
+import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
+import com.clearcommerce.ccxclientapi.CcApiDocument;
+import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.nncloudtv.dao.BillingProfileDao;
+import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -50,11 +54,36 @@ public class BillingProfileManager {
         return dao.findById(profileId);
     }
     
-    public void updateCreditCardInfo(BillingProfile profile, CreditCard creditCard, short status) {
+    public BillingProfile updateAuthInfo(BillingProfile profile, CreditCard creditCard, CcApiDocument ccResult) {
         
-        profile.setCardStatus(status);
-        profile.setCardHolderName(creditCard.getCardHolderName());
-        profile.setCardRemainDigits(creditCard.getCardNumber().substring(creditCard.getCardHolderName().length() - 4));
-        save(profile);
+        String txnStatus = null;
+        
+        if (ccResult == null) {
+            log.warning("ccResult is null");
+            return null;
+        }
+        CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
+        if (ccOverview == null) {
+            log.warning("ccOverview is null");
+            return null;
+        }
+        try {
+            txnStatus = ccOverview.getFieldString("TransactionStatus");
+            if (txnStatus == null) {
+                log.warning("txnStatus is null");
+                return null;
+            }
+        } catch (CcApiBadKeyException e) {
+            log.warning("TransactionStatus is empty");
+            return null;
+        }
+        if (txnStatus.equals("A")) {
+            profile.setCardStatus(BillingProfile.AUTHED);
+            profile.setCardHolderName(creditCard.getCardHolderName());
+            profile.setCardRemainDigits(creditCard.getCardNumber().substring(creditCard.getCardNumber().length() - 4));
+            save(profile);
+        }
+        
+        return profile;
     }
 }

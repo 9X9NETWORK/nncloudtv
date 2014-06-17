@@ -339,38 +339,26 @@ public class ApiBilling extends ApiGeneric {
             orders.add(new BillingOrder(pack.getId(), profile.getId(), BillingOrder.CLEARCOMMERCE, BillingOrder.INITIAL));
         }
         
-        CreditCard creditCard = checkCreditCard(req, resp, null);
-        if (creditCard == null) {
-            return null;
-        }
-        
         // preauth
         if (profile.getCardStatus() < BillingProfile.AUTHED) {
             
+            CreditCard creditCard = checkCreditCard(req, resp, null);
+            if (creditCard == null) {
+                return null;
+            }
+            
             CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard);
-            if (ccResult == null) {
-                log.warning("ccResult is empty");
+            profile = profileMngr.updateAuthInfo(profile, creditCard, ccResult);
+            if (profile == null) {
                 internalError(resp);
                 return null;
             }
-            CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
-            if (ccOverview == null) {
-                log.warning("ccOverview is empty");
-                internalError(resp);
-                return null;
-            }
-            try {
-                String txnStatus = ccOverview.getFieldString("TransactionStatus");
-                if (txnStatus == null || !txnStatus.equals("A")) {
-                    badRequest(resp, INVALID_PARAMETER + DELIMITER + "CreditCard");
-                    return null;
-                }
-            } catch (CcApiBadKeyException e) {
-                log.warning("TransactionStatus is empty");
-                internalError(resp);
-                return null;
-            }
-            profileMngr.updateCreditCardInfo(profile, creditCard, BillingProfile.AUTHED);
+        }
+        
+        if (profile.getCardStatus() < BillingProfile.AUTHED) {
+            
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + "CreditCard");
+            return null; 
         }
         
         return orderMngr.save(orders);
