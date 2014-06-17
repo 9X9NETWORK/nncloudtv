@@ -137,7 +137,7 @@ public class ApiBilling extends ApiGeneric {
         final String CARD_VERIFICATION_CODE = "cardVerificationCode";
         
         String cardHolderName = req.getParameter(CARD_HOLDER_NAME);
-        String cardNumber     = req.getParameter(CARD_NUMBER).replaceAll("-", "");
+        String cardNumber     = req.getParameter(CARD_NUMBER);
         String cardExpires    = req.getParameter(CARD_EXPIRES);
         String cardVerificationCode = req.getParameter(CARD_VERIFICATION_CODE);
         
@@ -145,6 +145,7 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
             return null;
         }
+        cardNumber = cardNumber.replaceAll("-", "");
         if (cardExpires == null) {
             badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
             return null;
