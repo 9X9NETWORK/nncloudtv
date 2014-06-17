@@ -1,5 +1,7 @@
 package com.nncloudtv.lib;
 
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.logging.Logger;
 
 import com.clearcommerce.ccxclientapi.CcApiBadHostException;
@@ -12,6 +14,7 @@ import com.clearcommerce.ccxclientapi.CcApiMoney;
 import com.clearcommerce.ccxclientapi.CcApiProcessException;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.clearcommerce.ccxclientapi.CcApiServerConnectException;
+import com.clearcommerce.ccxclientapi.CcApiWriterException;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.web.json.cms.CreditCard;
@@ -111,23 +114,23 @@ public class ClearCommerceLib {
             ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
             
             CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            ccCunsumer.setFieldString("Email", profile.getEmail());
+            //ccCunsumer.setFieldString("Email", profile.getEmail());
             CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
-            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+            //CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
             
             ccPaymentMech.setFieldString("Type", CREDIT_CARD);
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
             //ccCreditCard.setFieldS32("Type", 1);
-            ccCreditCard.setFieldS32("Cvv2Indicator", 1);
-            ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
+            //ccCreditCard.setFieldString("Cvv2Indicator", "1");
+            //ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
             ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
             ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
             
-            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
-            CcApiRecord ccAddress = ccLocation.addRecord("Address");
-            ccAddress.setFieldString("Name", profile.getName());
-            ccAddress.setFieldString("Street1", profile.getAddr1());
-            ccAddress.setFieldString("City", profile.getCity());
+            //CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+            //CcApiRecord ccAddress = ccLocation.addRecord("Address");
+            //ccAddress.setFieldString("Name", profile.getName());
+            //ccAddress.setFieldString("Street1", profile.getAddr1());
+            //ccAddress.setFieldString("City", profile.getCity());
             //ccAddress.setFieldString("StateProv", profile.getState());
             //ccAddress.setFieldString("PostalCode", profile.getZip());
             //ccAddress.setFieldString("Country", USD); // Qoo
@@ -158,6 +161,13 @@ public class ClearCommerceLib {
         
         CcApiDocument ccResult = null;
         
+        // NOTE: can only be opened in development site
+        try {
+            Writer outStream = new PrintWriter(System.out);
+            ccDoc.writeTo(outStream);
+        } catch (CcApiWriterException e) {
+        }
+        
         try {
             ccResult = ccDoc.process(MsoConfigManager.getCCBillingGayeway(), CC_PORT, true);
             
@@ -179,18 +189,30 @@ public class ClearCommerceLib {
         }
         
         if (ccResult != null) {
+            
+            // NOTE: can only be opened in development site
+            try {
+                Writer outStream = new PrintWriter(System.out);
+                ccResult.writeTo(outStream);
+            } catch (CcApiWriterException e) {
+            }
+            
             try {
                 CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
                 if (ccEngine != null) {
                     CcApiRecord ccMessageList = ccEngine.getFirstRecord("MessageList");
                     if (ccMessageList != null) {
                         CcApiRecord ccMessage = ccMessageList.getFirstRecord("Message");
-                        if (ccMessage != null) {
-                        	log.info("ccMessage Audience = " + ccMessage.getFieldString("Audience")
-                        			      + ", ContextId = " + ccMessage.getFieldString("ContextId")
-                        			      + ", Component = " + ccMessage.getFieldString("Component")
-                        			            + ", Sev = " + ccMessage.getFieldS32("Sev")
-                              			       + ", Text = " + ccMessage.getFieldString("Text"));
+                        int messageCnt = 0;
+                        while (ccMessage != null) {
+                            log.info("ccMessage[" + messageCnt + "]"
+                                  + "Audience = " + ccMessage.getFieldString("Audience")
+                               + ", ContextId = " + ccMessage.getFieldString("ContextId")
+                               + ", Component = " + ccMessage.getFieldString("Component")
+                                     + ", Sev = " + ccMessage.getFieldS32("Sev")
+                                    + ", Text = " + ccMessage.getFieldString("Text"));
+                            messageCnt++;
+                            ccMessage = ccMessageList.getNextRecord("Message");
                         }
                     }
                 }
