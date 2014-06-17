@@ -24,7 +24,7 @@ public class ClearCommerceLib {
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
     static final short CC_PORT = 12000; 
-    static final String FIRST_TIME_PREAUTH_CHARGE = "100"; // in cent
+    static final String ONE_DOLLAR = "100"; // in cent
     
     static final String USD              = "840";
     static final String DOC_VERSION      = "1.0";
@@ -72,7 +72,7 @@ public class ClearCommerceLib {
             ccPaymentMech.setFieldString("Type", CREDIT_CARD);
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
             //ccCreditCard.setFieldS32("Type", 1);
-            ccCreditCard.setFieldS32("Cvv2Indicator", 1);
+            ccCreditCard.setFieldString("Cvv2Indicator", "1");
             ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
             ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
             ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
@@ -103,6 +103,9 @@ public class ClearCommerceLib {
         CcApiDocument ccResult = null;
         
         try {
+            CcApiMoney oneDollar = new CcApiMoney();
+            oneDollar.setValue(ONE_DOLLAR, USD);
+            
             CcApiDocument ccDoc = new CcApiDocument();
             ccDoc.setFieldString("DocVersion", DOC_VERSION);
             
@@ -118,6 +121,7 @@ public class ClearCommerceLib {
             ccCunsumer.setFieldString("Email", profile.getEmail());
             CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
             CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+            CcApiRecord ccOrderItemList = ccCunsumer.addRecord("OrderItemList");
             
             ccPaymentMech.setFieldString("Type", CREDIT_CARD);
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
@@ -140,14 +144,21 @@ public class ClearCommerceLib {
             //ccAddress.setFieldString("PostalCode", profile.getZip());
             //ccAddress.setFieldString("Country", USD);
             
+            CcApiRecord ccOrderItem = ccOrderItemList.addRecord("OrderItem");
+            ccOrderItem.setFieldS32("ItemNumber", 1);
+            ccOrderItem.setFieldS32("Qty", 1);
+            ccOrderItem.setFieldString("Id", "999999999");
+            ccOrderItem.setFieldString("CommCode", "Billing Profile PreAuth");
+            ccOrderItem.setFieldString("Desc", "PreAuth for recurring charge");
+            ccOrderItem.setFieldMoney("Price", oneDollar);
+            ccOrderItem.setFieldMoney("Total", oneDollar);
+            
             CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
             ccTransaction.setFieldString("Type", "PreAuth");
             
             CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
             CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
-            CcApiMoney money = new CcApiMoney();
-            money.setValue(FIRST_TIME_PREAUTH_CHARGE, USD);
-            ccTotals.setFieldMoney("Total", money);
+            ccTotals.setFieldMoney("Total", oneDollar);
             
             ccResult = process(ccDoc);
             
