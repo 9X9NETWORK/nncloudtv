@@ -30,7 +30,7 @@ public class BillingPackage {
     private Date endDate;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = "VARCHAR", length = NnStringUtil.SHORT_STRING_LENGTH)
     private String name;
     
     @Persistent
