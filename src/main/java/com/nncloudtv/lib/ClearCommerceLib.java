@@ -115,7 +115,7 @@ public class ClearCommerceLib {
             ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
             
             CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-            ccOrderForm.setFieldString("Mode", "Y"); // Qoo: fixme! // "P" is for Production Mode
+            ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
             
             CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
             ccCunsumer.setFieldString("Email", profile.getEmail());
