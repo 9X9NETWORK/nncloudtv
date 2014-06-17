@@ -150,10 +150,6 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
             return null;
         }
-        if (cardVerificationCode == null) {
-            badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
-            return null;
-        }
         if (!cardNumber.matches("\\d{16}")) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_NUMBER);
             return null;
@@ -162,7 +158,7 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_EXPIRES);
             return null;
         }
-        if (!cardVerificationCode.matches("\\d{3,4}")) {
+        if (cardVerificationCode != null && !cardVerificationCode.matches("\\d{3,4}")) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
             return null;
         }
