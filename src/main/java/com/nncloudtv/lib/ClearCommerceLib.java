@@ -123,10 +123,10 @@ public class ClearCommerceLib {
             CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
             //ccCreditCard.setFieldS32("Type", 1);
             if (creditCard.getVeridicationCode() != null) {
-                ccCreditCard.setFieldS32("Cvv2Indicator", 1);
+                ccCreditCard.setFieldString("Cvv2Indicator", "1");
                 ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
             } else {
-                ccCreditCard.setFieldS32("Cvv2Indicator", 2); // CVV code is not present
+                ccCreditCard.setFieldString("Cvv2Indicator", "2"); // CVV code is not present
             }
             ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
             ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
