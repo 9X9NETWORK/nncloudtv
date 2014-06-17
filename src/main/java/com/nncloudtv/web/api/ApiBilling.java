@@ -141,10 +141,6 @@ public class ApiBilling extends ApiGeneric {
         String cardExpires    = req.getParameter(CARD_EXPIRES);
         String cardVerificationCode = req.getParameter(CARD_VERIFICATION_CODE);
         
-        if (cardHolderName == null || cardHolderName.isEmpty()) {
-            badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_HOLDER_NAME);
-            return null;
-        }
         if (cardNumber == null) {
             badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
             return null;
@@ -206,25 +202,7 @@ public class ApiBilling extends ApiGeneric {
         
         final String NAME = "name";
         final String EMAIL = "email";
-        /*
-        String[] parameters = {
-                "name",
-                "email",
-                "phone",
-                "addr1",
-                "city",
-                "state",
-                "zip",
-                "country"};
-        for (String param : parameters) {
-            
-            if (req.getParameter(param) == null) {
-                
-                this.badRequest(resp, MISSING_PARAMETER + " - " + param);
-                return null;
-            }
-        }
-        */
+        
         String name = req.getParameter(NAME);
         String email = req.getParameter(EMAIL);
         if (name == null) {
@@ -248,16 +226,6 @@ public class ApiBilling extends ApiGeneric {
         profile.setCountry(req.getParameter("country"));
         profile.setCardStatus(BillingProfile.UNKNOWN);
         
-        /*
-        CreditCard creditCard = checkCreditCard(req, resp, profile);
-        if (creditCard == null) {
-            return null;
-        }
-        
-        profile.setCardStatus(BillingProfile.VERIFIED);
-        profile.setCardHolderName(creditCard.getCardHolderName());
-        profile.setCardRemainDigits(creditCard.getCardNumber().substring(creditCard.getCardHolderName().length() - 4));
-        */
         try {
             
             Date now = new Date();
