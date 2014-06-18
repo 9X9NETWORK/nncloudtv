@@ -41,6 +41,11 @@ public class BillingProfileManager {
         return dao.save(profile);
     }
     
+    public BillingProfile findById(long profileId) {
+        
+        return dao.findById(profileId);
+    }
+    
     public BillingProfile findById(String idStr) {
         
         if (idStr == null) return null;
@@ -94,7 +99,7 @@ public class BillingProfileManager {
                     String ccRefTxnId = ccTransaction.getFieldString("Id"); 
                     if (ccRefTxnId != null) {
                         
-                        profile.setCcRefTxnId(ccRefTxnId);
+                        profile.setCcRefTransId(ccRefTxnId);
                     }
                     
                 }

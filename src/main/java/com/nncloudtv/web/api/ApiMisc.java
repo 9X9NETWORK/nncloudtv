@@ -221,7 +221,7 @@ public class ApiMisc extends ApiGeneric {
 		}
 		
 		if(req.getMethod().equalsIgnoreCase("POST")) {
-			resp.setStatus(201);
+			resp.setStatus(HTTP_201);
 		}
 		
 		return result;

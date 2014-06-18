@@ -47,6 +47,11 @@ public class BillingPackageManager {
         return results;
     }
     
+    public BillingPackage findById(long packageId) {
+        
+        return dao.findById(packageId);
+    }
+    
     public BillingPackage findById(String idStr) {
         
         if (idStr == null) return null;

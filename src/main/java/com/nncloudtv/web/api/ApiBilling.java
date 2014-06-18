@@ -50,7 +50,7 @@ public class ApiBilling extends ApiGeneric {
     }
     
     @RequestMapping(value = "packages", method = RequestMethod.GET)
-    public @ResponseBody List<BillingPackage> login(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody List<BillingPackage> packageList(HttpServletRequest req, HttpServletResponse resp) {
         
         return packageMngr.findAll();
     }
@@ -242,6 +242,7 @@ public class ApiBilling extends ApiGeneric {
             return null;
         }
         
+        resp.setStatus(HTTP_201);
         return profileMngr.save(profile);
     }
     
@@ -327,6 +328,7 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
+        resp.setStatus(HTTP_201);
         return orderMngr.save(orders);
     }
     
