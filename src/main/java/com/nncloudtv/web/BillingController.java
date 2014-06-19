@@ -145,6 +145,6 @@ public class BillingController {
             }
         }
         
-        return NnNetUtil.textReturn(NnStatusCode.SUCCESS + "\n\n--\ntotal\t" + total + "\n--\n" + results);
+        return NnNetUtil.textReturn("OK\n\n--\ntotal\t" + total + "\n--\n" + results);
     }
 }
