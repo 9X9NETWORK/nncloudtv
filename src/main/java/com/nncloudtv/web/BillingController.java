@@ -1,6 +1,5 @@
 package com.nncloudtv.web;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -103,24 +102,30 @@ public class BillingController {
                     
                 } catch (NnDataIntegrityException e) {
                     result[1] = e.getMessage();
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 } catch (NnBillingException e) {
                     result[1] = e.getMessage();
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 } catch (CcApiBadValueException e) {
                     result[1] = e.getMessage();
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 } catch (CcApiBadKeyException e) {
                     result[1] = e.getMessage();
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 } catch (NnClearCommerceException e) {
                     result[1] = e.getMessage();
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 }
                 
                 if ("A".equals(txnStatus) == false) {
                     
                     result[1] = "charge failed";
+                    results += NnStringUtil.getDelimitedStr(result) + "\n";
                     continue;
                 }
                 
@@ -136,7 +141,6 @@ public class BillingController {
                 order.setCntPayment(order.getCntPayment() + 1);
                 orderMngr.save(order);
                 result[1] = "successfully charged";
-                
                 results += NnStringUtil.getDelimitedStr(result) + "\n";
             }
         }
