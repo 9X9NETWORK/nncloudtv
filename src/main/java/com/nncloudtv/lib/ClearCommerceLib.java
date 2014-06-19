@@ -30,7 +30,7 @@ public class ClearCommerceLib {
     
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
-    static final short CC_PORT = 12000; 
+    static final short  CC_PORT    = 12000; 
     static final String ONE_DOLLAR = "100"; // in cent
     
     static final String USD              = "840";
@@ -152,7 +152,7 @@ public class ClearCommerceLib {
         CcApiDocument ccResult = null;
         
         // NOTE: can only be opened in development site
-        if (!isProduction) {
+        if (isProduction == false) {
             try {
                 Writer outStream = new PrintWriter(System.out);
                 ccDoc.writeTo(outStream);
@@ -178,7 +178,7 @@ public class ClearCommerceLib {
         if (ccResult != null) {
             
             // NOTE: can only be opened in development site
-            if (!isProduction) {
+            if (isProduction == false) {
                 try {
                     Writer outStream = new PrintWriter(System.out);
                     ccResult.writeTo(outStream);
@@ -187,23 +187,19 @@ public class ClearCommerceLib {
             }
             
             try {
+                int messageCnt = 0;
                 CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
-                if (ccEngine != null) {
-                    CcApiRecord ccMessageList = ccEngine.getFirstRecord("MessageList");
-                    if (ccMessageList != null) {
-                        CcApiRecord ccMessage = ccMessageList.getFirstRecord("Message");
-                        int messageCnt = 0;
-                        while (ccMessage != null) {
-                            log.info("ccMessage[" + messageCnt + "]"
-                                  + "Audience = " + ccMessage.getFieldString("Audience")
-                               + ", ContextId = " + ccMessage.getFieldString("ContextId")
-                               + ", Component = " + ccMessage.getFieldString("Component")
-                                     + ", Sev = " + ccMessage.getFieldS32("Sev")
-                                    + ", Text = " + ccMessage.getFieldString("Text"));
-                            messageCnt++;
-                            ccMessage = ccMessageList.getNextRecord("Message");
-                        }
-                    }
+                CcApiRecord ccMessageList = ccEngine.getFirstRecord("MessageList");
+                CcApiRecord ccMessage = ccMessageList.getFirstRecord("Message");
+                while (ccMessage != null) {
+                    log.info("ccMessage[" + messageCnt + "]"
+                          + "Audience = " + ccMessage.getFieldString("Audience")
+                       + ", ContextId = " + ccMessage.getFieldString("ContextId")
+                       + ", Component = " + ccMessage.getFieldString("Component")
+                             + ", Sev = " + ccMessage.getFieldS32("Sev")
+                            + ", Text = " + ccMessage.getFieldString("Text"));
+                    messageCnt++;
+                    ccMessage = ccMessageList.getNextRecord("Message");
                 }
             } catch (CcApiBadKeyException e) {
             }

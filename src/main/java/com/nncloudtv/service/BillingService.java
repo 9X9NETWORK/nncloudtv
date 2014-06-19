@@ -21,9 +21,9 @@ import com.nncloudtv.web.json.cms.CreditCard;
 @Service
 public class BillingService {
     
-    protected static final Logger log = Logger.getLogger(BillingService.class.getName());
+    protected static final Logger   log = Logger.getLogger(BillingService.class.getName());
     
-    protected BillingOrderManager orderMngr;
+    protected BillingOrderManager   orderMngr;
     protected BillingProfileManager profileMngr;
     protected BillingPackageManager packageMngr;
     
@@ -34,9 +34,11 @@ public class BillingService {
         packageMngr = new BillingPackageManager();
     }
     
-    public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException, NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {
+    public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException,
+            NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {
         
-        final String DELIMITER        = " - ";
+        final String DELIMITER = " - ";
+        
         final String CARD_HOLDER_NAME = "cardHolderName";
         final String CARD_NUMBER      = "cardNumber";
         final String CARD_EXPIRES     = "cardExpires";
@@ -44,9 +46,9 @@ public class BillingService {
         
         HttpServletRequest req = context.getHttpRequest();
         
-        String cardHolderName = req.getParameter(CARD_HOLDER_NAME);
-        String cardNumber     = req.getParameter(CARD_NUMBER);
-        String cardExpires    = req.getParameter(CARD_EXPIRES);
+        String cardHolderName       = req.getParameter(CARD_HOLDER_NAME);
+        String cardNumber           = req.getParameter(CARD_NUMBER);
+        String cardExpires          = req.getParameter(CARD_EXPIRES);
         String cardVerificationCode = req.getParameter(CARD_VERIFICATION_CODE);
         
         if (cardNumber == null)
@@ -66,7 +68,7 @@ public class BillingService {
             CcApiDocument ccResult = ClearCommerceLib.verifyCreditCardNumber(creditCard, context.isProductionSite());
             CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
             String txnStatus = ccOverview.getFieldString("TransactionStatus");
-            if (!"A".equals(txnStatus))
+            if ("A".equals(txnStatus) == false)
                 throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
         }
         

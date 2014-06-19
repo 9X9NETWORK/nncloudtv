@@ -18,17 +18,17 @@ public class BillingOrderDao extends GenericDao<BillingOrder> {
         super(BillingOrder.class);
     }
     
-    public List<BillingOrder> findByType(short type) {
+    public List<BillingOrder> findByStatus(short status) {
         
         List<BillingOrder> detached = new ArrayList<BillingOrder>();
         PersistenceManager pm = getPersistenceManager();
         Query q = null;
         try {
             q = pm.newQuery(BillingOrder.class);
-            q.setFilter("type == typeParam");
-            q.declareParameters("short typeParam");
+            q.setFilter("status == statusParam");
+            q.declareParameters("short statusParam");
             @SuppressWarnings("unchecked")
-            List<BillingOrder> orders = (List<BillingOrder>) q.execute(type);
+            List<BillingOrder> orders = (List<BillingOrder>) q.execute(status);
             detached = (List<BillingOrder>) pm.detachCopyAll(orders);
             q.closeAll();
         } finally {

@@ -81,7 +81,7 @@ public class BillingController {
         
         BillingPackageManager packMngr = new BillingPackageManager(); 
         BillingOrderManager orderMngr = new BillingOrderManager();
-        List<BillingOrder> orders = orderMngr.findByType(BillingOrder.RECURRING);
+        List<BillingOrder> orders = orderMngr.findByStatus(BillingOrder.RECURRING);
         ApiContext context = new ApiContext(req);
         String results = "";
         int total = 0;

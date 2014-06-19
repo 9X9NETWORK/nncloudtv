@@ -54,8 +54,8 @@ public class BillingOrderManager {
         return dao.saveAll(orders);
     }
     
-    public List<BillingOrder> findByType(short type) {
+    public List<BillingOrder> findByStatus(short status) {
         
-        return dao.findByType(type);
+        return dao.findByStatus(status);
     }
 }
