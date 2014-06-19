@@ -5,16 +5,19 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
+import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
+import com.nncloudtv.exception.NnApiBadRequestException;
+import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnBillingException;
+import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NnDateUtil;
@@ -24,8 +27,10 @@ import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
+import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
+import com.nncloudtv.web.json.cms.CreditCard;
 
 @Controller
 @RequestMapping("billingAPI")
@@ -33,9 +38,46 @@ public class BillingController {
     
     protected static final Logger log = Logger.getLogger(BillingController.class.getName());
     
+    @RequestMapping("checkCreditCard")
+    public ResponseEntity<String> checkCreditCard(HttpServletRequest req, HttpServletResponse resp) {
+        
+        BillingService billingService = new BillingService();
+        
+        String result = "";
+        CreditCard creditCard= null;
+        try {
+            creditCard = billingService.checkCreditCard(new ApiContext(req), true);
+            
+        } catch (NnApiInternalErrorException e) {
+            
+            result = e.getMessage();
+            
+        } catch (NnApiBadRequestException e) {
+            
+            result = e.getMessage();
+            
+        } catch (CcApiBadKeyException e) {
+            
+            result = e.getMessage();
+            
+        } catch (NnClearCommerceException e) {
+            
+            result = e.getMessage();
+            
+        } catch (CcApiBadValueException e) {
+            
+            result = e.getMessage();
+            
+        } finally {
+            
+            result = creditCard.toString();
+        }
+        
+        return NnNetUtil.textReturn(NnStatusCode.SUCCESS + "\n\n--\n\n" + result);
+    }
+    
     @RequestMapping("recurringCharge")
-    public @ResponseBody
-    ResponseEntity<String> recurringCharge(HttpServletRequest req) {
+    public ResponseEntity<String> recurringCharge(HttpServletRequest req) {
         
         BillingPackageManager packMngr = new BillingPackageManager(); 
         BillingOrderManager orderMngr = new BillingOrderManager();
@@ -55,32 +97,30 @@ public class BillingController {
                 CcApiDocument ccResult = null;
                 try {
                     ccResult = ClearCommerceLib.referencedAuth(order, context.isProductionSite());
+                    CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
+                    txnStatus = ccOverview.getFieldString("TransactionStatus");
+                    
                 } catch (NnDataIntegrityException e) {
                     result.add(e.getMessage());
                     continue;
                 } catch (NnBillingException e) {
                     result.add(e.getMessage());
                     continue;
-                }
-                if (ccResult == null) {
-                    result.add("ccResult is null");
+                } catch (CcApiBadValueException e) {
+                    result.add(e.getMessage());
                     continue;
-                }
-                CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
-                if (ccOverview == null) {
-                    result.add("ccOverview is null");
-                    continue;
-                }
-                try {
-                    txnStatus = ccOverview.getFieldString("TransactionStatus");
                 } catch (CcApiBadKeyException e) {
-                }
-                if (txnStatus == null) {
-                    result.add("txnStatus is null");
+                    result.add(e.getMessage());
+                    continue;
+                } catch (NnClearCommerceException e) {
+                    result.add(e.getMessage());
                     continue;
                 }
-                if (!txnStatus.equals("A")) {
+                
+                if (!"A".equals(txnStatus)) {
+                    
                     result.add("charge failed");
+                    continue;
                 }
                 
                 BillingPackage pack = packMngr.findById(order.getPackageId());
@@ -94,8 +134,8 @@ public class BillingController {
                 order.setTotalPaymentAmount(order.getTotalPaymentAmount() + pack.getPrice());
                 order.setCntPayment(order.getCntPayment() + 1);
                 orderMngr.save(order);
-                
                 result.add("successfully charged");
+                
                 results += NnStringUtil.getDelimitedStr((String[]) result.toArray()) + "\n";
             }
         }

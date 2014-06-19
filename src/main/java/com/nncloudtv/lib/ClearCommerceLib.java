@@ -16,6 +16,7 @@ import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.clearcommerce.ccxclientapi.CcApiServerConnectException;
 import com.clearcommerce.ccxclientapi.CcApiWriterException;
 import com.nncloudtv.exception.NnBillingException;
+import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
@@ -56,130 +57,97 @@ public class ClearCommerceLib {
         return ccRecord;
     }
     
-    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard, BillingProfile profile, boolean isProduction) {
+    public static CcApiDocument verifyCreditCardNumber(CreditCard creditCard, boolean isProduction) throws NnClearCommerceException, CcApiBadKeyException, CcApiBadValueException {
         
-        CcApiDocument ccResult = null;
+        CcApiDocument ccDoc = new CcApiDocument();
+        ccDoc.setFieldString("DocVersion", DOC_VERSION);
         
-        try {
-            CcApiDocument ccDoc = new CcApiDocument();
-            ccDoc.setFieldString("DocVersion", DOC_VERSION);
-            
-            CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
-            ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
-            ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
-            
-            CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
-            
-            CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
-            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
-            
-            ccPaymentMech.setFieldString("Type", CREDIT_CARD);
-            CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
-            //ccCreditCard.setFieldS32("Type", 1);
+        CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
+        ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
+        ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
+        
+        CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
+        ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+        
+        CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
+        CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
+        
+        ccPaymentMech.setFieldString("Type", CREDIT_CARD);
+        CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
+        ccCreditCard.setFieldString("Cvv2Indicator", "1");
+        ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
+        ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
+        ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
+        
+        CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+        ccTransaction.setFieldString("Type", "PreAuth");
+        
+        return process(ccDoc, isProduction);
+    }
+    
+    public static CcApiDocument preAuth(BillingProfile profile, CreditCard creditCard, boolean isProduction) throws CcApiBadKeyException, CcApiBadValueException, NnClearCommerceException {
+        
+        CcApiMoney oneDollar = new CcApiMoney();
+        oneDollar.setValue(ONE_DOLLAR, USD);
+        
+        CcApiDocument ccDoc = new CcApiDocument();
+        ccDoc.setFieldString("DocVersion", DOC_VERSION);
+        
+        CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
+        ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
+        ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
+        ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
+        
+        CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
+        ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
+        
+        CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
+        ccCunsumer.setFieldString("Email", profile.getEmail());
+        CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
+        CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+        CcApiRecord ccOrderItemList = ccCunsumer.addRecord("OrderItemList");
+        
+        ccPaymentMech.setFieldString("Type", CREDIT_CARD);
+        CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
+        //ccCreditCard.setFieldS32("Type", 1);
+        if (creditCard.getVeridicationCode() != null) {
             ccCreditCard.setFieldString("Cvv2Indicator", "1");
             ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
-            ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
-            ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
-            
-            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
-            CcApiRecord ccAddress = ccLocation.addRecord("Address");
-            ccAddress.setFieldString("Street1", profile.getAddr1());
-            ccAddress.setFieldString("PostalCode", profile.getZip());
-            
-            CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
-            ccTransaction.setFieldString("Type", "PreAuth");
-            
-            ccResult = process(ccDoc, isProduction);
-            
-        } catch (CcApiBadKeyException e) {
-            NnLogUtil.logException(e);
-            return null;
-        } catch (CcApiBadValueException e) {
-            NnLogUtil.logException(e);
-            return null;
+        } else {
+            ccCreditCard.setFieldString("Cvv2Indicator", "2"); // CVV code is not present
         }
+        ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
+        ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
         
-        return ccResult;
+        CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+        CcApiRecord ccAddress = ccLocation.addRecord("Address");
+        ccAddress.setFieldString("Name", profile.getName());
+        //ccAddress.setFieldString("Street1", profile.getAddr1());
+        //ccAddress.setFieldString("City", profile.getCity());
+        //ccAddress.setFieldString("StateProv", profile.getState());
+        //ccAddress.setFieldString("PostalCode", profile.getZip());
+        //ccAddress.setFieldString("Country", USD);
+        
+        CcApiRecord ccOrderItem = ccOrderItemList.addRecord("OrderItem");
+        ccOrderItem.setFieldS32("ItemNumber", 1);
+        ccOrderItem.setFieldS32("Qty", 1);
+        ccOrderItem.setFieldString("Id", "999999999");
+        ccOrderItem.setFieldString("CommCode", "Billing Profile PreAuth");
+        ccOrderItem.setFieldString("Desc", "PreAuth for recurring charge");
+        ccOrderItem.setFieldMoney("Price", oneDollar);
+        ccOrderItem.setFieldMoney("Total", oneDollar);
+        
+        CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+        ccTransaction.setFieldString("Type", "PreAuth");
+        
+        CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
+        CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
+        ccTotals.setFieldMoney("Total", oneDollar);
+        
+        return process(ccDoc, isProduction);
     }
     
-    public static CcApiDocument preAuth(BillingProfile profile, CreditCard creditCard, boolean isProduction) {
-        
-        CcApiDocument ccResult = null;
-        
-        try {
-            CcApiMoney oneDollar = new CcApiMoney();
-            oneDollar.setValue(ONE_DOLLAR, USD);
-            
-            CcApiDocument ccDoc = new CcApiDocument();
-            ccDoc.setFieldString("DocVersion", DOC_VERSION);
-            
-            CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
-            ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
-            ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
-            ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
-            
-            CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-            ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
-            
-            CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            ccCunsumer.setFieldString("Email", profile.getEmail());
-            CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
-            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
-            CcApiRecord ccOrderItemList = ccCunsumer.addRecord("OrderItemList");
-            
-            ccPaymentMech.setFieldString("Type", CREDIT_CARD);
-            CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
-            //ccCreditCard.setFieldS32("Type", 1);
-            if (creditCard.getVeridicationCode() != null) {
-                ccCreditCard.setFieldString("Cvv2Indicator", "1");
-                ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
-            } else {
-                ccCreditCard.setFieldString("Cvv2Indicator", "2"); // CVV code is not present
-            }
-            ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
-            ccCreditCard.setFieldExpirationDate("Expires", creditCard.getExpires());
-            
-            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
-            CcApiRecord ccAddress = ccLocation.addRecord("Address");
-            ccAddress.setFieldString("Name", profile.getName());
-            //ccAddress.setFieldString("Street1", profile.getAddr1());
-            //ccAddress.setFieldString("City", profile.getCity());
-            //ccAddress.setFieldString("StateProv", profile.getState());
-            //ccAddress.setFieldString("PostalCode", profile.getZip());
-            //ccAddress.setFieldString("Country", USD);
-            
-            CcApiRecord ccOrderItem = ccOrderItemList.addRecord("OrderItem");
-            ccOrderItem.setFieldS32("ItemNumber", 1);
-            ccOrderItem.setFieldS32("Qty", 1);
-            ccOrderItem.setFieldString("Id", "999999999");
-            ccOrderItem.setFieldString("CommCode", "Billing Profile PreAuth");
-            ccOrderItem.setFieldString("Desc", "PreAuth for recurring charge");
-            ccOrderItem.setFieldMoney("Price", oneDollar);
-            ccOrderItem.setFieldMoney("Total", oneDollar);
-            
-            CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
-            ccTransaction.setFieldString("Type", "PreAuth");
-            
-            CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
-            CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
-            ccTotals.setFieldMoney("Total", oneDollar);
-            
-            ccResult = process(ccDoc, isProduction);
-            
-        } catch (CcApiBadKeyException e) {
-            NnLogUtil.logException(e);
-            return null;
-        } catch (CcApiBadValueException e) {
-            NnLogUtil.logException(e);
-            return null;
-        }
-        
-        return ccResult;
-    }
-    
-    private static CcApiDocument process(CcApiDocument ccDoc, boolean isProduction) {
+    private static CcApiDocument process(CcApiDocument ccDoc, boolean isProduction) throws NnClearCommerceException {
         
         CcApiDocument ccResult = null;
         
@@ -196,20 +164,15 @@ public class ClearCommerceLib {
             ccResult = ccDoc.process(MsoConfigManager.getCCBillingGayeway(), CC_PORT, true);
             
         } catch (CcApiServerConnectException e) {
-            NnLogUtil.logException(e);
-            return null;
+            throw new NnClearCommerceException(e.getMessage());
         } catch (CcApiProcessException e) {
-            NnLogUtil.logException(e);
-            return null;
+            throw new NnClearCommerceException(e.getMessage());
         } catch (CcApiInvalidDocumentException e) {
-            NnLogUtil.logException(e);
-            return null;
+            throw new NnClearCommerceException(e.getMessage());
         } catch (CcApiBadHostException e) {
-            NnLogUtil.logException(e);
-            return null;
+            throw new NnClearCommerceException(e.getMessage());
         } catch (CcApiBadPortException e) {
-            NnLogUtil.logException(e);
-            return null;
+            throw new NnClearCommerceException(e.getMessage());
         }
         
         if (ccResult != null) {
@@ -249,47 +212,25 @@ public class ClearCommerceLib {
         return ccResult;
     }
     
-    public static CcApiRecord getOverview(CcApiDocument ccResult) {
+    public static CcApiRecord getOverview(CcApiDocument ccResult) throws CcApiBadKeyException {
         
-        if (ccResult == null) return null;
+        if (ccResult == null) throw new IllegalArgumentException("ccResult must not be null");
         
-        CcApiRecord ccOverview = null;
-        try {
-            CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
-            if (ccEngine != null) {
-                
-                ccOverview = ccEngine.getFirstRecord(CC_OVERVIEW);
-            }
-            
-        } catch (CcApiBadKeyException e) {
-            NnLogUtil.logException(e);
-            return null;
-        }
+        CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
         
-        return ccOverview;
+        return ccEngine.getFirstRecord(CC_OVERVIEW);
     }
     
-    public static CcApiRecord getOrderForm(CcApiDocument ccResult) {
+    public static CcApiRecord getOrderForm(CcApiDocument ccResult) throws CcApiBadKeyException {
         
-        if (ccResult == null) return null;
+        if (ccResult == null) throw new IllegalArgumentException("ccResult must not be null");
         
-        CcApiRecord ccOrderForm = null;
-        try {
-            CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
-            if (ccEngine != null) {
-                
-                ccOrderForm = ccEngine.getFirstRecord(CC_ORDER_FORM);
-            }
-            
-        } catch (CcApiBadKeyException e) {
-            NnLogUtil.logException(e);
-            return null;
-        }
+        CcApiRecord ccEngine = ccResult.getFirstRecord(CC_ENGINE_DOC);
         
-        return ccOrderForm;
+        return ccEngine.getFirstRecord(CC_ORDER_FORM);
     }
     
-    public static CcApiDocument referencedAuth(BillingOrder order, boolean isProduction) throws NnDataIntegrityException, NnBillingException {
+    public static CcApiDocument referencedAuth(BillingOrder order, boolean isProduction) throws NnDataIntegrityException, NnBillingException, CcApiBadValueException, CcApiBadKeyException, NnClearCommerceException {
         
         CcApiDocument ccResult = null;
         BillingProfileManager profileMngr = new BillingProfileManager();
@@ -303,63 +244,54 @@ public class ClearCommerceLib {
         if (profile.getCardStatus() < BillingProfile.AUTHED || profile.getCcRefOrderId() == null)
             throw new NnBillingException("profile " + profile.getId() + " is not authed");
         
-        try {
-            CcApiMoney price = new CcApiMoney();
-            price.setValue(String.valueOf(pack.getPrice()), USD);
-            
-            CcApiDocument ccDoc = new CcApiDocument();
-            ccDoc.setFieldString("DocVersion", DOC_VERSION);
-            
-            CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
-            ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
-            ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
-            ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
-            
-            CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-            ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
-            ccOrderForm.setFieldString("GroupId", String.valueOf(order.getId()));
-            
-            CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
-            CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
-            CcApiRecord ccOrderItemList = ccCunsumer.addRecord("OrderItemList");
-            ccCunsumer.setFieldString("Email", profile.getEmail());
-            ccCunsumer.setFieldString("ReferenceOrderId", profile.getCcRefOrderId());
-            if (profile.getCcRefTransId() != null)
-                ccCunsumer.setFieldString("ReferenceTransId", profile.getCcRefTransId());
-            
-            CcApiRecord ccLocation = ccBillTo.addRecord("Location");
-            CcApiRecord ccAddress = ccLocation.addRecord("Address");
-            ccAddress.setFieldString("Name", profile.getName());
-            //ccAddress.setFieldString("Street1", profile.getAddr1());
-            //ccAddress.setFieldString("City", profile.getCity());
-            //ccAddress.setFieldString("StateProv", profile.getState());
-            //ccAddress.setFieldString("PostalCode", profile.getZip());
-            //ccAddress.setFieldString("Country", USD);
-            
-            CcApiRecord ccOrderItem = ccOrderItemList.addRecord("OrderItem");
-            ccOrderItem.setFieldS32("ItemNumber", 1);
-            ccOrderItem.setFieldS32("Qty", 1);
-            ccOrderItem.setFieldString("Id", String.valueOf(pack.getId()));
-            ccOrderItem.setFieldString("ProductCode", pack.getName());
-            ccOrderItem.setFieldMoney("Price", price);
-            ccOrderItem.setFieldMoney("Total", price);
-            
-            CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
-            ccTransaction.setFieldString("Type", "Auth");
-            
-            CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
-            CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
-            ccTotals.setFieldMoney("Total", price);
-            
-            ccResult = process(ccDoc, isProduction);
-            
-        } catch (CcApiBadKeyException e) {
-            NnLogUtil.logException(e);
-            return null;
-        } catch (CcApiBadValueException e) {
-            NnLogUtil.logException(e);
-            return null;
-        }
+        CcApiMoney price = new CcApiMoney();
+        price.setValue(String.valueOf(pack.getPrice()), USD);
+        
+        CcApiDocument ccDoc = new CcApiDocument();
+        ccDoc.setFieldString("DocVersion", DOC_VERSION);
+        
+        CcApiRecord ccEngine = populateCCUserField(ccDoc.addRecord(CC_ENGINE_DOC));
+        ccEngine.addRecord("Instructions").setFieldString("Pipeline", PAYMENT_NO_FRAUD);
+        ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
+        ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
+        
+        CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
+        ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
+        ccOrderForm.setFieldString("GroupId", String.valueOf(order.getId()));
+        
+        CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
+        CcApiRecord ccBillTo = ccCunsumer.addRecord("BillTo");
+        CcApiRecord ccOrderItemList = ccCunsumer.addRecord("OrderItemList");
+        ccCunsumer.setFieldString("Email", profile.getEmail());
+        ccCunsumer.setFieldString("ReferenceOrderId", profile.getCcRefOrderId());
+        if (profile.getCcRefTransId() != null)
+            ccCunsumer.setFieldString("ReferenceTransId", profile.getCcRefTransId());
+        
+        CcApiRecord ccLocation = ccBillTo.addRecord("Location");
+        CcApiRecord ccAddress = ccLocation.addRecord("Address");
+        ccAddress.setFieldString("Name", profile.getName());
+        //ccAddress.setFieldString("Street1", profile.getAddr1());
+        //ccAddress.setFieldString("City", profile.getCity());
+        //ccAddress.setFieldString("StateProv", profile.getState());
+        //ccAddress.setFieldString("PostalCode", profile.getZip());
+        //ccAddress.setFieldString("Country", USD);
+        
+        CcApiRecord ccOrderItem = ccOrderItemList.addRecord("OrderItem");
+        ccOrderItem.setFieldS32("ItemNumber", 1);
+        ccOrderItem.setFieldS32("Qty", 1);
+        ccOrderItem.setFieldString("Id", String.valueOf(pack.getId()));
+        ccOrderItem.setFieldString("ProductCode", pack.getName());
+        ccOrderItem.setFieldMoney("Price", price);
+        ccOrderItem.setFieldMoney("Total", price);
+        
+        CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+        ccTransaction.setFieldString("Type", "Auth");
+        
+        CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
+        CcApiRecord ccTotals = ccCurrentTotals.addRecord("Totals");
+        ccTotals.setFieldMoney("Total", price);
+        
+        ccResult = process(ccDoc, isProduction);
         
         return ccResult;
     }
