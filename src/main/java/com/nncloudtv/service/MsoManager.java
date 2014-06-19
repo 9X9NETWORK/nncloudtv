@@ -191,6 +191,15 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
         
+        String adKeyName = configMngr.getKeyNameByOs(os, "ad");
+        if (adKeyName != null) {
+            MsoConfig adConfig = configMngr.findByMsoAndItem(mso, adKeyName);
+            String ad = "off";
+            if (adConfig != null)
+                ad = adConfig.getValue();
+            result += PlayerApiService.assembleKeyValue("ad", ad);
+        }
+
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {
             MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);

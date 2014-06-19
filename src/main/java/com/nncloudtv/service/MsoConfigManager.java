@@ -50,7 +50,11 @@ public class MsoConfigManager {
     static public String getSearchPoolServer() {
     	return getProperty("services.properties", "search_pool");
     }
-    
+   
+    static public String getValue(String key) {
+    	return getProperty("services.properties", key);
+    }
+ 
     static public String getP12FilePath(Mso mso, boolean isProduction) {
         
         String path = "/var/opt/p12files/";
@@ -185,6 +189,12 @@ public class MsoConfigManager {
         if (function.contains("youtube")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.YOUTUBE_ID_ANDROID;
+        }
+        if (function.contains("ad")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+                return MsoConfig.AD_ANDROID;
+            if (os.equals(PlayerService.OS_IOS))
+            	return MsoConfig.AD_IOS;
         }
         return null;
     }
