@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
@@ -92,8 +93,8 @@ public class BillingController {
                 
                 total++;
                 String txnStatus = null;
-                List<String> result = new ArrayList<String>();
-                result.add(String.valueOf(order.getId()));
+                String[] result = {"", ""};
+                result[0] = String.valueOf(order.getId());
                 CcApiDocument ccResult = null;
                 try {
                     ccResult = ClearCommerceLib.referencedAuth(order, context.isProductionSite());
@@ -101,25 +102,25 @@ public class BillingController {
                     txnStatus = ccOverview.getFieldString("TransactionStatus");
                     
                 } catch (NnDataIntegrityException e) {
-                    result.add(e.getMessage());
+                    result[1] = e.getMessage();
                     continue;
                 } catch (NnBillingException e) {
-                    result.add(e.getMessage());
+                    result[1] = e.getMessage();
                     continue;
                 } catch (CcApiBadValueException e) {
-                    result.add(e.getMessage());
+                    result[1] = e.getMessage();
                     continue;
                 } catch (CcApiBadKeyException e) {
-                    result.add(e.getMessage());
+                    result[1] = e.getMessage();
                     continue;
                 } catch (NnClearCommerceException e) {
-                    result.add(e.getMessage());
+                    result[1] = e.getMessage();
                     continue;
                 }
                 
-                if (!"A".equals(txnStatus)) {
+                if ("A".equals(txnStatus) == false) {
                     
-                    result.add("charge failed");
+                    result[1] = "charge failed";
                     continue;
                 }
                 
@@ -134,9 +135,9 @@ public class BillingController {
                 order.setTotalPaymentAmount(order.getTotalPaymentAmount() + pack.getPrice());
                 order.setCntPayment(order.getCntPayment() + 1);
                 orderMngr.save(order);
-                result.add("successfully charged");
+                result[1] = "successfully charged";
                 
-                results += NnStringUtil.getDelimitedStr((String[]) result.toArray()) + "\n";
+                results += NnStringUtil.getDelimitedStr(result) + "\n";
             }
         }
         
