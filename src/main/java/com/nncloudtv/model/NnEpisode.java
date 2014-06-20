@@ -12,6 +12,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.CounterFactory;
 
 @PersistenceCapable(table="nnepisode", detachable="true")
@@ -25,22 +26,22 @@ public class NnEpisode implements Serializable {
     private long id;
 
     @Persistent
-    private long channelId;   
+    private long channelId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.NORMAL_STRING_LENGTH)
     private String name;
 
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=1500)
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
     private String intro;
 
     @Persistent
-    private long adId;   
+    private long adId;
 
     @Persistent
     private boolean isPublic; 

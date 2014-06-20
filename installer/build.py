@@ -7,7 +7,7 @@ if choice == "1":
    server = "dev" 
 
 #---- copy property files ----
-list=['datanucleus_analytics.properties', 'datanucleus_content.properties',
+list=['datanucleus_analytics.properties', 'datanucleus_content.properties', 'datanucleus_billing.properties', 'clearcommerce.properties',
       'datanucleus_nnuser1.properties', 'datanucleus_nnuser2.properties', 'datanucleus_recommend.properties', 'aws.properties',
       'memcache.properties', 'queue.properties', 'facebook.properties', 'crawler.properties', 'services.properties']
 
@@ -51,7 +51,9 @@ os.rename("..//src//main//java//com//nncloudtv//web//VersionController.java.tmp"
 
 #---- build ----
 os.chdir("..//")
-os.system("mvn clean compile")
+os.system("mvn clean")
+os.system("mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar")
+os.system("mvn compile")
 os.system("mvn datanucleus:enhance")
 os.system("mvn war:war")
 
