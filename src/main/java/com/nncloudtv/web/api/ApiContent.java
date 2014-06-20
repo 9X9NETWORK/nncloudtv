@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -68,7 +69,6 @@ public class ApiContent extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
     
     private ApiContentService apiContentService;
-    private NnChannelManager channelMngr;
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     private NnUserManager userMngr;
@@ -77,23 +77,21 @@ public class ApiContent extends ApiGeneric {
     
     public ApiContent() {
         
-        this.channelMngr = new NnChannelManager();
         this.channelPrefMngr = new NnChannelPrefManager();
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
-        this.apiContentService = new ApiContentService(channelMngr, new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
         this.userMngr = new NnUserManager();
         this.userProfileMngr = new NnUserProfileManager();
     }
     
     @Autowired
     public ApiContent(ApiContentService apiContentService,
-            NnChannelManager channelMngr, StoreService storeService,
+            StoreService storeService,
             NnChannelPrefManager channelPrefMngr, NnUserManager userMngr,
             NnProgramManager programMngr, NnUserProfileManager userProfileMngr) {
         
         this.apiContentService = apiContentService;
-        this.channelMngr = channelMngr;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
         this.userMngr = userMngr;
@@ -117,8 +115,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;
@@ -158,8 +155,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;
@@ -241,8 +237,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;
@@ -325,8 +320,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -366,8 +360,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -431,8 +424,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -535,8 +527,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(program.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -646,19 +637,11 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(program.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
         }
-        
-        // delete title cards
-        /*
-        TitleCardManager titleCardMngr = new TitleCardManager();
-        List<TitleCard> titleCards = titleCardMngr.findByProgramId(programId);
-        titleCardMngr.delete(titleCards);
-        */
         
         programMngr.delete(program);
         
@@ -697,8 +680,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -781,8 +763,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -928,7 +909,7 @@ public class ApiContent extends ApiGeneric {
             @RequestParam(required = false, value = "ytUserId") String ytUserIdStr) {
     
         List<NnChannel> results = new ArrayList<NnChannel>();
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         NnUserManager userMngr = new NnUserManager();
         NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
@@ -1093,7 +1074,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
@@ -1117,6 +1098,7 @@ public class ApiContent extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         
         Long channelId = evaluateLong(channelIdStr);
         if (channelId == null) {
@@ -1246,7 +1228,7 @@ public class ApiContent extends ApiGeneric {
             return ;
         }
         
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1413,7 +1395,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1455,7 +1437,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
         NnChannel channel = channelMngr.findById(channelId);
@@ -1548,9 +1530,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             return null;
@@ -1624,7 +1604,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         NnChannel channel = channelMngr.findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
@@ -1637,19 +1617,6 @@ public class ApiContent extends ApiGeneric {
         if(nnAd != null) {
             adMngr.delete(nnAd);
         }
-        
-        // delete programs / title cards
-        /*
-        TitleCardManager titlecardMngr = new TitleCardManager();
-        NnProgramManager programMngr = new NnProgramManager();
-        List<TitleCard> titlecards = new ArrayList<TitleCard>();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
-        for (NnProgram program : programs) {
-            titlecards.addAll(titlecardMngr.findByProgramId(program.getId()));
-        }
-        titlecardMngr.delete(titlecards);
-        programMngr.delete(programs);
-        */
         
         // delete episode
         episodeMngr.delete(episode);
@@ -1719,7 +1686,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         NnChannel channel = channelMngr.findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
@@ -1874,7 +1841,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
         
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
@@ -2090,8 +2057,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -2138,8 +2104,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -2297,8 +2262,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(program.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
@@ -2411,10 +2375,6 @@ public class ApiContent extends ApiGeneric {
             titleCard.setBgImage(bgImage);
         }
         
-        
-        //        episode.setDuration(0); // set 0 to notify episode get operation to recalculate duration.
-        
-        
         titleCard = titleCardMngr.save(titleCard);
         
         titleCard.setMessage(NnStringUtil.revertHtml(titleCard.getMessage()));
@@ -2449,8 +2409,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(titleCard.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(titleCard.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
             return null;
