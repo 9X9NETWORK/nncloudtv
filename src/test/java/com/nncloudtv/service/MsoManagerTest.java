@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nncloudtv.mock.dao.MockMsoDao;
+import com.nncloudtv.mock.lib.MockNNF;
 import com.nncloudtv.mock.service.MockMsoConfigManager;
-import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -16,14 +16,14 @@ public class MsoManagerTest {
     MsoManager msoMngr = new MsoManager();
     
     MockMsoConfigManager mockConfigMngr;
-    MockNnChannelManager mockChannelMngr;
+    NnChannelManager mockChannelMngr;
     MockMsoDao mockMsoDao;
     
     @Before
     public void setUp() {
         
         mockConfigMngr = new MockMsoConfigManager();
-        mockChannelMngr = new MockNnChannelManager();
+        mockChannelMngr = MockNNF.getChannelMngr();
         mockMsoDao = new MockMsoDao();
         
         msoMngr = new MsoManager(mockConfigMngr, mockMsoDao);

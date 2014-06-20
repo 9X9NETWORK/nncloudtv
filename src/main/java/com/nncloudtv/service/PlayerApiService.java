@@ -34,6 +34,7 @@ import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -90,11 +91,11 @@ import com.nncloudtv.web.json.player.UserInfo;
 @Service
 public class PlayerApiService {
     
-    protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());    
+    protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
     private NnUserProfileManager profileMngr;
     private MsoConfigManager configMngr;
-    private NnUserManager userMngr;    
+    private NnUserManager userMngr;
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
     private NnDeviceManager deviceMngr;
@@ -117,21 +118,21 @@ public class PlayerApiService {
         configMngr = new MsoConfigManager();
         userMngr = new NnUserManager();
         msoMngr = new MsoManager();
-        chMngr = new NnChannelManager();
+        chMngr = NNF.getChannelMngr();
         profileMngr = new NnUserProfileManager();
         deviceMngr = new NnDeviceManager();
         epMngr = new NnEpisodeManager();
     }
     
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
-            NnChannelManager chMngr, MsoConfigManager configMngr,
-            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
-            NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
+            MsoConfigManager configMngr, NnUserPrefManager prefMngr,
+            NnUserProfileManager profileMngr, NnDeviceManager deviceMngr,
+            NnEpisodeManager epMngr) {
         
         this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
-        this.chMngr = chMngr;
+        this.chMngr = NNF.getChannelMngr();
         this.profileMngr = profileMngr;
         this.deviceMngr = deviceMngr;
         this.epMngr = epMngr;
@@ -1050,7 +1051,6 @@ public class PlayerApiService {
         if (user.getEmail().equals(NnUser.GUEST_EMAIL))
             return this.assembleMsgs(NnStatusCode.USER_PERMISSION_ERROR, null);
                 
-        NnChannelManager chMngr = new NnChannelManager();        
         //verify url, also converge youtube url
         url = chMngr.verifyUrl(url);         
         if (url == null)
@@ -1295,7 +1295,7 @@ public class PlayerApiService {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
                         programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                         if (pagination) {
-                            NnChannel c = new NnChannelManager().findById(l);
+                            NnChannel c = chMngr.findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
@@ -2576,7 +2576,6 @@ System.out.println("result 0:" + result[0]);
             
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);
         }
-        NnChannelManager chMngr = new NnChannelManager();
         NnUserManager userMngr = new NnUserManager();
         Map<String, NnUser> umap = new HashMap<String, NnUser>();        
         Map<String, String> cmap = new HashMap<String, String>();

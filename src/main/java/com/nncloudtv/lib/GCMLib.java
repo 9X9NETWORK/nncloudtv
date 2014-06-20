@@ -23,7 +23,6 @@ import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.NnEpisodeManager;
@@ -33,8 +32,9 @@ import com.nncloudtv.service.YtProgramManager;
 public class GCMLib {
     
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
+    
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
-    private static final int MULTICAST_SIZE = 1000;
+    private static final int MULTICAST_SIZE  = 1000;
     
     private NnDeviceManager deviceMngr = new NnDeviceManager();
     private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
@@ -215,8 +215,7 @@ public class GCMLib {
             
             if (splits[1].matches("^[0-9]+$")) {
                 
-                NnChannelManager chMngr = new NnChannelManager();
-                NnChannel channel = chMngr.findById(Long.valueOf(splits[1]));
+                NnChannel channel = NNF.getChannelMngr().findById(Long.valueOf(splits[1]));
                 if (channel == null)
                     return message;
                 String logo = null;

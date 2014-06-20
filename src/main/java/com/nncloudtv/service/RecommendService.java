@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.DeepDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.ShallowDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Deep;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
@@ -120,7 +121,6 @@ public class RecommendService {
     
     public List<NnChannel> findShallowChannels(long chId) {
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager chMngr = new NnChannelManager();
         Shallow shallow = shallowDao.findByChannelId(chId);
         if (shallow == null)
             return channels; //need to come up something
@@ -128,7 +128,7 @@ public class RecommendService {
         String list = shallow.getRecommendIds();
         String[] chs = list.split(",");
         for (String ch : chs) {
-            NnChannel c = chMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null)
                 channels.add(c);                        
         }
@@ -137,7 +137,6 @@ public class RecommendService {
     
     public List<NnChannel> findDeepChannels(NnUser user) {
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager chMngr = new NnChannelManager();
         Deep deep = deepDao.findByUser(user.getShard(), user.getId());
         if (deep == null)
             return channels; //need to come up something
@@ -145,7 +144,7 @@ public class RecommendService {
         String list = deep.getRecommendIds();
         String[] chs = list.split(",");
         for (String ch : chs) {
-            NnChannel c = chMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null)
                 channels.add(c);                        
         }

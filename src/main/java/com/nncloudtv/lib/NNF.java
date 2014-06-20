@@ -2,6 +2,7 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 
 public class NNF {
@@ -9,10 +10,17 @@ public class NNF {
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
     
     protected static NnChannelManager channelMngr = null;
+    protected static MsoConfigManager configMngr = null;
     
-    public static NnChannelManager get(Class<NnChannelManager> cls) {
+    public static MsoConfigManager getConfigMngr() {
         
-        return getChannelMngr();
+        if (configMngr == null) {
+            
+            log.info("create configMngr");
+            configMngr = new MsoConfigManager();
+        }
+        
+        return configMngr;
     }
     
     public static NnChannelManager getChannelMngr() {

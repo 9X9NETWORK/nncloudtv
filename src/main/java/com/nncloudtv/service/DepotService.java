@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.NnChannel;
@@ -58,7 +59,7 @@ public class DepotService {
     }
     
     public PostResponse updateChannel(RtnChannel podcast) {
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(Long.parseLong(podcast.getKey()));
         if (channel == null) {
             return new PostResponse(String.valueOf(NnStatusCode.CHANNEL_INVALID), "CHANNEL_INVALID");
@@ -135,7 +136,7 @@ public class DepotService {
                     
     public PostResponse updateProgram(RtnProgram rtnProgram) {
         NnProgramManager programMngr = new NnProgramManager();
-        NnChannelManager channelMngr = new NnChannelManager();            
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         RtnProgramItem item = rtnProgram.getItems()[0]; //for now there's only one item
         log.info("updateProgramViaTranscodingService(): " + item.toString());
         if (!Pattern.matches("^\\d*$", rtnProgram.getKey())) {

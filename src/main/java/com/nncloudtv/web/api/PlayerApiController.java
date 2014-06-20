@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -444,7 +445,7 @@ public class PlayerApiController {
             return "empty\n";
             */
         }
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
         ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
         return json;

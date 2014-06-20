@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.Mso;
@@ -183,11 +184,11 @@ public class PlayerService {
 
     public Model prepareChannel(Model model, String cid,
             String mso, HttpServletResponse resp) {
-        NnChannelManager channelMngr = new NnChannelManager();
+        
         if (cid == null || !cid.matches("[0-9]+")) {
             return model;
         }
-        NnChannel channel = channelMngr.findById(Long.valueOf(cid));
+        NnChannel channel = NNF.getChannelMngr().findById(Long.valueOf(cid));
         if (channel != null) {
             log.info("found channel = " + cid);
             model.addAttribute(META_CHANNEL_TITLE, channel.getName());
@@ -312,8 +313,7 @@ public class PlayerService {
         
         //-- channel/episode info --
         if (ch != null) {
-            NnChannelManager channelMngr = new NnChannelManager();        
-            NnChannel c = channelMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null) {
                 String sharingUrl = NnStringUtil.getSharingUrl(false, context, ch, (ep == null ? youtubeEp : ep));
                 model.addAttribute(META_URL, this.prepareFb(sharingUrl, 3));

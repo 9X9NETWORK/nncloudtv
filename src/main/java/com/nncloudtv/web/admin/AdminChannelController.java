@@ -15,7 +15,6 @@ import javax.jdo.JDOUserException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.JqgridHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
@@ -36,9 +36,8 @@ public class AdminChannelController {
     
     private final NnChannelManager channelMngr;
     
-    @Autowired
-    public AdminChannelController(NnChannelManager channelMngr) {
-        this.channelMngr = channelMngr;
+    public AdminChannelController() {
+        this.channelMngr = NNF.getChannelMngr();
     }
 
     @ExceptionHandler(Exception.class)
@@ -292,159 +291,4 @@ public class AdminChannelController {
                 
         return "OK";
     }    
-    
-    /*
-    @RequestMapping("addSet")
-    public @ResponseBody String addCategory(@RequestParam(value = "channel")  Long channelId,
-                                            @RequestParam(value = "set") Long setId) {
-                
-        NnSetToNnChannelManager csMngr = new NnSetToNnChannelManager();
-        NnSetManager setMngr = new NnSetManager();
-        logger.info("setId = " + setId);
-        NnSet set = setMngr.findById(setId);
-        if (set == null) {
-            String error = "Invalid Set";
-            logger.warning(error);
-            return error;
-        }
-        logger.info("channelId = " + channelId);
-        NnChannel channel = channelMngr.findById(channelId);
-        if (channel == null) {
-            String error = "Invalid Channel";
-            logger.warning(error);
-            return error;
-        }
-        NnSetToNnChannel cs = csMngr.findBySetAndChannel(setId, channelId);
-        if (cs != null) {
-            String error = "Channel Is Already in Set";
-            logger.warning(error);
-            return error;
-        }
-        
-        //seq not set appropriately, need fix later.
-        csMngr.create(new NnSetToNnChannel(setId, channelId, (short) 0));
-        
-        set.setChannelCnt(set.getChannelCnt() + 1);
-        setMngr.save(set);
-        
-        return "OK";
-    }
-    */
-    /*
-    @RequestMapping("deleteSets")
-    public @ResponseBody String deleteCategories(@RequestParam(required=true)long channel, String sets) {
-        if (sets == null) {return "fail";}
-
-        //find channel
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel c = channelMngr.findById(channel);
-        
-        if (c != null) {
-            //find all the sets
-            NnSetToNnChannelManager csMngr = new NnSetToNnChannelManager();
-            NnSetManager setMngr = new NnSetManager();
-            List<Long> setIdList = new ArrayList<Long>();    
-            String[] arr = sets.split(",");
-            for (int i=0; i<arr.length; i++) { setIdList.add(Long.parseLong(arr[i])); }
-            //delete them in CategoryChannel table
-            List<NnSet> existing = setMngr.findByIds(setIdList);
-            csMngr.deleteChannelSet(c, existing);
-        }
-        
-        return "success";
-    }
-    */
-    /*
-    @RequestMapping("deleteSet")
-    public @ResponseBody String deleteCategory(@RequestParam(value = "id") Long csId) {        
-        NnSetToNnChannelManager csMngr = new NnSetToNnChannelManager();
-        
-        logger.info("csId = " + csId);
-        NnSetToNnChannel cs = csMngr.findById(csId);
-        if (cs == null) {
-            String error = "SetChannel Does Not Exist";
-            logger.warning(error);
-            return error;
-        }
-        csMngr.delete(cs);
-        // TODO: deal with Set.channelCount
-        return "OK";
-    }    
-     */        
-
-    /*
-    @RequestMapping(value = "listSets", params = {"channel", "page", "rows", "sidx", "sord"})
-    public void listSets(@RequestParam(value = "channel") Long         channelId,
-                               @RequestParam(value = "page")    Integer      currentPage,
-                               @RequestParam(value = "rows")    Integer      rowsPerPage,
-                               @RequestParam(value = "sidx")    String       sortIndex,
-                               @RequestParam(value = "sord")    String       sortDirection,
-                                                                OutputStream out) {        
-        NnSetManager setMngr = new NnSetManager();
-        NnSetToNnChannelManager csMngr = new NnSetToNnChannelManager();
-        ObjectMapper mapper = new ObjectMapper();
-        List<Map<String, Object>> dataRows = new ArrayList<Map<String, Object>>();
-        
-        if (channelId == 0) {
-            try {
-                mapper.writeValue(out, JqgridHelper.composeJqgridResponse(1, 1, 0, new ArrayList<Map<String, Object>>()));
-            } catch (IOException e) {
-                logger.warning(e.getMessage());
-            }
-            return;
-        }
-        
-        String filter = "channelId == " + channelId;
-        int totalRecords = csMngr.total(filter);
-        int totalPages = (int)Math.ceil((double)totalRecords / rowsPerPage);
-        if (currentPage > totalPages)
-            currentPage = totalPages;
-        
-        List<NnSetToNnChannel> results = csMngr.list(currentPage, rowsPerPage, sortIndex, sortDirection, filter);
-        
-        for (NnSetToNnChannel cs : results) {
-            
-            Map<String, Object> map = new HashMap<String, Object>();
-            List<Object> cell = new ArrayList<Object>();
-            
-            NnSet set = setMngr.findById(cs.getSetId());            
-            cell.add(cs.getChannelId());
-            cell.add(cs.getSetId());
-            cell.add(set.getName());
-            cell.add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cs.getUpdateDate()));
-            cell.add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cs.getCreateDate()));
-            cell.add(set.isPublic());
-            cell.add(set.getChannelCnt());
-            
-            map.put("id", cs.getId());
-            map.put("cell", cell);
-            dataRows.add(map);
-        }        
-        try {
-            mapper.writeValue(out, JqgridHelper.composeJqgridResponse(currentPage, totalPages, totalRecords, dataRows));
-        } catch (IOException e) {
-            logger.warning(e.getMessage());
-        }
-    }
-    */
-    
-    /*
-    @RequestMapping("createPiwik")
-    public @ResponseBody String createPiwik(
-                HttpServletRequest req,
-                @RequestParam(value="id",required=false) long id) {
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel c = channelMngr.findById(id); 
-        if (c != null) {
-            if (c.getPiwik() == null) {
-                String piwikId = PiwikLib.createPiwikSite(0, c.getId(), req);
-                logger.info("piwikId:" + piwikId);
-                c.setPiwik(piwikId);
-                channelMngr.save(c);                    
-            }            
-        }
-        return "OK";
-    }
-    */
-    
 }

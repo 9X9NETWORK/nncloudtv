@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
@@ -56,7 +57,7 @@ public class ContentWorkerService {
              return new PostResponse(String.valueOf(NnStatusCode.SUCCESS), "SUCCESS");
          }
          
-         NnChannelManager channelMngr = new NnChannelManager();
+         NnChannelManager channelMngr = NNF.getChannelMngr();
          NnChannel channel = channelMngr.findById(content.getId());         
          if (channel == null) 
              return new PostResponse(String.valueOf(NnStatusCode.CHANNEL_INVALID), "CHANNEL INVALID");

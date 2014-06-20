@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.lib.AuthLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -251,7 +252,7 @@ public class NnUserManager {
     }
 
     public void resetChannelCache(NnUser user) {
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         List<NnChannel> channels = chMngr.findByUser(user, 0, false);
         chMngr.resetCache(channels);
     }
@@ -314,8 +315,8 @@ public class NnUserManager {
     }
      
     public void subscibeDefaultChannels(NnUser user) {
-        NnChannelManager channelMngr = new NnChannelManager();        
-        List<NnChannel> channels = channelMngr.findMsoDefaultChannels(user.getMsoId(), false);    
+        
+        List<NnChannel> channels = NNF.getChannelMngr().findMsoDefaultChannels(user.getMsoId(), false);    
         NnUserSubscribeManager subManager = new NnUserSubscribeManager();
         for (NnChannel c : channels) {
             subManager.subscribeChannel(user, c);
@@ -431,7 +432,7 @@ public class NnUserManager {
     public String composeCuratorInfo(List<NnUser> users, boolean chCntLimit, boolean isAllChannel, HttpServletRequest req, int version) {
         log.info("looking for all channels of a curator?" + isAllChannel);
         String result = "";
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         List<NnChannel> curatorChannels = new ArrayList<NnChannel>();
         for (NnUser u : users) {
             List<NnChannel> channels = new ArrayList<NnChannel>();

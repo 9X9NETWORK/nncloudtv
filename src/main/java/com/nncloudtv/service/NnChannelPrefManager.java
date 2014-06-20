@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelPrefDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -91,8 +92,7 @@ public class NnChannelPrefManager {
 	}
 	
 	public void deleteAllChannelsFBbyUser(NnUser user) {
-	    NnChannelManager channelMngr = new NnChannelManager();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
         List<NnChannelPref> channelPrefs = new ArrayList<NnChannelPref>();
         List<NnChannelPref> temp;
         for (NnChannel channel : channels) {
@@ -109,8 +109,7 @@ public class NnChannelPrefManager {
 	        return ;
 	    }
 	    
-	    NnChannelManager channelMngr = new NnChannelManager();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
         List<NnChannelPref> channelPrefs = new ArrayList<NnChannelPref>();
         List<NnChannelPref> temp;
         for (NnChannel channel : channels) {

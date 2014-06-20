@@ -19,6 +19,7 @@ import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -43,19 +44,16 @@ public class NnProgramManager {
     
     private NnProgramDao dao = new NnProgramDao();
     private YtProgramDao ytDao = new YtProgramDao();
-    private NnChannelManager chMngr;
     private NnEpisodeManager epMngr;
     
     public NnProgramManager() {
         
-        this.chMngr = new NnChannelManager();
         this.epMngr = new NnEpisodeManager();
     }
     
     @Autowired
-    public NnProgramManager(NnChannelManager chMngr, NnEpisodeManager epMngr) {
+    public NnProgramManager(NnEpisodeManager epMngr) {
         
-        this.chMngr = chMngr;
         this.epMngr = epMngr;
     }
     
@@ -68,7 +66,6 @@ public class NnProgramManager {
             reorderEpisodePrograms(episode.getId());
         }
         
-        // episode.setDuration(0); // set 0 to notify episode get operation to recalculate duration.                
         return program;
     }
     
@@ -84,9 +81,8 @@ public class NnProgramManager {
         //set channel count
         int count = channel.getCntEpisode() + 1;
         channel.setCntEpisode(count);
-        NnChannelManager channelMngr = new NnChannelManager();
-        channelMngr.save(channel);
-
+        NNF.getChannelMngr().save(channel);
+        
         //if the channel's original programCount is zero, its count will not be in the category, adding it now.
         if (count == 1) {
             SysTagDisplayManager displayMngr = new SysTagDisplayManager();
@@ -442,10 +438,9 @@ public class NnProgramManager {
     
     public List<NnProgram> getUserFavorites(NnUser user) {
     
-        NnChannelManager channelMngr = new NnChannelManager();
         List<NnProgram> empty = new ArrayList<NnProgram>();
         
-        List<NnChannel> channelFavorites = channelMngr.findByUser(user, 0, false);
+        List<NnChannel> channelFavorites = NNF.getChannelMngr().findByUser(user, 0, false);
         
         for (NnChannel channel : channelFavorites) {
             
@@ -469,7 +464,7 @@ public class NnProgramManager {
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format, short time, Mso mso) {
-        NnChannel c = new NnChannelManager().findById(channelId);
+        NnChannel c = NNF.getChannelMngr().findById(channelId);
         if (c == null)
             return "";
         //don't cache dayparting for now
@@ -502,7 +497,7 @@ public class NnProgramManager {
     //find "good" programs, to find nnchannel type of programs, use findPlayerNnProgramsByChannel
     public List<NnProgram> findPlayerProgramsByChannel(long channelId) {
         List<NnProgram> programs = new ArrayList<NnProgram>();
-        NnChannel c = chMngr.findById(channelId);
+        NnChannel c = NNF.getChannelMngr().findById(channelId);
         if (c == null)
             return programs;
         programs = dao.findPlayerProgramsByChannel(c); //sort by seq and subSeq
@@ -623,8 +618,6 @@ public class NnProgramManager {
     public Object composeProgramInfo(NnChannel c, List<NnProgram> programs, short format) {
         if (programs.size() == 0)
             return "";        
-        //NnProgram original = programs.get(0);
-        //NnChannel c = new NnChannelManager().findById(original.getChannelId());
         String result = "";
         List<ProgramInfo> jsonResult = new ArrayList<ProgramInfo>();
         if (c == null) return null;

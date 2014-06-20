@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.logging.Logger;
+
 import javax.servlet.http.HttpSession;
 
 import junit.framework.Assert;
@@ -13,7 +14,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.mock.service.MockMsoConfigManager;
 import com.nncloudtv.mock.service.MockMsoManager;
-import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
 import com.nncloudtv.mock.service.MockNnUserProfileManager;
@@ -29,7 +29,7 @@ public class PlayerApiServiceTest {
     private MockHttpServletResponse resp;    
     private MockNnUserManager mockUserMngr;    
     private MockMsoManager mockMsoMngr;
-    private MockNnChannelManager mockChMngr;
+    //private NnChannelManager mockChMngr;
     private MockMsoConfigManager mockConfigMngr;
     private MockNnUserPrefManager mockPrefMngr;
     private MockNnUserProfileManager mockProfileMngr;
@@ -44,14 +44,14 @@ public class PlayerApiServiceTest {
         mockPrefMngr = new MockNnUserPrefManager();
         mockUserMngr = new MockNnUserManager(mockPrefMngr);
         mockMsoMngr = new MockMsoManager();
-        mockChMngr = new MockNnChannelManager();
+        //mockChMngr = MockNNF.get(NnChannelManager.class);
         mockConfigMngr = new MockMsoConfigManager();
         mockProfileMngr = new MockNnUserProfileManager();
         
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr, mockProfileMngr, null, null);
+        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockConfigMngr, mockPrefMngr, mockProfileMngr, null, null);
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }

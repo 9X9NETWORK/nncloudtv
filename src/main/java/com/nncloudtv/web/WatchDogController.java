@@ -30,6 +30,7 @@ import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
@@ -148,10 +149,9 @@ public class WatchDogController {
         if (lang == null)
            lang = "en";
         url = url.trim();               
-        NnChannelManager chMngr = new NnChannelManager();
-        NnChannel c = chMngr.createYouTubeWithMeta(url, name, intro, lang, imageUrl, req);
+        NnChannel c = NNF.getChannelMngr().createYouTubeWithMeta(url, name, intro, lang, imageUrl, req);
         return NnNetUtil.textReturn(c.getIdStr());
-
+        
     }
     
     @RequestMapping(value="urlSubmit")
@@ -166,7 +166,7 @@ public class WatchDogController {
        if (sphere == null)
            sphere = "en";
        url = url.trim();               
-       NnChannelManager chMngr = new NnChannelManager();               
+       NnChannelManager chMngr = NNF.getChannelMngr();
        url = chMngr.verifyUrl(url); //verify url, also converge youtube url         
        if (url == null)
           return NnNetUtil.textReturn("error\nurl invalid");    	   
@@ -274,7 +274,7 @@ public class WatchDogController {
     public @ResponseBody String channelLineup(
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="v", required=false) String v) {
-        NnChannelManager mngr = new NnChannelManager();
+        NnChannelManager mngr = NNF.getChannelMngr();
         NnChannel c = mngr.findById(Long.parseLong(channel));
         if (c == null)
             return "channel does not exist";
@@ -368,8 +368,8 @@ public class WatchDogController {
 
     @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
-        NnChannelManager mngr = new NnChannelManager();
-        mngr.resetCache(chId); 
+        
+        NNF.getChannelMngr().resetCache(chId); 
         return "OK";                
     }
 
@@ -389,8 +389,8 @@ public class WatchDogController {
             HttpServletRequest req,
             @RequestParam(value="url", required=false) String url, 
             @RequestParam(value="name", required=false) String name) {            
-        NnChannelManager mngr = new NnChannelManager();
-        NnChannel c = mngr.create(url, name, "en", req);
+        
+        NnChannel c = NNF.getChannelMngr().create(url, name, "en", req);
         if ( c!= null)
             return c.getIdStr();
         return "channel submission failed";                
@@ -480,7 +480,7 @@ public class WatchDogController {
     @RequestMapping("json") 
     public @ResponseBody ChannelLineup json (
     		@RequestParam(value="id") long id) {         
-       NnChannelManager chMngr = new NnChannelManager();
+       NnChannelManager chMngr = NNF.getChannelMngr();
        NnChannel c = chMngr.findById(id);
        ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, 40, PlayerApiService.FORMAT_JSON);
        System.out.println(json);       

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
@@ -55,7 +56,6 @@ public class ApiUser extends ApiGeneric {
 
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
     
-    private NnChannelManager channelMngr;
     private MsoManager msoMngr;
     private NnUserManager userMngr;
     private StoreService storeService;
@@ -63,10 +63,9 @@ public class ApiUser extends ApiGeneric {
     private NnUserProfileManager userProfileMngr;
     
     @Autowired
-    public ApiUser(NnChannelManager channelMngr, MsoManager msoMngr, NnUserManager userMngr, StoreService storeService,
+    public ApiUser(MsoManager msoMngr, NnUserManager userMngr, StoreService storeService,
             ApiUserService apiUserService, NnUserProfileManager userProfileMngr) {
         
-        this.channelMngr = channelMngr;
         this.msoMngr = msoMngr;
         this.userMngr = userMngr;
         this.storeService = storeService;
@@ -496,6 +495,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         results = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : results) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
@@ -542,6 +542,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> results = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : results) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
@@ -611,8 +612,7 @@ public class ApiUser extends ApiGeneric {
         String[] channelIdStrList = channelIdsStr.split(",");
         
         // the result should be same as userChannels but not include fake channel
-        NnChannelManager channelMngr = new NnChannelManager();
-        //List<NnChannel> channels = channelMngr.findByUserAndHisFavorite(user, 0, true);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
         for (NnChannel channel : channels) {
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
@@ -620,14 +620,6 @@ public class ApiUser extends ApiGeneric {
                 break;
             }
         }
-        /*
-        for (NnChannel channel : channels) {
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAKE_FAVORITE) {
-                channels.remove(channel);
-                break;
-            }
-        }
-        */
         
         List<NnChannel> orderedChannels = new ArrayList<NnChannel>();
         List<Long> channelIdList = new ArrayList<Long>();
@@ -812,6 +804,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         channelMngr.populateCategoryId(savedChannel);
         channelMngr.populateAutoSync(savedChannel);
         channelMngr.normalize(savedChannel);
@@ -837,7 +830,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");

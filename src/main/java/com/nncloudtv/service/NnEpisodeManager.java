@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
@@ -229,8 +230,7 @@ public class NnEpisodeManager {
         fbPost.setLink(url);
         log.info("share link: " + url);
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if (channel == null) {
             return ;
         }

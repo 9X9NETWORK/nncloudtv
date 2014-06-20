@@ -5,10 +5,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.StoreListingDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.StoreListing;
 
@@ -18,16 +18,6 @@ public class StoreListingManager {
     protected static final Logger log = Logger.getLogger(StoreListingManager.class.getName());
     
     private StoreListingDao dao = new StoreListingDao();
-    private NnChannelManager channelMngr;
-    
-    @Autowired
-    public StoreListingManager(NnChannelManager channelMngr) {
-        this.channelMngr = channelMngr;
-    }
-    
-    public StoreListingManager() {
-        this.channelMngr = new NnChannelManager();
-    }
     
     public void addChannelsToBlackList(List<Long> channelIds, Long msoId) {
         
@@ -35,7 +25,7 @@ public class StoreListingManager {
             return ;
         }
         
-        List<NnChannel> channels = channelMngr.findByIds(channelIds);
+        List<NnChannel> channels = NNF.getChannelMngr().findByIds(channelIds);
         if (channels == null || channels.size() == 0) {
             return ;
         }
@@ -77,7 +67,7 @@ public class StoreListingManager {
             return ;
         }
         
-        List<NnChannel> channels = channelMngr.findByIds(channelIds);
+        List<NnChannel> channels = NNF.getChannelMngr().findByIds(channelIds);
         if (channels == null || channels.size() == 0) {
             return ;
         }

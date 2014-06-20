@@ -909,7 +909,7 @@ public class ApiContent extends ApiGeneric {
             @RequestParam(required = false, value = "ytUserId") String ytUserIdStr) {
     
         List<NnChannel> results = new ArrayList<NnChannel>();
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnUserManager userMngr = new NnUserManager();
         NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
@@ -1074,7 +1074,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
@@ -1098,7 +1098,7 @@ public class ApiContent extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         
         Long channelId = evaluateLong(channelIdStr);
         if (channelId == null) {
@@ -1437,7 +1437,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
         NnChannel channel = channelMngr.findById(channelId);
@@ -1604,7 +1604,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
@@ -1686,7 +1686,7 @@ public class ApiContent extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
         if ((channel == null) || (verifiedUserId != channel.getUserId())) {
             forbidden(resp);
@@ -1841,7 +1841,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.get(NnChannelManager.class);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {

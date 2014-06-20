@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.nncloudtv.dao.NnUserSubscribeDao;
 import com.nncloudtv.dao.UserInviteDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -23,7 +24,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.UserInvite;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserSubscribeManager;
 import com.nncloudtv.service.PlayerService;
@@ -106,8 +106,7 @@ public class ShareController {
                 NnUserSubscribeDao subDao = new NnUserSubscribeDao();
                 NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
                 NnUser user = userMngr.findByEmail(invite.getInviteeEmail(), 1, req);
-                NnChannelManager channelMngr = new NnChannelManager();
-                NnChannel c = channelMngr.findById(invite.getChannelId());
+                NnChannel c = NNF.getChannelMngr().findById(invite.getChannelId());
                 if (user == null) {
                     model = model.addAttribute("exist", "n");
                     Mso mso = new MsoManager().findNNMso();

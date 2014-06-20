@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.PoiDao;
 import com.nncloudtv.dao.PoiPointDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.Poi;
@@ -24,7 +25,6 @@ public class PoiPointManager {
     private PoiDao poiDao = new PoiDao();
     private PoiEventManager poiEventMngr = new PoiEventManager();
     private NnProgramManager programMngr = new NnProgramManager();
-    private NnChannelManager channelMngr = new NnChannelManager();
     
     public PoiPoint create(PoiPoint point) {
         Date now = new Date();
@@ -248,6 +248,8 @@ public class PoiPointManager {
         if (point == null) {
             return null;
         }
+        
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         
         if (point.getType() == PoiPoint.TYPE_SUBEPISODE) {
             
