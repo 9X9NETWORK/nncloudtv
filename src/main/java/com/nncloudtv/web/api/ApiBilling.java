@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
+import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
-import com.clearcommerce.ccxclientapi.CcApiRecord;
+import com.nncloudtv.exception.NnApiBadRequestException;
+import com.nncloudtv.exception.NnApiInternalErrorException;
+import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -28,6 +31,7 @@ import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
+import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.json.cms.CreditCard;
 
 @Controller
@@ -50,7 +54,7 @@ public class ApiBilling extends ApiGeneric {
     }
     
     @RequestMapping(value = "packages", method = RequestMethod.GET)
-    public @ResponseBody List<BillingPackage> login(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody List<BillingPackage> packageList(HttpServletRequest req, HttpServletResponse resp) {
         
         return packageMngr.findAll();
     }
@@ -129,72 +133,6 @@ public class ApiBilling extends ApiGeneric {
         return profileMngr.save(profile);
     }
     
-    private CreditCard checkCreditCard(HttpServletRequest req, HttpServletResponse resp, BillingProfile profile) {
-        
-        final String CARD_HOLDER_NAME = "cardHolderName";
-        final String CARD_NUMBER      = "cardNumber";
-        final String CARD_EXPIRES     = "cardExpires";
-        final String CARD_VERIFICATION_CODE = "cardVerificationCode";
-        
-        String cardHolderName = req.getParameter(CARD_HOLDER_NAME);
-        String cardNumber     = req.getParameter(CARD_NUMBER);
-        String cardExpires    = req.getParameter(CARD_EXPIRES);
-        String cardVerificationCode = req.getParameter(CARD_VERIFICATION_CODE);
-        
-        if (cardNumber == null) {
-            badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
-            return null;
-        }
-        cardNumber = cardNumber.replaceAll("-", "");
-        if (cardExpires == null) {
-            badRequest(resp, MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
-            return null;
-        }
-        if (!cardNumber.matches("\\d{16}")) {
-            badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_NUMBER);
-            return null;
-        }
-        if (!cardExpires.matches("\\d\\d\\/\\d\\d")) {
-            badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_EXPIRES);
-            return null;
-        }
-        if (cardVerificationCode != null && !cardVerificationCode.matches("\\d{3,4}")) {
-            badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
-            return null;
-        }
-        CreditCard creditCard = new CreditCard(cardNumber, cardHolderName, cardExpires, cardVerificationCode);
-        
-        if (profile != null) {
-            
-            ApiContext context = new ApiContext(req);
-            CcApiDocument ccResult = ClearCommerceLib.verifyCreditCardNumber(creditCard, profile, context.isProductionSite());
-            if (ccResult == null) {
-                log.warning("ccResult is empty");
-                internalError(resp);
-                return null;
-            }
-            CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
-            if (ccOverview == null) {
-                log.warning("ccOverview is empty");
-                internalError(resp);
-                return null;
-            }
-            try {
-                String txnStatus = ccOverview.getFieldString("TransactionStatus");
-                if (txnStatus == null || !txnStatus.equals("A")) {
-                    badRequest(resp, INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
-                    return null;
-                }
-            } catch (CcApiBadKeyException e) {
-                log.warning("TransactionStatus is empty");
-                internalError(resp);
-                return null;
-            }
-        }
-        
-        return creditCard;
-    }
-    
     @RequestMapping(value = "profiles", method = RequestMethod.POST)
     public @ResponseBody BillingProfile billingProfileCreate(HttpServletRequest req, HttpServletResponse resp) {
         
@@ -242,6 +180,7 @@ public class ApiBilling extends ApiGeneric {
             return null;
         }
         
+        resp.setStatus(HTTP_201);
         return profileMngr.save(profile);
     }
     
@@ -308,14 +247,40 @@ public class ApiBilling extends ApiGeneric {
         // preauth
         if (profile.getCardStatus() < BillingProfile.AUTHED) {
             
-            CreditCard creditCard = checkCreditCard(req, resp, null);
-            if (creditCard == null) {
-                return null;
-            }
             ApiContext context = new ApiContext(req);
-            CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard, context.isProductionSite());
-            profile = profileMngr.updateAuthInfo(profile, creditCard, ccResult);
-            if (profile == null) {
+            BillingService billingServ = new BillingService();
+            CreditCard creditCard = null;
+            
+            try {
+                creditCard = billingServ.checkCreditCard(context, false);
+                CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard, context.isProductionSite());
+                profile = profileMngr.updateAuthInfo(profile, creditCard, ccResult);
+                
+            } catch (CcApiBadValueException e) {
+                
+                log.warning(e.getMessage());
+                internalError(resp);
+                return null;
+                
+            } catch (CcApiBadKeyException e) {
+                
+                log.warning(e.getMessage());
+                internalError(resp);
+                return null;
+                
+            } catch (NnApiInternalErrorException e) {
+                
+                internalError(resp);
+                return null;
+                
+            } catch (NnApiBadRequestException e) {
+                
+                badRequest(resp, e.getMessage());
+                return null;
+                
+            } catch (NnClearCommerceException e) {
+                
+                log.warning(e.getMessage());
                 internalError(resp);
                 return null;
             }
@@ -327,6 +292,7 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
+        resp.setStatus(HTTP_201);
         return orderMngr.save(orders);
     }
     

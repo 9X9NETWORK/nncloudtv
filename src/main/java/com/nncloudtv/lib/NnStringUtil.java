@@ -131,12 +131,18 @@ public class NnStringUtil {
         return result.toString();
     }
     
+    public static String escapeDoubleQuote(String str) {
+        
+        return "\"" + str.replaceAll("\\", "\\\\")
+                         .replaceAll("\"", "\\\"") + "\"";
+    }
+    
     public static String escapedQuote(String str) {
         
-        return "'" + str.replaceAll("'", "''")
-                         .replaceAll("\"", "\\\"")
-                         .replaceAll("\\?", "")
-                         .replaceAll("\\\\", "\\\\\\\\") + "'";
+        return "'" + str.replaceAll("'",    "''")
+                        .replaceAll("\"",   "\\\"")
+                        .replaceAll("\\?",  "")
+                        .replaceAll("\\\\", "\\\\\\\\") + "'";
     }
     
     public static String bytesToHex(byte[] src){
@@ -197,13 +203,13 @@ public class NnStringUtil {
             return null;
         }
         
-        return str.replaceAll("\n", " ")
-                   .replaceAll("\t", " ")
-                   .replaceAll("&",  "&amp;")
-                   .replaceAll("<",  "&lt;")
-                   .replaceAll(">",  "&gt;")
-                   .replaceAll("\"", "&quot;")
-                   .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
+        return str.replaceAll( "\n", " ")
+                  .replaceAll( "\t", " ")
+                  .replaceAll(  "&", "&amp;")
+                  .replaceAll(  "<", "&lt;")
+                  .replaceAll(  ">", "&gt;")
+                  .replaceAll( "\"", "&quot;")
+                  .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
     }
     
     public static String validateLangCode(String lang) {

@@ -53,4 +53,9 @@ public class BillingOrderManager {
         
         return dao.saveAll(orders);
     }
+    
+    public List<BillingOrder> findByStatus(short status) {
+        
+        return dao.findByStatus(status);
+    }
 }

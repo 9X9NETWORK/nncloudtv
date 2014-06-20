@@ -44,7 +44,7 @@ public class NnProgram implements Serializable {
     public static final short CONTENTTYPE_REFERENCE = 4;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
     private String intro;
     
     @Persistent
@@ -228,9 +228,7 @@ public class NnProgram implements Serializable {
     public String getPlayerIntro() {
     	String pintro = this.getIntro(); 
         if (pintro != null) {
-            int len = (pintro.length() > 256 ? 256 : pintro.length()); 
-        	pintro = pintro.replaceAll("\\s", " ");                
-        	pintro = pintro.substring(0, len);           
+            pintro = pintro.replaceAll("\\s", " ");
         }
         return pintro;
     }
@@ -296,18 +294,6 @@ public class NnProgram implements Serializable {
     public String getStorageId() {
         return storageId;
     }
-
-    //used in favorite program, to reference the real 9x9 program (maplestage, youtube channel do not apply here)
-    /*
-    public String getReferenceStorageId() {
-        return this.getChannelId() + ";" + "00000000";
-    }
-
-    //compatibility with old scheme. 
-    public String getReferenceStorageIdOldScheme() {
-        return this.getChannelId() + ";" + "00000001";        
-    }
-    */
     
     public void setStorageId(String storageId) {
         this.storageId = storageId;

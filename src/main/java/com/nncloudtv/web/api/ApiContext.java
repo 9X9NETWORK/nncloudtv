@@ -177,4 +177,9 @@ public class ApiContext {
         }        
         return false;
     }
+    
+    public HttpServletRequest getHttpRequest() {
+        
+        return httpReq;
+    }
 }

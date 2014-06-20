@@ -34,7 +34,7 @@ public class BillingPackage {
     private String name;
     
     @Persistent
-    private int price;
+    private int price; // in cent. ex: one dollar is record 100
     
     @Persistent
     private int setupFees; // for PERIODIC_CHARGE

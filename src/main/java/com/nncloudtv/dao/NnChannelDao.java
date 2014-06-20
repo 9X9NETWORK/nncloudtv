@@ -22,7 +22,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         super(NnChannel.class);
     }    
         
-    public List<NnChannel> findByType(short type) {
+    public List<NnChannel> findByContentType(short type) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>(); 
         try {

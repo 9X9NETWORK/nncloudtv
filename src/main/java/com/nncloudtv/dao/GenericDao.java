@@ -16,7 +16,7 @@ import com.nncloudtv.lib.PMF;
 public class GenericDao<T> {
     
     protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
-    private Class<T> daoClass;
+    protected Class<T> daoClass;
         
     public GenericDao(Class<T> daoClass) {
         this.daoClass = daoClass;
@@ -34,6 +34,11 @@ public class GenericDao<T> {
         if (cache != null) {
             cache.evict(dao);
         }
+    }
+    
+    protected PersistenceManager getPersistenceManager() {
+        
+        return PMF.get(daoClass).getPersistenceManager();
     }
     
     public T save(T dao) {
