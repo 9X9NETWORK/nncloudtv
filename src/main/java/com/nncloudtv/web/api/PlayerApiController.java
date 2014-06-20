@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -147,7 +146,6 @@ public class PlayerApiController {
         this.msoMngr = new MsoManager();
     }
     
-    @Autowired
     public PlayerApiController(MsoManager msoMngr) {
         
         this.msoMngr = msoMngr;
@@ -2999,4 +2997,35 @@ public class PlayerApiController {
         return playerApiService.response(output);
     }
     */
+    /**
+     * To list read/unread push notifications
+     * 
+     * Will list notifications which resently in one week
+     * 
+     * @param device device token
+     * @param clean mark all notifications as read after API call
+     * @return isRead, timestamp, message, content, logo, title. multiple entries will be separated by \n
+     */
+    @RequestMapping(value="notificationList")
+    public @ResponseBody Object notificationList (
+            @RequestParam(value="device", required=true) String token,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
+                return playerApiService.assembleMsgs(status,  null);        
+            }                        
+            output = playerApiService.notificationList(token, req);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+
 }

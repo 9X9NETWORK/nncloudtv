@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -51,6 +50,7 @@ import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnContent;
 import com.nncloudtv.model.NnDevice;
+import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnGuest;
@@ -123,7 +123,6 @@ public class PlayerApiService {
         epMngr = new NnEpisodeManager();
     }
     
-    @Autowired
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
             NnChannelManager chMngr, MsoConfigManager configMngr,
             NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
@@ -299,7 +298,9 @@ public class PlayerApiService {
                  a.getName(),
                  a.getIntro(),
                  a.getImageUrl(),
-                 storeUrl
+                 storeUrl,
+                 a.getMsoName(),
+                 a.getAndroidPackageName(),
               };
               if (storeUrl != null)
                  result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
@@ -607,12 +608,14 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        boolean readOnly = configMngr.isInReadonlyMode(false);
+        //boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
+        /*
         if (!readOnly)
-            counter = this.addMsoInfoVisitCounter(readOnly);     
+            counter = this.addMsoInfoVisitCounter(readOnly);
+            */     
         String acceptLang = req.getHeader("Accept-Language");
         String piwik = "http://piwik.9x9.tv/";
         Object result = msoMngr.getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
@@ -3370,5 +3373,50 @@ System.out.println("result 0:" + result[0]);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);        
     }
     */
+    
+    public Object notificationList(String token, HttpServletRequest req) {
         
+        if (token == null)
+            return this.assembleMsgs(NnStatusCode.SUCCESS, null);
+        
+        NnDeviceManager deviceMngr = new NnDeviceManager();
+        NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+        
+        List<NnDevice> devices = deviceMngr.findByToken(token);
+        if (devices.isEmpty())
+            return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
+        
+        NnDevice device = devices.get(0);
+        String badge = PlayerApiService.assembleKeyValue("badge", String.valueOf(device.getBadge()));
+        
+        if (req.getParameter("minimal") != null) {
+            String[] result = { badge };
+            return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        }
+        
+        List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
+        
+        if (req.getParameter("clean") != null) {
+            
+            List<NnDeviceNotification> unreadNotifications = notificationMngr.findUnreadByDeviceId(device.getId());
+            
+            for (NnDeviceNotification unread : unreadNotifications) {
+                unread.setRead(true);
+            }
+            device.setBadge(0);
+            deviceMngr.save(device);
+            notificationMngr.save(unreadNotifications);
+        }
+        
+        Object output = notificationMngr.composeNotificationList(notifications);
+        String[] result = { badge, (String) output };
+        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        
+        log.info(this.getClass().getName() + " is recycled");
+    }
 }

@@ -270,7 +270,6 @@ public class ApiGeneric {
 	/** log the enter state
 	 *  @param now the enter time
 	 *  */
-	@SuppressWarnings("unchecked")
 	public String printEnterState(Date now, HttpServletRequest req) {
 	    
 	    if (now == null || req == null) {
@@ -340,6 +339,23 @@ public class ApiGeneric {
 	    
 	    return longValue;
 	}
+	
+	public Integer evaluateInt(String stringValue) {
+        
+        if (stringValue == null) {
+            return null;
+        }
+        
+        Integer intValue = null;
+        try {
+            intValue = Integer.valueOf(stringValue);
+        } catch (NumberFormatException e) {
+            log.info("String value \"" + stringValue + "\" can't evaluate to type Int.");
+            return null;
+        }
+        
+        return intValue;
+    }
 	
 	public Short evaluateShort(String stringValue) {
         

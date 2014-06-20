@@ -32,8 +32,7 @@ public class CacheFactory {
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
-    public static boolean isRunning = true;
-    private static long lastCheck = 0;
+    public static boolean isRunning = false;
     private static List<InetSocketAddress> memcacheServers = null;
     private static MemcachedClient cache = null;
     private static MemcachedClient outdated = null;
@@ -100,7 +99,7 @@ public class CacheFactory {
         return cache;
     }
     
-    private static void reconfigClient() {
+    public static void reconfigClient() {
         
         // config & rebuild available server list
         System.setProperty("net.spy.log.LoggerImpl", "net.spy.memcached.compat.log.SunLogger"); 
@@ -145,21 +144,8 @@ public class CacheFactory {
     
     public static Object get(String key) {
         
-        if (!isEnabled || key == null || key.isEmpty()) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
-        long now = new Date().getTime();
-        if (now - lastCheck > HEALTH_CHECK_INTERVAL) {
-            lastCheck = now;
-            reconfigClient();
-            log.info("memcache reconfig costs " + (new Date().getTime() - now) + " milliseconds");
-            log.info("memory: max = " + Runtime.getRuntime().maxMemory()
-                       + ", total = " + Runtime.getRuntime().totalMemory()
-                        + ", free = " + Runtime.getRuntime().freeMemory()
-                        + ", used = " + Runtime.getRuntime().freeMemory());
-        } else if (!isRunning) {
-            // cache is temporarily not running
-            return null;
-        }
         MemcachedClient cache = getSharedClient();
         if (cache == null) return null;
         

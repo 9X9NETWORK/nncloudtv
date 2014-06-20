@@ -467,6 +467,7 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(sysTagMapMngr);
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void setChannelsSorting_0() {
         
@@ -503,6 +504,7 @@ public class ApiMsoServiceTest {
         assertEquals(1, sysTagMaps.get(2).getChannelId());
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     public void storeChannels_0() {
         

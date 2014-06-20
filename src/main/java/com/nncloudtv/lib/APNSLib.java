@@ -10,9 +10,11 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
+import com.nncloudtv.model.NnDeviceNotification;
+import com.nncloudtv.service.NnDeviceManager;
+import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsDelegate;
 import com.notnoop.apns.ApnsNotification;
@@ -26,7 +28,8 @@ public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
     
-    private NnDeviceDao deviceDao = new NnDeviceDao();
+    private NnDeviceManager deviceMngr = new NnDeviceManager();
+    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     
     public void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
         
@@ -49,11 +52,8 @@ public class APNSLib {
                 if (messageIdMap == null) {
                     return ;
                 }
-                
                 NnDevice device = messageIdMap.get(messageId);
-                if (device != null) {
-                    deviceDao.delete(device);
-                }
+                deviceMngr.delete(device);
             }
             
             public void messageSent(ApnsNotification notification, boolean isRetry) {
@@ -126,9 +126,7 @@ public class APNSLib {
         
         ApnsService service = null;
         try {
-            
             if (isProduction) {
-                
                 service = APNS.newService()
                         .withCert(fileRoot, password)
                         .asPool(15)
@@ -136,7 +134,6 @@ public class APNSLib {
                         .withDelegate(delegate) // Set the delegate to get notified of the status of message delivery
                         .build();
             } else {
-                
                 log.info("developement provisioning profile is used (developement site)");
                 service = APNS.newService()
                         .withCert(fileRoot, password)
@@ -163,7 +160,7 @@ public class APNSLib {
         removeInactiveDevices(service, msoNotification.getMsoId());
         
         // prepare notifications
-        List<NnDevice> fetchedDevices = deviceDao.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
+        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
         if (fetchedDevices == null) {
             log.info("fetchedDevices=null");
             return ;
@@ -173,9 +170,14 @@ public class APNSLib {
         Map<Integer, NnDevice> messageIdMap = new TreeMap<Integer, NnDevice>();
         
         List<EnhancedApnsNotification> notifications = new ArrayList<EnhancedApnsNotification>();
+        List<NnDeviceNotification> deviceNotifications = new ArrayList<NnDeviceNotification>();
         int count = 1;
         log.info("sending APNs notification with content = " + msoNotification.getContent());
         for (NnDevice device : fetchedDevices) {
+            
+            NnDeviceNotification deviceNotification = GCMLib.buildDeviceNotification(msoNotification);
+            deviceNotification.setDeviceId(device.getId());
+            deviceNotifications.add(deviceNotification);
             try {
                 Date now = new Date();
                 PayloadBuilder payloadBuilder = APNS.newPayload()
@@ -204,13 +206,14 @@ public class APNSLib {
                 // update badges
                 device.setBadge(device.getBadge() + 1);
             } catch (Exception e) {
-                log.info(e.getMessage());
+                log.warning(e.getMessage());
             }
         }
         delegate.setMessageIdMap(messageIdMap);
         
         // update all fetchedDevices with new badge
-        deviceDao.saveAll(fetchedDevices);
+        deviceMngr.save(fetchedDevices);
+        notificationMngr.save(deviceNotifications);
         
         // TODO performance issue
         for (EnhancedApnsNotification notification : notifications) {
@@ -236,7 +239,7 @@ public class APNSLib {
         if (inactiveDevices != null) {
             for(String inactiveDevice : inactiveDevices.keySet()) {
                 log.info("inactiveDevice = " + inactiveDevice.toLowerCase());
-                List<NnDevice> devices = deviceDao.findByToken(inactiveDevice.toLowerCase());
+                List<NnDevice> devices = deviceMngr.findByToken(inactiveDevice.toLowerCase());
                 if (devices != null) {
                     for (NnDevice device : devices) {
                         if (device.getMsoId() == msoId
@@ -251,6 +254,6 @@ public class APNSLib {
                 }
             }
         }
-        deviceDao.deleteAll(deleteDevices);
+        deviceMngr.delete(deleteDevices);
     }
 }
