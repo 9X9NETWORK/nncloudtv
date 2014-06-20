@@ -22,7 +22,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserReport;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.NnDeviceManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserReportManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -42,14 +41,14 @@ public class PdrController {
     public ResponseEntity<String> listDevice(
             @RequestParam(required=false) String user,
             @RequestParam(required=false) String mso) {
-        NnUserManager userMngr = new NnUserManager();
+        
         NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
         Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
             NNF.getMsoMngr().findNNMso();
         }
-        NnUser u = userMngr.findByToken(user, brand.getId());
+        NnUser u = NNF.getUserMngr().findByToken(user, brand.getId());
         if (u == null)
             return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
         List<NnDevice> devices = deviceMngr.findByUser(u);
@@ -82,8 +81,8 @@ public class PdrController {
             @RequestParam(required=false) String ip,
             @RequestParam(required=false) String mso,
             @RequestParam(required=false) String since) {
+        
         PdrManager pdrMngr = new PdrManager();
-        NnUserManager userMngr = new NnUserManager();
         NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
         NnUser u = null;
@@ -94,7 +93,7 @@ public class PdrController {
         }
         NnDevice d = null;
         if (user != null) {
-            u = userMngr.findByToken(user, brand.getId());
+            u = NNF.getUserMngr().findByToken(user, brand.getId());
             if (u == null)
                 return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
         }
@@ -166,14 +165,13 @@ public class PdrController {
         }
         String output = "";
         String email = "guest";
-        NnUserManager mngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
             brand = NNF.getMsoMngr().findNNMso();
         }
         String nbsp = "&nbsp;&nbsp;&nbsp;";
         for (NnUserReport r : list) {
-            NnUser found = mngr.findByToken(r.getUserToken(), brand.getId());
+            NnUser found = NNF.getUserMngr().findByToken(r.getUserToken(), brand.getId());
             if (found != null)
                 email = found.getEmail();
             output += "<p>" +

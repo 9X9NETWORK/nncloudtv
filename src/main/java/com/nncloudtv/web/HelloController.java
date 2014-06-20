@@ -32,7 +32,6 @@ import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.EmailService;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -50,7 +49,7 @@ public class HelloController {
     @RequestMapping("world")
     public ModelAndView world(HttpServletRequest req) throws Exception {
     	Mso mso = NNF.getMsoMngr().findNNMso();
-    	List<NnUser> users = new NnUserManager().search(null, null, "hello", mso.getId());
+    	List<NnUser> users = NNF.getUserMngr().search(null, null, "hello", mso.getId());
     	for (NnUser user : users) {
     		log.info("user id:" + user.getId());
     	}

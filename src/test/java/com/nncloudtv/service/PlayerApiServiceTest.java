@@ -13,7 +13,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.mock.lib.MockNNF;
-import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
 import com.nncloudtv.mock.service.MockNnUserProfileManager;
 import com.nncloudtv.web.api.ApiContext;
@@ -46,7 +45,7 @@ public class PlayerApiServiceTest {
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(new MockNnUserManager(), mockPrefMngr, mockProfileMngr, null, null);
+        service = new PlayerApiService(mockPrefMngr, mockProfileMngr, null, null);
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }

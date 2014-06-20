@@ -23,7 +23,6 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.UserInvite;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserSubscribeManager;
 import com.nncloudtv.service.PlayerService;
 
@@ -76,7 +75,7 @@ public class ShareController {
         if (invite == null) {
             model = model.addAttribute("invite", "null");
         } else {
-            NnUser user = new NnUserManager().findById(invite.getUserId(), 1, invite.getShard());
+            NnUser user = NNF.getUserMngr().findById(invite.getUserId(), 1, invite.getShard());
             model = model.addAttribute("userName", user.getProfile().getName());
             model = model.addAttribute("token", token);
         }
@@ -101,10 +100,9 @@ public class ShareController {
             }
             if (q1.equals("y")) {
                 invite.setStatus(UserInvite.STATUS_ACCEPTED);
-                NnUserManager userMngr = new NnUserManager();
                 NnUserSubscribeDao subDao = new NnUserSubscribeDao();
                 NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
-                NnUser user = userMngr.findByEmail(invite.getInviteeEmail(), 1, req);
+                NnUser user = NNF.getUserMngr().findByEmail(invite.getInviteeEmail(), 1, req);
                 NnChannel c = NNF.getChannelMngr().findById(invite.getChannelId());
                 if (user == null) {
                     model = model.addAttribute("exist", "n");
@@ -115,7 +113,7 @@ public class ShareController {
                     user.setLang("en");
                     */        
                     user.setTemp(false);
-                    userMngr.create(user, req, (short)0);
+                    NNF.getUserMngr().create(user, req, (short)0);
                     c.setSeq((short)1);
                     subMngr.subscribeChannel(user, c);
                 } else {

@@ -21,7 +21,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerService;
 import com.nncloudtv.web.api.ApiContext;
 
@@ -100,7 +99,7 @@ public class PlayerController {
         PlayerService service = new PlayerService();
         if (name != null) {
             if (name.matches("[a-zA-Z].+")) {
-                NnUser user = new NnUserManager().findByProfileUrl(name, 1);
+                NnUser user = NNF.getUserMngr().findByProfileUrl(name, 1);
                 if (user != null) {
                     log.info("user enter from curator brand url:" + name);
                     name = "#!" + user.getProfile().getProfileUrl();

@@ -235,8 +235,7 @@ public class NnEpisodeManager {
             return ;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(channel.getUserId(), 1);
+        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
         if (user == null) {
             return ;
         }

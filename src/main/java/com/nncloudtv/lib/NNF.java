@@ -6,6 +6,7 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 
 public class NNF {
@@ -16,6 +17,7 @@ public class NNF {
     protected static MsoConfigManager  configMngr  = null;
     protected static MsoManager        msoMngr     = null;
     protected static NnUserPrefManager prefMngr    = null;
+    protected static NnUserManager     userMngr    = null;
     
     protected static MsoDao           msoDao      = null;
     
@@ -39,6 +41,17 @@ public class NNF {
         }
         
         return prefMngr;
+    }
+    
+    public static NnUserManager getUserMngr() {
+        
+        if (userMngr == null) {
+            
+            log.info("create userMngr");
+            userMngr = new NnUserManager();
+        }
+        
+        return userMngr;
     }
     
     public static MsoManager getMsoMngr() {

@@ -93,13 +93,12 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         NnUser user = null;
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         if (shard == null) {
-            user = userMngr.findById(userId, brand.getId());
+            user = NNF.getUserMngr().findById(userId, brand.getId());
         } else {
-            user = userMngr.findById(userId, brand.getId(), (short) shard);
+            user = NNF.getUserMngr().findById(userId, brand.getId(), (short) shard);
         }
         
         if (user == null) {
@@ -116,7 +115,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        return userMngr.purify(user);
+        return NNF.getUserMngr().purify(user);
     }
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
@@ -139,9 +138,8 @@ public class ApiUser extends ApiGeneric {
             shard = 0;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId(), shard);
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId(), shard);
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -237,9 +235,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -321,9 +318,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -408,9 +404,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -588,8 +583,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -847,9 +841,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -895,9 +888,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -993,9 +985,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -1049,8 +1040,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -1085,7 +1075,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         if (fbUserId != null && accessToken != null) {
-            //List<FacebookPage> pages = FacebookLib.populatePageList(fbUserId, accessToken);
+            
             List<FacebookPage> pages = null;
             FacebookResponse response = FacebookLib.populatePageList(fbUserId, accessToken);
             if (response == null) {

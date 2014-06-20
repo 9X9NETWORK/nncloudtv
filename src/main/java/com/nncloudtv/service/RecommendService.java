@@ -39,7 +39,7 @@ public class RecommendService {
             log.info("maylike: guest user find from shallow");
             channels = this.findShallowChannels(cid);
         } else {
-            NnUser user = new NnUserManager().findByToken(userToken, msoId);
+            NnUser user = NNF.getUserMngr().findByToken(userToken, msoId);
             if (user != null) {
                 System.out.println("what the user u find:" + user.getId());
                 channels = this.findDeepChannels(user);
@@ -72,7 +72,7 @@ public class RecommendService {
             log.info("recommend: guest user find from billboard");
             channels = this.findBillboardPool(10, lang);
         } else {
-            NnUser user = new NnUserManager().findByToken(userToken, msoId);
+            NnUser user = NNF.getUserMngr().findByToken(userToken, msoId);
             if (user != null) {
                 Deep deep = deepDao.findByUser(user.getShard(), user.getId());
                 if (deep != null) {

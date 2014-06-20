@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnDeviceDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnUser;
@@ -22,15 +23,7 @@ public class NnDeviceManager {
     private NnDeviceDao dao = new NnDeviceDao();
     private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     private HttpServletRequest req;
-    private NnUserManager userMngr;
-            
-    public NnDeviceManager() {
-        this.userMngr = new NnUserManager();
-    }
-    public NnDeviceManager(NnUserManager userMngr) {
-        
-        this.userMngr = userMngr;
-    }
+    
     public HttpServletRequest getReq() { return req; }
     public void setReq(HttpServletRequest req) { this.req = req;}
     
@@ -61,7 +54,7 @@ public class NnDeviceManager {
         if (device == null)
             device = new NnDevice();
         if (device.getToken() == null)
-            device.setToken(NnUserManager.generateToken(userMngr.getShardByLocale(req)));
+            device.setToken(NnUserManager.generateToken(NNF.getUserMngr().getShardByLocale(req)));
         if (user != null) {
             device.setUserId(user.getId());
             device.setShard(user.getShard()); //for future reference

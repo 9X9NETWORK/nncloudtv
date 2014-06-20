@@ -33,7 +33,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -44,19 +43,16 @@ public class ApiMisc extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
-    private NnUserManager userMngr;
     private NnUserProfileManager profileMngr;
     
     public ApiMisc() {
         
-        userMngr = new NnUserManager();
         profileMngr = new NnUserProfileManager();
     }
     
     @Autowired
-    public ApiMisc(NnUserManager userMngr, NnUserProfileManager profileMngr) {
+    public ApiMisc(NnUserProfileManager profileMngr) {
         
-        this.userMngr = userMngr;
         this.profileMngr = profileMngr;
     }
     
@@ -129,11 +125,10 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
         
-        NnUserManager userMngr = new NnUserManager();
         NnUser user = null;
         
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        user = userMngr.findById(verifiedUserId, brand.getId(), (short) 0);
+        user = NNF.getUserMngr().findById(verifiedUserId, brand.getId(), (short) 0);
         
         NnUserProfile profile = new NnUserProfileManager().pickSuperProfile(verifiedUserId);
         if (profile != null) {
@@ -163,13 +158,13 @@ public class ApiMisc extends ApiGeneric {
 		Mso brand = NNF.getMsoMngr().findOneByName(mso);
 		if (token != null) {			
 			log.info("token = " + token);			
-			user = userMngr.findByToken(token, brand.getId());
+			user = NNF.getUserMngr().findByToken(token, brand.getId());
 			
 		} else if (email != null && password != null) {
 			
 			log.info("email = " + email + ", password = xxxxxx");
 			
-			user = userMngr.findAuthenticatedUser(email, password, brand.getId(), req);
+			user = NNF.getUserMngr().findAuthenticatedUser(email, password, brand.getId(), req);
 			if (user != null) {
 				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
 			}
@@ -326,9 +321,8 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(verifiedUserId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;

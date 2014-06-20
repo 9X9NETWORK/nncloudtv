@@ -43,7 +43,6 @@ import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TagManager;
@@ -468,12 +467,12 @@ public class WatchDogController {
     public ResponseEntity<String> resetPassword(
             @RequestParam(value="email")String email, 
             @RequestParam(value="password")String password, HttpServletRequest req, HttpServletResponse resp) {
-    	NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findByEmail(email, 1, req);
+        
+        NnUser user = NNF.getUserMngr().findByEmail(email, 1, req);
         if (user == null)
             return NnNetUtil.textReturn("user does not exist");
         user.setPassword(password);
-        userMngr.resetPassword(user);    
+        NNF.getUserMngr().resetPassword(user);    
         return NnNetUtil.textReturn("OK");
     }
     

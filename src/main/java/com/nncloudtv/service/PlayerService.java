@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
 import com.nncloudtv.lib.NNF;
@@ -40,19 +39,6 @@ public class PlayerService {
     public static final String OS_ANDROID           = "android";
     public static final String OS_IOS               = "ios";
     public static final String OS_WEB               = "web";
-    
-    private NnUserManager userMngr;
-    
-    @Autowired
-    public PlayerService(NnUserManager userMngr) {
-        
-        this.userMngr = userMngr;
-    }
-    
-    public PlayerService() {
-        
-        this.userMngr = new NnUserManager();
-    }
     
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
         if (msoName != null) {
@@ -203,7 +189,7 @@ public class PlayerService {
         if (jsp != null && jsp.length() > 0) {
             log.info("alternate is enabled: " + jsp);
         }
-        model.addAttribute("locale", userMngr.findLocaleByHttpRequest(req));
+        model.addAttribute("locale", NNF.getUserMngr().findLocaleByHttpRequest(req));
         return model;
     }
 

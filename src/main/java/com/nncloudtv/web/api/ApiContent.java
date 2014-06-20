@@ -52,7 +52,6 @@ import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.SysTagDisplayManager;
@@ -69,7 +68,6 @@ public class ApiContent extends ApiGeneric {
     private ApiContentService apiContentService;
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
-    private NnUserManager userMngr;
     private NnProgramManager programMngr;
     private NnUserProfileManager userProfileMngr;
     
@@ -79,20 +77,18 @@ public class ApiContent extends ApiGeneric {
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
         this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
-        this.userMngr = new NnUserManager();
         this.userProfileMngr = new NnUserProfileManager();
     }
     
     @Autowired
     public ApiContent(ApiContentService apiContentService,
             StoreService storeService,
-            NnChannelPrefManager channelPrefMngr, NnUserManager userMngr,
-            NnProgramManager programMngr, NnUserProfileManager userProfileMngr) {
+            NnChannelPrefManager channelPrefMngr, NnProgramManager programMngr,
+            NnUserProfileManager userProfileMngr) {
         
         this.apiContentService = apiContentService;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
-        this.userMngr = userMngr;
         this.programMngr = programMngr;
         this.userProfileMngr = userProfileMngr;
     }
@@ -185,9 +181,8 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(verifiedUserId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -904,7 +899,6 @@ public class ApiContent extends ApiGeneric {
     
         List<NnChannel> results = new ArrayList<NnChannel>();
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnUserManager userMngr = new NnUserManager();
         NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
@@ -922,7 +916,7 @@ public class ApiContent extends ApiGeneric {
                 return null;
             }
             
-            NnUser user = userMngr.findById(userId, brand.getId());
+            NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
             if (user == null) {
                 notFound(resp, "User Not Found");
                 return null;
@@ -1022,7 +1016,7 @@ public class ApiContent extends ApiGeneric {
                 for (NnUserProfile profile : profiles) {
                     userIdSet.add(profile.getUserId());
                 }
-                List<NnUser> users = userMngr.findAllByIds(userIdSet);
+                List<NnUser> users = NNF.getUserMngr().findAllByIds(userIdSet);
                 log.info("found users = " + users.size());
                 
                 for (NnUser user : users) {
@@ -1268,7 +1262,7 @@ public class ApiContent extends ApiGeneric {
         }
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         Long categoryId = null;
@@ -1308,7 +1302,7 @@ public class ApiContent extends ApiGeneric {
         
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         StoreService storeServ = new StoreService();

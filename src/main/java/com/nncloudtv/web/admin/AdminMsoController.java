@@ -29,7 +29,6 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnUserManager;
 
 @Controller
 @RequestMapping("admin/mso")
@@ -72,8 +71,6 @@ public class AdminMsoController {
         log.info("logoUrl = " + logoUrl);
         log.info("type = " + type);
         
-        NnUserManager userMngr = new NnUserManager();
-        
         Mso found = NNF.getMsoMngr().findByName(name);
         if (found != null) {
             return "Name In Used";
@@ -94,7 +91,7 @@ public class AdminMsoController {
         msoMngr.save(mso);
         
         NnUser user = new NnUser(contactEmail, password, userType, mso.getId());
-        userMngr.create(user, req, NnUser.SHARD_DEFAULT);
+        NNF.getUserMngr().create(user, req, NnUser.SHARD_DEFAULT);
                 
         return "OK";
     }
@@ -120,7 +117,6 @@ public class AdminMsoController {
                      @RequestParam(required = false) String       searchString,
                                                      OutputStream out) {
         
-        NnUserManager userMngr = new NnUserManager();
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> dataRows = new ArrayList<Map<String, Object>>();
         
@@ -159,7 +155,7 @@ public class AdminMsoController {
             cell.add(mso.getContactEmail());
             cell.add("********");
             cell.add(mso.getIntro());
-            cell.add(userMngr.total("msoId == " + mso.getId() + " && email != '" + NnUser.GUEST_EMAIL + "'"));
+            cell.add(NNF.getUserMngr().total("msoId == " + mso.getId() + " && email != '" + NnUser.GUEST_EMAIL + "'"));
             
             map.put("id", mso.getId());
             map.put("cell", cell);

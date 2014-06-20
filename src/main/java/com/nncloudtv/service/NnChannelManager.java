@@ -132,9 +132,6 @@ public class NnChannelManager {
                     log.info("channel can't find author:" + youtubeName + ";url:" + sourceUrl);
                     channel.setPublic(false);
                 }
-                //NnUserManager mngr = new NnUserManager();
-                //NnUser user = mngr.createFakeYoutube(info, req);
-                //channel.setUserIdStr(user.getIdStr());
             }
         }
         channel.setPublic(false);
@@ -149,16 +146,9 @@ public class NnChannelManager {
             new DepotService().submitToTranscodingService(channel.getId(), channel.getSourceUrl(), req);                                
         }
         
-        // piwik
-        /*
-        if (channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
-            channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) {            
-            PiwikLib.createPiwikSite(channel.getId());
-        } 
-        */       
         return channel;
     }
-
+    
     public NnChannel createYouTubeWithMeta(String sourceUrl, String name, String intro, String lang, String imageUrl, HttpServletRequest req) {
         if (sourceUrl == null) 
             return null;
@@ -906,8 +896,7 @@ public class NnChannelManager {
             return false;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(channel.getUserId(), 1);
+        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
         if(user == null) {
             return false;
         }
@@ -918,7 +907,7 @@ public class NnChannelManager {
         
         return false;
     }
-
+    
     public void reorderUserChannels(NnUser user) {
         
         // the results should be same as ApiUser.userChannels() GET operation, but not include fake channel.
