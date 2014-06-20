@@ -28,35 +28,32 @@ public class PlayerService {
     
     protected static final Logger log = Logger.getLogger(PlayerService.class.getName());
     
-    public static final String META_TITLE = "meta_title";
-    public static final String META_THUMBNAIL = "meta_thumbnail";
-    public static final String META_DESCRIPTION = "meta_desciption";
-    public static final String META_URL = "meta_url";
-    public static final String META_KEYWORD = "meta_keyword";
-    public static final String META_CHANNEL_TITLE = "crawlChannelTitle";
-    public static final String META_EPISODE_TITLE = "crawlEpisodeTitle";
+    public static final String META_TITLE           = "meta_title";
+    public static final String META_THUMBNAIL       = "meta_thumbnail";
+    public static final String META_DESCRIPTION     = "meta_desciption";
+    public static final String META_URL             = "meta_url";
+    public static final String META_KEYWORD         = "meta_keyword";
+    public static final String META_CHANNEL_TITLE   = "crawlChannelTitle";
+    public static final String META_EPISODE_TITLE   = "crawlEpisodeTitle";
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
-    public static final String META_FAVICON = "favicon";
-    public static final String OS_ANDROID = "android";
-    public static final String OS_IOS = "ios";
-    public static final String OS_WEB = "web";
+    public static final String META_FAVICON         = "favicon";
+    public static final String OS_ANDROID           = "android";
+    public static final String OS_IOS               = "ios";
+    public static final String OS_WEB               = "web";
     
     private NnUserManager userMngr;
-    private MsoConfigManager configMngr;
     private MsoManager msoMngr;
     
     @Autowired
-    public PlayerService(NnUserManager userMngr, MsoConfigManager configMngr, MsoManager msoMngr) {
+    public PlayerService(NnUserManager userMngr, MsoManager msoMngr) {
         
         this.userMngr = userMngr;
-        this.configMngr = configMngr;
         this.msoMngr = msoMngr;
     }
     
     public PlayerService() {
         
         this.userMngr = new NnUserManager();
-        this.configMngr = new MsoConfigManager();
         this.msoMngr = new MsoManager();
     }
     
@@ -72,10 +69,10 @@ public class PlayerService {
         if (mso == null)
             return model;
         
-        model.addAttribute(PlayerService.META_TITLE, mso.getTitle());
+        model.addAttribute(PlayerService.META_TITLE,       mso.getTitle());
         model.addAttribute(PlayerService.META_DESCRIPTION, mso.getIntro());
-        model.addAttribute(PlayerService.META_THUMBNAIL, mso.getLogoUrl());
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        model.addAttribute(PlayerService.META_THUMBNAIL,   mso.getLogoUrl());
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         String faviconUrl = config == null ? null : config.getValue();
         if (faviconUrl != null) { 
             model.addAttribute(META_FAVICON, "<link rel='icon' href='" + faviconUrl + 

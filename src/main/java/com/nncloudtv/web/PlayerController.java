@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -57,7 +58,7 @@ public class PlayerController {
         	if (brand.getType() == Mso.TYPE_FANAPP) {
         		//below, merge with view
 	            log.info("Fan app sharing");
-	            MsoConfigManager configMngr = new MsoConfigManager();
+	            MsoConfigManager configMngr = NNF.getConfigMngr();
 	            MsoConfig androidConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_ANDROID);
 	            MsoConfig iosConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_IOS);
 	        	String androidStoreUrl = "market://details?id=tv.tv9x9.player";
@@ -145,8 +146,8 @@ public class PlayerController {
                 
         if (mso.getType() == Mso.TYPE_FANAPP) {            
             log.info("Fan app sharing");
-            MsoConfig androidConfig = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.STORE_ANDROID);
-            MsoConfig iosConfig = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.STORE_IOS);
+            MsoConfig androidConfig = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.STORE_ANDROID);
+            MsoConfig iosConfig = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.STORE_IOS);
         	String androidStoreUrl = "market://details?id=tv.tv9x9.player";
         	String iosStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";        	
             if (androidConfig != null) {

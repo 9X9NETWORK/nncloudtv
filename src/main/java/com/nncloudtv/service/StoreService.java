@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.SysTagDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -36,18 +37,16 @@ public class StoreService {
     private SysTagManager sysTagMngr;
     private SysTagDisplayManager sysTagDisplayMngr;
     private SysTagMapManager sysTagMapMngr;
-    private MsoConfigManager msoConfigMngr;
     
     @Autowired
     public StoreService(StoreListingManager storeListingMngr, MsoManager msoMngr,
                             SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr,
-                            SysTagMapManager sysTagMapMngr, MsoConfigManager msoConfigMngr) {
+                            SysTagMapManager sysTagMapMngr) {
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
-        this.msoConfigMngr = msoConfigMngr;
     }
     
     public StoreService() {
@@ -56,7 +55,6 @@ public class StoreService {
         this.sysTagMngr = new SysTagManager();
         this.sysTagDisplayMngr = new SysTagDisplayManager();
         this.sysTagMapMngr = new SysTagMapManager();
-        this.msoConfigMngr = new MsoConfigManager();
     }
     
     /** build system Category from SysTag and SysTagDisplay */
@@ -347,7 +345,7 @@ public class StoreService {
         if (mso == null) {
             return new ArrayList<String>();
         }
-        MsoConfig systemCategoryMask = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
+        MsoConfig systemCategoryMask = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
         if (systemCategoryMask == null) {
             return new ArrayList<String>();
         }
@@ -371,14 +369,14 @@ public class StoreService {
         if (mso == null) {
             return new ArrayList<String>();
         }
-        
-        MsoConfig systemCategoryMask = msoConfigMngr.findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        MsoConfig systemCategoryMask = configMngr.findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
         if (systemCategoryMask == null) {
             systemCategoryMask = new MsoConfig();
             systemCategoryMask.setMsoId(mso.getId());
             systemCategoryMask.setItem(MsoConfig.SYSTEM_CATEGORY_MASK);
             systemCategoryMask.setValue("");
-            systemCategoryMask = msoConfigMngr.create(systemCategoryMask);
+            systemCategoryMask = configMngr.create(systemCategoryMask);
         }
         
         if (systemCategoryLocks == null || systemCategoryLocks.size() < 1) {
@@ -388,7 +386,7 @@ public class StoreService {
             systemCategoryMask.setValue(MsoConfigManager.composeSystemCategoryMask(verifiedSystemCategoryLocks));
         }
         
-        MsoConfig savedSystemCategoryMask = msoConfigMngr.save(mso, systemCategoryMask);
+        MsoConfig savedSystemCategoryMask = configMngr.save(mso, systemCategoryMask);
         List<String> results = MsoConfigManager.parseSystemCategoryMask(savedSystemCategoryMask.getValue());
         return results;
     }

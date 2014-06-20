@@ -10,7 +10,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 
-import com.nncloudtv.mock.service.MockMsoConfigManager;
+import com.nncloudtv.mock.lib.MockNNF;
 import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.model.Mso;
@@ -22,19 +22,19 @@ public class PlayerServiceTest {
     private PlayerService service;
     
     private MockHttpServletResponse resp;
-    private MockMsoConfigManager mockConfigMngr;
     private MockNnUserManager mockUserMngr;
     private MockMsoManager mockMsoMngr;
     
     @Before
     public void setUp() {
         
+        MockNNF.initAll();
+        
         resp = new MockHttpServletResponse();
-        mockConfigMngr = new MockMsoConfigManager();
         mockUserMngr = new MockNnUserManager();
         mockMsoMngr = new MockMsoManager();
         
-        service = new PlayerService(mockUserMngr, mockConfigMngr, mockMsoMngr);
+        service = new PlayerService(mockUserMngr, mockMsoMngr);
     }
     
     @Test

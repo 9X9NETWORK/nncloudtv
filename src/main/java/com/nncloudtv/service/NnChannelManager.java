@@ -14,12 +14,12 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -46,19 +46,10 @@ public class NnChannelManager {
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
     private NnChannelDao dao = new NnChannelDao();
-    private MsoConfigManager configMngr;
-    
-    @Autowired
-    public NnChannelManager(MsoConfigManager configMngr) {
-        
-        this.configMngr = configMngr;
-    }
     
     public NnChannelManager() {
-        
-        this.configMngr = new MsoConfigManager();
     }
-
+    
     public static String convertChannelId(String channelIdStr) {
     	if (channelIdStr != null && channelIdStr.contains("yt")) {
     		channelIdStr = channelIdStr.replace("yt", "");
@@ -386,8 +377,7 @@ public class NnChannelManager {
         channel = dao.save(channel);
         
         NnChannel[] channels = {original, channel};
-        if (configMngr.isQueueEnabled(true)) {
-            //new QueueMessage().fanout("localhost",QueueMessage.CHANNEL_CUD_RELATED, channels);
+        if (NNF.getConfigMngr().isQueueEnabled(true)) {
         } else {
             this.processChannelRelatedCounter(channels);
         }

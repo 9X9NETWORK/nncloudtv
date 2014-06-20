@@ -207,7 +207,7 @@ public class ApiContent extends ApiGeneric {
         
         for (int i = 0; i < fbUserIdList.length; i++) {
             if (accessTokenList[i].equals(fbUserToken.getValue())) { // post to facebook time line use app token
-                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, channelPrefMngr.composeFacebookAutoshare(fbUserIdList[i], new MsoConfigManager().getFacebookInfo(MsoConfig.FACEBOOK_APPTOKEN, brand))));
+                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, channelPrefMngr.composeFacebookAutoshare(fbUserIdList[i], NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_APPTOKEN, brand))));
             } else {
                 prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, channelPrefMngr.composeFacebookAutoshare(fbUserIdList[i], accessTokenList[i])));
             }
@@ -913,7 +913,6 @@ public class ApiContent extends ApiGeneric {
         NnUserManager userMngr = new NnUserManager();
         NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
-        MsoConfigManager configMngr = new MsoConfigManager();
         Mso brand = new MsoManager().findOneByName(mso);
         boolean storeOnly = false;
         
@@ -989,7 +988,7 @@ public class ApiContent extends ApiGeneric {
             if (sphereStr == null && mso != null) {
                 storeOnly = true;
                 log.info("mso = " + mso);
-                MsoConfig supportedRegion = configMngr.findByMsoAndItem(brand, MsoConfig.SUPPORTED_REGION);
+                MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(brand, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
                     List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
                     sphereStr = StringUtils.join(spheres, ',');

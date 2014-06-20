@@ -8,6 +8,13 @@ import com.nncloudtv.service.NnChannelManager;
 
 public class MockNNF extends NNF {
     
+    public static void initAll() {
+        
+        getChannelMngr();
+        getConfigMngr();
+        
+    }
+    
     public static NnChannelManager getChannelMngr() {
         
         if (channelMngr == null) {

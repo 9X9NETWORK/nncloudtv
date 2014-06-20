@@ -26,7 +26,7 @@ public class MsoManagerTest {
         mockChannelMngr = MockNNF.getChannelMngr();
         mockMsoDao = new MockMsoDao();
         
-        msoMngr = new MsoManager(mockConfigMngr, mockMsoDao);
+        msoMngr = new MsoManager(mockMsoDao);
         
     }
     

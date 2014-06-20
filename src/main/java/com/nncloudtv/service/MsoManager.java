@@ -8,9 +8,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
+
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -25,16 +27,13 @@ public class MsoManager {
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
     private MsoDao msoDao = new MsoDao();
-    protected MsoConfigManager configMngr;
     
-    public MsoManager(MsoConfigManager configMngr, MsoDao msoDao) {
+    public MsoManager(MsoDao msoDao) {
         
-        this.configMngr = configMngr;
         this.msoDao = msoDao;
     }
     
     public MsoManager() {
-        configMngr = new MsoConfigManager();
     }
     
     public Mso findOneByName(String name) {
@@ -103,6 +102,9 @@ public class MsoManager {
     }
     
     private String composeBrandInfoStr(Mso mso, String os) {
+        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result += PlayerApiService.assembleKeyValue("name", mso.getName());
@@ -243,7 +245,7 @@ public class MsoManager {
         info.setLogoUrl(mso.getLogoUrl());
         info.setJingleUrl(mso.getJingleUrl());
         info.setPreferredLangCode(mso.getLang());
-        List<MsoConfig> list = configMngr.findByMso(mso);
+        List<MsoConfig> list = NNF.getConfigMngr().findByMso(mso);
         //config
         for (MsoConfig c : list) {
             System.out.println(c.getItem() + ";" + c.getValue());
@@ -346,14 +348,14 @@ public class MsoManager {
     
     private Mso populateMso(Mso mso) {
         
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
             mso.setSupportedRegion(null);
         } else {
             mso.setSupportedRegion(config.getValue());
         }
         
-        config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (config != null) {
             mso.setJingleUrl(config.getValue());
         }
@@ -446,7 +448,7 @@ public class MsoManager {
         List<Mso> msos = findByType(Mso.TYPE_MSO);
         for (Mso mso : msos) {
             
-            supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
+            supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
             if (supportedRegion == null) {
                 validMsos.add(mso); // mso support all region
             } else {
@@ -488,7 +490,7 @@ public class MsoManager {
         }
         
         // support region check
-        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion == null) {
             return true; // Mso's region support all sphere
         } else {

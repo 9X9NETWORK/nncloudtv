@@ -94,7 +94,6 @@ public class PlayerApiService {
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
     private NnUserProfileManager profileMngr;
-    private MsoConfigManager configMngr;
     private NnUserManager userMngr;
     private MsoManager msoMngr;
     private NnChannelManager chMngr;
@@ -115,7 +114,6 @@ public class PlayerApiService {
     public static int MAX_EPISODES = 200;
     
     public PlayerApiService() {
-        configMngr = new MsoConfigManager();
         userMngr = new NnUserManager();
         msoMngr = new MsoManager();
         chMngr = NNF.getChannelMngr();
@@ -125,11 +123,9 @@ public class PlayerApiService {
     }
     
     public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
-            MsoConfigManager configMngr, NnUserPrefManager prefMngr,
-            NnUserProfileManager profileMngr, NnDeviceManager deviceMngr,
-            NnEpisodeManager epMngr) {
+            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
+            NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
         
-        this.configMngr = configMngr;
         this.userMngr = userMngr;
         this.msoMngr = msoMngr;
         this.chMngr = NNF.getChannelMngr();
@@ -203,8 +199,7 @@ public class PlayerApiService {
 
     public long addMsoInfoVisitCounter(boolean readOnly) {
         if (!readOnly) {
-            if (configMngr.isQueueEnabled(true)) {
-                //new QueueMessage().fanout("localhost",QueueMessage.VISITOR_COUNTER, null);
+            if (NNF.getConfigMngr().isQueueEnabled(true)) {
             } else {
                 log.info("quque not enabled");
                 return msoMngr.addMsoVisitCounter(readOnly);
@@ -461,7 +456,7 @@ public class PlayerApiService {
     
     public int checkRO() {
         
-        MsoConfig config = configMngr.findByItem(MsoConfig.RO);
+        MsoConfig config = NNF.getConfigMngr().findByItem(MsoConfig.RO);
         if (config != null && config.getValue().equals("1"))            
             return NnStatusCode.DATABASE_READONLY;
         return NnStatusCode.SUCCESS;
@@ -469,7 +464,7 @@ public class PlayerApiService {
     
     public int checkApiMinimal() {
         
-        MsoConfig config = configMngr.findByItem(MsoConfig.API_MINIMAL);  
+        MsoConfig config = NNF.getConfigMngr().findByItem(MsoConfig.API_MINIMAL);  
         if (config == null)
             return 0;
         return Integer.parseInt(config.getValue());
@@ -541,7 +536,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.SUCCESS, result);
         }        
         
-        MsoConfig mask = new MsoConfigManager().findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
+        MsoConfig mask = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
         boolean disableAll = false;
         HashMap<Long, Long> map = new HashMap<Long, Long>();
         if (mask != null && mask.getValue() != null && mask.getValue().length() > 0) {
