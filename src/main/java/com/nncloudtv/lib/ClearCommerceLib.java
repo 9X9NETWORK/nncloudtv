@@ -30,8 +30,8 @@ public class ClearCommerceLib {
     
     protected static final Logger log = Logger.getLogger(ClearCommerceLib.class.getName());
     
-    static final short  CC_PORT    = 12000; 
-    static final String ONE_DOLLAR = "100"; // in cent
+    static final short  CC_PORT          = 12000; 
+    static final String ONE_DOLLAR       = "100"; // in cent
     
     static final String USD              = "840";
     static final String DOC_VERSION      = "1.0";
@@ -39,10 +39,10 @@ public class ClearCommerceLib {
     static final String PAYMENT_NO_FRAUD = "PaymentNoFraud";
     static final String CREDIT_CARD      = "CreditCard";
     
-    static final String CC_ENGINE_DOC   = "EngineDoc";
-    static final String CC_OVERVIEW     = "Overview";
-    static final String CC_MESSAGE_LIST = "MessageList";
-    static final String CC_ORDER_FORM   = "OrderFormDoc";
+    static final String CC_ENGINE_DOC    = "EngineDoc";
+    static final String CC_OVERVIEW      = "Overview";
+    static final String CC_MESSAGE_LIST  = "MessageList";
+    static final String CC_ORDER_FORM    = "OrderFormDoc";
     
     private static CcApiRecord populateCCUserField(CcApiRecord ccRecord) throws CcApiBadKeyException, CcApiBadValueException {
         
@@ -67,7 +67,11 @@ public class ClearCommerceLib {
         ccEngine.setFieldString("ContentType", ORDER_FORM_DOC);
         
         CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-        ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+        if (isProduction) {
+            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+        } else {
+            ccOrderForm.setFieldString("Mode", "R"); // "R" is for Random Mode
+        }
         
         CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
         CcApiRecord ccPaymentMech = ccCunsumer.addRecord("PaymentMech");
@@ -99,7 +103,11 @@ public class ClearCommerceLib {
         ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
         
         CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-        ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
+        if (isProduction) {
+            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+        } else {
+            ccOrderForm.setFieldString("Mode", "R"); // "R" is for Random Mode
+        }
         
         CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
         ccCunsumer.setFieldString("Email", profile.getEmail());
@@ -252,7 +260,11 @@ public class ClearCommerceLib {
         ccEngine.setFieldString("SourceId", String.valueOf(profile.getId()));
         
         CcApiRecord ccOrderForm = ccEngine.addRecord(ORDER_FORM_DOC);
-        ccOrderForm.setFieldString("Mode", "R"); // Qoo: fixme! // "P" is for Production Mode
+        if (isProduction) {
+            ccOrderForm.setFieldString("Mode", "P"); // "P" is for Production Mode
+        } else {
+            ccOrderForm.setFieldString("Mode", "R"); // "R" is for Random Mode
+        }
         ccOrderForm.setFieldString("GroupId", String.valueOf(order.getId()));
         
         CcApiRecord ccCunsumer = ccOrderForm.addRecord("Consumer");
@@ -281,6 +293,8 @@ public class ClearCommerceLib {
         ccOrderItem.setFieldMoney("Total", price);
         
         CcApiRecord ccTransaction = ccOrderForm.addRecord("Transaction");
+        ccTransaction.setFieldS32("CardholderPresentCode", 8);
+        ccTransaction.setFieldS32("PaymentNumber", order.getCntPayment() + 1);
         ccTransaction.setFieldString("Type", "Auth");
         
         CcApiRecord ccCurrentTotals = ccTransaction.addRecord("CurrentTotals");
