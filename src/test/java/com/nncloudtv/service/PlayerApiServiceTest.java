@@ -26,7 +26,6 @@ public class PlayerApiServiceTest {
 	
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;    
-    private MockNnUserManager mockUserMngr;    
     private MockNnUserPrefManager mockPrefMngr;
     private MockNnUserProfileManager mockProfileMngr;
 
@@ -40,7 +39,6 @@ public class PlayerApiServiceTest {
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();
         mockPrefMngr = new MockNnUserPrefManager();
-        mockUserMngr = new MockNnUserManager(mockPrefMngr);
         mockProfileMngr = new MockNnUserProfileManager();
         
         MockNNF.initAll();
@@ -48,7 +46,7 @@ public class PlayerApiServiceTest {
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(mockUserMngr, mockPrefMngr, mockProfileMngr, null, null);
+        service = new PlayerApiService(new MockNnUserManager(), mockPrefMngr, mockProfileMngr, null, null);
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }

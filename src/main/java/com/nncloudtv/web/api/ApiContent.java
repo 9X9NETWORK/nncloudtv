@@ -53,7 +53,6 @@ import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.SysTagDisplayManager;
@@ -194,8 +193,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnUserPrefManager userPrefMngr = new NnUserPrefManager();
-        NnUserPref fbUserToken = userPrefMngr.findByUserAndItem(user, NnUserPref.FB_TOKEN);
+        NnUserPref fbUserToken = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_TOKEN);
         if (fbUserToken == null || fbUserToken.getValue() == null) {
             forbidden(resp);
             return null;

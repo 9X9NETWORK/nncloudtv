@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserDao;
@@ -40,21 +39,9 @@ public class NnUserManager {
     
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
     
-    protected NnUserPrefManager prefMngr;
     private NnUserDao dao = new NnUserDao();
     private NnUserProfileManager profileMngr = new NnUserProfileManager();
     public static short MSO_DEFAULT = 1; 
-    
-    public NnUserManager() {
-        
-        this.prefMngr = new NnUserPrefManager();
-    }
-    
-    @Autowired
-    public NnUserManager(NnUserPrefManager prefMngr) {
-        
-        this.prefMngr = prefMngr;
-    }
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {
@@ -551,8 +538,7 @@ public class NnUserManager {
                 json.setCurator(curator);
                 json.setCreated(Boolean.parseBoolean(created));
                 json.setFbUser(Boolean.parseBoolean(fbUser));
-	            NnUserPrefManager prefMngr = new NnUserPrefManager();
-	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
 	            for (NnUserPref pref : list) {
 	                json.getPrefs().add(pref.getItem() + pref.getValue());
 	            }
@@ -567,7 +553,7 @@ public class NnUserManager {
 	            output += PlayerApiService.assembleKeyValue("curator", curator);
                 output += PlayerApiService.assembleKeyValue("created",created);
 	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
-	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
 	            for (NnUserPref pref : list) {
 	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
 	            }

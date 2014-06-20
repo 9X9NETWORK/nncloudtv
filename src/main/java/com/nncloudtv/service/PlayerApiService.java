@@ -1848,14 +1848,13 @@ public class PlayerApiService {
         if (user == null) 
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);        
         //get preference
-        NnUserPrefManager prefMngr = new NnUserPrefManager();
-        NnUserPref pref = prefMngr.findByUserAndItem(user, item);
+        NnUserPref pref = NNF.getPrefMngr().findByUserAndItem(user, item);
         if (pref != null) {
             pref.setValue(value);            
-            prefMngr.save(user, pref);
+            NNF.getPrefMngr().save(user, pref);
         } else {
             pref = new NnUserPref(user, item, value);
-            prefMngr.save(user, pref);
+            NNF.getPrefMngr().save(user, pref);
         }
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
     }

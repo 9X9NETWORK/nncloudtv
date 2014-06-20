@@ -927,12 +927,11 @@ public class ApiUser extends ApiGeneric {
         }
         accessToken = longLivedAccessToken[0];
         
-        NnUserPrefManager prefMngr = new NnUserPrefManager();
         NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
         NnUserPref userPref = null;
         
         // fbUserId
-        userPref = prefMngr.findByUserAndItem(user, NnUserPref.FB_USER_ID);
+        userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_USER_ID);
         if (userPref != null) {
             if (userPref.getValue().equals(fbUserId) == false) {
                 // remove all channels autoshare setting
@@ -962,6 +961,7 @@ public class ApiUser extends ApiGeneric {
         } else {
             userPref = new NnUserPref(user, NnUserPref.FB_USER_ID, fbUserId);
         }
+        NnUserPrefManager prefMngr = NNF.getPrefMngr();
         prefMngr.save(user, userPref);
         
         // accessToken
@@ -1010,7 +1010,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserPrefManager prefMngr = new NnUserPrefManager();
+        NnUserPrefManager prefMngr = NNF.getPrefMngr();
         NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
         NnUserPref userPref = null;
         
@@ -1065,21 +1065,20 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserPrefManager prefMngr = new NnUserPrefManager();
         NnUserPref userPref = null;
         Map<String, Object> result = new TreeMap<String, Object>();
         String fbUserId = null;
         String accessToken = null;
         
         // fbUserId
-        userPref = prefMngr.findByUserAndItem(user, NnUserPref.FB_USER_ID);
+        userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_USER_ID);
         if (userPref != null) {
             fbUserId = userPref.getValue();
             result.put("userId", fbUserId);
         }
         
         // accessToken
-        userPref = prefMngr.findByUserAndItem(user, NnUserPref.FB_TOKEN);
+        userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_TOKEN);
         if (userPref != null) {
             accessToken = userPref.getValue();
             result.put("accessToken", accessToken);

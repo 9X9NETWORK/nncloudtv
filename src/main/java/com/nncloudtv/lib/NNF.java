@@ -6,14 +6,16 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
+import com.nncloudtv.service.NnUserPrefManager;
 
 public class NNF {
     
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
     
-    protected static NnChannelManager channelMngr = null;
-    protected static MsoConfigManager configMngr  = null;
-    protected static MsoManager       msoMngr     = null;
+    protected static NnChannelManager  channelMngr = null;
+    protected static MsoConfigManager  configMngr  = null;
+    protected static MsoManager        msoMngr     = null;
+    protected static NnUserPrefManager prefMngr    = null;
     
     protected static MsoDao           msoDao      = null;
     
@@ -26,6 +28,17 @@ public class NNF {
         }
         
         return msoDao;
+    }
+    
+    public static NnUserPrefManager getPrefMngr() {
+        
+        if (prefMngr == null) {
+            
+            log.info("create prefMngr");
+            prefMngr = new NnUserPrefManager();
+        }
+        
+        return prefMngr;
     }
     
     public static MsoManager getMsoMngr() {
