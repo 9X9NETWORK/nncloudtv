@@ -14,13 +14,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserReport;
 import com.nncloudtv.model.Pdr;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserReportManager;
@@ -45,10 +45,9 @@ public class PdrController {
         NnUserManager userMngr = new NnUserManager();
         NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            msoMngr.findNNMso();
+            NNF.getMsoMngr().findNNMso();
         }
         NnUser u = userMngr.findByToken(user, brand.getId());
         if (u == null)
@@ -89,10 +88,9 @@ public class PdrController {
         PlayerApiService pservice = new PlayerApiService();
         NnUser u = null;
         List<NnDevice> ds = new ArrayList<NnDevice>();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            brand = msoMngr.findNNMso();
+            brand = NNF.getMsoMngr().findNNMso();
         }
         NnDevice d = null;
         if (user != null) {
@@ -169,10 +167,9 @@ public class PdrController {
         String output = "";
         String email = "guest";
         NnUserManager mngr = new NnUserManager();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            brand = msoMngr.findNNMso();
+            brand = NNF.getMsoMngr().findNNMso();
         }
         String nbsp = "&nbsp;&nbsp;&nbsp;";
         for (NnUserReport r : list) {

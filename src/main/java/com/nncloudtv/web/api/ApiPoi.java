@@ -26,7 +26,6 @@ import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PoiCampaignManager;
@@ -73,7 +72,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -123,7 +122,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -1117,7 +1116,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");

@@ -21,7 +21,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerService;
 import com.nncloudtv.web.api.ApiContext;
@@ -134,12 +133,11 @@ public class PlayerController {
                        @RequestParam(value="ep", required=false) String ep) {
         //additional params
         PlayerService service = new PlayerService();
-        MsoManager msoMngr = new MsoManager();
         ApiContext context = new ApiContext(req);
         
-        Mso mso = msoMngr.getByNameFromCache(msoName);
+        Mso mso = NNF.getMsoMngr().getByNameFromCache(msoName);
         if (mso == null) {
-            mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);;
+            mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_9X9);;
         }
         String cid = channel != null ? channel : ch;
         String pid = episode != null ? episode : ep;

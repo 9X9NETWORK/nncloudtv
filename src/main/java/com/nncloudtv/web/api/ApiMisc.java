@@ -25,6 +25,7 @@ import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
@@ -32,7 +33,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.User;
@@ -46,22 +46,18 @@ public class ApiMisc extends ApiGeneric {
     
     private NnUserManager userMngr;
     private NnUserProfileManager profileMngr;
-    private MsoManager msoMngr;
     
     public ApiMisc() {
         
         userMngr = new NnUserManager();
         profileMngr = new NnUserProfileManager();
-        msoMngr = new MsoManager();
     }
     
     @Autowired
-    public ApiMisc(NnUserManager userMngr, NnUserProfileManager profileMngr,
-            MsoManager msoMngr) {
+    public ApiMisc(NnUserManager userMngr, NnUserProfileManager profileMngr) {
         
         this.userMngr = userMngr;
         this.profileMngr = profileMngr;
-        this.msoMngr = msoMngr;
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
@@ -136,7 +132,7 @@ public class ApiMisc extends ApiGeneric {
         NnUserManager userMngr = new NnUserManager();
         NnUser user = null;
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         user = userMngr.findById(verifiedUserId, brand.getId(), (short) 0);
         
         NnUserProfile profile = new NnUserProfileManager().pickSuperProfile(verifiedUserId);
@@ -164,7 +160,7 @@ public class ApiMisc extends ApiGeneric {
 		String mso = req.getParameter("mso");
 		
 		NnUser user = null;
-		Mso brand = msoMngr.findOneByName(mso);
+		Mso brand = NNF.getMsoMngr().findOneByName(mso);
 		if (token != null) {			
 			log.info("token = " + token);			
 			user = userMngr.findByToken(token, brand.getId());
@@ -331,7 +327,7 @@ public class ApiMisc extends ApiGeneric {
         }
         
         NnUserManager userMngr = new NnUserManager();
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(verifiedUserId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");

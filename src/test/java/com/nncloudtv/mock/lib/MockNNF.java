@@ -1,9 +1,13 @@
 package com.nncloudtv.mock.lib;
 
+import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.mock.dao.MockMsoDao;
 import com.nncloudtv.mock.service.MockMsoConfigManager;
+import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 
 public class MockNNF extends NNF {
@@ -12,7 +16,31 @@ public class MockNNF extends NNF {
         
         getChannelMngr();
         getConfigMngr();
+        getMsoMngr();
         
+        getMsoDao();
+    }
+    
+    public static MsoDao getMsoDao() {
+        
+        if (msoDao == null) {
+            
+            log.info("create mockMsoDao");
+            msoDao = new MockMsoDao();
+        }
+        
+        return msoDao;
+    }
+    
+    public static MsoManager getMsoMngr() {
+        
+        if (msoMngr == null) {
+            
+            log.info("create mockMsoMngr");
+            msoMngr = new MockMsoManager();
+        }
+        
+        return msoMngr;
     }
     
     public static NnChannelManager getChannelMngr() {

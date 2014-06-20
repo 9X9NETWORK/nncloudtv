@@ -46,7 +46,6 @@ import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnAdManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
@@ -80,7 +79,7 @@ public class ApiContent extends ApiGeneric {
         this.channelPrefMngr = new NnChannelPrefManager();
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), new MsoManager(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
         this.userMngr = new NnUserManager();
         this.userProfileMngr = new NnUserProfileManager();
     }
@@ -188,7 +187,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnUserManager userMngr = new NnUserManager();
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(verifiedUserId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -328,11 +327,10 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannelPrefManager prefMngr = new NnChannelPrefManager();
-        MsoManager msoMngr = new MsoManager();
         NnChannelPref pref = prefMngr.getBrand(channel.getId());
-        Mso mso = msoMngr.findByName(pref.getValue());
+        Mso mso = NNF.getMsoMngr().findByName(pref.getValue());
         String brand = pref.getValue();
-        if (msoMngr.isValidBrand(channel, mso) == false) {
+        if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
             brand = Mso.NAME_9X9;
         }
         
@@ -385,14 +383,13 @@ public class ApiContent extends ApiGeneric {
             log.info(printExitState(now, req, "400"));
             return null;
         }
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.findByName(brand);
+        Mso mso = NNF.getMsoMngr().findByName(brand);
         if (mso == null) {
             badRequest(resp, INVALID_PARAMETER);
             log.info(printExitState(now, req, "400"));
             return null;
         }
-        if (msoMngr.isValidBrand(channel, mso) == false) {
+        if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
             badRequest(resp, INVALID_PARAMETER);
             log.info(printExitState(now, req, "400"));
             return null;
@@ -431,8 +428,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        MsoManager msoMngr = new MsoManager();
-        List<Mso> msos = msoMngr.getValidBrands(channel);
+        List<Mso> msos = NNF.getMsoMngr().getValidBrands(channel);
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (Mso mso : msos) {
@@ -913,7 +909,7 @@ public class ApiContent extends ApiGeneric {
         NnUserManager userMngr = new NnUserManager();
         NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         boolean storeOnly = false;
         
         if (userIdStr != null) {

@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnContent;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnContentManager;
 
 
@@ -65,10 +65,9 @@ public class AdminContentController {
         String lang = req.getParameter("lang");
         String text = req.getParameter("text");
         String mso = req.getParameter("mso");
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (mso == null) {
-           brand = msoMngr.findNNMso();
+           brand = NNF.getMsoMngr().findNNMso();
         }
         NnContent content = contentMngr.findByItemAndLang(key, lang, brand.getId());
         if (content == null) {

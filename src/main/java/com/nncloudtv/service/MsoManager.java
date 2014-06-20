@@ -26,15 +26,7 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
-    private MsoDao msoDao = new MsoDao();
-    
-    public MsoManager(MsoDao msoDao) {
-        
-        this.msoDao = msoDao;
-    }
-    
-    public MsoManager() {
-    }
+    private MsoDao dao = NNF.getMsoDao();
     
     public Mso findOneByName(String name) {
         if (name == null)
@@ -68,7 +60,7 @@ public class MsoManager {
         if (mso.getCreateDate() == null)
             mso.setCreateDate(now);
         mso.setUpdateDate(now);
-        msoDao.save(mso);
+        dao.save(mso);
         /*
         if (mso.getType() == Mso.TYPE_NN)
             this.processCache();
@@ -282,7 +274,7 @@ public class MsoManager {
             }
             return os;
         }
-        ApiContext service = new ApiContext(req, this);
+        ApiContext service = new ApiContext(req);
         os = PlayerService.OS_WEB;
         if (service.isIos()) {
             os = PlayerService.OS_IOS;
@@ -328,13 +320,13 @@ public class MsoManager {
     }
             
     public List<Mso> findByType(short type) {
-        return msoDao.findByType(type);
+        return dao.findByType(type);
     }
     
     public Mso findByName(String name, boolean extend) {
         
         if (name == null) return null;
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         if (mso == null) return null;
         
         if (extend) {
@@ -365,7 +357,7 @@ public class MsoManager {
     
     public Mso findByName(String name) {
         if (name == null) {return null;}
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         return mso;
     }
     
@@ -382,20 +374,20 @@ public class MsoManager {
             log.info("memcache error");
         }        
         log.info("NOT get mso object from cache:" + name);
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         CacheFactory.set(cacheKey, mso);
         return mso;
     }
     
     public Mso findById(long id) {
-        return msoDao.findById(id);
+        return dao.findById(id);
     }
     
     /** rewrite method findById, populate supportedRegion information 
      * @param extend TODO*/
     public Mso findById(long id, boolean extend) {
         
-        Mso mso = msoDao.findById(id);
+        Mso mso = dao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
@@ -406,23 +398,23 @@ public class MsoManager {
     }
     
     public List<Mso> findAll() {
-        return msoDao.findAll();
+        return dao.findAll();
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord) {
-        return msoDao.list(page, limit, sidx, sord);
+        return dao.list(page, limit, sidx, sord);
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord, String filter) {
-        return msoDao.list(page, limit, sidx, sord, filter);
+        return dao.list(page, limit, sidx, sord, filter);
     }
     
     public int total() {
-        return msoDao.total();
+        return dao.total();
     }
     
     public int total(String filter) {
-        return msoDao.total(filter);
+        return dao.total(filter);
     }
     
     /** indicate which brands that channel can play on, means channel is in the brand's store */

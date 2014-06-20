@@ -986,8 +986,7 @@ public class NnChannelManager {
             return null;
         }
         
-        MsoManager msoMngr = new MsoManager();
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         StoreService storeServ = new StoreService();
         List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channelId, nnMso.getId());
         if (categoryIds != null && categoryIds.size() > 0) {
@@ -1002,8 +1001,7 @@ public class NnChannelManager {
         if (channel == null)
             return;
         
-        MsoManager msoMngr = new MsoManager();
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         StoreService storeServ = new StoreService();
         
         List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channel.getId(), nnMso.getId());

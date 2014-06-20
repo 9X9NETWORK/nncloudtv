@@ -42,19 +42,16 @@ public class PlayerService {
     public static final String OS_WEB               = "web";
     
     private NnUserManager userMngr;
-    private MsoManager msoMngr;
     
     @Autowired
-    public PlayerService(NnUserManager userMngr, MsoManager msoMngr) {
+    public PlayerService(NnUserManager userMngr) {
         
         this.userMngr = userMngr;
-        this.msoMngr = msoMngr;
     }
     
     public PlayerService() {
         
         this.userMngr = new NnUserManager();
-        this.msoMngr = new MsoManager();
     }
     
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
@@ -65,7 +62,7 @@ public class PlayerService {
         }
         
         // bind favicon
-        Mso mso = msoMngr.findByName(msoName);
+        Mso mso = NNF.getMsoMngr().findByName(msoName);
         if (mso == null)
             return model;
         

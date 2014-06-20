@@ -13,7 +13,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.mock.lib.MockNNF;
-import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
 import com.nncloudtv.mock.service.MockNnUserProfileManager;
@@ -28,7 +27,6 @@ public class PlayerApiServiceTest {
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;    
     private MockNnUserManager mockUserMngr;    
-    private MockMsoManager mockMsoMngr;
     private MockNnUserPrefManager mockPrefMngr;
     private MockNnUserProfileManager mockProfileMngr;
 
@@ -43,7 +41,6 @@ public class PlayerApiServiceTest {
         resp = new MockHttpServletResponse();
         mockPrefMngr = new MockNnUserPrefManager();
         mockUserMngr = new MockNnUserManager(mockPrefMngr);
-        mockMsoMngr = new MockMsoManager();
         mockProfileMngr = new MockNnUserProfileManager();
         
         MockNNF.initAll();
@@ -51,7 +48,7 @@ public class PlayerApiServiceTest {
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockPrefMngr, mockProfileMngr, null, null);
+        service = new PlayerApiService(mockUserMngr, mockPrefMngr, mockProfileMngr, null, null);
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }

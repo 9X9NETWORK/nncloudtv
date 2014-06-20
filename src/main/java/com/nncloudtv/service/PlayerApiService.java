@@ -95,7 +95,6 @@ public class PlayerApiService {
     
     private NnUserProfileManager profileMngr;
     private NnUserManager userMngr;
-    private MsoManager msoMngr;
     private NnChannelManager chMngr;
     private NnDeviceManager deviceMngr;
     private NnEpisodeManager epMngr;
@@ -115,19 +114,17 @@ public class PlayerApiService {
     
     public PlayerApiService() {
         userMngr = new NnUserManager();
-        msoMngr = new MsoManager();
         chMngr = NNF.getChannelMngr();
         profileMngr = new NnUserProfileManager();
         deviceMngr = new NnDeviceManager();
         epMngr = new NnEpisodeManager();
     }
     
-    public PlayerApiService(NnUserManager userMngr, MsoManager msoMngr,
-            NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
-            NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
+    public PlayerApiService(NnUserManager userMngr, NnUserPrefManager prefMngr,
+            NnUserProfileManager profileMngr, NnDeviceManager deviceMngr,
+            NnEpisodeManager epMngr) {
         
         this.userMngr = userMngr;
-        this.msoMngr = msoMngr;
         this.chMngr = NNF.getChannelMngr();
         this.profileMngr = profileMngr;
         this.deviceMngr = deviceMngr;
@@ -156,7 +153,7 @@ public class PlayerApiService {
         if (toLog) 
             NnNetUtil.logUrl(this.req);
 
-        context = new ApiContext(this.req, msoMngr);
+        context = new ApiContext(this.req);
         this.locale  = context.getLocale();
         this.mso     = context.getMso();
         this.version = context.getVersion();
@@ -202,10 +199,10 @@ public class PlayerApiService {
             if (NNF.getConfigMngr().isQueueEnabled(true)) {
             } else {
                 log.info("quque not enabled");
-                return msoMngr.addMsoVisitCounter(readOnly);
+                return NNF.getMsoMngr().addMsoVisitCounter(readOnly);
             }
         }
-        return msoMngr.addMsoVisitCounter(readOnly);                                     
+        return NNF.getMsoMngr().addMsoVisitCounter(readOnly);                                     
     }
             
     //assemble key and value string
@@ -350,9 +347,9 @@ public class PlayerApiService {
         if (expires != null && expires.length() > 0)
             expire = Long.parseLong(expires); //TODO pass to FacebookMe
         
-        Mso brand = msoMngr.findByName(msoString);
+        Mso brand = NNF.getMsoMngr().findByName(msoString);
         if (brand == null) {
-           brand = msoMngr.findNNMso();
+           brand = NNF.getMsoMngr().findNNMso();
         }
         
         NnUser user = userMngr.findByEmail(me.getId(), brand.getId(), req);        
@@ -525,7 +522,7 @@ public class PlayerApiService {
             id = "0";
         String[] result = {"", "", ""};
         result[0] = "id" + "\t" + id + "\n";
-
+        
         SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         SysTagManager systagMngr = new SysTagManager();        
         if (!id.equals("0")) { //v30 compatibilities            
@@ -556,7 +553,7 @@ public class PlayerApiService {
         categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
         
         if (!disableAll && !MsoManager.isNNMso(mso)) {
-            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, msoMngr.findNNMso().getId());
+            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
                 if (map.get(d.getSystagId()) != null) {
@@ -614,7 +611,7 @@ public class PlayerApiService {
             */     
         String acceptLang = req.getHeader("Accept-Language");
         String piwik = "http://piwik.9x9.tv/";
-        Object result = msoMngr.getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
+        Object result = NNF.getMsoMngr().getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }    
 
@@ -3310,7 +3307,7 @@ System.out.println("result 0:" + result[0]);
             
         } else {
             
-            curator = userMngr.findByIdStr(channel.getUserIdStr(), msoMngr.findNNMso().getId()); // use 9x9 profile
+            curator = userMngr.findByIdStr(channel.getUserIdStr(), NNF.getMsoMngr().findNNMso().getId()); // use 9x9 profile
             if (curator == null)
                 return this.assembleMsgs(NnStatusCode.USER_INVALID, null);
             

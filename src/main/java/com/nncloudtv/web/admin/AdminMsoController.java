@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.JqgridHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -72,9 +73,8 @@ public class AdminMsoController {
         log.info("type = " + type);
         
         NnUserManager userMngr = new NnUserManager();
-        MsoManager msoMngr = new MsoManager();
         
-        Mso found = msoMngr.findByName(name);
+        Mso found = NNF.getMsoMngr().findByName(name);
         if (found != null) {
             return "Name In Used";
         }

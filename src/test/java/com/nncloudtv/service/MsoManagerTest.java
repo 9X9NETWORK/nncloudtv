@@ -4,30 +4,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nncloudtv.mock.dao.MockMsoDao;
 import com.nncloudtv.mock.lib.MockNNF;
-import com.nncloudtv.mock.service.MockMsoConfigManager;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 
 public class MsoManagerTest {
     
-    MsoManager msoMngr = new MsoManager();
-    
-    MockMsoConfigManager mockConfigMngr;
-    NnChannelManager mockChannelMngr;
-    MockMsoDao mockMsoDao;
     
     @Before
     public void setUp() {
         
-        mockConfigMngr = new MockMsoConfigManager();
-        mockChannelMngr = MockNNF.getChannelMngr();
-        mockMsoDao = new MockMsoDao();
-        
-        msoMngr = new MsoManager(mockMsoDao);
-        
+        MockNNF.initAll();
     }
     
     @Test
@@ -39,7 +27,7 @@ public class MsoManagerTest {
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
         channel.setPublic(true);
         channel.setSphere(LangTable.LANG_ZH);
-        Assert.assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand(channel, mockMso));
+        Assert.assertTrue("The mock mso should be a valid brand of mock channel.", MockNNF.getMsoMngr().isValidBrand(channel, mockMso));
         
     }
 }

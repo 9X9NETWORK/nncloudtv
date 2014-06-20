@@ -23,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
@@ -31,7 +32,6 @@ import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.EmailService;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -49,7 +49,7 @@ public class HelloController {
     //basic test
     @RequestMapping("world")
     public ModelAndView world(HttpServletRequest req) throws Exception {
-    	Mso mso = new MsoManager().findNNMso();
+    	Mso mso = NNF.getMsoMngr().findNNMso();
     	List<NnUser> users = new NnUserManager().search(null, null, "hello", mso.getId());
     	for (NnUser user : users) {
     		log.info("user id:" + user.getId());

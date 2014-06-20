@@ -33,25 +33,23 @@ public class StoreService {
     private SysTagDao sysTagDao = new SysTagDao();
 
     private StoreListingManager storeListingMngr;
-    private MsoManager msoMngr;
     private SysTagManager sysTagMngr;
     private SysTagDisplayManager sysTagDisplayMngr;
     private SysTagMapManager sysTagMapMngr;
     
     @Autowired
-    public StoreService(StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr,
-                            SysTagMapManager sysTagMapMngr) {
+    public StoreService(StoreListingManager storeListingMngr, SysTagManager sysTagMngr,
+                            SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr) {
+        
         this.storeListingMngr = storeListingMngr;
-        this.msoMngr = msoMngr;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
     }
     
     public StoreService() {
+        
         this.storeListingMngr = new StoreListingManager();
-        this.msoMngr = new MsoManager();
         this.sysTagMngr = new SysTagManager();
         this.sysTagDisplayMngr = new SysTagDisplayManager();
         this.sysTagMapMngr = new SysTagMapManager();
@@ -82,7 +80,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        List<Long> results = msoMngr.getPlayableChannels(channels, msoId);
+        List<Long> results = NNF.getMsoMngr().getPlayableChannels(channels, msoId);
         return results;
     }
     
@@ -97,7 +95,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findById(msoId, true);
+        Mso mso = NNF.getMsoMngr().findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -132,7 +130,7 @@ public class StoreService {
             return new ArrayList<Long>();
         }
         
-        Mso mso = msoMngr.findById(msoId, true);
+        Mso mso = NNF.getMsoMngr().findById(msoId, true);
         if (mso == null) {
             return new ArrayList<Long>();
         }
@@ -211,7 +209,7 @@ public class StoreService {
         if (category == null) {
             return false;
         }
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         if (category.getMsoId() == nnMso.getId() && category.getType() == SysTag.TYPE_CATEGORY) {
             return true;
         }
@@ -269,7 +267,7 @@ public class StoreService {
             return new ArrayList<Category>();
         }
         
-        List<SysTagDisplay> categoryMetas = sysTagDisplayMngr.findPlayerCategories(lang, msoMngr.findNNMso().getId());
+        List<SysTagDisplay> categoryMetas = sysTagDisplayMngr.findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
         if (categoryMetas == null || categoryMetas.size() == 0) {
             return new ArrayList<Category>();
         }
@@ -300,7 +298,7 @@ public class StoreService {
             return ;
         }
         
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMapsByChannelId(channelId, nnMso.getId());
         sysTagMapMngr.deleteAll(tagMaps);
         sysTagMapMngr.save(new SysTagMap(categoryId, channelId));
@@ -341,7 +339,7 @@ public class StoreService {
             return new ArrayList<String>();
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             return new ArrayList<String>();
         }
@@ -365,7 +363,7 @@ public class StoreService {
         if (msoId == null) {
             return new ArrayList<String>();
         }
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             return new ArrayList<String>();
         }

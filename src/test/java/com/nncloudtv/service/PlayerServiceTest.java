@@ -11,7 +11,6 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 
 import com.nncloudtv.mock.lib.MockNNF;
-import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.model.Mso;
 
@@ -23,7 +22,6 @@ public class PlayerServiceTest {
     
     private MockHttpServletResponse resp;
     private MockNnUserManager mockUserMngr;
-    private MockMsoManager mockMsoMngr;
     
     @Before
     public void setUp() {
@@ -32,9 +30,8 @@ public class PlayerServiceTest {
         
         resp = new MockHttpServletResponse();
         mockUserMngr = new MockNnUserManager();
-        mockMsoMngr = new MockMsoManager();
         
-        service = new PlayerService(mockUserMngr, mockMsoMngr);
+        service = new PlayerService(mockUserMngr);
     }
     
     @Test

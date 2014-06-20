@@ -1,15 +1,9 @@
 package com.nncloudtv.mock.service;
 
-import com.nncloudtv.mock.dao.MockMsoDao;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoManager;
 
 public class MockMsoManager extends MsoManager {
-    
-    public MockMsoManager() {
-        
-        super(new MockMsoDao());
-    }
     
     @Override
     public long addMsoVisitCounter(boolean readOnly) {

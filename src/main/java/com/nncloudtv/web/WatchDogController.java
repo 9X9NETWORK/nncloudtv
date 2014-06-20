@@ -41,7 +41,6 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
@@ -192,8 +191,8 @@ public class WatchDogController {
     
     @RequestMapping(value="msoInfo")
     public ResponseEntity<String> msoInfo(HttpServletRequest req, HttpServletResponse resp) {
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.findNNMso();
+        
+        Mso mso = NNF.getMsoMngr().findNNMso();
         String[] result = {""};
         result[0] += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result[0] += PlayerApiService.assembleKeyValue("name", mso.getName());
@@ -202,7 +201,7 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         result[0] += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
-
+        
         PlayerApiService s = new PlayerApiService();
         s.prepService(req, resp);        
         String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
@@ -361,27 +360,28 @@ public class WatchDogController {
     //delete brandInfo_reset
     @RequestMapping("brandCache")
     public ResponseEntity<String> brandCache(@RequestParam(value="mso", required=false)String mso) {
-    	MsoManager mngr = new MsoManager();
-    	mngr.resetCache(mso);
-    	return NnNetUtil.textReturn("cache delete:" + mso);
-    }    
-
+        
+        NNF.getMsoMngr().resetCache(mso);
+        return NnNetUtil.textReturn("cache delete:" + mso);
+    }   
+    
     @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
         
         NNF.getChannelMngr().resetCache(chId); 
         return "OK";                
     }
-
-    @RequestMapping(value="daypartCache", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String daypartCache(@RequestParam(value="mso", required=false) String mso, 
-    		                                 @RequestParam(value="lang", required=false) String lang) {
-    	MsoManager msoMngr = new MsoManager();
-    	Mso brand = msoMngr.findByName(mso);
-    	SysTagManager mngr = new SysTagManager();
+    
+    @RequestMapping(value = "daypartCache", produces = "text/plain; charset=utf-8")
+    public @ResponseBody
+    String daypartCache(@RequestParam(value = "mso", required = false) String mso,
+            @RequestParam(value = "lang", required = false) String lang) {
+        
+        Mso brand = NNF.getMsoMngr().findByName(mso);
+        SysTagManager mngr = new SysTagManager();
         mngr.resetDaypartingCache(brand.getId(), lang);
-        this.channelCache(32777); 
-        return "OK";                
+        this.channelCache(32777);
+        return "OK";
     }
     
     @RequestMapping(value="channelSubmit", produces = "text/plain; charset=utf-8")

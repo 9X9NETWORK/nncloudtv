@@ -19,7 +19,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.mock.lib.MockNNF;
-import com.nncloudtv.mock.service.MockMsoManager;
 
 public class PlayerApiControllerTest {
     
@@ -28,7 +27,6 @@ public class PlayerApiControllerTest {
     private PlayerApiController playerAPI;
     
     private MockHttpServletRequest req;
-    private MockMsoManager mockMsoMngr;
     
     @Before
     public void setUp() {
@@ -37,10 +35,9 @@ public class PlayerApiControllerTest {
         
         MockNNF.initAll();
         
-        mockMsoMngr = new MockMsoManager();
         req = new MockHttpServletRequest();
         
-        playerAPI = new PlayerApiController(mockMsoMngr);
+        playerAPI = new PlayerApiController();
     }
     
     @Test
