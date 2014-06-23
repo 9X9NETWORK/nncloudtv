@@ -42,6 +42,7 @@ public class BillingService {
         final String CARD_HOLDER_NAME = "cardHolderName";
         final String CARD_NUMBER      = "cardNumber";
         final String CARD_EXPIRES     = "cardExpires";
+        final String CARD_TYPE        = "cardType";
         final String CARD_VERIFICATION_CODE = "cardVerificationCode";
         
         HttpServletRequest req = context.getHttpRequest();
@@ -50,7 +51,10 @@ public class BillingService {
         String cardNumber           = req.getParameter(CARD_NUMBER);
         String cardExpires          = req.getParameter(CARD_EXPIRES);
         String cardVerificationCode = req.getParameter(CARD_VERIFICATION_CODE);
+        String cardTypeStr          = req.getParameter(CARD_TYPE);
         
+        if (cardTypeStr != null && !cardTypeStr.matches("\\d+"))
+            throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_TYPE);
         if (cardNumber == null)
             throw new NnApiBadRequestException(ApiGeneric.MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
         cardNumber = cardNumber.replaceAll("-", "");
@@ -63,6 +67,9 @@ public class BillingService {
         if (cardVerificationCode != null && !cardVerificationCode.matches("\\d{3,4}"))
             throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
         CreditCard creditCard = new CreditCard(cardNumber, cardHolderName, cardExpires, cardVerificationCode);
+        if (cardTypeStr != null) {
+            creditCard.setCardType(Short.valueOf(cardTypeStr));
+        }
         
         if (verify) {
             CcApiDocument ccResult = ClearCommerceLib.verifyCreditCardNumber(creditCard, context.isProductionSite());

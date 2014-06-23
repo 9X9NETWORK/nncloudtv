@@ -10,6 +10,8 @@ public class CreditCard {
     
     String veridicationCode;
     
+    short cardType;
+    
     public CreditCard(String cardNumber, String cardHolderName, String expires,
             String veridicationCode) {
         
@@ -17,6 +19,7 @@ public class CreditCard {
         this.cardHolderName = cardHolderName;
         this.expires = expires;
         this.veridicationCode = veridicationCode;
+        this.cardType = 0;
     }
     
     public String getCardNumber() {
@@ -49,6 +52,14 @@ public class CreditCard {
     
     public void setVeridicationCode(String veridicationCode) {
         this.veridicationCode = veridicationCode;
+    }
+    
+    public short getCardType() {
+        return cardType;
+    }
+    
+    public void setCardType(short cardType) {
+        this.cardType = cardType;
     }
     
 }
