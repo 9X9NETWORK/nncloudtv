@@ -1224,9 +1224,7 @@ public class NnChannelManager {
         
         if (channel == null) return;
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
-        
-        List<NnChannelPref> channelPrefs = prefMngr.findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        List<NnChannelPref> channelPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
             
             channel.setAutoSync(NnChannelPref.OFF);

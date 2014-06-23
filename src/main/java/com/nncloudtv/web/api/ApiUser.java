@@ -33,15 +33,11 @@ import com.nncloudtv.model.NnUserLibrary;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
@@ -56,21 +52,14 @@ public class ApiUser extends ApiGeneric {
 
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
     
-    private MsoManager msoMngr;
-    private NnUserManager userMngr;
     private StoreService storeService;
     private ApiUserService apiUserService;
-    private NnUserProfileManager userProfileMngr;
     
     @Autowired
-    public ApiUser(MsoManager msoMngr, NnUserManager userMngr, StoreService storeService,
-            ApiUserService apiUserService, NnUserProfileManager userProfileMngr) {
+    public ApiUser(StoreService storeService, ApiUserService apiUserService) {
         
-        this.msoMngr = msoMngr;
-        this.userMngr = userMngr;
         this.storeService = storeService;
         this.apiUserService = apiUserService;
-        this.userProfileMngr = userProfileMngr;
     }
     
     /** 
@@ -164,7 +153,7 @@ public class ApiUser extends ApiGeneric {
                 return null;
             }
             
-            NnUser passwordCheckedUser = userMngr.findAuthenticatedUser(user.getUserEmail(), oldPassword, brand.getId(), req);
+            NnUser passwordCheckedUser = NNF.getUserMngr().findAuthenticatedUser(user.getUserEmail(), oldPassword, brand.getId(), req);
             if (passwordCheckedUser == null) {
                 badRequest(resp, "WRONG_PASSWORD");
                 return null;
@@ -211,7 +200,7 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        user = userMngr.save(user);
+        user = NNF.getUserMngr().save(user);
         
         return userResponse(user);
     }
@@ -483,8 +472,8 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        Mso brand = msoMngr.findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -529,8 +518,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        Mso brand = msoMngr.findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             log.info(printExitState(now, req, "404"));
@@ -545,7 +534,7 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        List<Long> channelIds = msoMngr.getPlayableChannels(results, brand.getId());
+        List<Long> channelIds = NNF.getMsoMngr().getPlayableChannels(results, brand.getId());
         if (channelIds != null && channelIds.size() > 0) {
             results = channelMngr.findByIds(channelIds);
         } else {
@@ -675,8 +664,8 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        Mso brand = msoMngr.findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             log.info(printExitState(now, req, "404"));
@@ -772,7 +761,7 @@ public class ApiUser extends ApiGeneric {
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            NnUserProfile superProfile = userProfileMngr.pickSuperProfile(verifiedUserId);
+            NnUserProfile superProfile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
             if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
                 status = evaluateShort(statusStr);
             }
@@ -919,7 +908,6 @@ public class ApiUser extends ApiGeneric {
         }
         accessToken = longLivedAccessToken[0];
         
-        NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
         NnUserPref userPref = null;
         
         // fbUserId
@@ -927,7 +915,7 @@ public class ApiUser extends ApiGeneric {
         if (userPref != null) {
             if (userPref.getValue().equals(fbUserId) == false) {
                 // remove all channels autoshare setting
-                channelPrefMngr.deleteAllChannelsFBbyUser(user);
+                NNF.getChPrefMngr().deleteAllChannelsFBbyUser(user);
             } else {
                 // update page token
                 List<FacebookPage> pages = null;
@@ -946,7 +934,7 @@ public class ApiUser extends ApiGeneric {
                 }
                 
                 if (pages != null && pages.size() > 0) {
-                    channelPrefMngr.updateAllChannelsFBbyUser(user, pages);
+                    NNF.getChPrefMngr().updateAllChannelsFBbyUser(user, pages);
                 }
             }
             userPref.setValue(fbUserId);
@@ -1002,11 +990,10 @@ public class ApiUser extends ApiGeneric {
         }
         
         NnUserPrefManager prefMngr = NNF.getPrefMngr();
-        NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
         NnUserPref userPref = null;
         
         // remove all channels autoshare setting
-        channelPrefMngr.deleteAllChannelsFBbyUser(user);
+        NNF.getChPrefMngr().deleteAllChannelsFBbyUser(user);
         
         // fbUserId
         userPref = prefMngr.findByUserAndItem(user, NnUserPref.FB_USER_ID);

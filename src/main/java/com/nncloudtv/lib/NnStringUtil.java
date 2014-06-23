@@ -9,15 +9,13 @@ import java.util.logging.Logger;
 
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
     
-    public static final String UTF8 = "UTF-8";
+    public static final String UTF8  = "UTF-8";
     public static final String ASCII = "US-ASCII";
     
     public static final int SHORT_STRING_LENGTH    =   25;
@@ -26,11 +24,6 @@ public class NnStringUtil {
     public static final int LONG_STRING_LENGTH     = 1500;
     
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
-    private static NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
-    
-    public static void setChannelPrefMngr(NnChannelPrefManager mngr) {
-        channelPrefMngr = mngr;
-    }
     
     public static boolean stringToBool(String s) {
       if (s.equals("1"))
@@ -262,8 +255,7 @@ public class NnStringUtil {
         
         if (mso == null) {
             
-            NnChannelPref pref = channelPrefMngr.getBrand(channelId);
-            mso = pref.getValue();
+            mso = NNF.getChPrefMngr().getBrand(channelId).getValue();
         }
         
         String schema = "http";

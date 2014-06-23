@@ -240,7 +240,7 @@ public class NnEpisodeManager {
             return ;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;

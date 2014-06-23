@@ -66,25 +66,22 @@ public class ApiContent extends ApiGeneric {
     
     private ApiContentService apiContentService;
     private StoreService storeService;
-    private NnChannelPrefManager channelPrefMngr;
     private NnProgramManager programMngr;
     
     public ApiContent() {
         
-        this.channelPrefMngr = new NnChannelPrefManager();
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), new NnEpisodeManager(), programMngr);
     }
     
     @Autowired
     public ApiContent(ApiContentService apiContentService,
             StoreService storeService,
-            NnChannelPrefManager channelPrefMngr, NnProgramManager programMngr) {
+            NnProgramManager programMngr) {
         
         this.apiContentService = apiContentService;
         this.storeService = storeService;
-        this.channelPrefMngr = channelPrefMngr;
         this.programMngr = programMngr;
     }
     
@@ -119,7 +116,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
         
         prefMngr.delete(prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
         
@@ -190,19 +187,19 @@ public class ApiContent extends ApiGeneric {
         }
         
         List<NnChannelPref> prefList = new ArrayList<NnChannelPref>();
-        NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager chPrefMngr = NNF.getChPrefMngr();
         
         for (int i = 0; i < fbUserIdList.length; i++) {
             if (accessTokenList[i].equals(fbUserToken.getValue())) { // post to facebook time line use app token
-                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, channelPrefMngr.composeFacebookAutoshare(fbUserIdList[i], NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_APPTOKEN, brand))));
+                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, chPrefMngr.composeFacebookAutoshare(fbUserIdList[i], NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_APPTOKEN, brand))));
             } else {
-                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, channelPrefMngr.composeFacebookAutoshare(fbUserIdList[i], accessTokenList[i])));
+                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, chPrefMngr.composeFacebookAutoshare(fbUserIdList[i], accessTokenList[i])));
             }
         }
         
-        channelPrefMngr.delete(channelPrefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
+        chPrefMngr.delete(chPrefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
         
-        channelPrefMngr.save(prefList);
+        chPrefMngr.save(prefList);
         
         okResponse(resp);
         return null;
@@ -239,7 +236,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE);
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
@@ -314,8 +311,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
-        NnChannelPref pref = prefMngr.getBrand(channel.getId());
+        NnChannelPref pref = NNF.getChPrefMngr().getBrand(channel.getId());
         Mso mso = NNF.getMsoMngr().findByName(pref.getValue());
         String brand = pref.getValue();
         if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
@@ -383,8 +379,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
-        prefMngr.setBrand(channel.getId(), mso);
+        NNF.getChPrefMngr().setBrand(channel.getId(), mso);
         
         okResponse(resp);
         log.info(printExitState(now, req, "ok"));
