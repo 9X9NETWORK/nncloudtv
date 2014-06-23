@@ -4,9 +4,11 @@ counter
 counter_shard
 mso
 mso_config
+mso_notification
 nnchannel
 nnchannel_pref
 nndevice
+nndevice_notification
 nnepisode
 nnprogram
 poi

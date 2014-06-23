@@ -37,6 +37,7 @@ public class ApiContext {
     Integer version;
     String root;
     Mso mso;
+    Boolean productionSite = null;
     
     public Integer getVersion() {
         
@@ -112,13 +113,15 @@ public class ApiContext {
     
     public Boolean isProductionSite() {
         
+        if (productionSite != null) return productionSite;
+        
         if (root == null || root.isEmpty()) {
             
-            return false;
+            return (productionSite = false);
             
         } else if (root.matches(ApiContext.PRODUCTION_SITE_URL_REGEX)) {
             
-            return true;
+            return (productionSite = true);
             
         } else {
             
@@ -127,12 +130,13 @@ public class ApiContext {
             if (splits.length == 3) {
                 String subdomain = splits[0];
                 log.info("subdomain = " + subdomain);
-                if (msoMngr.findByName(subdomain) != null)
-                    return true;
+                if (msoMngr.findByName(subdomain) != null) {
+                    
+                    return (productionSite = true);
+                }
             }
         }
-        
-        return false;
+        return (productionSite = false);
     }
     
     public String getAppDomain() {
@@ -172,5 +176,10 @@ public class ApiContext {
             return true;            
         }        
         return false;
+    }
+    
+    public HttpServletRequest getHttpRequest() {
+        
+        return httpReq;
     }
 }

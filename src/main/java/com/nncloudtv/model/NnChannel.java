@@ -34,7 +34,7 @@ public class NnChannel implements Serializable {
     private String oriName; //original podcast/youtube name 
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType="VARCHAR", length=NnStringUtil.EXTENDED_STRING_LENGTH)
     private String intro;
     
     @NotPersistent

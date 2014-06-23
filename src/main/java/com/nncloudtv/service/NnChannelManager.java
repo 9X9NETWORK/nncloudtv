@@ -524,7 +524,7 @@ public class NnChannelManager {
     }    
     
     public List<NnChannel> findByType(short type) {
-        return dao.findByType(type);        
+        return dao.findByContentType(type);        
     }
     
     public List<NnChannel> findMaples() {

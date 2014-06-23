@@ -25,21 +25,32 @@ import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class ApiGeneric {
 	
 	protected static Logger log = Logger.getLogger(ApiGeneric.class.getName());
-	
-	public static final String MISSING_PARAMETER = "Missing Parameter";
-	public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
-	public static final String INVALID_PARAMETER = "Invalid Parameter";
-	public static final String INVALID_YOUTUBE_URL = "Invalid YouTube URL";
-	public static final String PLAIN_TEXT_UTF8 = "text/plain; charset=utf-8";
-	public static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
-	public static final String API_DOC = "API-DOC";
-	public static final String API_DOC_URL = "http://goo.gl/H7Jzl"; // API design document url
-	public static final String BLACK_HOLE = "Black Hole!";
-
+    
+    public static final String   MISSING_PARAMETER      = "Missing Parameter";
+    public static final String   INVALID_PATH_PARAMETER = "Invalid Path Parameter";
+    public static final String   INVALID_PARAMETER      = "Invalid Parameter";
+    public static final String   INVALID_YOUTUBE_URL    = "Invalid YouTube URL";
+    public static final String   PLAIN_TEXT_UTF8        = "text/plain; charset=utf-8";
+    public static final String   APPLICATION_JSON_UTF8  = "application/json; charset=utf-8";
+    public static final String   API_DOC                = "API-DOC";
+    public static final String   API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
+    public static final String   BLACK_HOLE             = "Black Hole!";
+    public static final String   MSG_OK                 = "'OK'";
+    public static final String   NULL                   = "null";
+    
+    public static final short HTTP_200 = 200;
+    public static final short HTTP_201 = 201;
+    public static final short HTTP_400 = 400;
+    public static final short HTTP_401 = 401;
+    public static final short HTTP_403 = 403;
+    public static final short HTTP_404 = 404;
+    public static final short HTTP_500 = 500;
+    
     @Autowired
     protected HttpServletRequest httpRequest;
 	
@@ -52,7 +63,7 @@ public class ApiGeneric {
                 log.warning(message);
                 resp.getWriter().println(message);
             }
-            resp.setStatus(401);
+            resp.setStatus(HTTP_401);
             resp.flushBuffer();
         } catch (IOException e) {
             internalError(resp, e);
@@ -72,7 +83,7 @@ public class ApiGeneric {
                 log.warning(message);
                 resp.getWriter().println(message);
             }
-            resp.setStatus(403);
+            resp.setStatus(HTTP_403);
             resp.flushBuffer();
         } catch (IOException e) {
             internalError(resp, e);
@@ -93,7 +104,7 @@ public class ApiGeneric {
 				log.warning(message);
 				resp.getWriter().println(message);
 			}
-			resp.setStatus(404);
+			resp.setStatus(HTTP_404);
 			resp.flushBuffer();
 		} catch (IOException e) {
 			internalError(resp, e);
@@ -131,6 +142,7 @@ public class ApiGeneric {
 	    internalError(resp, null);
 	}
 	
+    @ExceptionHandler(Exception.class)
 	public void internalError(HttpServletResponse resp, Exception e) {
 		
 		try {
@@ -142,7 +154,7 @@ public class ApiGeneric {
                 NnLogUtil.logException(e);
 	            writer.println(e.getMessage());
 			}
-			resp.setStatus(500);
+			resp.setStatus(HTTP_500);
 			resp.flushBuffer();
 		} catch (IOException ex) {
 			NnLogUtil.logException(ex);
@@ -162,22 +174,22 @@ public class ApiGeneric {
 	}
 	
     public void okResponse(HttpServletResponse resp) {
-
+        
         try {
             resp.setContentType(APPLICATION_JSON_UTF8);
-            resp.getWriter().print("\"OK\"");
+            resp.getWriter().print(MSG_OK);
             resp.flushBuffer();
         } catch (IOException e) {
             internalError(resp, e);
         }
-
+        
     }
     
     public void msgResponse(HttpServletResponse resp, String msg) {
     
         try {
             resp.setContentType(APPLICATION_JSON_UTF8);
-            resp.getWriter().print("\"" + msg + "\"");
+            resp.getWriter().print(NnStringUtil.escapeDoubleQuote(msg));
             resp.flushBuffer();
         } catch (IOException e) {
             internalError(resp, e);
@@ -188,70 +200,55 @@ public class ApiGeneric {
         
         try {
             resp.setContentType(APPLICATION_JSON_UTF8);
-            resp.getWriter().print("null");
+            resp.getWriter().print(NULL);
             resp.flushBuffer();
         } catch (IOException e) {
             internalError(resp, e);
         }
         
     }
-	
-	/** adapt response for user change to user+userProfile */
-	public User userResponse(NnUser user) {
-	    //Map<String, Object> result = new TreeMap<String, Object>();
-	    User userResp = new User();
-	    MsoManager msoMngr = new MsoManager();
-	    
-	    //result.put("id", user.getId());
-	    userResp.setId(user.getId());
-	    //result.put("createDate", user.getCreateDate());
-	    userResp.setCreateDate(user.getCreateDate());
-	    //result.put("updateDate", user.getUpdateDate());
-	    userResp.setUpdateDate(user.getUpdateDate());
-	    //result.put("userEmail", user.getUserEmail());
-	    userResp.setUserEmail(user.getUserEmail());
-	    //result.put("fbUser", user.isFbUser());
-	    userResp.setFbUser(user.isFbUser());
-	    //result.put("name", NnStringUtil.revertHtml(user.getProfile().getName()));
-	    userResp.setName(NnStringUtil.revertHtml(user.getProfile().getName()));
-	    //result.put("intro", NnStringUtil.revertHtml(user.getProfile().getIntro()));
-	    userResp.setIntro(NnStringUtil.revertHtml(user.getProfile().getIntro()));
-	    //result.put("imageUrl", user.getProfile().getImageUrl());
-	    userResp.setImageUrl(user.getProfile().getImageUrl());
-	    //result.put("lang", user.getProfile().getLang());
-	    userResp.setLang(user.getProfile().getLang());
-	    //result.put("profileUrl", user.getProfile().getProfileUrl());
-	    userResp.setProfileUrl(user.getProfile().getProfileUrl());
-	    //result.put("shard", user.getShard());
-	    userResp.setShard(user.getShard());
-	    //result.put("sphere", user.getProfile().getSphere());
-	    userResp.setSphere(user.getProfile().getSphere());
-	    //result.put("type", user.getType());
-	    userResp.setType(user.getType());
-	    //result.put("cntSubscribe", user.getProfile().getCntSubscribe());
-	    userResp.setCntSubscribe(user.getProfile().getCntSubscribe());
-	    //result.put("cntChannel", user.getProfile().getCntChannel());
-	    userResp.setCntChannel(user.getProfile().getCntChannel());
-	    //result.put("cntFollower", user.getProfile().getCntFollower());
-	    userResp.setCntFollower(user.getProfile().getCntFollower());
-	    userResp.setMsoId(user.getProfile().getMsoId());
-	    if (user.getProfile().getPriv() == null) {
-	        userResp.setPriv("000111"); // TODO hard coded default
-	    } else {
-	        userResp.setPriv(user.getProfile().getPriv());
-	    }
-	    
-	    Mso mso = msoMngr.findById(user.getProfile().getMsoId());
-	    if (mso != null) {
-	        userResp.setMsoName(mso.getName());
-	    }
-	    
-	    return userResp;
-	}
-	
-	/** compose set response **/
-	public Set setResponse(SysTag set, SysTagDisplay setMeta) {
-        //Map<String, Object> result = new TreeMap<String, Object>();
+    
+    /** adapt response for user change to user+userProfile */
+    public User userResponse(NnUser user) {
+        
+        User userResp = new User();
+        MsoManager msoMngr = new MsoManager();
+        
+        userResp.setId(user.getId());
+        userResp.setCreateDate(user.getCreateDate());
+        userResp.setUpdateDate(user.getUpdateDate());
+        userResp.setUserEmail(user.getUserEmail());
+        userResp.setFbUser(user.isFbUser());
+        userResp.setName(NnStringUtil.revertHtml(user.getProfile().getName()));
+        userResp.setIntro(NnStringUtil.revertHtml(user.getProfile().getIntro()));
+        userResp.setImageUrl(user.getProfile().getImageUrl());
+        userResp.setLang(user.getProfile().getLang());
+        userResp.setProfileUrl(user.getProfile().getProfileUrl());
+        userResp.setShard(user.getShard());
+        userResp.setSphere(user.getProfile().getSphere());
+        userResp.setType(user.getType());
+        userResp.setCntSubscribe(user.getProfile().getCntSubscribe());
+        userResp.setCntChannel(user.getProfile().getCntChannel());
+        userResp.setCntFollower(user.getProfile().getCntFollower());
+        userResp.setMsoId(user.getProfile().getMsoId());
+        
+        if (user.getProfile().getPriv() == null) {
+            userResp.setPriv("000111"); // TODO hard coded default
+        } else {
+            userResp.setPriv(user.getProfile().getPriv());
+        }
+        
+        Mso mso = msoMngr.findById(user.getProfile().getMsoId());
+        if (mso != null) {
+            userResp.setMsoName(mso.getName());
+        }
+        
+        return userResp;
+    }
+    
+    /** compose set response **/
+    public Set setResponse(SysTag set, SysTagDisplay setMeta) {
+        
         Set setResp = new Set();
         
         setResp.setId(set.getId());
