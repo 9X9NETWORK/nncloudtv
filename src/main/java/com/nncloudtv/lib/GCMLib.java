@@ -101,11 +101,11 @@ public class GCMLib {
         threadPool.execute(new Runnable() {
             public void run() {
                 Message message = new Message.Builder()
+                    .addData("content", msg.getContent())    // content
+                    .addData("ts",      msg.getTimeStamp())  // timestamp
                     .addData("message", NnStringUtil.urlencode(msg.getMessage())) // message
-                    .addData("content", msg.getContent()) // content
-                    .addData("ts", msg.getTimeStamp())  // timestamp
-                    .addData("logo", NnStringUtil.urlencode(msg.getLogo())) // logo
-                    .addData("title", NnStringUtil.urlencode(msg.getTitle())) // title
+                    .addData("logo",    NnStringUtil.urlencode(msg.getLogo()))    // logo
+                    .addData("title",   NnStringUtil.urlencode(msg.getTitle()))   // title
                     .build();
                 MulticastResult multicastResult;
                 try {

@@ -15,7 +15,7 @@ public class ScheduledTask {
     
     protected static Logger log = Logger.getLogger(ScheduledTask.class.getName());
     
-    public final int MEMCACHE_CHECK_INTERVAL = 100000; // in milliseconds
+    public final int MEMCACHE_CHECK_INTERVAL = 157000; // in milliseconds
     public final int GC_INTERVAL = 193000; // in milliseconds
     
     @Scheduled(fixedRate = GC_INTERVAL)
