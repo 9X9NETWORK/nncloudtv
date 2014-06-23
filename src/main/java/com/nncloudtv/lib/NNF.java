@@ -14,6 +14,7 @@ import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
+import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
@@ -36,6 +37,7 @@ public class NNF {
     protected static BillingPackageManager packageMngr        = null;
     protected static NnEpisodeManager      episodeMngr        = null;
     protected static NnProgramManager      programMngr        = null;
+    protected static NnDeviceManager       deviceMngr         = null;
     
     protected static MsoDao                msoDao             = null;
     protected static BillingOrderDao       orderDao           = null;
@@ -96,6 +98,17 @@ public class NNF {
         }
         
         return packageDao;
+    }
+    
+    public static NnDeviceManager getDeviceMngr() {
+        
+        if (deviceMngr == null) {
+            
+            log.info("create deviceMngr");
+            deviceMngr = new NnDeviceManager();
+        }
+        
+        return deviceMngr;
     }
     
     public static NnProgramManager getProgramMngr() {

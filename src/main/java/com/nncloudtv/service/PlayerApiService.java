@@ -22,8 +22,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -93,34 +91,18 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
-    private NnChannelManager chMngr;
-    private NnDeviceManager deviceMngr;
-    
-    public static int   LATEST_VERSION = 42;
-    public static short FORMAT_JSON    = 1;
-    public static short FORMAT_PLAIN   = 2;
-    public static int   PAGING_ROWS    = 50;
-    public static int   MAX_EPISODES   = 200;
+    public final static int   LATEST_VERSION = 42;
+    public final static short FORMAT_JSON    = 1;
+    public final static short FORMAT_PLAIN   = 2;
+    public final static int   PAGING_ROWS    = 50;
+    public final static int   MAX_EPISODES   = 200;
     
     private Mso    mso;
     private int    version = 32;
     private Locale locale  = Locale.ENGLISH;
     private short  format  = FORMAT_PLAIN;
     private ApiContext context = null;
-    private HttpServletRequest req;
-    private HttpServletResponse resp;
-    
-    public PlayerApiService() {
-        
-        chMngr = NNF.getChannelMngr();
-        deviceMngr = new NnDeviceManager();
-    }
-    
-    public PlayerApiService(NnDeviceManager deviceMngr) {
-        
-        this.chMngr = NNF.getChannelMngr();
-        this.deviceMngr = deviceMngr;
-    }
+    HttpServletResponse resp;
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
         
@@ -128,32 +110,31 @@ public class PlayerApiService {
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp, boolean toLog) {
-
-        this.req = req;
+        
         this.resp = resp;
+        
         String returnFormat = req.getParameter("format");
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
             this.format = FORMAT_PLAIN;
         } else {
-            this.format = FORMAT_JSON;        	
+            this.format = FORMAT_JSON;
         }
         
-        HttpSession session = this.req.getSession();
-        session.setMaxInactiveInterval(60);
-
+        req.getSession().setMaxInactiveInterval(60);
+        
         if (toLog) 
-            NnNetUtil.logUrl(this.req);
-
-        context = new ApiContext(this.req);
+            NnNetUtil.logUrl(req);
+        
+        context = new ApiContext(req);
         this.locale  = context.getLocale();
         this.mso     = context.getMso();
         this.version = context.getVersion();
         log.info("mso entrance: " + mso.getId());
-
+        
         if (this.version < checkApiMinimal())
             return NnStatusCode.API_FORCE_UPGRADE;
         else
-            return checkRO();                
+            return checkRO();
     }
     
     public Mso getMso() {
@@ -161,11 +142,12 @@ public class PlayerApiService {
     }
     
     public Object response(Object output) {
+        
         if (this.format == FORMAT_PLAIN) {
             try {
-                this.resp.setContentType("text/plain;charset=utf-8");                
-                this.resp.getWriter().print(output);
-                this.resp.flushBuffer();
+                resp.setContentType("text/plain;charset=utf-8");                
+                resp.getWriter().print(output);
+                resp.flushBuffer();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -514,7 +496,7 @@ public class PlayerApiService {
             long displayId = Long.parseLong(id);
             SysTagDisplay display = displayMngr.findById(displayId);
             List<NnChannel> channels = systagMngr.findPlayerChannelsById(display.getSystagId(), display.getLang(), 0, 200, SysTag.SORT_DATE, mso.getId());  
-            result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
+            result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version, this.format);
             return this.assembleMsgs(NnStatusCode.SUCCESS, result);
         }        
         
@@ -701,7 +683,7 @@ public class PlayerApiService {
             NnUser curator = NNF.getUserMngr().findByProfileUrl(profileUrl, mso.getId());
             if (curator == null)
                 return this.assembleMsgs(NnStatusCode.CHANNEL_ERROR, null);
-            NnChannel favoriteCh = chMngr.createFavorite(curator);
+            NnChannel favoriteCh = NNF.getChannelMngr().createFavorite(curator);
             channelId = String.valueOf(favoriteCh.getId());
         }
         NnChannel channel = null;
@@ -709,7 +691,7 @@ public class PlayerApiService {
             channel = new YtChannelManager().convert(channelId);            
         } else {
             long cId = Long.parseLong(channelId);            
-            channel = chMngr.findById(cId);
+            channel = NNF.getChannelMngr().findById(cId);
         }
         if (channel == null || channel.getStatus() == NnChannel.STATUS_ERROR)
             return this.assembleMsgs(NnStatusCode.CHANNEL_ERROR, null);
@@ -814,9 +796,9 @@ public class PlayerApiService {
             
             String output = "";
             if (isReduced) {
-                output = (String)chMngr.composeReducedChannelLineup(chs, PlayerApiService.FORMAT_PLAIN);
+                output = (String) NNF.getChannelMngr().composeReducedChannelLineup(chs, PlayerApiService.FORMAT_PLAIN);
             } else {
-                output = (String) chMngr.composeChannelLineup(chs, version, PlayerApiService.FORMAT_PLAIN);
+                output = (String) NNF.getChannelMngr().composeChannelLineup(chs, version, PlayerApiService.FORMAT_PLAIN);
             }
             result.add(output);
         }
@@ -831,10 +813,10 @@ public class PlayerApiService {
         List<NnChannel> channels = new ArrayList<NnChannel>();
         if (curator.getToken().equals(userToken)) {
             log.info("find channels curator himself created");
-            channels = chMngr.findByUserAndHisFavorite(curator, 0, true);
+            channels = NNF.getChannelMngr().findByUserAndHisFavorite(curator, 0, true);
         } else {
             log.info("find curator channels");
-            channels = chMngr.findByUserAndHisFavorite(curator, 0, false);
+            channels = NNF.getChannelMngr().findByUserAndHisFavorite(curator, 0, false);
         }
         NNF.getUserMngr().composeSubscriberInfoStr(channels);
         return "";
@@ -949,7 +931,7 @@ public class PlayerApiService {
                 channels = subMngr.findSubscribedChannels(user);
             }
             //default channels goes after channels, to make sure it overwrites original ones
-            List<NnChannel> defaultChannels = chMngr.findMsoDefaultChannels(mso.getId(), false);
+            List<NnChannel> defaultChannels = NNF.getChannelMngr().findMsoDefaultChannels(mso.getId(), false);
             channels.addAll(defaultChannels);
             log.info("user: " + userToken + " find subscribed size:" + channels.size());
         } else if (curatorIdStr != null) {
@@ -960,10 +942,10 @@ public class PlayerApiService {
             List<NnChannel> curatorChannels = new ArrayList<NnChannel>();
             if (curator.getToken().equals(userToken)) {
                 log.info("find channels curator himself created");
-                curatorChannels = chMngr.findByUserAndHisFavorite(curator, 0, true);
+                curatorChannels = NNF.getChannelMngr().findByUserAndHisFavorite(curator, 0, true);
             } else {
                 log.info("find channels curator created for public");
-                curatorChannels = chMngr.findByUserAndHisFavorite(curator, 0, false);
+                curatorChannels = NNF.getChannelMngr().findByUserAndHisFavorite(curator, 0, false);
             }
             //List<NnChannel> curatorChannels = chMngr.findByUserAndHisFavorite(curator, 0, true);
             for (NnChannel c : curatorChannels) {
@@ -978,9 +960,9 @@ public class PlayerApiService {
             if (chArr.length > 1) {
                 List<Long> list = new ArrayList<Long>();
                 for (int i=0; i<chArr.length; i++) { list.add(Long.valueOf(chArr[i]));}
-                channels = chMngr.findByIds(list);
+                channels = NNF.getChannelMngr().findByIds(list);
             } else {
-                NnChannel channel = chMngr.findById(Long.parseLong(channelIds));
+                NnChannel channel = NNF.getChannelMngr().findById(Long.parseLong(channelIds));
                 if (channel != null) channels.add(channel);                    
             }
         }
@@ -991,19 +973,19 @@ public class PlayerApiService {
             if (user == null || user.getType() != NnUser.TYPE_YOUTUBE_CONNECT) {
                 if (sort != null && sort.equals(NnUserSubscribe.SORT_DATE)) {
                     log.info("sort by date");
-                    Collections.sort(channels, chMngr.getChannelComparator("updateDate"));
+                    Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("updateDate"));
                 } else {
-                    Collections.sort(channels, chMngr.getChannelComparator("seq"));
+                    Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("seq"));
                 }
             }
         }
         if (format == PlayerApiService.FORMAT_JSON) {
             @SuppressWarnings("unchecked")
-            List<ChannelLineup> lineup = (List<ChannelLineup>)chMngr.getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, version, format, null);
+            List<ChannelLineup> lineup = (List<ChannelLineup>) NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, version, format, null);
             playerChannelLineup.setChannelLineup(lineup);
             return this.assembleMsgs(NnStatusCode.SUCCESS, playerChannelLineup);
         }
-        Object channelLineup = chMngr.getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, version, format, result); 
+        Object channelLineup = NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, version, format, result); 
         return this.assembleMsgs(NnStatusCode.SUCCESS, channelLineup);
     }
 
@@ -1029,12 +1011,12 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.USER_PERMISSION_ERROR, null);
                 
         //verify url, also converge youtube url
-        url = chMngr.verifyUrl(url);         
+        url = NNF.getChannelMngr().verifyUrl(url);         
         if (url == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_URL_INVALID, null);            
         
         //verify channel status for existing channel
-        NnChannel channel = chMngr.findBySourceUrl(url);                                        
+        NnChannel channel = NNF.getChannelMngr().findBySourceUrl(url);                                        
         if (channel != null && (channel.getStatus() == NnChannel.STATUS_ERROR)) {
             log.info("channel id and status :" + channel.getId()+ ";" + channel.getStatus());
             this.assembleMsgs(NnStatusCode.CHANNEL_STATUS_ERROR, null);
@@ -1044,9 +1026,9 @@ public class PlayerApiService {
         lang = this.checkLang(lang);
         if (channel == null) {
             if (name != null && image != null) {
-                channel = chMngr.createYouTubeWithMeta(url, name, null, lang, image, req);
+                channel = NNF.getChannelMngr().createYouTubeWithMeta(url, name, null, lang, image, req);
             } else {
-                channel = chMngr.create(url, null, lang, req);
+                channel = NNF.getChannelMngr().create(url, null, lang, req);
             }
             if (channel == null) {
                 return this.assembleMsgs(NnStatusCode.CHANNEL_URL_INVALID, null);
@@ -1161,7 +1143,7 @@ public class PlayerApiService {
         int total = channels.size();
         channels = channels.subList(startIndex, startIndex + Integer.parseInt(count));
         log.info("startIndex:" + startIndex + ";endIndex:" + endIndex);
-        result[1] += chMngr.composeChannelLineup(channels, version, this.format);
+        result[1] += NNF.getChannelMngr().composeChannelLineup(channels, version, this.format);
         
         result[0] += assembleKeyValue("id", String.valueOf(tag.getId()));
         result[0] += assembleKeyValue("name", tag.getName());
@@ -1226,7 +1208,7 @@ public class PlayerApiService {
                     int unPublicCnt = epMngr.total("channelId == " + channelIds + " && seq < " + episode.getSeq() + " && isPublic == false");
                     startI = (episode.getSeq() <= PAGING_ROWS) ? 0 : (episode.getSeq() - 1) - unPublicCnt;
                     
-                    NnChannel channel = chMngr.findById(channelIds);
+                    NnChannel channel = NNF.getChannelMngr().findById(channelIds);
                     if (channel != null && channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                         
                         // reversed playlist
@@ -1271,7 +1253,7 @@ public class PlayerApiService {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
                         programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                         if (pagination) {
-                            NnChannel c = chMngr.findById(l);
+                            NnChannel c = NNF.getChannelMngr().findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
@@ -1283,7 +1265,7 @@ public class PlayerApiService {
         } else if (orphanEpisode != null) {
             
             long cId = Long.parseLong(channelIds);
-            NnChannel channel = chMngr.findById(cId);
+            NnChannel channel = NNF.getChannelMngr().findById(cId);
             if (format == PlayerApiService.FORMAT_PLAIN) {
                 
                 programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
@@ -1315,7 +1297,7 @@ public class PlayerApiService {
                     long cId = Long.parseLong(channelIds);
                     programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, version, this.format, shortTime, mso);
                     if (pagination) {
-                        NnChannel c = chMngr.findById(cId);
+                        NnChannel c = NNF.getChannelMngr().findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
@@ -1332,10 +1314,10 @@ public class PlayerApiService {
             if (user == null && userToken != null)  {
                 user = NNF.getUserMngr().findByToken(userToken, mso.getId());
                 if (this.format == PlayerApiService.FORMAT_PLAIN) {
-                    userInfoStr = (String) this.prepareUserInfo(user, null, req, true);
+                    userInfoStr = (String) this.prepareUserInfo(user, null, context.getHttpRequest(), true);
                     result.add(userInfoStr);
                 } else {
-                    playerProgramInfo.setUserInfo((UserInfo)this.prepareUserInfo(user, null, req, true));
+                    playerProgramInfo.setUserInfo((UserInfo)this.prepareUserInfo(user, null, context.getHttpRequest(), true));
                 }
             }
         }
@@ -1456,7 +1438,7 @@ public class PlayerApiService {
             ApiContext context = new ApiContext(req);
             Mso mso = context.getMso();
             
-            device = deviceMngr.findDuplicated(token, mso.getId(), type);
+            device = NNF.getDeviceMngr().findDuplicated(token, mso.getId(), type);
             if (device == null) {
                 device = new NnDevice(token, mso.getId(), type);
             }
@@ -1930,9 +1912,9 @@ public class PlayerApiService {
         } else {            
             result[0] = share.getChannelId() + "\t" + share.getProgramIdStr() + "\n";            
         }
-        NnChannel channel = chMngr.findById(share.getChannelId());        
+        NnChannel channel = NNF.getChannelMngr().findById(share.getChannelId());        
         if (channel != null) {
-            result[1] = chMngr.composeEachChannelLineup(channel, version, PlayerApiService.FORMAT_PLAIN) + "\n";
+            result[1] = NNF.getChannelMngr().composeEachChannelLineup(channel, version, PlayerApiService.FORMAT_PLAIN) + "\n";
         }
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
@@ -1944,8 +1926,8 @@ public class PlayerApiService {
             return this.assembleMsgs((Integer)map.get("s"), null);
         }
         NnUser user = (NnUser) map.get("u");
-        List<NnChannel> channels = chMngr.findPersonalHistory(user.getId(), user.getMsoId());
-        String result[] = {(String) chMngr.composeChannelLineup(channels, version, this.format)};
+        List<NnChannel> channels = NNF.getChannelMngr().findPersonalHistory(user.getId(), user.getMsoId());
+        String result[] = {(String) NNF.getChannelMngr().composeChannelLineup(channels, version, this.format)};
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
@@ -2150,7 +2132,7 @@ public class PlayerApiService {
         //if none matched, return suggestion channels
         List<NnChannel> suggestion = new ArrayList<NnChannel>();
         if (channels.size() == 0 && users.size() == 0) {
-            suggestion = chMngr.findBillboard(Tag.TRENDING, LangTable.LANG_EN);
+            suggestion = NNF.getChannelMngr().findBillboard(Tag.TRENDING, LangTable.LANG_EN);
         }
         int numOfChannelReturned = channels.size(); 
         int numOfCuratorReturned = users.size();
@@ -2164,11 +2146,11 @@ public class PlayerApiService {
             //matched curators && their channels [important, two sections]
             result[1] = (String) NNF.getUserMngr().composeCuratorInfo(users, true, false, req, version);
             //matched channels
-            result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
+            result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version, this.format);
             System.out.println("result 3:" + result[3]);
             //suggested channels
             if (channels.size() == 0 && users.size() == 0) {
-                result[3] = (String) chMngr.composeChannelLineup(suggestion, version, this.format);
+                result[3] = (String) NNF.getChannelMngr().composeChannelLineup(suggestion, version, this.format);
             }
             //statistics           
             result[0] = assembleKeyValue("curator", String.valueOf(numOfCuratorReturned) + "\t" + String.valueOf(numOfCuratorTotal));
@@ -2184,7 +2166,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.SUCCESS, result);
         } else {
             Search search = new Search();
-            search.setChannelLineups((List<ChannelLineup>)chMngr.composeChannelLineup(channels,  version,  this.format));
+            search.setChannelLineups((List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels,  version,  this.format));
             search.setNumOfChannelReturned(numOfChannelReturned);
             search.setNumOfCuratorReturned(numOfCuratorReturned);
             search.setNumOfSuggestReturned(numOfSuggestReturned);
@@ -2257,8 +2239,8 @@ public class PlayerApiService {
         channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED); // a channel type in podcast does not allow user to add program in it, so change to mixed type
         channel.setTemp(isTemp);
-        chMngr.save(channel);
-        String[] result = {(String)chMngr.composeEachChannelLineup(channel, version, PlayerApiService.FORMAT_PLAIN)};        
+        NNF.getChannelMngr().save(channel);
+        String[] result = {(String) NNF.getChannelMngr().composeEachChannelLineup(channel, version, PlayerApiService.FORMAT_PLAIN)};        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
     
@@ -2268,7 +2250,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         long cid = Long.parseLong(channel);        
-        NnChannel ch = chMngr.findById(cid);
+        NnChannel ch = NNF.getChannelMngr().findById(cid);
         if (ch == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         NnProgram program = new NnProgram(ch.getId(), name, description, image);
@@ -2430,7 +2412,7 @@ public class PlayerApiService {
         if (u == null)
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);        
         long pid = 0;
-        NnChannel c = chMngr.findById(Long.parseLong(channel));
+        NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(channel));
         if (c == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         NnProgram p = null;
@@ -2450,16 +2432,16 @@ public class PlayerApiService {
         }
         //delete pid should not contain "e"
         if (delete) {
-            chMngr.deleteFavorite(u, pid);
+            NNF.getChannelMngr().deleteFavorite(u, pid);
         } else {
-            chMngr.saveFavorite(u, c, e, p, fileUrl, name, imageUrl, duration);
+            NNF.getChannelMngr().saveFavorite(u, c, e, p, fileUrl, name, imageUrl, duration);
         }
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
 
     }
         
     public NnChannel getChannel(String channel) {
-        NnChannel c = chMngr.findById(Long.parseLong(channel));
+        NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(channel));
         return c;
     }
     
@@ -2482,7 +2464,7 @@ public class PlayerApiService {
         if (user == null) {
             return this.assembleMsgs(NnStatusCode.ACCOUNT_INVALID, null);
         }
-        NnChannel c = chMngr.findById(Long.parseLong(channel));
+        NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(channel));
         if (c == null) {
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         }
@@ -2555,7 +2537,7 @@ public class PlayerApiService {
         String[] cid = channel.split(",");
         
         for (String id : cid) {
-            NnChannel c = chMngr.findById(Long.parseLong(id));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(id));
             if (c == null) {
                 return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
             }
@@ -2692,13 +2674,13 @@ public class PlayerApiService {
             if (chArr.length > 0) {
                 List<Long> list = new ArrayList<Long>();
                 for (int i=0; i<chArr.length; i++) { list.add(Long.valueOf(chArr[i]));}                
-                channels.addAll(chMngr.findByIds(list));
+                channels.addAll(NNF.getChannelMngr().findByIds(list));
             }
         }
         if (!isPrograms) {
-            String channelInfo = (String)chMngr.composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
+            String channelInfo = (String)NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
             if (chPos)
-                channelInfo = (String)chMngr.chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), this.format);
+                channelInfo = (String)NNF.getChannelMngr().chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), this.format);
             log.info("virtual channel, return channel only");
             return this.assembleMsgs(NnStatusCode.SUCCESS, new String[] {channelInfo});
         }    
@@ -2721,10 +2703,10 @@ public class PlayerApiService {
             output += "\n";
             programInfo += output;
         }
-        String channelInfo = (String)chMngr.composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
         if (chPos) {
             log.info("adjust sequence of channellineup for user:" + user.getId());
-            channelInfo = (String)chMngr.chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), PlayerApiService.FORMAT_PLAIN);
+            channelInfo = (String) NNF.getChannelMngr().chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), PlayerApiService.FORMAT_PLAIN);
         }
         result.add(channelInfo);                
         result.add(programInfo);
@@ -2898,12 +2880,12 @@ public class PlayerApiService {
         log.info("new ytprograms size:" + ytprograms.size());
         int existedSize = lines.length - ytprograms.size();
         log.info("existed ytprograms size:" + existedSize);
-        NnChannel c = chMngr.findById(Long.parseLong(channel));
+        NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(channel));
         if (c != null) {
             if (c.getStatus() == NnChannel.STATUS_PROCESSING) {
                 log.info("change channel status from processing to success:" + c.getId());
                 c.setStatus(NnChannel.STATUS_SUCCESS);
-                chMngr.save(c);
+                NNF.getChannelMngr().save(c);
             }
         }
         
@@ -2921,16 +2903,16 @@ public class PlayerApiService {
         for (String yt : ytUser) {
             if (yt.trim().length() > 0) {
                 yt = "http://www.youtube.com/user/" + yt;
-                NnChannel existed = chMngr.findBySourceUrl(yt);
+                NnChannel existed = NNF.getChannelMngr().findBySourceUrl(yt);
                 if (existed == null) {
-                    NnChannel c = chMngr.createYoutubeChannel(yt);
+                    NnChannel c = NNF.getChannelMngr().createYoutubeChannel(yt);
                     if (c != null) channels.add(c);
                 } else {
                     channels.add(existed);
                 }
             }
         }
-        String channelInfo = (String)chMngr.composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
         return this.assembleMsgs(NnStatusCode.SUCCESS, new String[] {channelInfo});
     }
     
@@ -2949,16 +2931,16 @@ public class PlayerApiService {
         for (String yt : ytUser) {
             if (yt.trim().length() > 0) {
                 yt = "http://www.youtube.com/user/" + yt;
-                NnChannel existed = chMngr.findBySourceUrl(yt);
+                NnChannel existed = NNF.getChannelMngr().findBySourceUrl(yt);
                 if (existed == null) {
-                    NnChannel c = chMngr.createYoutubeChannel(yt);
+                    NnChannel c = NNF.getChannelMngr().createYoutubeChannel(yt);
                     if (c != null) channels.add(c);
                 } else {
                     channels.add(existed);
                 }
             }
         }
-        String channelInfo = (String)chMngr.composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
         //subscribe
         NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
         List<NnUserSubscribe> list = subMngr.findAllByUser(user);
@@ -2979,7 +2961,7 @@ public class PlayerApiService {
         while (it.hasNext()) {
             Map.Entry<Long, NnUserSubscribe> pairs = it.next();
             NnUserSubscribe s = pairs.getValue(); 
-            NnChannel c = chMngr.findById(s.getChannelId());
+            NnChannel c = NNF.getChannelMngr().findById(s.getChannelId());
             if (c != null && (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
                               c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST)) {
                 log.info("auto unsubscribe channel: " + c.getId());
@@ -3057,7 +3039,7 @@ public class PlayerApiService {
                     String name = tabs[2];
                     String imageUrl = tabs[3];
                     log.info("id:" + id + ";name:" + name + ";imageurl:" + imageUrl);
-                    NnChannel channel = chMngr.findById(Long.parseLong(id));
+                    NnChannel channel = NNF.getChannelMngr().findById(Long.parseLong(id));
                     if (channel != null) {
                         if (name != null) {
                             int len = (name.length() > 255 ? 255 : name.length()); 
@@ -3067,7 +3049,7 @@ public class PlayerApiService {
                         channel.setName(name);
                         channel.setImageUrl(imageUrl);
                         channels.add(channel);
-                        chMngr.save(channel);
+                        NNF.getChannelMngr().save(channel);
                     }
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
@@ -3264,7 +3246,7 @@ public class PlayerApiService {
         if (channelId == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         
-        NnChannel channel = chMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         
@@ -3292,7 +3274,7 @@ public class PlayerApiService {
             if (curator == null)
                 return this.assembleMsgs(NnStatusCode.USER_INVALID, null);
             
-            List<NnChannel> curatorChannels = chMngr.findByUser(curator, 0, false);
+            List<NnChannel> curatorChannels = NNF.getChannelMngr().findByUser(curator, 0, false);
             log.info("curatorChannels = " + curatorChannels.size());
             
             for (NnChannel ch : curatorChannels) {
@@ -3302,7 +3284,7 @@ public class PlayerApiService {
                     channels.add(ch);
             }
             
-            Collections.sort(channels, chMngr.getChannelComparator("seq"));
+            Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("seq"));
             
             //set info
             result[1] += PlayerApiService.assembleKeyValue("id", String.valueOf(curator.getId()));
@@ -3310,7 +3292,7 @@ public class PlayerApiService {
             result[1] += PlayerApiService.assembleKeyValue("imageUrl", curator.getProfile().getImageUrl());
         }
         log.info("channels = " + channels.size());
-        result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
+        result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version, this.format);
         //program info
         String programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
         result[3] = programStr;        

@@ -39,7 +39,7 @@ public class PlayerApiServiceTest {
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(null);
+        service = new PlayerApiService();
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }
