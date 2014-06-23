@@ -135,7 +135,7 @@ public class DepotService {
     }
                     
     public PostResponse updateProgram(RtnProgram rtnProgram) {
-        NnProgramManager programMngr = new NnProgramManager();
+        NnProgramManager programMngr = NNF.getProgramMngr();
         NnChannelManager channelMngr = NNF.getChannelMngr();
         RtnProgramItem item = rtnProgram.getItems()[0]; //for now there's only one item
         log.info("updateProgramViaTranscodingService(): " + item.toString());

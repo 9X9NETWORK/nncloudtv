@@ -1108,13 +1108,12 @@ public class PlayerApiService {
     public Object setProgramProperty(String program, String property, String value) {
         if (program == null || property == null || value == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        NnProgramManager programMngr = new NnProgramManager();
-        NnProgram p = programMngr.findById(Long.parseLong(program));
+        NnProgram p = NNF.getProgramMngr().findById(Long.parseLong(program));
         if (p == null)
             return this.assembleMsgs(NnStatusCode.PROGRAM_INVALID, null);
         if (property.equals("duration")) {
             p.setDuration(value);
-            programMngr.save(p);
+            NNF.getProgramMngr().save(p);
         } else {
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         }
@@ -1182,7 +1181,6 @@ public class PlayerApiService {
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
-        NnProgramManager programMngr = new NnProgramManager();
         PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();
         String[] chArr = channelIds.split(",");
         NnUser user = null;
@@ -1271,14 +1269,14 @@ public class PlayerApiService {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
-                        programInfoStr += (String)programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
+                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                         if (pagination) {
                             NnChannel c = chMngr.findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
                     } else {
-                        programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
+                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
                     }
                 }
             }
@@ -1288,13 +1286,13 @@ public class PlayerApiService {
             NnChannel channel = chMngr.findById(cId);
             if (format == PlayerApiService.FORMAT_PLAIN) {
                 
-                programInfoStr = (String) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
                 if (pagination && channel != null) {
                     paginationStr += assembleKeyValue(channel.getIdStr(), "1\t1");
                 }
             } else {
                 
-                programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
+                programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
                 playerProgramInfo.setProgramInfo(programInfoJson);
             }
         } else {
@@ -1315,14 +1313,14 @@ public class PlayerApiService {
             } else {
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String)programMngr.findPlayerProgramInfoByChannel(cId, startI, end, version, this.format, shortTime, mso);
+                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, version, this.format, shortTime, mso);
                     if (pagination) {
                         NnChannel c = chMngr.findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
                 } else {
-                    programInfoJson = (List<ProgramInfo>) programMngr.findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format, shortTime, mso);
+                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format, shortTime, mso);
                     playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
@@ -1924,8 +1922,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.IPG_INVALID, null);
         
         String[] result = {"", ""};
-        NnProgramManager programMngr = new NnProgramManager();
-        NnProgram program = programMngr.findById(share.getProgramId());
+        NnProgram program = NNF.getProgramMngr().findById(share.getProgramId());
         if (program != null) {
             List<NnProgram> programs = new ArrayList<NnProgram>();
             programs.add(program);
@@ -1969,7 +1966,7 @@ public class PlayerApiService {
         }
         String[] result = {"", ""};
         NnUserWatchedManager watchedMngr = new NnUserWatchedManager();
-        NnProgramManager programMngr = new NnProgramManager();
+        NnProgramManager programMngr = NNF.getProgramMngr();
         List<NnUserWatched> watched = new ArrayList<NnUserWatched>();
         if (channel == null) {
             watched = watchedMngr.findByUserToken(userToken);
@@ -2212,7 +2209,7 @@ public class PlayerApiService {
         }
         
         try {
-            NnProgramManager programMngr = new NnProgramManager();
+            NnProgramManager programMngr = NNF.getProgramMngr();
             if (programId != null) {
                 NnProgram program = programMngr.findById(Long.parseLong(programId));
                 if (program != null) {
@@ -2274,15 +2271,14 @@ public class PlayerApiService {
         NnChannel ch = chMngr.findById(cid);
         if (ch == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
-        NnProgramManager programMngr = new NnProgramManager();
         NnProgram program = new NnProgram(ch.getId(), name, description, image);
         program.setChannelId(cid);
         program.setAudioFileUrl(audio);
         program.setFileUrl(video);
-        program.setContentType(programMngr.getContentType(program));
+        program.setContentType(NNF.getProgramMngr().getContentType(program));
         program.setStatus(NnProgram.STATUS_OK);
         program.setPublic(true);
-        programMngr.save(program);
+        NNF.getProgramMngr().save(program);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
     }
 
@@ -2447,7 +2443,7 @@ public class PlayerApiService {
                     return this.assembleMsgs(NnStatusCode.PROGRAM_INVALID, null);
             } else {
                 pid = Long.parseLong(program);
-                p = new NnProgramManager().findById(Long.parseLong(program));
+                p = NNF.getProgramMngr().findById(Long.parseLong(program));
                 if (p == null)
                     return this.assembleMsgs(NnStatusCode.PROGRAM_INVALID, null);
             }
@@ -3316,8 +3312,7 @@ public class PlayerApiService {
         log.info("channels = " + channels.size());
         result[2] = (String) chMngr.composeChannelLineup(channels, version, this.format);
         //program info
-        NnProgramManager programMngr = new NnProgramManager();
-        String programStr = (String)programMngr.findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
+        String programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
         result[3] = programStr;        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }

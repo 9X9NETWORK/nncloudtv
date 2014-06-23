@@ -245,11 +245,10 @@ public class NnChannelManager {
         NnChannel favoriteCh = dao.findFavorite(user.getIdStr());
         if (favoriteCh == null)
             return;
-        NnProgramManager pMngr = new NnProgramManager();
-        NnProgram p = pMngr.findById(pId);
+        NnProgram p = NNF.getProgramMngr().findById(pId);
         if (p != null) {
             if (p.getChannelId() == favoriteCh.getId())
-                pMngr.delete(p);
+                NNF.getProgramMngr().delete(p);
         }
         
         // update episode count
@@ -283,14 +282,14 @@ public class NnChannelManager {
         if (favoriteCh == null) {
             favoriteCh = this.createFavorite(user);
         }
-        NnProgramManager pMngr = new NnProgramManager();        
         if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
             if (p != null && p.getContentType() != NnProgram.CONTENTTYPE_REFERENCE) {
                 fileUrl = p.getFileUrl();
                 name = p.getName();
                 imageUrl = p.getImageUrl();
             }
-        }        
+        }
+        NnProgramManager pMngr = NNF.getProgramMngr();
         if (fileUrl != null) {
             NnProgram existFavorite = pMngr.findByChannelAndFileUrl(favoriteCh.getId(), fileUrl);
             if (existFavorite == null) {
@@ -300,7 +299,7 @@ public class NnChannelManager {
                 existFavorite.setDuration(duration);
                 existFavorite.setStorageId(String.valueOf(c.getId()));
                 existFavorite.setStatus(NnProgram.STATUS_OK);                
-                pMngr.save(existFavorite);                
+                NNF.getProgramMngr().save(existFavorite);                
                 
                 // update episode count
                 favoriteCh.setCntEpisode(calcuateEpisodeCount(favoriteCh));
@@ -460,8 +459,7 @@ public class NnChannelManager {
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
             
-            NnProgramManager programMngr = new NnProgramManager();
-            List<NnProgram> programs = programMngr.findByChannelId(channel.getId());
+            List<NnProgram> programs = NNF.getProgramMngr().findByChannelId(channel.getId());
             
             return programs.size();
             
@@ -779,8 +777,7 @@ public class NnChannelManager {
     //return List<ChannelLineup>
     @SuppressWarnings("unchecked")
     public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
-        NnProgramManager programMngr = new NnProgramManager();
-        //List<String> result = new ArrayList<String>();
+        
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         String channelOutput = "";
         if (isReduced) {
@@ -808,7 +805,7 @@ public class NnChannelManager {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-                programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);
                 result.add(programStr);
             } 
             String size[] = new String[result.size()];
@@ -841,9 +838,8 @@ public class NnChannelManager {
         List<String> imgs = new ArrayList<String>();
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-            NnProgramManager programMngr = new NnProgramManager();
             String filter = "channelId == " + channel.getId();
-            List<NnProgram> programs = programMngr.list(1, 50, "updateDate", "desc", filter);
+            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate", "desc", filter);
             
             for (int i = 0; i < programs.size() && imgs.size() < 3; i++) {
                 
@@ -1026,15 +1022,15 @@ public class NnChannelManager {
                 log.info("v31 imageUrl:" + imageUrl);
         }
         if (version > 31 && (
-                c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP ||
+            c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP ||
             c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY ||
             c.getContentType() == NnChannel.CONTENTTYPE_MIXED ||
             c.getContentType() == NnChannel.CONTENTTYPE_FAVORITE)) {
+            
             if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
-                NnProgramManager pMngr = new NnProgramManager();
-                List<NnProgram> programs = pMngr.findPlayerProgramsByChannel(c.getId());
+                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(c.getId());
                 log.info("programs = " + programs.size());
-                Collections.sort(programs, pMngr.getProgramComparator("updateDate"));
+                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
                 for (int i=0; i<3; i++) {
                     if (i < programs.size()) {
                        //lastEpisodeTitle = programs.get(0).getName();

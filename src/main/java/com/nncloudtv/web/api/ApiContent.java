@@ -66,23 +66,19 @@ public class ApiContent extends ApiGeneric {
     
     private ApiContentService apiContentService;
     private StoreService storeService;
-    private NnProgramManager programMngr;
     
     public ApiContent() {
         
         this.storeService = new StoreService();
-        this.programMngr = new NnProgramManager();
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), NNF.getEpisodeMngr(), programMngr);
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), NNF.getEpisodeMngr(), NNF.getProgramMngr());
     }
     
     @Autowired
     public ApiContent(ApiContentService apiContentService,
-            StoreService storeService,
-            NnProgramManager programMngr) {
+            StoreService storeService) {
         
         this.apiContentService = apiContentService;
         this.storeService = storeService;
-        this.programMngr = programMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -441,7 +437,7 @@ public class ApiContent extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        YtProgram ytProgram = programMngr.findYtProgramById(ytProgramId);
+        YtProgram ytProgram = NNF.getProgramMngr().findYtProgramById(ytProgramId);
         if (ytProgram == null) {
             notFound(resp, "Pogram Not Found");
             return null;
@@ -465,8 +461,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             notFound(resp, "Pogram Not Found");
             return null;
@@ -493,8 +488,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             notFound(resp, "Program Not Found");
             return null;
@@ -580,7 +574,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        program = programMngr.save(program);
+        program = NNF.getProgramMngr().save(program);
         
         program.setName(NnStringUtil.revertHtml(program.getName()));
         program.setIntro(NnStringUtil.revertHtml(program.getIntro()));
@@ -603,9 +597,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             return "Program Not Found";
         }
@@ -621,7 +613,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        programMngr.delete(program);
+        NNF.getProgramMngr().delete(program);
         
         okResponse(resp);
         return null;
@@ -643,7 +635,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
+        NnProgramManager programMngr = NNF.getProgramMngr();
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
@@ -838,8 +830,6 @@ public class ApiContent extends ApiGeneric {
         // duration = endTime - startTime
         program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
         // subSeq
         String subSeqStr = req.getParameter("subSeq");
         if (subSeqStr == null) {
@@ -862,7 +852,7 @@ public class ApiContent extends ApiGeneric {
         program.setPublishDate(new Date());
         program.setPublic(true);
         
-        program = programMngr.create(episode, program);
+        program = NNF.getProgramMngr().create(episode, program);
         
         program.setName(NnStringUtil.revertHtml(program.getName()));
         program.setIntro(NnStringUtil.revertHtml(program.getIntro()));
@@ -1982,8 +1972,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> results = programMngr.findByEpisodeId(episodeId);
+        List<NnProgram> results = NNF.getProgramMngr().findByEpisodeId(episodeId);
         for (NnProgram result : results) {
             result.setName(NnStringUtil.revertHtml(result.getName()));
             result.setIntro(NnStringUtil.revertHtml(result.getIntro()));
@@ -2210,8 +2199,7 @@ public class ApiContent extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnProgramManager programMngr = new NnProgramManager();
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             notFound(resp, "Program Not Found");
             return null;

@@ -24,7 +24,6 @@ public class PoiPointManager {
     private PoiPointDao pointDao = new PoiPointDao();
     private PoiDao poiDao = new PoiDao();
     private PoiEventManager poiEventMngr = new PoiEventManager();
-    private NnProgramManager programMngr = new NnProgramManager();
     
     public PoiPoint create(PoiPoint point) {
         Date now = new Date();
@@ -253,7 +252,7 @@ public class PoiPointManager {
         
         if (point.getType() == PoiPoint.TYPE_SUBEPISODE) {
             
-            NnProgram program = programMngr.findById(point.getTargetId());
+            NnProgram program = NNF.getProgramMngr().findById(point.getTargetId());
             if (program == null) {
                 return null;
             }

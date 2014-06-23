@@ -42,7 +42,6 @@ import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TagManager;
@@ -210,8 +209,7 @@ public class WatchDogController {
     @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel) {
-        NnProgramManager mngr = new NnProgramManager();
-        String result = (String)mngr.findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN, (short) 0, null);
+        String result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN, (short) 0, null);
         if (result == null)
             return "null, error";
         String output = "";
@@ -351,8 +349,8 @@ public class WatchDogController {
     @RequestMapping(value="programCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programCache(
             @RequestParam(value="channel", required=false) long chId ) {
-        NnProgramManager mngr = new NnProgramManager();
-        mngr.resetCache(chId);
+        
+        NNF.getProgramMngr().resetCache(chId);
         return "OK";
     }
     

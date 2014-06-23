@@ -92,7 +92,7 @@ public class PlayerService {
             String eid = eId.replace("e", "");
             NnEpisode episodeObj = NNF.getEpisodeMngr().findById(Long.valueOf(eid));
             if (episodeObj != null) {
-                List<NnProgram> programs = new NnProgramManager().findByEpisodeId(episodeObj.getId());
+                List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeObj.getId());
                 if (programs.size() > 0)
                     eId = String.valueOf(programs.get(0).getId());
             }
@@ -127,8 +127,7 @@ public class PlayerService {
         if (pid == null)
             return model;
         if (pid.matches("[0-9]+")) {
-            NnProgramManager programMngr = new NnProgramManager();
-            NnProgram program = programMngr.findById(Long.valueOf(pid));
+            NnProgram program = NNF.getProgramMngr().findById(Long.valueOf(pid));
             if (program != null) {
                 log.info("nnprogram found = " + pid);
                 model.addAttribute(META_EPISODE_TITLE, program.getName());
@@ -330,8 +329,7 @@ public class PlayerService {
                         }
                     }            
                 } else {
-                    NnProgramManager programMngr = new NnProgramManager();
-                    List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(c.getId());
+                    List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(c.getId());
                     if (programs.size() > 0) {
                         int i=1;                    
                         if (ep == null)

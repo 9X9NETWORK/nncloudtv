@@ -38,7 +38,7 @@ public class NnEpisodeManager {
         
         episode.setUpdateDate(now);
         
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         return dao.save(episode);
         
@@ -57,11 +57,9 @@ public class NnEpisodeManager {
             }
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
         log.info("channel count = " + channelIds.size());
         for (Long channelId : channelIds) {
-            programMngr.resetCache(channelId);
+            NNF.getProgramMngr().resetCache(channelId);
         }
         
         return dao.saveAll(episodes);
@@ -104,9 +102,7 @@ public class NnEpisodeManager {
             return 0;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         
         return programs.size();
     }
@@ -176,12 +172,11 @@ public class NnEpisodeManager {
     
     public void delete(NnEpisode episode) {
     
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         // delete programs
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
-        programMngr.delete(programs);
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
+        NNF.getProgramMngr().delete(programs);
         
         // TODO delete poiPoints at episode level
         
@@ -204,9 +199,8 @@ public class NnEpisodeManager {
     
     public int calculateEpisodeDuration(NnEpisode episode) {
     
-        NnProgramManager programMngr = new NnProgramManager();
         TitleCardManager titleCardMngr = new TitleCardManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         List<TitleCard> titleCards = titleCardMngr.findByEpisodeId(episode.getId());
         
         int totalDuration = 0;

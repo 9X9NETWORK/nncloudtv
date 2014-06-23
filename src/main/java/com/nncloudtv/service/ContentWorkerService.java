@@ -73,13 +73,12 @@ public class ContentWorkerService {
              return new PostResponse(String.valueOf(NnStatusCode.SUCCESS), "SUCCESS");
          }
          
-         NnProgramManager programMngr = new NnProgramManager();
-         NnProgram program = programMngr.findById(content.getId());         
+         NnProgram program = NNF.getProgramMngr().findById(content.getId());         
          if (program == null) 
              return new PostResponse(String.valueOf(NnStatusCode.PROGRAM_INVALID), "PROGRAM INVALID");
          
          program.setImageUrl(content.getImageUrl());
-         programMngr.save(program);
+         NNF.getProgramMngr().save(program);
          return new PostResponse(String.valueOf(NnStatusCode.SUCCESS), "SUCCESS");
      }
      
@@ -89,13 +88,12 @@ public class ContentWorkerService {
              return new PostResponse(String.valueOf(NnStatusCode.SUCCESS), "SUCCESS");
          }
          
-         NnProgramManager programMngr = new NnProgramManager();
-         NnProgram program = programMngr.findById(content.getId());
+         NnProgram program = NNF.getProgramMngr().findById(content.getId());
          if (program == null) 
              return new PostResponse(String.valueOf(NnStatusCode.PROGRAM_INVALID), "PROGRAM INVALID");
          
          program.setFileUrl(content.getVideoUrl());
-         programMngr.save(program);
+         NNF.getProgramMngr().save(program);
          return new PostResponse(String.valueOf(NnStatusCode.SUCCESS), "SUCCESS");
      }
      

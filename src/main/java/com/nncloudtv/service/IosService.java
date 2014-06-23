@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
@@ -156,7 +157,6 @@ public class IosService {
     public String findPlayerProgramInfoByChannel(long channelId) {
         log.info("request from != v32");
         String result = null;
-        NnProgramManager programMngr = new NnProgramManager();
         try {
             result = (String)CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN));
         } catch (Exception e) {
@@ -166,7 +166,7 @@ public class IosService {
             log.info("get programInfo from v31 cache");
             return result;
         }
-        List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(channelId);
+        List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channelId);
         log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());
         String str = this.composeProgramInfoStr(programs);
         CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN), str);

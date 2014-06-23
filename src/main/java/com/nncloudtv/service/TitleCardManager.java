@@ -29,7 +29,7 @@ public class TitleCardManager {
         card.setUpdateDate(now);
         //card.setPlayerSyntax(this.generatePlayerSyntax(card));
         card = dao.save(card);
-        new NnProgramManager().resetCache(card.getChannelId());        
+        NNF.getProgramMngr().resetCache(card.getChannelId());        
         return card;
     }
     
@@ -38,7 +38,7 @@ public class TitleCardManager {
             return;
         }
         dao.delete(card);
-        new NnProgramManager().resetCache(card.getChannelId());
+        NNF.getProgramMngr().resetCache(card.getChannelId());
     }
     
     public void delete(List<TitleCard> titlecards) {
@@ -58,11 +58,9 @@ public class TitleCardManager {
         
         dao.deleteAll(titlecards);
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
         log.info("channel count = " + channelIds.size());
         for (Long channelId : channelIds) {
-            programMngr.resetCache(channelId);
+            NNF.getProgramMngr().resetCache(channelId);
         }
     }
     
@@ -81,8 +79,7 @@ public class TitleCardManager {
     
     public List<TitleCard> findByEpisodeId(long episodeId) {
         
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episodeId);
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeId);
         if (programs.size() == 0) {
             return new ArrayList<TitleCard>();
         }

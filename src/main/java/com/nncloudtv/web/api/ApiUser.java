@@ -34,7 +34,6 @@ import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.StoreService;
@@ -239,9 +238,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
-        List<NnProgram> favorites = programMngr.getUserFavorites(user);
+        List<NnProgram> favorites = NNF.getProgramMngr().getUserFavorites(user);
         
         log.info("my favorites count = " + favorites.size());
         
