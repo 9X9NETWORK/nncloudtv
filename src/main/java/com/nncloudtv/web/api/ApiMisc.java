@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +32,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FBPost;
 
@@ -42,19 +40,6 @@ import com.nncloudtv.web.json.facebook.FBPost;
 public class ApiMisc extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
-    
-    private NnUserProfileManager profileMngr;
-    
-    public ApiMisc() {
-        
-        profileMngr = new NnUserProfileManager();
-    }
-    
-    @Autowired
-    public ApiMisc(NnUserProfileManager profileMngr) {
-        
-        this.profileMngr = profileMngr;
-    }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
 	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
@@ -130,7 +115,7 @@ public class ApiMisc extends ApiGeneric {
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         user = NNF.getUserMngr().findById(verifiedUserId, brand.getId(), (short) 0);
         
-        NnUserProfile profile = new NnUserProfileManager().pickSuperProfile(verifiedUserId);
+        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -178,7 +163,7 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-		NnUserProfile profile = profileMngr.pickSuperProfile(user.getId());
+		NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
 		if (profile != null) {
 		    user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());

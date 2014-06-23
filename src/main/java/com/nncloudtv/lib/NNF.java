@@ -8,6 +8,7 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.NnUserProfileManager;
 
 public class NNF {
     
@@ -18,8 +19,9 @@ public class NNF {
     protected static MsoManager        msoMngr     = null;
     protected static NnUserPrefManager prefMngr    = null;
     protected static NnUserManager     userMngr    = null;
+    protected static NnUserProfileManager profileMngr = null;
     
-    protected static MsoDao           msoDao      = null;
+    protected static MsoDao            msoDao      = null;
     
     public static MsoDao getMsoDao() {
         
@@ -87,4 +89,14 @@ public class NNF {
         return channelMngr;
     }
     
+    public static NnUserProfileManager getProfileMngr() {
+        
+        if (profileMngr == null) {
+            
+            log.info("create profileMngr");
+            profileMngr = new NnUserProfileManager();
+        }
+        
+        return profileMngr;
+    }
 }

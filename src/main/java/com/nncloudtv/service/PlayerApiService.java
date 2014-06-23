@@ -93,36 +93,33 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
-    private NnUserProfileManager profileMngr;
     private NnChannelManager chMngr;
     private NnDeviceManager deviceMngr;
     private NnEpisodeManager epMngr;
     
     private Mso mso;
-    private int version = 32;
+    private int version              = 32;
     public static int LATEST_VERSION = 42;
-    private Locale locale = Locale.ENGLISH;
-    public static short FORMAT_JSON = 1;
+    private Locale locale            = Locale.ENGLISH;
+    public static short FORMAT_JSON  = 1;
     public static short FORMAT_PLAIN = 2;
-    private short format = FORMAT_PLAIN;
+    private short format             = FORMAT_PLAIN;
     private HttpServletRequest req;
     private HttpServletResponse resp;
-    private ApiContext context = null;
-    public static int PAGING_ROWS = 50;
-    public static int MAX_EPISODES = 200;
+    private ApiContext context       = null;
+    public static int PAGING_ROWS    = 50;
+    public static int MAX_EPISODES   = 200;
     
     public PlayerApiService() {
+        
         chMngr = NNF.getChannelMngr();
-        profileMngr = new NnUserProfileManager();
         deviceMngr = new NnDeviceManager();
         epMngr = new NnEpisodeManager();
     }
     
-    public PlayerApiService(NnUserPrefManager prefMngr, NnUserProfileManager profileMngr,
-            NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
+    public PlayerApiService(NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
         
         this.chMngr = NNF.getChannelMngr();
-        this.profileMngr = profileMngr;
         this.deviceMngr = deviceMngr;
         this.epMngr = epMngr;
     }
@@ -1683,6 +1680,9 @@ public class PlayerApiService {
     }
 
     public Object setUserProfile(String userToken, String items, String values, HttpServletRequest req) {
+        
+        NnUserProfileManager profileMngr = NNF.getProfileMngr();
+        
         //verify input
         if (userToken == null || userToken.length() == 0 || userToken.equals("undefined") ||
             items == null || values == null)
@@ -1793,7 +1793,7 @@ public class PlayerApiService {
         NnUser user = NNF.getUserMngr().findByToken(userToken, mso.getId());
         if (user == null) 
             return this.assembleMsgs(NnStatusCode.USER_INVALID, null);
-        Object result = new NnUserProfileManager().getPlayerProfile(user, this.format);
+        Object result = NNF.getProfileMngr().getPlayerProfile(user, this.format);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     

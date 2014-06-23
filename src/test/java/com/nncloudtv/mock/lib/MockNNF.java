@@ -8,11 +8,13 @@ import com.nncloudtv.mock.service.MockMsoManager;
 import com.nncloudtv.mock.service.MockNnChannelManager;
 import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.mock.service.MockNnUserPrefManager;
+import com.nncloudtv.mock.service.MockNnUserProfileManager;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.NnUserProfileManager;
 
 public class MockNNF extends NNF {
     
@@ -23,6 +25,7 @@ public class MockNNF extends NNF {
         getMsoMngr();
         getPrefMngr();
         getUserMngr();
+        getProfileMngr();
         
         getMsoDao();
     }
@@ -91,5 +94,16 @@ public class MockNNF extends NNF {
         }
         
         return configMngr;
+    }
+    
+    public static NnUserProfileManager getProfileMngr() {
+        
+        if (profileMngr == null) {
+            
+            log.info("create mockProfileMngr");
+            profileMngr = new MockNnUserProfileManager();
+        }
+        
+        return profileMngr;
     }
 }

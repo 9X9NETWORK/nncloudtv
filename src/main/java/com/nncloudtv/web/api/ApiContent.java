@@ -52,7 +52,6 @@ import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
@@ -69,7 +68,6 @@ public class ApiContent extends ApiGeneric {
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     private NnProgramManager programMngr;
-    private NnUserProfileManager userProfileMngr;
     
     public ApiContent() {
         
@@ -77,20 +75,17 @@ public class ApiContent extends ApiGeneric {
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
         this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, channelPrefMngr, new NnEpisodeManager(), programMngr);
-        this.userProfileMngr = new NnUserProfileManager();
     }
     
     @Autowired
     public ApiContent(ApiContentService apiContentService,
             StoreService storeService,
-            NnChannelPrefManager channelPrefMngr, NnProgramManager programMngr,
-            NnUserProfileManager userProfileMngr) {
+            NnChannelPrefManager channelPrefMngr, NnProgramManager programMngr) {
         
         this.apiContentService = apiContentService;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
         this.programMngr = programMngr;
-        this.userProfileMngr = userProfileMngr;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -899,7 +894,6 @@ public class ApiContent extends ApiGeneric {
     
         List<NnChannel> results = new ArrayList<NnChannel>();
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnUserProfileManager profileMngr = new NnUserProfileManager();
         StoreService storeService = new StoreService();
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         boolean storeOnly = false;
@@ -1010,7 +1004,7 @@ public class ApiContent extends ApiGeneric {
             
             if (sphereFilter == null) {
                 
-                Set<NnUserProfile> profiles = profileMngr.search(keyword, 0, 30);
+                Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30);
                 Set<Long> userIdSet = new HashSet<Long>();
                 log.info("found profiles = " + profiles.size());
                 for (NnUserProfile profile : profiles) {
@@ -1178,7 +1172,7 @@ public class ApiContent extends ApiGeneric {
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            NnUserProfile superProfile = userProfileMngr.pickSuperProfile(verifiedUserId);
+            NnUserProfile superProfile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
             if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
                 status = evaluateShort(statusStr);
             }

@@ -19,7 +19,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
@@ -389,9 +388,7 @@ public class ApiGeneric {
             return false;
         }
         
-        NnUserProfileManager userProfileMngr = new NnUserProfileManager();
-        
-        NnUserProfile profile = userProfileMngr.findByUserIdAndMsoId(userId, msoId);
+        NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
         if (profile == null) {
             profile = new NnUserProfile();
             profile.setPriv("000111");

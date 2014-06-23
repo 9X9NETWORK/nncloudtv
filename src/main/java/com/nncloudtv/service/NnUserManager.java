@@ -40,7 +40,6 @@ public class NnUserManager {
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
     
     private NnUserDao dao = new NnUserDao();
-    private NnUserProfileManager profileMngr = new NnUserProfileManager();
     public static short MSO_DEFAULT = 1; 
     
     //@@@IMPORTANT email duplication is your responsibility
@@ -64,7 +63,7 @@ public class NnUserManager {
         }                        
         dao.save(user);
         profile.setUserId(user.getId());
-        profileMngr.save(user, profile);
+        NNF.getProfileMngr().save(user, profile);
         resetChannelCache(user);        
         return NnStatusCode.SUCCESS;
     }
@@ -97,7 +96,7 @@ public class NnUserManager {
         profile.setProfileUrl(name);
         profile.setImageUrl(imageUrl);
         profile.setUserId(user.getId());
-        profileMngr.save(user, user.getProfile());
+        NNF.getProfileMngr().save(user, user.getProfile());
         log.info("fake youtube user created:" + email);
         return user;
     }
@@ -229,7 +228,7 @@ public class NnUserManager {
         user.setEmail(user.getEmail().toLowerCase());
         user.setUpdateDate(new Date());
         NnUserProfile profile = user.getProfile();
-        profile = profileMngr.save(user, profile);
+        profile = NNF.getProfileMngr().save(user, profile);
         resetChannelCache(user);
         long msoId = user.getMsoId();
         user = dao.save(user);
@@ -262,7 +261,7 @@ public class NnUserManager {
     private NnUser setUserProfile(NnUser user) {
         if (user != null) {
             log.info("user mso id:" + user.getMsoId());
-            NnUserProfile profile = new NnUserProfileManager().findByUser(user);
+            NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
             if (profile == null)
                 profile = new NnUserProfile(user.getId(), user.getMsoId());
             user.setProfile(profile);
