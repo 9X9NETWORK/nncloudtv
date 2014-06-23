@@ -34,7 +34,6 @@ import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.NnUserPrefManager;
@@ -241,7 +240,6 @@ public class ApiUser extends ApiGeneric {
         }
         
         NnProgramManager programMngr = new NnProgramManager();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
         List<NnProgram> favorites = programMngr.getUserFavorites(user);
         
@@ -253,7 +251,7 @@ public class ApiUser extends ApiGeneric {
             
             if (program.getContentType() == NnProgram.CONTENTTYPE_REFERENCE) {
                 
-                NnEpisode episode = episodeMngr.findById(program.getStorageIdInt());
+                NnEpisode episode = NNF.getEpisodeMngr().findById(program.getStorageIdInt());
                 if (episode == null) {
                     continue;
                 }

@@ -95,33 +95,31 @@ public class PlayerApiService {
     
     private NnChannelManager chMngr;
     private NnDeviceManager deviceMngr;
-    private NnEpisodeManager epMngr;
     
-    private Mso mso;
-    private int version              = 32;
-    public static int LATEST_VERSION = 42;
-    private Locale locale            = Locale.ENGLISH;
-    public static short FORMAT_JSON  = 1;
-    public static short FORMAT_PLAIN = 2;
-    private short format             = FORMAT_PLAIN;
+    public static int   LATEST_VERSION = 42;
+    public static short FORMAT_JSON    = 1;
+    public static short FORMAT_PLAIN   = 2;
+    public static int   PAGING_ROWS    = 50;
+    public static int   MAX_EPISODES   = 200;
+    
+    private Mso    mso;
+    private int    version = 32;
+    private Locale locale  = Locale.ENGLISH;
+    private short  format  = FORMAT_PLAIN;
+    private ApiContext context = null;
     private HttpServletRequest req;
     private HttpServletResponse resp;
-    private ApiContext context       = null;
-    public static int PAGING_ROWS    = 50;
-    public static int MAX_EPISODES   = 200;
     
     public PlayerApiService() {
         
         chMngr = NNF.getChannelMngr();
         deviceMngr = new NnDeviceManager();
-        epMngr = new NnEpisodeManager();
     }
     
-    public PlayerApiService(NnDeviceManager deviceMngr, NnEpisodeManager epMngr) {
+    public PlayerApiService(NnDeviceManager deviceMngr) {
         
         this.chMngr = NNF.getChannelMngr();
         this.deviceMngr = deviceMngr;
-        this.epMngr = epMngr;
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
@@ -1219,6 +1217,7 @@ public class PlayerApiService {
         // to rewrite start/end, if episode was specified
         if (episodeIdStr != null && !episodeIdStr.isEmpty()) {
             
+            NnEpisodeManager epMngr = NNF.getEpisodeMngr();
             NnEpisode episode = epMngr.findById(Long.valueOf(episodeIdStr));
             
             if (episode != null && episode.getSeq() > 0) {
@@ -2443,7 +2442,7 @@ public class PlayerApiService {
         if (program != null) {
             if (program.contains("e")) {
                 program = program.replace("e", "");
-                e = new NnEpisodeManager().findById(Long.parseLong(program));
+                e = NNF.getEpisodeMngr().findById(Long.parseLong(program));
                 if (e == null)
                     return this.assembleMsgs(NnStatusCode.PROGRAM_INVALID, null);
             } else {

@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnProgramDao;
@@ -44,18 +43,6 @@ public class NnProgramManager {
     
     private NnProgramDao dao = new NnProgramDao();
     private YtProgramDao ytDao = new YtProgramDao();
-    private NnEpisodeManager epMngr;
-    
-    public NnProgramManager() {
-        
-        this.epMngr = new NnEpisodeManager();
-    }
-    
-    @Autowired
-    public NnProgramManager(NnEpisodeManager epMngr) {
-        
-        this.epMngr = epMngr;
-    }
     
     public NnProgram create(NnEpisode episode, NnProgram program) {
         
@@ -253,7 +240,7 @@ public class NnProgramManager {
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
-                List<NnEpisode> episodes = new NnEpisodeManager().findPlayerLatestEpisodes(c.getId(), c.getSorting());                
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(c.getId(), c.getSorting());                
                 if (episodes.size() > 0) {
                     log.info("find latest episode id:" + episodes.get(0).getId());
                     List<NnProgram> programs = this.findByEpisodeId(episodes.get(0).getId());
@@ -517,7 +504,7 @@ public class NnProgramManager {
         if (storageId == null)
             return null;
         storageId = storageId.replace("e", "");
-        NnEpisode episode = new NnEpisodeManager().findById(Long.parseLong(storageId));
+        NnEpisode episode = NNF.getEpisodeMngr().findById(Long.parseLong(storageId));
         if (episode == null)
             return null;
         if (episode.isPublic() == true) { //TODO and some other conditions?
@@ -541,7 +528,7 @@ public class NnProgramManager {
     //based on channel type, assemble programInfo string
     public Object assembleProgramInfo(NnChannel c, short format, int start, int end, short time, Mso mso) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
-            List<NnEpisode> episodes = epMngr.findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {        	

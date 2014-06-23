@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.TitleCardDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.TitleCard;
@@ -90,8 +91,7 @@ public class TitleCardManager {
             programMap.put(program.getId(), program);
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             return new ArrayList<TitleCard>();
         }

@@ -25,7 +25,6 @@ import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnDeviceNotificationManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.YtProgramManager;
 
 @Service
@@ -197,7 +196,6 @@ public class GCMLib {
             return null;
         }
         YtProgramManager ytMngr = new YtProgramManager();
-        NnEpisodeManager epMngr = new NnEpisodeManager();
         NnDeviceNotification message = new NnDeviceNotification(0, msoNotification.getMessage());
         
         message.setCreateDate(new Date());
@@ -238,7 +236,7 @@ public class GCMLib {
             if (episodeId == null) {
                 return message;
             }
-            NnEpisode episode = epMngr.findById(episodeId);
+            NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
             if (episode == null) {
                 return message;
             }

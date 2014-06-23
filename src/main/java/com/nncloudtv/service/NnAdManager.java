@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnAdDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnAd;
 import com.nncloudtv.model.NnEpisode;
 
@@ -59,9 +60,8 @@ public class NnAdManager {
             delete(origAd);
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         episode.setAdId(nnad.getId());
-        episodeMngr.save(episode);
+        NNF.getEpisodeMngr().save(episode);
         
         return nnad;
     }

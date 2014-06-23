@@ -30,7 +30,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FacebookMe;
@@ -2566,13 +2565,13 @@ public class PlayerApiController {
     @RequestMapping(value="episodeUpdate")
     public @ResponseBody Object episodeUpdate(
             @RequestParam(value="epId", required=false) long epId ) {
-        NnEpisodeManager mngr = new NnEpisodeManager();
-        NnEpisode e = new NnEpisodeManager().findById(epId);
+        
+        NnEpisode e = NNF.getEpisodeMngr().findById(epId);
         if (e != null) {
-            int duration = mngr.calculateEpisodeDuration(e);
+            int duration = NNF.getEpisodeMngr().calculateEpisodeDuration(e);
             log.info("new duration:" + duration);
             e.setDuration(duration);
-            mngr.save(e);
+            NNF.getEpisodeMngr().save(e);
         }
         return "OK";                
     }

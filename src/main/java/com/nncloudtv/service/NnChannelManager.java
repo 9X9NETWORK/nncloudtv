@@ -47,9 +47,6 @@ public class NnChannelManager {
     
     private NnChannelDao dao = new NnChannelDao();
     
-    public NnChannelManager() {
-    }
-    
     public static String convertChannelId(String channelIdStr) {
     	if (channelIdStr != null && channelIdStr.contains("yt")) {
     		channelIdStr = channelIdStr.replace("yt", "");
@@ -470,8 +467,7 @@ public class NnChannelManager {
             
         } else {
             
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
-            List<NnEpisode> episodes = episodeMngr.findByChannelId(channel.getId());
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channel.getId());
             
             return episodes.size();
         }
@@ -858,9 +854,9 @@ public class NnChannelManager {
             }
             
         } else {
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
+            
             String filter = "channelId == " + channel.getId();
-            List<NnEpisode> episodes = episodeMngr.list(1, 50, "seq", "asc", filter);
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq", "asc", filter);
             
             for (int i = 0; i < episodes.size() && imgs.size() < 3; i++) {
                 
@@ -1049,10 +1045,9 @@ public class NnChannelManager {
                     }
                 }
             } else {
-                NnEpisodeManager eMngr = new NnEpisodeManager();
-                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
-                Collections.sort(episodes, eMngr.getEpisodePublicSeqComparator());
+                Collections.sort(episodes, NNF.getEpisodeMngr().getEpisodePublicSeqComparator());
                 for (int i=0; i<3; i++) {
                     if (i < episodes.size()) {
                        //lastEpisodeTitle = episodes.get(0).getName();

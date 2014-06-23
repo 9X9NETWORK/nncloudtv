@@ -72,7 +72,7 @@ public class ApiContent extends ApiGeneric {
         
         this.storeService = new StoreService();
         this.programMngr = new NnProgramManager();
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), new NnEpisodeManager(), programMngr);
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), NNF.getEpisodeMngr(), programMngr);
     }
     
     @Autowired
@@ -272,15 +272,14 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
             return null;
         }
         
         // mark as hook position
-        episodeMngr.autoShareToFacebook(episode);
+        NNF.getEpisodeMngr().autoShareToFacebook(episode);
         
         okResponse(resp);
         return null;
@@ -645,10 +644,8 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnProgramManager programMngr = new NnProgramManager();
-        //TitleCardManager titlecardMngr = new TitleCardManager();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
             return null;
@@ -730,8 +727,7 @@ public class ApiContent extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
             return null;
@@ -1414,7 +1410,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
+        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
@@ -1512,7 +1508,6 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         List<NnEpisode> results = null;
         
         // paging
@@ -1529,18 +1524,18 @@ public class ApiContent extends ApiGeneric {
         
         if (page > 0 && rows > 0) {
             
-            results = episodeMngr.list(page, rows, "seq", "asc", "channelId == " + channelId);
+            results = NNF.getEpisodeMngr().list(page, rows, "seq", "asc", "channelId == " + channelId);
             
         } else {
             
-            results = episodeMngr.findByChannelId(channelId);
+            results = NNF.getEpisodeMngr().findByChannelId(channelId);
             
         }
         if (results == null) {
             return new ArrayList<NnEpisode>();
         }
         
-        Collections.sort(results, episodeMngr.getEpisodeSeqComparator());
+        Collections.sort(results, NNF.getEpisodeMngr().getEpisodeSeqComparator());
         
         for (NnEpisode episode : results) {
             
@@ -1567,9 +1562,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
             return "Episode Not Found";
@@ -1595,7 +1588,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // delete episode
-        episodeMngr.delete(episode);
+        NNF.getEpisodeMngr().delete(episode);
         
         // re-calcuate episode count
         if (channel != null) {
@@ -1620,9 +1613,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
             return null;
@@ -1649,7 +1640,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
+        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         
         NnEpisode episode = episodeMngr.findById(episodeId);
         if (episode == null) {
@@ -1947,7 +1938,7 @@ public class ApiContent extends ApiGeneric {
             episode.setSeq(0);
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
+        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         
         episode = episodeMngr.save(episode);
         if (episode.getSeq() == 0) { // use special value to trigger reorder
@@ -1984,9 +1975,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
             notFound(resp, "Episode Not Found");
@@ -2019,9 +2008,8 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnAdManager adMngr = new NnAdManager();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
             notFound(resp, "Episode Not Found");
@@ -2040,7 +2028,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         episode.setAdId(0);
-        episodeMngr.save(episode);
+        NNF.getEpisodeMngr().save(episode);
         
         NnAd nnad = adMngr.findByEpisode(episode);
         if (nnad != null) {
@@ -2067,9 +2055,8 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnAdManager adMngr = new NnAdManager();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
             return null;
@@ -2133,9 +2120,8 @@ public class ApiContent extends ApiGeneric {
         }
         
         NnAdManager adMngr = new NnAdManager();
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
         
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
             notFound(resp, "Episode Not Found");
@@ -2193,9 +2179,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        
-        NnEpisode episode = episodeMngr.findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
             notFound(resp, "Episode Not Found");

@@ -26,7 +26,7 @@ public class NnEpisodeManager {
     
     protected static final Logger log = Logger.getLogger(NnEpisodeManager.class.getName());
     
-    private NnEpisodeDao dao = new NnEpisodeDao();
+    private NnEpisodeDao dao = NNF.getEpisodeDao();
     
     public NnEpisode findById(long id) {
         return dao.findById(id);
