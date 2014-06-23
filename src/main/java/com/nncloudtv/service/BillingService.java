@@ -60,7 +60,7 @@ public class BillingService {
         cardNumber = cardNumber.replaceAll("-", "");
         if (cardExpires == null)
             throw new NnApiBadRequestException(ApiGeneric.MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
-        if (!cardNumber.matches("\\d{16}"))
+        if (!cardNumber.matches("\\d{15,16}"))
             throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_NUMBER);
         if (!cardExpires.matches("\\d\\d\\/\\d\\d"))
             throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_EXPIRES);
