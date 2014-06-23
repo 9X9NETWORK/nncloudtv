@@ -23,14 +23,12 @@ import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
-import com.nncloudtv.service.BillingOrderManager;
-import com.nncloudtv.service.BillingPackageManager;
-import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -42,21 +40,10 @@ public class ApiBilling extends ApiGeneric {
     
     static final String DELIMITER = " - ";
     
-    private BillingPackageManager packageMngr;
-    private BillingProfileManager profileMngr;
-    private BillingOrderManager   orderMngr;
-    
-    public ApiBilling() {
-        
-        packageMngr = new BillingPackageManager();
-        profileMngr = new BillingProfileManager();
-        orderMngr   = new BillingOrderManager();
-    }
-    
     @RequestMapping(value = "packages", method = RequestMethod.GET)
     public @ResponseBody List<BillingPackage> packageList(HttpServletRequest req, HttpServletResponse resp) {
         
-        return packageMngr.findAll();
+        return NNF.getPackageMngr().findAll();
     }
     
     @RequestMapping(value = "profiles/{profileId}", method = RequestMethod.PUT)
@@ -64,7 +51,7 @@ public class ApiBilling extends ApiGeneric {
         
         final String TOKEN = "token";
         
-        BillingProfile profile = profileMngr.findById(profileIdStr);
+        BillingProfile profile = NNF.getBillingProfileMngr().findById(profileIdStr);
         if (profile == null) {
             notFound(resp);
             return null;
@@ -130,7 +117,7 @@ public class ApiBilling extends ApiGeneric {
             profile.setCountry(country);
         }
         
-        return profileMngr.save(profile);
+        return NNF.getBillingProfileMngr().save(profile);
     }
     
     @RequestMapping(value = "profiles", method = RequestMethod.POST)
@@ -181,7 +168,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         resp.setStatus(HTTP_201);
-        return profileMngr.save(profile);
+        return NNF.getBillingProfileMngr().save(profile);
     }
     
     @RequestMapping(value = "orders", method = RequestMethod.POST)
@@ -199,7 +186,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         String[] packageIds = packageIdStr.split(",");
-        List<BillingPackage> billingPackages = packageMngr.findByIds(packageIds);
+        List<BillingPackage> billingPackages = NNF.getPackageMngr().findByIds(packageIds);
         if (billingPackages == null || billingPackages.size() != packageIds.length) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + PACKAGE_ID);
             return null;
@@ -218,7 +205,7 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER + DELIMITER + PROFILE_ID);
             return null;
         }
-        BillingProfile profile = profileMngr.findById(profileIdStr);
+        BillingProfile profile = NNF.getBillingProfileMngr().findById(profileIdStr);
         if (profile == null) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_ID);
             return null;
@@ -254,7 +241,7 @@ public class ApiBilling extends ApiGeneric {
             try {
                 creditCard = billingServ.checkCreditCard(context, false);
                 CcApiDocument ccResult = ClearCommerceLib.preAuth(profile, creditCard, context.isProductionSite());
-                profile = profileMngr.updateAuthInfo(profile, creditCard, ccResult);
+                profile = NNF.getBillingProfileMngr().updateAuthInfo(profile, creditCard, ccResult);
                 
             } catch (CcApiBadValueException e) {
                 
@@ -293,7 +280,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         resp.setStatus(HTTP_201);
-        return orderMngr.save(orders);
+        return NNF.getOrderMngr().save(orders);
     }
     
 }

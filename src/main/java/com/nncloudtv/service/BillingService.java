@@ -23,17 +23,6 @@ public class BillingService {
     
     protected static final Logger   log = Logger.getLogger(BillingService.class.getName());
     
-    protected BillingOrderManager   orderMngr;
-    protected BillingProfileManager profileMngr;
-    protected BillingPackageManager packageMngr;
-    
-    public BillingService() {
-        
-        orderMngr = new BillingOrderManager();
-        profileMngr = new BillingProfileManager();
-        packageMngr = new BillingPackageManager();
-    }
-    
     public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException,
             NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {
         

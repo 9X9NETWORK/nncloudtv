@@ -2,7 +2,13 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import com.nncloudtv.dao.BillingOrderDao;
+import com.nncloudtv.dao.BillingPackageDao;
+import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
+import com.nncloudtv.service.BillingOrderManager;
+import com.nncloudtv.service.BillingPackageManager;
+import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -15,15 +21,21 @@ public class NNF {
     
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
     
-    protected static NnChannelManager  channelMngr = null;
-    protected static MsoConfigManager  configMngr  = null;
-    protected static MsoManager        msoMngr     = null;
-    protected static NnUserPrefManager prefMngr    = null;
-    protected static NnUserManager     userMngr    = null;
-    protected static NnUserProfileManager profileMngr = null;
-    protected static NnChannelPrefManager chPrefMngr  = null;
+    protected static NnChannelManager      channelMngr        = null;
+    protected static MsoConfigManager      configMngr         = null;
+    protected static MsoManager            msoMngr            = null;
+    protected static NnUserPrefManager     prefMngr           = null;
+    protected static NnUserManager         userMngr           = null;
+    protected static NnUserProfileManager  profileMngr        = null;
+    protected static NnChannelPrefManager  chPrefMngr         = null;
+    protected static BillingProfileManager billingProfileMngr = null;
+    protected static BillingOrderManager   orderMngr          = null;
+    protected static BillingPackageManager packageMngr        = null;
     
-    protected static MsoDao            msoDao      = null;
+    protected static MsoDao                msoDao             = null;
+    protected static BillingOrderDao       orderDao           = null;
+    protected static BillingProfileDao     billingProfileDao  = null;
+    protected static BillingPackageDao     packageDao         = null;
     
     public static MsoDao getMsoDao() {
         
@@ -34,6 +46,72 @@ public class NNF {
         }
         
         return msoDao;
+    }
+    
+    public static BillingOrderDao getOrderDao() {
+        
+        if (orderDao == null) {
+            
+            log.info("create orderDao");
+            orderDao = new BillingOrderDao();
+        }
+        
+        return orderDao;
+    }
+    
+    public static BillingProfileDao getBillingProfileDao() {
+        
+        if (billingProfileDao == null) {
+            
+            log.info("create billingProfileDao");
+            billingProfileDao = new BillingProfileDao();
+        }
+        
+        return billingProfileDao;
+    }
+    
+    public static BillingPackageDao getPackageDao() {
+        
+        if (packageDao == null) {
+            
+            log.info("create packageDao");
+            packageDao = new BillingPackageDao();
+        }
+        
+        return packageDao;
+    }
+    
+    public static BillingProfileManager getBillingProfileMngr() {
+        
+        if (billingProfileMngr == null) {
+            
+            log.info("create billingProfile");
+            billingProfileMngr = new BillingProfileManager();
+        }
+        
+        return billingProfileMngr;
+    }
+    
+    public static BillingOrderManager getOrderMngr() {
+        
+        if (orderMngr == null) {
+            
+            log.info("crate orderMngr");
+            orderMngr = new BillingOrderManager();
+        }
+        
+        return orderMngr;
+    }
+    
+    public static BillingPackageManager getPackageMngr() {
+        
+        if (packageMngr == null) {
+            
+            log.info("create packageMngr");
+            packageMngr = new BillingPackageManager();
+        }
+        
+        return packageMngr;
     }
     
     public static NnUserPrefManager getPrefMngr() {
