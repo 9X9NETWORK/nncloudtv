@@ -1,5 +1,6 @@
 package com.nncloudtv.web.api;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
+import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -293,7 +295,26 @@ public class ApiBilling extends ApiGeneric {
         }
         
         resp.setStatus(HTTP_201);
-        return orderMngr.save(orders);
+        orders = orderMngr.save(orders);
+        
+        if (req.getParameter("mail") != null) {
+            try {
+                BillingService billingServ = new BillingService();
+                
+                billingServ.sendPurchaseConfirmEmail(orders);
+                
+            } catch (NnDataIntegrityException e) {
+                NnLogUtil.logException(e);
+                internalError(resp);
+                return null;
+            } catch (IOException e) {
+                NnLogUtil.logException(e);
+                internalError(resp);
+                return null;
+            }
+        }
+        
+        return orders;
     }
     
 }

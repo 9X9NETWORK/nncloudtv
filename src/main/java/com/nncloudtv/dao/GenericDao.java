@@ -123,7 +123,7 @@ public class GenericDao<T> {
             if (filter != null && filter != "")
                 query.setFilter(filter);
             @SuppressWarnings("unchecked")
-            int total = ((List<T>)query.execute()).size();
+            int total = ((List<T>) query.execute()).size();
             result = total;
         } finally {
             pm.close();
@@ -175,16 +175,19 @@ public class GenericDao<T> {
         return results;
     }
     
-    public List<T> findAllByIds(Collection<Long> ids) {        
-        List<T> results = new ArrayList<T>();        
-        for (Long id : ids) { // TODO : the sql query in the for loop is bad
-            T dao = null;
-            dao = this.findById(id);
-            if (dao != null) {
-                results.add(dao);
-            }
-        }
+    @SuppressWarnings("unchecked")
+    public List<T> findAllByIds(Collection<Long> ids) {
         
+        List<T> results = new ArrayList<T>();
+        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        try {
+            Query query = pm.newQuery(daoClass, ":p.contains(id)");
+            results = (List<T>) query.execute(ids);
+            results = (List<T>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
         return results;
     }
     

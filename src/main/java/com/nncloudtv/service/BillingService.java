@@ -1,9 +1,14 @@
 package com.nncloudtv.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
@@ -13,7 +18,12 @@ import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
+import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.model.BillingOrder;
+import com.nncloudtv.model.BillingPackage;
+import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.json.cms.CreditCard;
@@ -80,5 +90,69 @@ public class BillingService {
         }
         
         return creditCard;
+    }
+    
+    public void sendPurchaseConfirmEmail(List<BillingOrder> orders) throws NnDataIntegrityException, IOException {
+        
+        final String subject = "[FLIPr.tv] Welcome to FLIPr.tv %s! Let's get started.";
+        /**
+        final String purchaseConfirmEmailContent = "Dear %s,<br><br>Thanks for signing for FLIPr. This is confirmation that you have purchase:<br><br>"
+                                                 + "<table><tr><th width='300' align='center'>Item</th><th width='100'>Unit Price</th><th width='100'>VAT Rate</th><th widh='100'>Total Cost</th></tr>%s<tr><td colspan='4' align='right'></td></tr></table><br><br>"
+                                                 + "Your Visa ending in %s will be charged $%.2f a month as a recurring transaction after your app be ready for sale in app store.<br><br>"
+                                                 + "Sincerely,<br>The FLIPr Team<br>www.FLIPr.tv";
+        final String purchaseOrderRow            = "<tr><td>%s</td><td>$.2f</td><td>%d</td></tr>";
+        **/
+        
+        if (orders == null || orders.isEmpty()) return;
+        
+        List<Long> ids = new ArrayList<Long>();
+        for (BillingOrder order : orders) {
+            ids.add(order.getId());
+        }
+        orders = orderMngr.findByIds(ids);
+        ids.clear();
+        if (orders.isEmpty())
+            throw new NnDataIntegrityException("can not find those order IDs - " + StringUtils.join(ids, ','));
+        BillingProfile profile = profileMngr.findById(orders.get(0).getId());
+        if (profile == null)
+            throw new NnDataIntegrityException("can not find billingProfile which ID = " + orders.get(0).getId());
+        for (BillingOrder order : orders) {
+            if (profile.getId() != order.getProfileId())
+                throw new NnDataIntegrityException(String.format("expecting order %d which profileId is %d", order.getId(), profile.getId()));
+            ids.add(order.getPackageId());
+        }
+        List<BillingPackage> packages = new ArrayList<BillingPackage>();
+        packages = packageMngr.findByIds(ids);
+        
+        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm.html"));
+        
+        float  totalPrice   = 0;
+        for (int i = 0; i < packages.size(); i++) {
+            
+            float price = (((float) packages.get(i).getPrice()) / 100);
+            totalPrice += price;
+            
+            if (i == 0) {
+                content.replaceAll("{{item" + (i+1) + "}}", packages.get(i).getName() + " and Chromecast app");
+            } else {
+                content.replaceAll("{{item" + (i+1) + "}}", packages.get(i).getName());
+            }
+            content.replaceAll("{{price" + (i+1) + "}}", String.format("$%.3f", price));
+            content.replaceAll("{{vat" + (i+1) + "}}", "0%");
+        }
+        content.replaceAll("{{user_name}}", profile.getName());
+        content.replaceAll("{{card}}", profile.getCardRemainDigits());
+        content.replaceAll("{{total}}", String.format("$%.2f", totalPrice));
+        
+        EmailService emailServ = new EmailService();
+        NnEmail email = new NnEmail(profile.getEmail(),
+                                    profile.getName(),
+                                    "vidcon2014@flipr.tv",
+                                    "FLIPr",
+                                    NnEmail.SEND_EMAIL_NOREPLY,
+                                    String.format(subject, profile.getName()),
+                                    content);
+        email.setHtml(true);
+        emailServ.sendEmail(email, null, null);
     }
 }
