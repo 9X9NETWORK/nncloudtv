@@ -68,17 +68,24 @@ public class BillingProfileManager {
         CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
         CcApiRecord ccOrderForm = ClearCommerceLib.getOrderForm(ccResult);
         txnStatus = ccOverview.getFieldString("TransactionStatus");
+        String remains = creditCard.getCardNumber().substring(creditCard.getCardNumber().length() - 4);
         if (txnStatus.equals("A")) {
             
+            log.info("card was accepted.");
             ccRefOrderId = ccOrderForm.getFieldString("Id");
             profile.setCcRefOrderId(ccRefOrderId);
             CcApiRecord ccTransaction = ccOrderForm.getFirstRecord("Transaction");
             profile.setCcRefTransId(ccTransaction.getFieldString("Id"));
             profile.setCardStatus(BillingProfile.AUTHED);
             profile.setCardHolderName(creditCard.getCardHolderName());
-            profile.setCardRemainDigits(creditCard.getCardNumber().substring(creditCard.getCardNumber().length() - 4));
+            profile.setCardRemainDigits(remains);
+            log.info(String.format("billing profile updated (%s)", creditCard.getCardHolderName()));
             
             return save(profile);
+            
+        } else {
+            
+            log.info(String.format("card was declined (%s)", remains));
         }
         
         return profile;
