@@ -153,8 +153,8 @@ public class ApiBilling extends ApiGeneric {
         }
         
         BillingProfile profile = new BillingProfile();
-        profile.setName(req.getParameter("name"));
-        profile.setEmail(req.getParameter("email"));
+        profile.setName(name);
+        profile.setEmail(email);
         profile.setPhone(req.getParameter("phone"));
         profile.setAddr1(req.getParameter("addr1"));
         profile.setAddr2(req.getParameter("addr2"));
