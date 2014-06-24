@@ -60,6 +60,7 @@ public class GenericDao<T> {
         try {
             tx.begin();
             pm.makePersistentAll(list);
+            list = (List<T>) pm.detachCopyAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {
