@@ -126,7 +126,7 @@ public class BillingService {
             return;
         }
         
-        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm.html"), NnStringUtil.UTF8);
+        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm_mail.html"), NnStringUtil.UTF8);
         
         float  totalPrice   = 0;
         for (int i = 0; i < packages.size(); i++) {
