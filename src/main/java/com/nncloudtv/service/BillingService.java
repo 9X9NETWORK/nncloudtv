@@ -16,6 +16,7 @@ import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
+import com.google.common.collect.Lists;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
@@ -97,15 +98,7 @@ public class BillingService {
     public void sendPurchaseConfirmEmail(List<BillingOrder> orders) throws NnDataIntegrityException, IOException {
         
         final String subject = "[FLIPr.tv] Welcome to FLIPr.tv %s! Let's get started.";
-        /**
-        final String purchaseConfirmEmailContent = "Dear %s,<br><br>Thanks for signing for FLIPr. This is confirmation that you have purchase:<br><br>"
-                                                 + "<table><tr><th width='300' align='center'>Item</th><th width='100'>Unit Price</th><th width='100'>VAT Rate</th><th widh='100'>Total Cost</th></tr>%s<tr><td colspan='4' align='right'></td></tr></table><br><br>"
-                                                 + "Your Visa ending in %s will be charged $%.2f a month as a recurring transaction after your app be ready for sale in app store.<br><br>"
-                                                 + "Sincerely,<br>The FLIPr Team<br>www.FLIPr.tv";
-        final String purchaseOrderRow            = "<tr><td>%s</td><td>$.2f</td><td>%d</td></tr>";
-        **/
-        
-        final String PREFIX = "\\{\\{";
+        final String PREFIX  = "\\{\\{";
         final String POSTFIX = "\\}\\}";
         
         if (orders == null || orders.isEmpty()) return;
@@ -120,14 +113,14 @@ public class BillingService {
             throw new NnDataIntegrityException("can not find those order IDs - " + StringUtils.join(ids, ','));
         BillingProfile profile = profileMngr.findById(orders.get(0).getProfileId());
         if (profile == null)
-            throw new NnDataIntegrityException("can not find billingProfile which ID = " + orders.get(0).getId());
+            throw new NnDataIntegrityException("can not find billingProfile " + orders.get(0).getId());
         for (BillingOrder order : orders) {
             if (profile.getId() != order.getProfileId())
                 throw new NnDataIntegrityException(String.format("expecting order %d which profileId is %d, but now it's %d", order.getId(), profile.getId(), order.getProfileId()));
             ids.add(order.getPackageId());
         }
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
-        packages = packageMngr.findByIds(ids);
+        packages = Lists.reverse(packageMngr.findByIds(ids));
         
         String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm.html"), NnStringUtil.UTF8);
         
@@ -153,12 +146,13 @@ public class BillingService {
         EmailService emailServ = new EmailService();
         NnEmail email = new NnEmail(profile.getEmail(),
                                     profile.getName(),
-                                    "vidcon2014@flipr.tv",
-                                    "FLIPr",
+                                    NnEmail.SEND_EMAIL_VIDCON2014,
+                                    NnEmail.SEND_NAME_FLIPR,
                                     NnEmail.SEND_EMAIL_NOREPLY,
                                     String.format(subject, profile.getName()),
                                     content);
         email.setHtml(true);
-        emailServ.sendEmail(email, null, null);
+        emailServ.sendEmail(email, NnEmail.SEND_EMAIL_NNCLOUDTV, NnEmail.SEND_NAME_NNCLOUDTV);
+        log.info("sent purchase confirm mail to " + profile.getEmail());
     }
 }

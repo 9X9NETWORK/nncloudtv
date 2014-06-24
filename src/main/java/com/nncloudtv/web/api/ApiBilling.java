@@ -192,6 +192,7 @@ public class ApiBilling extends ApiGeneric {
         final String PROFILE_ID    = "profileId";
         final String PROFILE_TOKEN = "profileToken";
         final String PACKAGE_ID    = "packageId";
+        final String NO_MAIL       = "noMail";
         
         // verify packageId
         String packageIdStr = req.getParameter(PACKAGE_ID);
@@ -294,10 +295,9 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
-        resp.setStatus(HTTP_201);
         orders = orderMngr.save(orders);
         
-        if (req.getParameter("mail") != null) {
+        if (req.getParameter(NO_MAIL) == null) {
             try {
                 BillingService billingServ = new BillingService();
                 
@@ -314,7 +314,7 @@ public class ApiBilling extends ApiGeneric {
             }
         }
         
+        resp.setStatus(HTTP_201);
         return orders;
     }
-    
 }
