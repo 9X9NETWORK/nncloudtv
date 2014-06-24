@@ -141,13 +141,13 @@ public class BillingService {
             if (i == 0) {
                 itemName += " and Chromecast app";
             }
-            content.replaceAll(PREFIX + "item"  + num + POSTFIX, itemName);
-            content.replaceAll(PREFIX + "price" + num + POSTFIX, String.format("$%.2f", price));
-            content.replaceAll(PREFIX + "vat"   + num + POSTFIX, "0%");
+            content = content.replaceAll(PREFIX + "item"  + num + POSTFIX, itemName);
+            content = content.replaceAll(PREFIX + "price" + num + POSTFIX, String.format("$%.2f", price));
+            content = content.replaceAll(PREFIX + "vat"   + num + POSTFIX, "0%");
         }
-        content.replaceAll(PREFIX + "user"  + POSTFIX, profile.getName());
-        content.replaceAll(PREFIX + "card"  + POSTFIX, profile.getCardRemainDigits());
-        content.replaceAll(PREFIX + "total" + POSTFIX, String.format("$%.2f", totalPrice));
+        content = content.replaceAll(PREFIX + "user"  + POSTFIX, profile.getName());
+        content = content.replaceAll(PREFIX + "card"  + POSTFIX, profile.getCardRemainDigits());
+        content = content.replaceAll(PREFIX + "total" + POSTFIX, String.format("$%.2f", totalPrice));
         
         EmailService emailServ = new EmailService();
         NnEmail email = new NnEmail(profile.getEmail(),
