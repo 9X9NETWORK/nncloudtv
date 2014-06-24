@@ -133,16 +133,16 @@ public class BillingService {
             totalPrice += price;
             
             if (i == 0) {
-                content.replaceAll("{{item" + (i+1) + "}}", packages.get(i).getName() + " and Chromecast app");
+                content.replaceAll("\\{\\{item" + (i+1) + "\\}\\}", packages.get(i).getName() + " and Chromecast app");
             } else {
-                content.replaceAll("{{item" + (i+1) + "}}", packages.get(i).getName());
+                content.replaceAll("\\{\\{item" + (i+1) + "\\}\\}", packages.get(i).getName());
             }
-            content.replaceAll("{{price" + (i+1) + "}}", String.format("$%.3f", price));
-            content.replaceAll("{{vat" + (i+1) + "}}", "0%");
+            content.replaceAll("\\{\\{price" + (i+1) + "\\}\\}", String.format("$%.3f", price));
+            content.replaceAll("\\{\\{vat" + (i+1) + "\\}\\}", "0%");
         }
-        content.replaceAll("{{user_name}}", profile.getName());
-        content.replaceAll("{{card}}", profile.getCardRemainDigits());
-        content.replaceAll("{{total}}", String.format("$%.2f", totalPrice));
+        content.replaceAll("\\{\\{user_name\\}\\}", profile.getName());
+        content.replaceAll("\\{\\{card\\}\\}", profile.getCardRemainDigits());
+        content.replaceAll("\\{\\{total\\}\\}", String.format("$%.2f", totalPrice));
         
         EmailService emailServ = new EmailService();
         NnEmail email = new NnEmail(profile.getEmail(),
