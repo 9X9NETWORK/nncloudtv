@@ -20,6 +20,7 @@ import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
@@ -103,6 +104,9 @@ public class BillingService {
         final String purchaseOrderRow            = "<tr><td>%s</td><td>$.2f</td><td>%d</td></tr>";
         **/
         
+        final String PREFIX = "\\{\\{";
+        final String POSTFIX = "\\}\\}";
+        
         if (orders == null || orders.isEmpty()) return;
         
         List<Long> ids = new ArrayList<Long>();
@@ -124,7 +128,7 @@ public class BillingService {
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
         packages = packageMngr.findByIds(ids);
         
-        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm.html"));
+        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm.html"), NnStringUtil.UTF8);
         
         float  totalPrice   = 0;
         for (int i = 0; i < packages.size(); i++) {
@@ -132,17 +136,18 @@ public class BillingService {
             float price = (((float) packages.get(i).getPrice()) / 100);
             totalPrice += price;
             
+            String num = String.valueOf(i + 1);
+            String itemName = packages.get(i).getName();
             if (i == 0) {
-                content.replaceAll("\\{\\{item" + (i+1) + "\\}\\}", packages.get(i).getName() + " and Chromecast app");
-            } else {
-                content.replaceAll("\\{\\{item" + (i+1) + "\\}\\}", packages.get(i).getName());
+                itemName += " and Chromecast app";
             }
-            content.replaceAll("\\{\\{price" + (i+1) + "\\}\\}", String.format("$%.3f", price));
-            content.replaceAll("\\{\\{vat" + (i+1) + "\\}\\}", "0%");
+            content.replaceAll(PREFIX + "item"  + num + POSTFIX, itemName);
+            content.replaceAll(PREFIX + "price" + num + POSTFIX, String.format("$%.2f", price));
+            content.replaceAll(PREFIX + "vat"   + num + POSTFIX, "0%");
         }
-        content.replaceAll("\\{\\{user_name\\}\\}", profile.getName());
-        content.replaceAll("\\{\\{card\\}\\}", profile.getCardRemainDigits());
-        content.replaceAll("\\{\\{total\\}\\}", String.format("$%.2f", totalPrice));
+        content.replaceAll(PREFIX + "user"  + POSTFIX, profile.getName());
+        content.replaceAll(PREFIX + "card"  + POSTFIX, profile.getCardRemainDigits());
+        content.replaceAll(PREFIX + "total" + POSTFIX, String.format("$%.2f", totalPrice));
         
         EmailService emailServ = new EmailService();
         NnEmail email = new NnEmail(profile.getEmail(),
