@@ -113,12 +113,12 @@ public class BillingService {
         ids.clear();
         if (orders.isEmpty())
             throw new NnDataIntegrityException("can not find those order IDs - " + StringUtils.join(ids, ','));
-        BillingProfile profile = profileMngr.findById(orders.get(0).getId());
+        BillingProfile profile = profileMngr.findById(orders.get(0).getProfileId());
         if (profile == null)
             throw new NnDataIntegrityException("can not find billingProfile which ID = " + orders.get(0).getId());
         for (BillingOrder order : orders) {
             if (profile.getId() != order.getProfileId())
-                throw new NnDataIntegrityException(String.format("expecting order %d which profileId is %d", order.getId(), profile.getId()));
+                throw new NnDataIntegrityException(String.format("expecting order %d which profileId is %d, but now it's %d", order.getId(), profile.getId(), order.getProfileId()));
             ids.add(order.getPackageId());
         }
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
