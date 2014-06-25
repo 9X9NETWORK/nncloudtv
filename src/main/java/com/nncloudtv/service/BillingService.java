@@ -141,11 +141,9 @@ public class BillingService {
             }
             content = content.replaceAll(PREFIX + "item"  + num + POSTFIX, itemName);
             content = content.replaceAll(PREFIX + "price" + num + POSTFIX, Matcher.quoteReplacement(String.format("$%.2f", price)));
-            content = content.replaceAll(PREFIX + "vat"   + num + POSTFIX, "0%");
         }
         content = content.replaceAll(PREFIX + "item2"  + POSTFIX, "");
         content = content.replaceAll(PREFIX + "price2" + POSTFIX, "");
-        content = content.replaceAll(PREFIX + "vat2"   + POSTFIX, "");
         content = content.replaceAll(PREFIX + "user"   + POSTFIX, profile.getName());
         content = content.replaceAll(PREFIX + "card"   + POSTFIX, profile.getCardRemainDigits());
         content = content.replaceAll(PREFIX + "total"  + POSTFIX, Matcher.quoteReplacement(String.format("$%.2f", totalPrice)));
