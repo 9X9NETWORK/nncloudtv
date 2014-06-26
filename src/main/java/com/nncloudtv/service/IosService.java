@@ -53,16 +53,15 @@ public class IosService {
             id = "0";
         }        
         String[] result = {"", "", ""};
-        SysTagManager tagMngr = new SysTagManager();        
         //if it's a set, find channel info
         result[0] = "id" + "\t" + id + "\n";
         if (!id.equals("0")) {            
             long tagId = Long.parseLong(id);
-            SysTag tag = tagMngr.findById(tagId);
+            SysTag tag = NNF.getSysTagMngr().findById(tagId);
             if (tag != null) {
                 result[0] += "piwik" + "\t" + "" + "\n";
             }
-            List<NnChannel> channels = tagMngr.findPlayerChannelsById(tagId, lang, SysTag.SORT_SEQ, 0);
+            List<NnChannel> channels = NNF.getSysTagMngr().findPlayerChannelsById(tagId, lang, SysTag.SORT_SEQ, 0);
             for (NnChannel c : channels) {
                 c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
             }
@@ -70,8 +69,7 @@ public class IosService {
             return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
         }        
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        List<SysTagDisplay> categories = displayMngr.findPlayerCategories(lang, mso.getId());
+        List<SysTagDisplay> categories = NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId());
         //if it's just categories, find categories
         for (SysTagDisplay c : categories) { 
             String name =  c.getName();

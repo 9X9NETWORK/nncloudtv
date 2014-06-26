@@ -308,8 +308,7 @@ public class MsoConfigManager {
         }
         
         // populate System's CategoryIds
-        SysTagManager sysTagMngr = new SysTagManager();
-        List<SysTag> systemCategories = sysTagMngr.findByMsoIdAndType(NNF.getMsoMngr().findNNMso().getId(), SysTag.TYPE_CATEGORY);
+        List<SysTag> systemCategories = NNF.getSysTagMngr().findByMsoIdAndType(NNF.getMsoMngr().findNNMso().getId(), SysTag.TYPE_CATEGORY);
         Map<Long, Long> systemCategoryIds = new TreeMap<Long, Long>();
         for (SysTag systemCategory : systemCategories) {
             systemCategoryIds.put(systemCategory.getId(), systemCategory.getId());

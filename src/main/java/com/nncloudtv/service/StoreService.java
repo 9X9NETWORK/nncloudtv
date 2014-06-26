@@ -31,26 +31,16 @@ public class StoreService {
     private SysTagDao sysTagDao = new SysTagDao();
 
     private StoreListingManager storeListingMngr;
-    private SysTagManager sysTagMngr;
-    private SysTagDisplayManager sysTagDisplayMngr;
-    private SysTagMapManager sysTagMapMngr;
     
     @Autowired
-    public StoreService(StoreListingManager storeListingMngr, SysTagManager sysTagMngr,
-                            SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr) {
+    public StoreService(StoreListingManager storeListingMngr) {
         
         this.storeListingMngr = storeListingMngr;
-        this.sysTagMngr = sysTagMngr;
-        this.sysTagDisplayMngr = sysTagDisplayMngr;
-        this.sysTagMapMngr = sysTagMapMngr;
     }
     
     public StoreService() {
         
         this.storeListingMngr = new StoreListingManager();
-        this.sysTagMngr = new SysTagManager();
-        this.sysTagDisplayMngr = new SysTagDisplayManager();
-        this.sysTagMapMngr = new SysTagMapManager();
     }
     
     /** build system Category from SysTag and SysTagDisplay */
@@ -203,7 +193,7 @@ public class StoreService {
             return false;
         }
         
-        SysTag category = sysTagMngr.findById(categoryId);
+        SysTag category = NNF.getSysTagMngr().findById(categoryId);
         if (category == null) {
             return false;
         }
@@ -265,7 +255,7 @@ public class StoreService {
             return new ArrayList<Category>();
         }
         
-        List<SysTagDisplay> categoryMetas = sysTagDisplayMngr.findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
+        List<SysTagDisplay> categoryMetas = NNF.getDisplayMngr().findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
         if (categoryMetas == null || categoryMetas.size() == 0) {
             return new ArrayList<Category>();
         }
@@ -274,7 +264,7 @@ public class StoreService {
         Category result = null;
         for (SysTagDisplay categoryMeta : categoryMetas) {
             
-            SysTag category = sysTagMngr.findById(categoryMeta.getSystagId());
+            SysTag category = NNF.getSysTagMngr().findById(categoryMeta.getSystagId());
             
             if (category != null) {
                 result = composeCategory(category, categoryMeta);
@@ -295,7 +285,7 @@ public class StoreService {
         if (categoryId == null || channelId == null) {
             return ;
         }
-        
+        SysTagMapManager sysTagMapMngr = NNF.getSysTagMapMngr();
         Mso nnMso = NNF.getMsoMngr().findNNMso();
         List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMapsByChannelId(channelId, nnMso.getId());
         sysTagMapMngr.deleteAll(tagMaps);

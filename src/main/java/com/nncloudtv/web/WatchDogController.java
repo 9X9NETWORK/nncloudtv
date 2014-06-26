@@ -43,7 +43,6 @@ import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
-import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.player.ChannelLineup;
@@ -374,8 +373,7 @@ public class WatchDogController {
             @RequestParam(value = "lang", required = false) String lang) {
         
         Mso brand = NNF.getMsoMngr().findByName(mso);
-        SysTagManager mngr = new SysTagManager();
-        mngr.resetDaypartingCache(brand.getId(), lang);
+        NNF.getSysTagMngr().resetDaypartingCache(brand.getId(), lang);
         this.channelCache(32777);
         return "OK";
     }

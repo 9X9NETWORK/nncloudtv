@@ -72,8 +72,7 @@ public class NnProgramManager {
         
         //if the channel's original programCount is zero, its count will not be in the category, adding it now.
         if (count == 1) {
-            SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-            displayMngr.addChannelCounter(channel);
+            NNF.getDisplayMngr().addChannelCounter(channel);
         }
     } 
 
@@ -532,16 +531,14 @@ public class NnProgramManager {
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {        	
-            SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-            SysTagManager systagMngr = new SysTagManager();
-            SysTagDisplay dayparting = displayMngr.findDayparting(time, c.getLang(), mso.getId());
+            SysTagDisplay dayparting = NNF.getDisplayMngr().findDayparting(time, c.getLang(), mso.getId());
             List<YtProgram> ytprograms = new ArrayList<YtProgram>();
             if (dayparting != null) {
                 log.info("dayparting:" + dayparting.getName());
                 long msoId = 0;
                 if (mso != null)
                     msoId = mso.getId();
-                List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), c.getLang(), msoId, time);
+                List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), c.getLang(), msoId, time);
                 return new YtProgramManager().findByDaypartingChannels(daypartingChannels, c, mso.getId(), time, c.getLang());
                 //ytprograms = new YtProgramDao().findByChannels(daypartingChannels);
             }

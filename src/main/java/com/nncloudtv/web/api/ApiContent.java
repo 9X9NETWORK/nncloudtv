@@ -53,8 +53,6 @@ import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.StoreService;
-import com.nncloudtv.service.SysTagDisplayManager;
-import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -1250,16 +1248,14 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        SysTagManager tagMngr = new SysTagManager();
-        SysTag sysTag = tagMngr.findById(categoryId);
+        SysTag sysTag = NNF.getSysTagMngr().findById(categoryId);
         if (sysTag == null) {
             
             badRequest(resp, "Category Not Found");
             return null;
         }
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        SysTagDisplay tagDisplay = displayMngr.findBySysTagIdAndLang(categoryId, lang);
+        SysTagDisplay tagDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, lang);
         
         if (tagDisplay == null) {
             return new String[0];

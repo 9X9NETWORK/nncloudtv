@@ -23,6 +23,9 @@ import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.SysTagDisplayManager;
+import com.nncloudtv.service.SysTagManager;
+import com.nncloudtv.service.SysTagMapManager;
 
 public class NNF {
     
@@ -42,6 +45,9 @@ public class NNF {
     protected static NnProgramManager      programMngr        = null;
     protected static NnDeviceManager       deviceMngr         = null;
     protected static NnDeviceNotificationManager deviceNotiMngr = null;
+    protected static SysTagDisplayManager  displayMngr        = null;
+    protected static SysTagMapManager      sysTagMapMngr      = null;
+    protected static SysTagManager         sysTagMngr         = null;
     
     protected static MsoDao                msoDao             = null;
     protected static BillingOrderDao       orderDao           = null;
@@ -126,6 +132,39 @@ public class NNF {
         }
         
         return deviceDao;
+    }
+    
+    public static SysTagDisplayManager getDisplayMngr() {
+        
+        if (displayMngr == null) {
+            
+            log.info("create displayMngr");
+            displayMngr = new SysTagDisplayManager();
+        }
+        
+        return displayMngr;
+    }
+    
+    public static SysTagManager getSysTagMngr() {
+        
+        if (sysTagMngr == null) {
+            
+            log.info("create sysTagMngr");
+            sysTagMngr = new SysTagManager();
+        }
+        
+        return sysTagMngr;
+    }
+    
+    public static SysTagMapManager getSysTagMapMngr() {
+        
+        if (sysTagMapMngr == null) {
+            
+            log.info("create sysTagMapMngr");
+            sysTagMapMngr = new SysTagMapManager();
+        }
+        
+        return sysTagMapMngr;
     }
     
     public static NnDeviceNotificationManager getDeviceNotiMngr() {

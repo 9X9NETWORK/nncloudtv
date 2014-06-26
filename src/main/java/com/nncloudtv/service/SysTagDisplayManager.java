@@ -74,7 +74,7 @@ public class SysTagDisplayManager {
     public SysTagDisplay findPrevious(long msoId, String lang, SysTagDisplay dayparting) {
         List<SysTagDisplay> display = dao.findByType(msoId, SysTag.TYPE_PREVIOUS, lang);
         if (display.size() > 0) {
-            SysTag systag = new SysTagManager().findById(dayparting.getSystagId());
+            SysTag systag = NNF.getSysTagMngr().findById(dayparting.getSystagId());
             if (systag != null ) { 
                 long systagId = Long.parseLong(systag.getAttr());
                 display.get(0).setSystagId(systagId);
@@ -226,7 +226,7 @@ public class SysTagDisplayManager {
      *    (3) cronjob on "channelwatch" machine wipes out the cache hourly by the python program, /var/www/ytcrawler/dayparting_cache.py
      */
     public Object getPlayerWhatson(String lang, short time, short format, Mso mso, boolean minimal, int version) {
-        SysTagManager systagMngr = new SysTagManager();
+        
         YtProgramManager ytprogramMngr = new YtProgramManager();
         List<NnChannel> listingChannels = new ArrayList<NnChannel>();
         String programInfo = "";
@@ -236,7 +236,7 @@ public class SysTagDisplayManager {
         if (!minimal) {
 	        NnChannel daypartingChannel = null;
 	        if (whatson != null ) {
-	            List<NnChannel> whatsonChannels = systagMngr.findPlayerAllChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
+	            List<NnChannel> whatsonChannels = NNF.getSysTagMngr().findPlayerAllChannelsById(whatson.getSystagId(), lang, SysTag.SORT_SEQ, mso.getId());
 	            listingChannels.addAll(whatsonChannels);
 	            for (NnChannel c : whatsonChannels) {
 	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
@@ -250,7 +250,7 @@ public class SysTagDisplayManager {
 	        SysTagDisplay dayparting = this.findDayparting(time, lang, mso.getId());
 	        if (dayparting != null) {
 	            log.info("dayparting:" + dayparting.getName());
-	            List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), lang, mso.getId(), time);
+	            List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), lang, mso.getId(), time);
 	            programInfo += (String)ytprogramMngr.findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);
 	        } else {
 	            return new String[]{"", "", ""};
@@ -302,10 +302,10 @@ public class SysTagDisplayManager {
         //在Store裡, best"就是"alwaysOnTop".
         String TYPE_STORE = "store";
         String TYPE_PORTAL = "portal";
-        SysTag systag = new SysTagManager().findById(systagId);
+        SysTag systag = NNF.getSysTagMngr().findById(systagId);
         if (systag == null)
             return "";
-        List<SysTagMap> maps = new SysTagMapManager().findBySysTagId(systagId);
+        List<SysTagMap> maps = NNF.getSysTagMapMngr().findBySysTagId(systagId);
         List<String> tags = new ArrayList<String>();
         String featured = "hot:";
         String alwaysOnTop = "best:";
@@ -389,7 +389,6 @@ public class SysTagDisplayManager {
                 setInfo.add(info);
             }
         }
-        SysTagManager systagMngr = new SysTagManager();
         String channelStr = "";
         String programStr = "";
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
@@ -398,12 +397,12 @@ public class SysTagDisplayManager {
             //2: list of channel's channelInfo of every set
             List<NnChannel> channels = new ArrayList<NnChannel>();
             if (displays.size() > 0) {
-                SysTag systag = systagMngr.findById(displays.get(0).getSystagId());
+                SysTag systag = NNF.getSysTagMngr().findById(displays.get(0).getSystagId());
                 short sort = SysTag.SORT_DATE;
                 if (systag.getType() == SysTag.TYPE_SET) {
                     sort = systag.getSorting();
                 }
-                channels.addAll(systagMngr.findPlayerChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
+                channels.addAll(NNF.getSysTagMngr().findPlayerChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
             }
             if (format == PlayerApiService.FORMAT_PLAIN) {
                 channelStr = (String)NNF.getChannelMngr().composeChannelLineup(channels, version, format);
@@ -482,7 +481,7 @@ public class SysTagDisplayManager {
 	            SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
 	            if (dayparting != null) {
 	               log.info("dayparting:" + dayparting.getName());
-	               List<NnChannel> daypartingChannels = new SysTagManager().findDaypartingChannelsById(dayparting.getSystagId(), display.getLang(), mso.getId(), time);
+	               List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), display.getLang(), mso.getId(), time);
 	               //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
 	               //programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
 	               programStr += (String) new YtProgramManager().findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, display.getLang());

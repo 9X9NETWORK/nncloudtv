@@ -280,12 +280,11 @@ public class PlayerApiService {
         lang = this.checkLang(lang);    
         if (lang == null)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         List<SysTagDisplay> sets = new ArrayList<SysTagDisplay>();
         if (version < 40) {
-            sets.addAll(displayMngr.find33RecommendedSets(lang, mso.getId()));
+            sets.addAll(NNF.getDisplayMngr().find33RecommendedSets(lang, mso.getId()));
         } else {
-            sets.addAll(displayMngr.findRecommendedSets(lang, mso.getId()));            
+            sets.addAll(NNF.getDisplayMngr().findRecommendedSets(lang, mso.getId()));            
         }
         String[] result = {""};
         for (SysTagDisplay set : sets) {
@@ -489,12 +488,10 @@ public class PlayerApiService {
         String[] result = {"", "", ""};
         result[0] = "id" + "\t" + id + "\n";
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        SysTagManager systagMngr = new SysTagManager();        
         if (!id.equals("0")) { //v30 compatibilities            
             long displayId = Long.parseLong(id);
-            SysTagDisplay display = displayMngr.findById(displayId);
-            List<NnChannel> channels = systagMngr.findPlayerChannelsById(display.getSystagId(), display.getLang(), 0, 200, SysTag.SORT_DATE, mso.getId());  
+            SysTagDisplay display = NNF.getDisplayMngr().findById(displayId);
+            List<NnChannel> channels = NNF.getSysTagMngr().findPlayerChannelsById(display.getSystagId(), display.getLang(), 0, 200, SysTag.SORT_DATE, mso.getId());  
             result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version, this.format);
             return this.assembleMsgs(NnStatusCode.SUCCESS, result);
         }        
@@ -516,10 +513,10 @@ public class PlayerApiService {
             }
         }
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
-        categories.addAll(displayMngr.findPlayerCategories(lang, mso.getId()));
+        categories.addAll(NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId()));
         
         if (!disableAll && !MsoManager.isNNMso(mso)) {
-            List<SysTagDisplay> systemCategories = displayMngr.findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
+            List<SysTagDisplay> systemCategories = NNF.getDisplayMngr().findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
                 if (map.get(d.getSystagId()) != null) {
@@ -727,9 +724,8 @@ public class PlayerApiService {
         if (id == null) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         long cid = Long.parseLong(id);
-        SysTagDisplay display = displayMngr.findById(cid);
+        SysTagDisplay display = NNF.getDisplayMngr().findById(cid);
         if (display == null)
             return this.assembleMsgs(NnStatusCode.CATEGORY_INVALID, null);
         List<NnChannel> channels = new ArrayList<NnChannel>();
@@ -746,15 +742,14 @@ public class PlayerApiService {
         if (programInfo)
             limit = 20;        
         TagManager tagMngr = new TagManager();
-        SysTagManager systagMngr = new SysTagManager();
         if (tagStr != null) {
             channels = tagMngr.findChannelsByTag(tagStr, true); //TODO removed            
         } else {
-            channels = systagMngr.findPlayerChannelsById(display.getSystagId(), display.getLang(), Integer.parseInt(start), 
+            channels = NNF.getSysTagMngr().findPlayerChannelsById(display.getSystagId(), display.getLang(), Integer.parseInt(start), 
                     Integer.parseInt(String.valueOf(limit)), SysTag.SORT_DATE, mso.getId());
         }
-        long longTotal = systagMngr.findPlayerChannelsCountById(display.getSystagId(), display.getLang(), mso.getId());
-        Object result = displayMngr.getPlayerCategoryInfo(display, programInfo, channels, Long.valueOf(start), limit, longTotal, version, this.format); 
+        long longTotal = NNF.getSysTagMngr().findPlayerChannelsCountById(display.getSystagId(), display.getLang(), mso.getId());
+        Object result = NNF.getDisplayMngr().getPlayerCategoryInfo(display, programInfo, channels, Long.valueOf(start), limit, longTotal, version, this.format); 
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
      
@@ -778,18 +773,16 @@ public class PlayerApiService {
             } else if (s.equals("mayLike")) {            
                 chs = new RecommendService().findMayLike(userToken, mso.getId(), channel, lang);                
             } else {                
-                SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-                SysTagManager systagMngr = new SysTagManager();
                 SysTagDisplay set = null;
                 if (!Pattern.matches("^\\d*$", stack)) {
                     log.info("channelStack findbyname:" + stack);
-                    set = displayMngr.findByName(stack, mso.getId());                    
+                    set = NNF.getDisplayMngr().findByName(stack, mso.getId());                    
                 } else {
                     log.info("channelStack findbyid:" + stack);
-                    set = displayMngr.findById(Long.parseLong(stack)); 
+                    set = NNF.getDisplayMngr().findById(Long.parseLong(stack)); 
                 }
                 if (set != null)
-                    chs = systagMngr.findPlayerChannelsById(set.getSystagId(), set.getLang(), SysTag.SORT_DATE, 0);                
+                    chs = NNF.getSysTagMngr().findPlayerChannelsById(set.getSystagId(), set.getLang(), SysTag.SORT_DATE, 0);                
             }
             
             String output = "";
@@ -2636,8 +2629,6 @@ public class PlayerApiService {
                 } else if (s.equals("mayLike")) {                
                     return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
                 } else {
-                    SysTagManager systagMngr = new SysTagManager();
-                    SysTagDisplayManager displayMngr = new SysTagDisplayManager();
                     long displayId = 0;
                     long systagId = 0;
                     if (stack.contains("-")) {
@@ -2650,16 +2641,16 @@ public class PlayerApiService {
                         }
                     } else if (!Pattern.matches("^\\d*$", stack)) {
                         log.info("channelStack findbyname:" + stack);                        
-                        SysTagDisplay display = displayMngr.findByName(stack, mso.getId());
+                        SysTagDisplay display = NNF.getDisplayMngr().findByName(stack, mso.getId());
                         if (display != null)
                             systagId = display.getSystagId();
                     } else {
                         log.info("channelStack findbyid:" + stack);
-                        SysTagDisplay display = displayMngr.findById(Long.parseLong(stack));
+                        SysTagDisplay display = NNF.getDisplayMngr().findById(Long.parseLong(stack));
                         if (display != null)
                             systagId = display.getSystagId();
                     }                    
-                    channels.addAll(systagMngr.findPlayerChannelsById(systagId, lang, true, 0));
+                    channels.addAll(NNF.getSysTagMngr().findPlayerChannelsById(systagId, lang, true, 0));
                 }
             }
         } else if (channel != null) {
@@ -2716,13 +2707,12 @@ public class PlayerApiService {
         if (baseTime > 23 || baseTime < 0)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
         if (type == null)
            type = "portal";
         if (type != null && type.equals("whatson"))
-            return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));
+            return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));
         
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerPortal(lang, minimal, version, format, mso));            
+        return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerPortal(lang, minimal, version, format, mso));            
     }
 
     public Object whatson(String lang, String time, boolean minimal) {
@@ -2733,8 +2723,7 @@ public class PlayerApiService {
         if (baseTime > 23 || baseTime < 0)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));                    
+        return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerWhatson(lang, baseTime, this.format, mso, minimal, version));                    
     }
   
     public Object frontpage(String time, String stack, String user) {
@@ -2745,8 +2734,7 @@ public class PlayerApiService {
         List<String> data = new ArrayList<String>();
         String[] itemOutput = {""};
 
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        SysTagManager systagMngr = new SysTagManager();
+        SysTagDisplayManager displayMngr = NNF.getDisplayMngr();
         List<SysTagDisplay> displays = new ArrayList<SysTagDisplay>();
         //1. dayparting
         SysTagDisplay dayparting = displayMngr.findDayparting(baseTime, lang, mso.getId());
@@ -2775,7 +2763,7 @@ public class PlayerApiService {
             }
             String[] ori = {
                     d.getName(), //name
-                    String.valueOf(systagMngr.convertDashboardType(d.getSystagId())), //type
+                    String.valueOf(NNF.getSysTagMngr().convertDashboardType(d.getSystagId())), //type
                     String.valueOf(stackname), //stackName
                     String.valueOf(opened), //opened, only daypartying is open
                     String.valueOf("0"), //icon, always zero
@@ -3085,8 +3073,6 @@ public class PlayerApiService {
         }        
         if (id != null && id.startsWith("s")) id = id.replace("s", "");
         
-        SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-        SysTagManager systagMngr = new SysTagManager();
         SysTagDisplay display = null;
         long displayId = 0;
         long systagId = 0;
@@ -3103,28 +3089,28 @@ public class PlayerApiService {
                 displayId = Long.parseLong(id);
                 log.info("regular form:" + displayId);
             }
-            display = displayMngr.findById(displayId);
+            display = NNF.getDisplayMngr().findById(displayId);
         } else {
-            display = displayMngr.findByName(name, mso.getId());
+            display = NNF.getDisplayMngr().findByName(name, mso.getId());
         }
         if (display == null)
             return this.assembleMsgs(NnStatusCode.SET_INVALID, null);
         if (systagId == 0)
             systagId = display.getSystagId();         
-        SysTag systag = systagMngr.findById(systagId);
+        SysTag systag = NNF.getSysTagMngr().findById(systagId);
         List<NnChannel> channels = new ArrayList<NnChannel>();
         if (systag.getType() == SysTag.TYPE_DAYPARTING) {
-            channels.addAll(systagMngr.findDaypartingChannelsById(systagId, display.getLang(), mso.getId(), Short.parseShort(time)));
+            channels.addAll(NNF.getSysTagMngr().findDaypartingChannelsById(systagId, display.getLang(), mso.getId(), Short.parseShort(time)));
         } else if (systag.getType() == SysTag.TYPE_WHATSON) {
-            channels.addAll(systagMngr.findPlayerAllChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));            
+            channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));            
         } else {
-            channels.addAll(systagMngr.findPlayerChannelsById(systagId, null, systag.getSorting(), 0));
+            channels.addAll(NNF.getSysTagMngr().findPlayerChannelsById(systagId, null, systag.getSorting(), 0));
         }
         List<NnProgram> programs = new ArrayList<NnProgram>();
         Short shortTime = 24;
         if (time != null)
             shortTime = Short.valueOf(time);        
-        return this.assembleMsgs(NnStatusCode.SUCCESS, displayMngr.getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime, isProgramInfo));
+        return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerSetInfo(mso, systag, display, channels, programs, version, this.format, shortTime, isProgramInfo));
     }
 
     public Object endpointRegister(String userToken, String token, String vendor, String action) {
