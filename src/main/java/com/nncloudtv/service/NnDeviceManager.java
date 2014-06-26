@@ -20,8 +20,7 @@ import com.nncloudtv.web.json.player.PlayerDevice;
 public class NnDeviceManager {
     protected static final Logger log = Logger.getLogger(NnDeviceManager.class.getName());
     
-    private NnDeviceDao dao = new NnDeviceDao();
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+    private NnDeviceDao dao = NNF.getDeviceDao();
     private HttpServletRequest req;
     
     public HttpServletRequest getReq() { return req; }
@@ -113,10 +112,10 @@ public class NnDeviceManager {
     
     public void delete(NnDevice device) {
         
-        List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
+        List<NnDeviceNotification> notifications = NNF.getDeviceNotiMngr().findByDeviceId(device.getId());
         
         dao.delete(device);
-        notificationMngr.delete(notifications);
+        NNF.getDeviceNotiMngr().delete(notifications);
     }
     
     public void delete(List<NnDevice> deleteDevices) {
@@ -124,11 +123,11 @@ public class NnDeviceManager {
         List<NnDeviceNotification> notifications = new ArrayList<NnDeviceNotification>();
         
         for (NnDevice device : deleteDevices) {
-            notifications.addAll(notificationMngr.findByDeviceId(device.getId()));
+            notifications.addAll(NNF.getDeviceNotiMngr().findByDeviceId(device.getId()));
         }
         
         dao.deleteAll(deleteDevices);
-        notificationMngr.delete(notifications);
+        NNF.getDeviceNotiMngr().delete(notifications);
     }
     
     public Object getPlayerDeviceInfo(NnDevice device, short format, List<NnUser> users) {

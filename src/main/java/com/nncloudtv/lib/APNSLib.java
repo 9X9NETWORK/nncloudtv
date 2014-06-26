@@ -14,7 +14,6 @@ import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.service.NnDeviceManager;
-import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsDelegate;
 import com.notnoop.apns.ApnsNotification;
@@ -27,8 +26,6 @@ import com.notnoop.apns.PayloadBuilder;
 public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
-    
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     
     public void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
         
@@ -212,7 +209,7 @@ public class APNSLib {
         
         // update all fetchedDevices with new badge
         NNF.getDeviceMngr().save(fetchedDevices);
-        notificationMngr.save(deviceNotifications);
+        NNF.getDeviceNotiMngr().save(deviceNotifications);
         
         // TODO performance issue
         for (EnhancedApnsNotification notification : notifications) {

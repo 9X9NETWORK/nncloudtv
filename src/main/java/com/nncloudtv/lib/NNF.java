@@ -7,6 +7,7 @@ import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.NnChannelDao;
+import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
@@ -16,6 +17,7 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnDeviceManager;
+import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
@@ -39,6 +41,7 @@ public class NNF {
     protected static NnEpisodeManager      episodeMngr        = null;
     protected static NnProgramManager      programMngr        = null;
     protected static NnDeviceManager       deviceMngr         = null;
+    protected static NnDeviceNotificationManager deviceNotiMngr = null;
     
     protected static MsoDao                msoDao             = null;
     protected static BillingOrderDao       orderDao           = null;
@@ -46,6 +49,7 @@ public class NNF {
     protected static BillingPackageDao     packageDao         = null;
     protected static NnEpisodeDao          episodeDao         = null;
     protected static NnChannelDao          channelDao         = null;
+    protected static NnDeviceDao           deviceDao          = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -111,6 +115,28 @@ public class NNF {
         }
         
         return packageDao;
+    }
+    
+    public static NnDeviceDao getDeviceDao() {
+        
+        if (deviceDao == null) {
+            
+            log.info("create deviceDao");
+            deviceDao = new NnDeviceDao();
+        }
+        
+        return deviceDao;
+    }
+    
+    public static NnDeviceNotificationManager getDeviceNotiMngr() {
+        
+        if (deviceNotiMngr == null) {
+            
+            log.info("create deviceNotiMngr");
+            deviceNotiMngr = new NnDeviceNotificationManager();
+        }
+        
+        return deviceNotiMngr;
     }
     
     public static NnDeviceManager getDeviceMngr() {

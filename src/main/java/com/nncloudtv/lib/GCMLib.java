@@ -23,7 +23,6 @@ import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.YtProgramManager;
 
 @Service
@@ -33,8 +32,6 @@ public class GCMLib {
     
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE  = 1000;
-    
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     
     public void doPost(MsoNotification msoNotification, String apiKey) {
         
@@ -70,7 +67,7 @@ public class GCMLib {
                 notification.setLogo(msg.getLogo());
                 notifications.add(notification);
             }
-            notificationMngr.save(notifications);
+            NNF.getDeviceNotiMngr().save(notifications);
         }
         
         // send a multicast message using JSON

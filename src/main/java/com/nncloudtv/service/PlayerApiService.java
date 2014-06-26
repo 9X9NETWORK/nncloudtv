@@ -3326,7 +3326,7 @@ public class PlayerApiService {
         if (token == null)
             return this.assembleMsgs(NnStatusCode.SUCCESS, null);
         
-        NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+        NnDeviceNotificationManager notificationMngr = NNF.getDeviceNotiMngr();
         
         List<NnDevice> devices = NNF.getDeviceMngr().findByToken(token);
         if (devices.isEmpty())
