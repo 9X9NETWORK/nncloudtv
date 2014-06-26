@@ -85,12 +85,11 @@ public class WatchDogController {
     public ResponseEntity<String> statusChange(HttpServletRequest req) {
        String chId = req.getParameter("channel");
        String status = req.getParameter("status");
-       NnChannelDao dao = new NnChannelDao();
-       NnChannel c = dao.findById(Long.parseLong(chId));
+       NnChannel c = NNF.getChannelDao().findById(Long.parseLong(chId));
        String result = "";
        if (c != null) {
     	   c.setStatus(Short.parseShort(status));
-    	   dao.save(c);
+    	   NNF.getChannelDao().save(c);
     	   result = "success";
        } else {
     	   result = "no channel found";
@@ -109,7 +108,7 @@ public class WatchDogController {
        if (display != null) {       
 	       SysTagMap map = dao.findBySysTagIdAndChannelId(display.getSystagId(), Long.parseLong(chId));
 	       if (map == null) {
-	    	   NnChannel c = new NnChannelDao().findById(Long.parseLong(chId));
+	    	   NnChannel c = NNF.getChannelDao().findById(Long.parseLong(chId));
 	    	   if (c != null) {
 	    		   SysTag systag = new SysTagDao().findById(display.getSystagId());
 	    		   if (systag == null) {

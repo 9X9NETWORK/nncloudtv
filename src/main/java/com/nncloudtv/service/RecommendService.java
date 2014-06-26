@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.DeepDao;
-import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.ShallowDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Deep;
@@ -21,8 +20,7 @@ public class RecommendService {
     
     private ShallowDao shallowDao = new ShallowDao();    
     private DeepDao deepDao = new DeepDao();
-    private NnChannelDao chDao = new NnChannelDao();
-
+    
     /*
      * for GUESTs and FRESHMAN USERs, SHALLOW RECOMMENDATION,
      * but for USERs, DEEP RECOMMENDATIONS
@@ -93,7 +91,7 @@ public class RecommendService {
     
     //randomly pick from billboard, based on language
     public List<NnChannel> findBillboardPool(int limit, String lang) {
-        List<NnChannel> channels = chDao.findSpecial(NnChannel.POOL_BILLBOARD, lang, limit);
+        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_BILLBOARD, lang, limit);
         List<NnChannel> recommended = new ArrayList<NnChannel>();
         int i=0;
         for (NnChannel c : channels) {
@@ -107,7 +105,7 @@ public class RecommendService {
 
     //randomly pick from fdm    
     public List<NnChannel> findFdm(String lang, int limit) {
-        List<NnChannel> channels = chDao.findSpecial(NnChannel.POOL_FDM, lang, limit);
+        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_FDM, lang, limit);
         List<NnChannel> recommended = new ArrayList<NnChannel>();
         int i=0;
         for (NnChannel c : channels) {

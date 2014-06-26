@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.LangTable;
@@ -29,7 +28,6 @@ public class StoreService {
     
     protected static final Logger log = Logger.getLogger(StoreService.class.getName());
     
-    private NnChannelDao channelDao = new NnChannelDao();
     private SysTagDao sysTagDao = new SysTagDao();
 
     private StoreListingManager storeListingMngr;
@@ -175,7 +173,7 @@ public class StoreService {
             return new ArrayList<NnChannel>();
         }
         
-        List<NnChannel> channels = channelDao.getStoreChannelsFromCategory(categoryId, spheres);
+        List<NnChannel> channels = NNF.getChannelDao().getStoreChannelsFromCategory(categoryId, spheres);
         if (channels == null) {
             return new ArrayList<NnChannel>();
         }
@@ -188,7 +186,7 @@ public class StoreService {
      *  @return list of Channels */
     public List<NnChannel> getChannelsFromOfficialStore(List<String> spheres) {
         
-        List<NnChannel> channels = channelDao.getStoreChannels(spheres);
+        List<NnChannel> channels = NNF.getChannelDao().getStoreChannels(spheres);
         if (channels == null) {
             return new ArrayList<NnChannel>();
         }

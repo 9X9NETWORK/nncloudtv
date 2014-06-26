@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.dao.AppDao;
-import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.AuthLib;
@@ -1104,8 +1103,7 @@ public class PlayerApiService {
     public Object setChannelProperty(String channel, String property, String value) {
         if (channel == null || property == null || value == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        NnChannelDao dao = new NnChannelDao();
-        NnChannel c = dao.findById(Long.parseLong(channel));
+        NnChannel c = NNF.getChannelDao().findById(Long.parseLong(channel));
         if (c == null)
             return this.assembleMsgs(NnStatusCode.CHANNEL_INVALID, null);
         if (property.equals("count")) {
@@ -1118,7 +1116,7 @@ public class PlayerApiService {
         } else {
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         }
-        dao.save(c);
+        NNF.getChannelDao().save(c);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null); 
     }
     

@@ -6,6 +6,7 @@ import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
+import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
@@ -44,6 +45,7 @@ public class NNF {
     protected static BillingProfileDao     billingProfileDao  = null;
     protected static BillingPackageDao     packageDao         = null;
     protected static NnEpisodeDao          episodeDao         = null;
+    protected static NnChannelDao          channelDao         = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -65,6 +67,17 @@ public class NNF {
         }
         
         return msoDao;
+    }
+    
+    public static NnChannelDao getChannelDao() {
+        
+        if (channelDao == null) {
+            
+            log.info("create channelDao");
+            channelDao = new NnChannelDao();
+        }
+        
+        return channelDao;
     }
     
     public static BillingOrderDao getOrderDao() {

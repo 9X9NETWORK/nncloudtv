@@ -45,7 +45,7 @@ public class NnChannelManager {
 
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
-    private NnChannelDao dao = new NnChannelDao();
+    private NnChannelDao dao = NNF.getChannelDao();
     
     public static String convertChannelId(String channelIdStr) {
     	if (channelIdStr != null && channelIdStr.contains("yt")) {
@@ -414,7 +414,7 @@ public class NnChannelManager {
     public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
         Stack st = SearchLib.search(core, keyword, content, extra, all, start, limit);
         List<Long> ids = (List<Long>) st.pop();
-        List<NnChannel> channels = new NnChannelDao().findByIds(ids);
+        List<NnChannel> channels = NNF.getChannelDao().findAllByIds(ids);
         st.push(channels);
         return st;
     }
@@ -592,7 +592,7 @@ public class NnChannelManager {
     }
         
     public List<NnChannel> findByIds(List<Long> ids) {        
-        return dao.findByIds(ids);
+        return dao.findAllByIds(ids);
     }
     
     public List<NnChannel> findByStatus(short status) {

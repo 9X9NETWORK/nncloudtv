@@ -81,19 +81,6 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         return detached;        
     }
     
-    public NnChannel findById(long id) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();        
-        NnChannel channel = null;
-        try {
-            channel = pm.getObjectById(NnChannel.class, id);
-            channel = pm.detachCopy(channel);
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();            
-        }
-        return channel;        
-    }    
-
     public static long searchSize(String queryStr, boolean all) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         long size = 0;
@@ -339,20 +326,6 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             pm.close();
         }
         return channels;        
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<NnChannel> findByIds(List<Long> ids) {
-        List<NnChannel> channels = new ArrayList<NnChannel>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            Query q = pm.newQuery(NnChannel.class, ":p.contains(id)");
-            channels = ((List<NnChannel>) q.execute(ids));        
-            channels = (List<NnChannel>) pm.detachCopyAll(channels);
-        } finally {
-            pm.close();
-        }
-        return channels;
     }
     
     /** get channels from official store's category */
