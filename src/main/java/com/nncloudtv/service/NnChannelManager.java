@@ -760,7 +760,7 @@ public class NnChannelManager {
         String name = c.getPlayerName();
         if (name != null) {
             String[] split = name.split("\\|");
-            name = split.length == 2 ? split[0] : name;            
+            name = split.length > 2 ? split[0] : name;            
         }
         String imageUrl = c.getPlayerPrefImageUrl();
         imageUrl = imageUrl.indexOf("|") < 0 ? imageUrl : imageUrl.substring(0, imageUrl.indexOf("|"));
@@ -1043,7 +1043,8 @@ public class NnChannelManager {
         //favorite channel name will be overwritten later
         String name = c.getPlayerName() == null ? "" : c.getPlayerName();
         String[] split = name.split("\\|");
-        name = split.length == 2 ? split[0] : name;
+        name = split.length > 2 ? split[0] : name;
+        String lastEpisodeTitle = name;
         //String lastEpisodeTitle = split.length == 2 ? split[1] : "";
 
         //image url, favorite channel image will be overwritten later
@@ -1079,6 +1080,7 @@ public class NnChannelManager {
                 for (int i=0; i<3; i++) {
                     if (i < episodes.size()) {
                        //lastEpisodeTitle = episodes.get(0).getName();
+                       lastEpisodeTitle += "|" + episodes.get(i).getName();
                        imageUrl += "|" + episodes.get(i).getImageUrl();
                        log.info("imageUrl = " + imageUrl);
                     } else {
@@ -1148,7 +1150,7 @@ public class NnChannelManager {
             if (version == 32)
                 ori.add(" ");
             else
-                ori.add(""); //lastEpisodeTitle
+                ori.add(lastEpisodeTitle); //lastEpisodeTitle
             if (version > 32)
                 ori.add(poiStr);
             String size[] = new String[ori.size()];    
