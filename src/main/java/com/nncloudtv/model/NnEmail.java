@@ -9,10 +9,14 @@ public class NnEmail {
     
     private String toName;
     
-    public static String SEND_EMAIL_SHARE = "share@9x9.tv";
-    public static String SEND_EMAIL_NOREPLY = "noreply@notify.9x9.tv";
+    public final static String SEND_EMAIL_SHARE      = "share@9x9.tv";
+    public final static String SEND_EMAIL_NOREPLY    = "noreply@notify.9x9.tv";
+    public final static String SEND_EMAIL_NNCLOUDTV  = "nncloudtv@gmail.com";
+    public final static String SEND_EMAIL_VIDCON2014 = "vidcon2014@flipr.tv";
     private String senderEmail;
     
+    public final static String SEND_NAME_NNCLOUDTV   = "nncloudtv";
+    public final static String SEND_NAME_FLIPR       = "FLIPr";
     private String senderName;
     
     private String replyToEmail;
@@ -22,24 +26,18 @@ public class NnEmail {
     private String body;
     
     private boolean isHtml;
-
-    public NnEmail(String toEmail, String toName, 
-    		       String senderEmail, String senderName, 
-    		       String replyToEmail, String subject, String body) {
-        this.toEmail = toEmail;
-        this.toName = toName;
-        this.senderEmail = senderEmail;
-        this.senderName = senderName;        
-        this.replyToEmail = replyToEmail;
-        this.subject = subject;
-        this.body = body;
-    }
     
-    public NnEmail(String subject, String body) {
-        this.senderEmail = "nncloudtv@gmail.com";
-        this.senderName = "nncloudtv";
-        this.toEmail = "nncloudtv@gmail.com";
-        this.toName = "nncloudtv";        
+    public NnEmail(String toEmail,      String toName, 
+                   String senderEmail,  String senderName, 
+                   String replyToEmail, String subject,    String body) {
+        
+        this.toEmail      = toEmail;
+        this.toName       = toName;
+        this.senderEmail  = senderEmail;
+        this.senderName   = senderName;
+        this.replyToEmail = replyToEmail;
+        this.subject      = subject;
+        this.body         = body;
     }
     
     public String getToEmail() {

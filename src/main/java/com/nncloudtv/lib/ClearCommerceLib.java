@@ -76,6 +76,9 @@ public class ClearCommerceLib {
         
         ccPaymentMech.setFieldString("Type", CREDIT_CARD);
         CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
+        if (creditCard.getCardType() != 0) {
+            ccCreditCard.setFieldS32("Type", creditCard.getCardType());
+        }
         ccCreditCard.setFieldString("Cvv2Indicator", "1");
         ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());
         ccCreditCard.setFieldString("Number", creditCard.getCardNumber());
@@ -115,7 +118,9 @@ public class ClearCommerceLib {
         
         ccPaymentMech.setFieldString("Type", CREDIT_CARD);
         CcApiRecord ccCreditCard = ccPaymentMech.addRecord(CREDIT_CARD);
-        //ccCreditCard.setFieldS32("Type", 1);
+        if (creditCard.getCardType() != 0) {
+            ccCreditCard.setFieldS32("Type", creditCard.getCardType());
+        }
         if (creditCard.getVeridicationCode() != null) {
             ccCreditCard.setFieldString("Cvv2Indicator", "1");
             ccCreditCard.setFieldString("Cvv2Val", creditCard.getVeridicationCode());

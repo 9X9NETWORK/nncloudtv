@@ -73,4 +73,9 @@ public class BillingPackageManager {
         
         return dao.save(billingPackage);
     }
+    
+    public List<BillingPackage> findByIds(List<Long> ids) {
+        
+        return dao.findAllByIds(ids);
+    }
 }

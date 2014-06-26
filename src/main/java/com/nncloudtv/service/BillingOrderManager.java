@@ -54,4 +54,9 @@ public class BillingOrderManager {
         
         return dao.findByStatus(status);
     }
+    
+    public List<BillingOrder> findByIds(List<Long> ids) {
+        
+        return dao.findAllByIds(ids);
+    }
 }

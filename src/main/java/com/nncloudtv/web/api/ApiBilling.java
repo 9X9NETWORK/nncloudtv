@@ -1,5 +1,6 @@
 package com.nncloudtv.web.api;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
+import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
@@ -138,16 +140,18 @@ public class ApiBilling extends ApiGeneric {
         }
         
         BillingProfile profile = new BillingProfile();
-        profile.setName(req.getParameter("name"));
-        profile.setEmail(req.getParameter("email"));
+        profile.setName(name);
+        profile.setEmail(email);
         profile.setPhone(req.getParameter("phone"));
-        profile.setAddr2(req.getParameter("addr1"));
+        profile.setAddr1(req.getParameter("addr1"));
         profile.setAddr2(req.getParameter("addr2"));
         profile.setCity(req.getParameter("city"));
         profile.setState(req.getParameter("state"));
         profile.setZip(req.getParameter("zip"));
         profile.setCountry(req.getParameter("country"));
         profile.setCardStatus(BillingProfile.UNKNOWN);
+        
+        log.info("profile name = " + profile.getName() + ", email = " + profile.getEmail());
         
         try {
             
@@ -177,6 +181,7 @@ public class ApiBilling extends ApiGeneric {
         final String PROFILE_ID    = "profileId";
         final String PROFILE_TOKEN = "profileToken";
         final String PACKAGE_ID    = "packageId";
+        final String NO_MAIL       = "noMail";
         
         // verify packageId
         String packageIdStr = req.getParameter(PACKAGE_ID);
@@ -279,8 +284,26 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
+        orders = orderMngr.save(orders);
+        
+        if (req.getParameter(NO_MAIL) == null) {
+            try {
+                BillingService billingServ = new BillingService();
+                
+                billingServ.sendPurchaseConfirmEmail(orders);
+                
+            } catch (NnDataIntegrityException e) {
+                NnLogUtil.logException(e);
+                internalError(resp);
+                return null;
+            } catch (IOException e) {
+                NnLogUtil.logException(e);
+                internalError(resp);
+                return null;
+            }
+        }
+        
         resp.setStatus(HTTP_201);
         return NNF.getOrderMngr().save(orders);
     }
-    
 }
