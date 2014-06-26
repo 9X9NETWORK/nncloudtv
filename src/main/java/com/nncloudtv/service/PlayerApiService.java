@@ -607,8 +607,7 @@ public class PlayerApiService {
         List<NnDevice> devices = new ArrayList<NnDevice>();
         NnDevice device = null;
         if (deviceToken != null) {
-            NnDeviceManager deviceMngr = new NnDeviceManager();
-            devices = deviceMngr.findByToken(deviceToken);
+            devices = NNF.getDeviceMngr().findByToken(deviceToken);
             if (devices.size() > 0)
                 device = devices.get(0);
         }
@@ -1444,7 +1443,7 @@ public class PlayerApiService {
             }
             device.setBadge(0);
         }
-        NnDeviceManager deviceMngr = new NnDeviceManager();
+        NnDeviceManager deviceMngr = NNF.getDeviceMngr();
         deviceMngr.setReq(req); //!!!
         device = deviceMngr.create(device, user, type);
         
@@ -1458,7 +1457,7 @@ public class PlayerApiService {
     public Object deviceTokenVerify(String token, HttpServletRequest req) {
         if (token == null)
             return this.assembleMsgs(NnStatusCode.SUCCESS, null);
-        NnDeviceManager deviceMngr = new NnDeviceManager();
+        NnDeviceManager deviceMngr = NNF.getDeviceMngr();
         deviceMngr.setReq(req); //!!!
         List<NnDevice> devices = deviceMngr.findByToken(token);
         if (devices.size() == 0)
@@ -1493,8 +1492,7 @@ public class PlayerApiService {
         }
         if (deviceToken == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        NnDeviceManager deviceMngr = new NnDeviceManager();
-        NnDevice device = deviceMngr.addUser(deviceToken, user);
+        NnDevice device = NNF.getDeviceMngr().addUser(deviceToken, user);
         if (device == null)
             return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
@@ -1512,8 +1510,7 @@ public class PlayerApiService {
         }
         if (deviceToken == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        NnDeviceManager deviceMngr = new NnDeviceManager();
-        boolean success = deviceMngr.removeUser(deviceToken, user);
+        boolean success = NNF.getDeviceMngr().removeUser(deviceToken, user);
         if (!success) 
             return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
@@ -1605,8 +1602,7 @@ public class PlayerApiService {
         List<NnDevice> devices = new ArrayList<NnDevice>();
         NnDevice device = null;
         if (deviceToken != null) {
-            NnDeviceManager deviceMngr = new NnDeviceManager();
-            devices = deviceMngr.findByToken(deviceToken);
+            devices = NNF.getDeviceMngr().findByToken(deviceToken);
             if (devices.size() > 0)
                 device = devices.get(0);
         }
@@ -3332,10 +3328,9 @@ public class PlayerApiService {
         if (token == null)
             return this.assembleMsgs(NnStatusCode.SUCCESS, null);
         
-        NnDeviceManager deviceMngr = new NnDeviceManager();
         NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
         
-        List<NnDevice> devices = deviceMngr.findByToken(token);
+        List<NnDevice> devices = NNF.getDeviceMngr().findByToken(token);
         if (devices.isEmpty())
             return this.assembleMsgs(NnStatusCode.DEVICE_INVALID, null);
         
@@ -3357,7 +3352,7 @@ public class PlayerApiService {
                 unread.setRead(true);
             }
             device.setBadge(0);
-            deviceMngr.save(device);
+            NNF.getDeviceMngr().save(device);
             notificationMngr.save(unreadNotifications);
         }
         

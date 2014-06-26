@@ -23,7 +23,6 @@ import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.YtProgramManager;
 
@@ -35,7 +34,6 @@ public class GCMLib {
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE  = 1000;
     
-    private NnDeviceManager deviceMngr = new NnDeviceManager();
     private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     
     public void doPost(MsoNotification msoNotification, String apiKey) {
@@ -53,7 +51,8 @@ public class GCMLib {
             return;
         }
         
-        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
+        List<NnDevice> fetchedDevices = NNF.getDeviceMngr()
+                                           .findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         // used to handle NnDevice if send failed event occur
         Map<String, NnDevice> deviceMap = new HashMap<String, NnDevice>();
         List<String> devices = new ArrayList<String>();
@@ -156,7 +155,7 @@ public class GCMLib {
                         }
                     }
                 }
-                deviceMngr.delete(deleteDevices);
+                NNF.getDeviceMngr().delete(deleteDevices);
             }
         });
     }
@@ -168,7 +167,7 @@ public class GCMLib {
             return ;
         }
         
-        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(notification.getMsoId(), NnDevice.TYPE_GCM);
+        List<NnDevice> fetchedDevices = NNF.getDeviceMngr().findByMsoAndType(notification.getMsoId(), NnDevice.TYPE_GCM);
         List<NnDevice> targetDevices = new ArrayList<NnDevice>();
         for (NnDevice device : fetchedDevices) {
             if (regId.equals(device.getToken()) || canonicalRegId.equals(device.getToken())) {
@@ -180,12 +179,12 @@ public class GCMLib {
             NnDevice device = targetDevices.get(0);
             if (canonicalRegId.equals(device.getToken()) == false) {
                 device.setToken(canonicalRegId);
-                deviceMngr.save(device);
+                NNF.getDeviceMngr().save(device);
             }
             
             if (targetDevices.size() > 1) {
                 List<NnDevice> deleteDevices = targetDevices.subList(1, targetDevices.size() - 1);
-                deviceMngr.delete(deleteDevices);
+                NNF.getDeviceMngr().delete(deleteDevices);
             }
         }
     }

@@ -21,7 +21,6 @@ import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserReport;
 import com.nncloudtv.model.Pdr;
-import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnUserReportManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -42,7 +41,6 @@ public class PdrController {
             @RequestParam(required=false) String user,
             @RequestParam(required=false) String mso) {
         
-        NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
         Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
@@ -51,16 +49,16 @@ public class PdrController {
         NnUser u = NNF.getUserMngr().findByToken(user, brand.getId());
         if (u == null)
             return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
-        List<NnDevice> devices = deviceMngr.findByUser(u);
+        List<NnDevice> devices = NNF.getDeviceMngr().findByUser(u);
         
         if (devices.size() == 0)
             return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, null));
-
+        
         String[] result = {""};
         for (NnDevice d : devices) {
             result[0] += d.getToken() + "\t" + d.getType() + "\n";
         }
-        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
+        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));
     }    
     
     /**
@@ -83,7 +81,6 @@ public class PdrController {
             @RequestParam(required=false) String since) {
         
         PdrManager pdrMngr = new PdrManager();
-        NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
         NnUser u = null;
         List<NnDevice> ds = new ArrayList<NnDevice>();
@@ -98,7 +95,7 @@ public class PdrController {
                 return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
         }
         if (device!= null) {
-            ds = deviceMngr.findByToken(device);
+            ds = NNF.getDeviceMngr().findByToken(device);
             if (ds.size() == 0)
                 return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.DEVICE_INVALID, null));
             d = ds.get(0);
