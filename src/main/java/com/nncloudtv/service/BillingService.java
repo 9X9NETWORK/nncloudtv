@@ -22,6 +22,7 @@ import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
@@ -96,11 +97,11 @@ public class BillingService {
         for (BillingOrder order : orders) {
             ids.add(order.getId());
         }
-        orders = orderMngr.findByIds(ids);
+        orders = NNF.getOrderMngr().findByIds(ids);
         ids.clear();
         if (orders.isEmpty())
             throw new NnDataIntegrityException("can not find those order IDs - " + StringUtils.join(ids, ','));
-        BillingProfile profile = profileMngr.findById(orders.get(0).getProfileId());
+        BillingProfile profile = NNF.getBillingProfileMngr().findById(orders.get(0).getProfileId());
         if (profile == null)
             throw new NnDataIntegrityException("can not find billingProfile " + orders.get(0).getId());
         for (BillingOrder order : orders) {
@@ -109,7 +110,7 @@ public class BillingService {
             ids.add(order.getPackageId());
         }
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
-        packages = Lists.reverse(packageMngr.findByIds(ids));
+        packages = Lists.reverse(NNF.getPackageMngr().findByIds(ids));
         if (packages.isEmpty()) {
             log.warning("no packages was found");
             return;

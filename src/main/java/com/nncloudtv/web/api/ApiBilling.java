@@ -284,7 +284,7 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
-        orders = orderMngr.save(orders);
+        orders = NNF.getOrderMngr().save(orders);
         
         if (req.getParameter(NO_MAIL) == null) {
             try {
