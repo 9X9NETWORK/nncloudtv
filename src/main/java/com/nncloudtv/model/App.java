@@ -8,66 +8,68 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable(table="app", detachable="true")
+import com.nncloudtv.lib.NnStringUtil;
+
+@PersistenceCapable(table = "app", detachable = "true")
 public class App  implements Serializable {
    
     private static final long serialVersionUID = -1574784862238151019L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-
+    
     @Persistent
     private long msoId; //maybe different mso wants different
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String msoName;
     
-    public static final short TYPE_IOS = 1;
+    public static final short TYPE_IOS     = 1;
     public static final short TYPE_ANDROID = 2;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String name;
    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String intro;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl; 
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String iosStoreUrl;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String androidStoreUrl;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String androidPackageName;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = 5)
     private String sphere;
    
-    @Persistent    
-    private boolean featured;    
-
+    @Persistent
+    private boolean featured;
+    
     @Persistent
     private int position1; //featured position. to begin with, use position 1 only. 
-      
+    
     @Persistent
     private int position2; //general list position
-
+    
     public long getMsoId() {
       return msoId;
     }
-
+    
     public void setMsoId(long msoId) {
        this.msoId = msoId;
     }

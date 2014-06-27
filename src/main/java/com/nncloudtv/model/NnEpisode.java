@@ -17,32 +17,33 @@ import com.nncloudtv.service.CounterFactory;
 
 @PersistenceCapable(table="nnepisode", detachable="true")
 public class NnEpisode implements Serializable {
+    
     private static final long serialVersionUID = -2365225197711392350L;
-
+    
     protected static final Logger log = Logger.getLogger(NnEpisode.class.getName());
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-
+    
     @Persistent
     private long channelId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
     private String intro;
-
+    
     @Persistent
     private long adId;
-
+    
     @Persistent
     private boolean isPublic; 
     

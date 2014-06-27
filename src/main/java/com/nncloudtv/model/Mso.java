@@ -2,7 +2,10 @@ package com.nncloudtv.model;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import javax.jdo.annotations.*;
+
+import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * a Multimedia service operator
@@ -17,44 +20,44 @@ public class Mso implements Serializable {
     private long id;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name; //name is unique, used as unique nameId, be careful of the case
     public static String NAME_9X9 = "9x9";
     public static String NAME_CTS = "cts";
-    public static String NAME_5F = "5f";
-
+    public static String NAME_5F  = "5f";
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)    
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String title;
-        
+    
     @Persistent 
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String intro;
-        
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)     
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String logoUrl;
-        
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String jingleUrl;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String contactEmail;
     
     @Persistent
     private short type;
-    public static final short TYPE_NN = 1; //default mso, must have and must have ONLY one
-    public static final short TYPE_MSO= 2;
-    public static final short TYPE_3X3= 3;
-    public static final short TYPE_TCO = 4; // for Generic CMS
+    public static final short TYPE_NN         = 1; //default mso, must have and must have ONLY one
+    public static final short TYPE_MSO        = 2;
+    public static final short TYPE_3X3        = 3;
+    public static final short TYPE_TCO        = 4; // for Generic CMS
     public static final short TYPE_ENTERPRISE = 5; // brand, US only
     public static final short TYPE_DEPRECATED = 6; // the mso that no longer used
-    public static final short TYPE_FANAPP = 7;
+    public static final short TYPE_FANAPP     = 7;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_SHORT_STRING_LENGTH)
     private String lang;
     
     @Persistent

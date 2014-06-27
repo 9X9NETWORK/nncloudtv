@@ -9,31 +9,34 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnStringUtil;
+
 /**
  * 9x9 user preference, stored in key/value pair
  */
-@PersistenceCapable(table="nnuser_pref", detachable="true")
-public class NnUserPref implements Serializable {    
+@PersistenceCapable(table = "nnuser_pref", detachable = "true")
+public class NnUserPref implements Serializable {
+    
     private static final long serialVersionUID = -708171304411630395L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-        
+    
     @Persistent
     private long userId;
-
+    
     @Persistent
     private long msoId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String item;
     public static final String FB_USER_ID = "fb-user-id";
-    public static final String FB_TOKEN = "fb-token";  //accessToken
+    public static final String FB_TOKEN   = "fb-token";     //accessToken
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String value;
     
     public NnUserPref(NnUser user, String item, String value) {
