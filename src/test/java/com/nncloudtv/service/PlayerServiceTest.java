@@ -1,9 +1,10 @@
 package com.nncloudtv.service;
 
+import static org.junit.Assert.*;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -46,17 +47,17 @@ public class PlayerServiceTest {
         Map<String, Object> map = mockModel.asMap();
         log.info(map.toString());
         
-        Assert.assertTrue("META_FAVICON is not null.", map.containsKey(PlayerService.META_FAVICON) && map.get(PlayerService.META_FAVICON) != null);
-        Assert.assertFalse("META_FAVICON is not empty.", ((String)map.get(PlayerService.META_FAVICON)).isEmpty());
+        assertTrue("META_FAVICON is not null.", map.containsKey(PlayerService.META_FAVICON) && map.get(PlayerService.META_FAVICON) != null);
+        assertFalse("META_FAVICON is not empty.", ((String)map.get(PlayerService.META_FAVICON)).isEmpty());
         
-        Assert.assertTrue("META_TITLE is not null.", map.containsKey(PlayerService.META_TITLE) && map.get(PlayerService.META_TITLE) != null);
-        Assert.assertFalse("META_TITLE is not empty.", ((String)map.get(PlayerService.META_TITLE)).isEmpty());
+        assertTrue("META_TITLE is not null.", map.containsKey(PlayerService.META_TITLE) && map.get(PlayerService.META_TITLE) != null);
+        assertFalse("META_TITLE is not empty.", ((String)map.get(PlayerService.META_TITLE)).isEmpty());
         
-        Assert.assertTrue("META_DESCRIPTION is not null.", map.containsKey(PlayerService.META_DESCRIPTION) && map.get(PlayerService.META_DESCRIPTION) != null);
-        Assert.assertFalse("META_DESCRIPTION is not empty.", ((String)map.get(PlayerService.META_DESCRIPTION)).isEmpty());
+        assertTrue("META_DESCRIPTION is not null.", map.containsKey(PlayerService.META_DESCRIPTION) && map.get(PlayerService.META_DESCRIPTION) != null);
+        assertFalse("META_DESCRIPTION is not empty.", ((String)map.get(PlayerService.META_DESCRIPTION)).isEmpty());
         
-        Assert.assertTrue("META_IMAGE is not null.", map.containsKey(PlayerService.META_THUMBNAIL) && map.get(PlayerService.META_THUMBNAIL) != null);
-        Assert.assertFalse("META_IMAGE is not empty.", ((String)map.get(PlayerService.META_THUMBNAIL)).isEmpty());
+        assertTrue("META_IMAGE is not null.", map.containsKey(PlayerService.META_THUMBNAIL) && map.get(PlayerService.META_THUMBNAIL) != null);
+        assertFalse("META_IMAGE is not empty.", ((String)map.get(PlayerService.META_THUMBNAIL)).isEmpty());
         
     }
 }

@@ -1,7 +1,9 @@
 package com.nncloudtv.lib;
+
+import static org.junit.Assert.*;
+
 import java.util.logging.Logger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -33,17 +35,17 @@ public class NnUtilStringTest {
         String output = NnStringUtil.urlencode(input);
         log.info("urlencod('" + input + "') = '" + output + "'");
         
-        Assert.assertEquals("Spaces should be replaced by '%20'.", expected, output);
+        assertEquals("Spaces should be replaced by '%20'.", expected, output);
     }
     
     @Test
     public void testGetSharingUrl() {
         
-        Assert.assertEquals("standard sharing URL is not matched.",
+        assertEquals("standard sharing URL is not matched.",
                             "http://" + MsoConfigManager.getServerDomain() + "/view/p" + chId + "/" + epId,
                             NnStringUtil.getSharingUrl(false, null, chId, epId));
         
-        Assert.assertEquals("flipr URL is not matched.",
+        assertEquals("flipr URL is not matched.",
                 "flipr://" + MsoConfigManager.getServerDomain() + "/view/p" + chId + "/" + epId,
                 NnStringUtil.getSharingUrl(true, null, chId, epId));
         
