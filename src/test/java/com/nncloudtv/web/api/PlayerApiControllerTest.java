@@ -1,5 +1,7 @@
 package com.nncloudtv.web.api;
 
+import static org.junit.Assert.*;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,7 +13,6 @@ import java.util.logging.Logger;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -52,7 +53,7 @@ public class PlayerApiControllerTest {
         req.setRequestURI("/playerAPI/fbLogin");
         req.addHeader(ApiContext.HEADER_REFERRER, referrer);
         String result = playerAPI.fbLogin(req);
-        Assert.assertTrue(
+        assertTrue(
                 "The url redirection string slould start with 'redirect:'",
                 result.matches("^redirect:.*$"));
         result = result.substring(9);
@@ -65,31 +66,31 @@ public class PlayerApiControllerTest {
         } catch (MalformedURLException e) {
         } catch (URISyntaxException e) {
         }
-        Assert.assertFalse("Redirection should be a valid URL.", url == null);
-        Assert.assertFalse("Redirection should be a valid URI.", uri == null);
+        assertFalse("Redirection should be a valid URL.", url == null);
+        assertFalse("Redirection should be a valid URI.", uri == null);
         
         List<NameValuePair> params = URLEncodedUtils.parse(uri, NnStringUtil.UTF8);
         Map<String, String> map = new HashMap<String, String>();
         for (NameValuePair nv : params) {
             map.put(nv.getName(), nv.getValue());
         }
-        Assert.assertNotNull("'client_id' sould not be null.", map.get("client_id"));
+        assertNotNull("'client_id' sould not be null.", map.get("client_id"));
         String redirectUri = map.get("redirect_uri");
-        Assert.assertNotNull("'redirect_uri' should not be null.", redirectUri);
+        assertNotNull("'redirect_uri' should not be null.", redirectUri);
         
         uri = null;
         try {
             uri = new URI(redirectUri);
         } catch (URISyntaxException e) {
         }
-        Assert.assertNotNull("'redirect_uri' should be valid.", uri);
+        assertNotNull("'redirect_uri' should be valid.", uri);
         params = URLEncodedUtils.parse(uri, NnStringUtil.UTF8);
         map.clear();
         for (NameValuePair nv : params) {
             map.put(nv.getName(), nv.getValue());
         }
         
-        Assert.assertNotNull("The parameter 'uri' of redirect_uri should not be null.", map.get("uri"));
-        Assert.assertEquals("The referrer should be matched.", referrer, map.get("uri"));
+        assertNotNull("The parameter 'uri' of redirect_uri should not be null.", map.get("uri"));
+        assertEquals("The referrer should be matched.", referrer, map.get("uri"));
     }
 }

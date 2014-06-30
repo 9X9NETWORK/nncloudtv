@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class MsoManagerTest {
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
         channel.setPublic(true);
         channel.setSphere(LangTable.LANG_ZH);
-        Assert.assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand(channel, mockMso));
+        assertTrue("The mock mso should be a valid brand of mock channel.", msoMngr.isValidBrand(channel, mockMso));
         
     }
 }

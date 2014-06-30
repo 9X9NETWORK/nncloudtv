@@ -1,9 +1,12 @@
 package com.nncloudtv.service;
 
+import static org.junit.Assert.*;
+
 import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;
 
-import junit.framework.Assert;
+//import junit.framework.Assert; The old method (of Junit 3),
+// see http://stackoverflow.com/questions/291003/differences-between-2-junit-assert-classes
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +64,7 @@ public class PlayerApiServiceTest {
 	    
 	    Object result = service.brandInfo(null, req);
 	    
-		Assert.assertNotNull(result); 
+        assertNotNull(result);
 	}
 
 	@Test
@@ -69,7 +72,7 @@ public class PlayerApiServiceTest {
 	    
 	    Object result = service.setUserProfile("mock-user-token-xxoo", "name,phone", "MockUser,7777777", req);
 	    
-	    Assert.assertNotNull(result); 
+        assertNotNull(result);
 	}
 	
 	@Test
@@ -78,7 +81,7 @@ public class PlayerApiServiceTest {
 		String password = "123456";
 		Object loginObj = service.login(email, password, req, resp);
 		
-		Assert.assertNotNull(loginObj); 
+        assertNotNull(loginObj);
 	}
 
     @Test
@@ -88,7 +91,7 @@ public class PlayerApiServiceTest {
         Object userInfo = service.login(email, password, req, resp);
         System.out.println(userInfo);
         
-        Assert.assertNotNull(userInfo);
+        assertNotNull(userInfo);
     }
 	
 }

@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 public class MsoConfigManagerTest {
@@ -11,6 +12,6 @@ public class MsoConfigManagerTest {
         String serverDomain = MsoConfigManager.getServerDomain();
         String check = MsoConfigManager.getProperty("facebook.properties", "server_domain");
         
-        Assert.assertEquals(check, serverDomain);
+        assertEquals(check, serverDomain);
     }
 }
