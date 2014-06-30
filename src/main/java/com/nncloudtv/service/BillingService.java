@@ -16,7 +16,6 @@ import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
-import com.google.common.collect.Lists;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
@@ -110,7 +109,7 @@ public class BillingService {
             ids.add(order.getPackageId());
         }
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
-        packages = Lists.reverse(NNF.getPackageMngr().findByIds(ids));
+        packages = NNF.getPackageMngr().findByIds(ids);
         if (packages.isEmpty()) {
             log.warning("no packages was found");
             return;
