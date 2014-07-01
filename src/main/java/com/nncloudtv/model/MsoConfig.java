@@ -60,6 +60,7 @@ public class MsoConfig {
     public static String SIGNUP_ENFORCE = "signup-enforce";
     public static String AD_IOS = "ad-ios";
     public static String AD_ANDROID = "ad-android";
+    public static String AUDIO_BACKGROUND = "audio-background";
  
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT = 3;
