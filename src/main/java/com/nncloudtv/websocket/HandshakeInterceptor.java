@@ -22,11 +22,11 @@ public class HandshakeInterceptor extends HttpSessionHandshakeInterceptor {
     }
     
     @Override
-    public boolean beforeHandshake(ServerHttpRequest arg0, ServerHttpResponse arg1, WebSocketHandler arg2,
-            Map<String, Object> arg3) throws Exception {
+    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+            Map<String, Object> map) throws Exception {
         
         log.info("after handshake");
         // TODO Auto-generated method stub
-        return super.beforeHandshake(arg0, arg1, arg2, arg3);
+        return super.beforeHandshake(request, response, wsHandler, map);
     }
 }
