@@ -11,11 +11,13 @@ public class NnSocketHandler extends TextWebSocketHandler {
     protected static final Logger log = Logger.getLogger(NnSocketHandler.class.getName());
     
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage msg) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         
-        log.info(msg.getPayload());
+        log.info(message.getPayload());
         // TODO Auto-generated method stub
-        super.handleTextMessage(session, msg);
+        super.handleTextMessage(session, message);
+        TextMessage returnMessage = new TextMessage(message.getPayload()+" received at server");
+        session.sendMessage(returnMessage);
     }
     
 }
