@@ -1,6 +1,6 @@
 package com.nncloudtv.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.logging.Logger;
 import javax.servlet.http.HttpSession;

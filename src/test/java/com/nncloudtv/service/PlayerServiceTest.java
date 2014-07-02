@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.logging.Logger;

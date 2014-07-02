@@ -1,6 +1,6 @@
 package com.nncloudtv.lib;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.logging.Logger;
 
