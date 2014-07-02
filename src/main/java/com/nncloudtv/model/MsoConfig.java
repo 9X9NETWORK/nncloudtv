@@ -46,7 +46,7 @@ public class MsoConfig {
     public static String FACEBOOK_CLIENTID     = "facebook-clientid";
     public static String FACEBOOK_CLIENTSECRET = "facebook-client-secret";
     public static String MAX_SETS              = "max-sets";
-    public static String MAX_CH_PER_SET        = "max-ch-per-set";       
+    public static String MAX_CH_PER_SET        = "max-ch-per-set";
     public static String YOUTUBE_ID_ANDROID    = "youtube-id-android";
     public static String CHROMECAST_ID         = "chromecast-id";
     public static String GCM_SENDER_ID         = "gcm-sender-id";

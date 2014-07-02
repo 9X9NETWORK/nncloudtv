@@ -12,7 +12,7 @@ import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "app", detachable = "true")
 public class App  implements Serializable {
-   
+    
     private static final long serialVersionUID = -1574784862238151019L;
     
     @PrimaryKey
@@ -39,7 +39,7 @@ public class App  implements Serializable {
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
-    private String imageUrl; 
+    private String imageUrl;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
@@ -56,7 +56,7 @@ public class App  implements Serializable {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = 5)
     private String sphere;
-   
+    
     @Persistent
     private boolean featured;
     
@@ -154,22 +154,19 @@ public class App  implements Serializable {
        this.position2 = position2;
     }
 
-	public String getMsoName() {
-		return msoName;
-	}
+    public String getMsoName() {
+        return msoName;
+    }
 
-	public void setMsoName(String msoName) {
-		this.msoName = msoName;
-	}
+    public void setMsoName(String msoName) {
+        this.msoName = msoName;
+    }
 
-	public String getAndroidPackageName() {
-		return androidPackageName;
-	}
+    public String getAndroidPackageName() {
+        return androidPackageName;
+    }
 
-	public void setAndroidPackageName(String androidPackageName) {
-		this.androidPackageName = androidPackageName;
-	}
-
-
-    
+    public void setAndroidPackageName(String androidPackageName) {
+        this.androidPackageName = androidPackageName;
+    }
 }
