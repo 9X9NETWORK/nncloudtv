@@ -10,6 +10,7 @@ import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -18,12 +19,7 @@ public class BillingProfileManager {
     
     protected static final Logger log = Logger.getLogger(BillingProfileManager.class.getName());
     
-    protected BillingProfileDao dao;
-    
-    public BillingProfileManager() {
-        
-        dao = new BillingProfileDao();
-    }
+    protected BillingProfileDao dao = NNF.getBillingProfileDao();
     
     public BillingProfile save(BillingProfile profile) {
         

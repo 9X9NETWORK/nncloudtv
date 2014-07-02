@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.Mso;
@@ -27,37 +27,18 @@ public class PlayerService {
     
     protected static final Logger log = Logger.getLogger(PlayerService.class.getName());
     
-    public static final String META_TITLE = "meta_title";
-    public static final String META_THUMBNAIL = "meta_thumbnail";
-    public static final String META_DESCRIPTION = "meta_desciption";
-    public static final String META_URL = "meta_url";
-    public static final String META_KEYWORD = "meta_keyword";
-    public static final String META_CHANNEL_TITLE = "crawlChannelTitle";
-    public static final String META_EPISODE_TITLE = "crawlEpisodeTitle";
+    public static final String META_TITLE           = "meta_title";
+    public static final String META_THUMBNAIL       = "meta_thumbnail";
+    public static final String META_DESCRIPTION     = "meta_desciption";
+    public static final String META_URL             = "meta_url";
+    public static final String META_KEYWORD         = "meta_keyword";
+    public static final String META_CHANNEL_TITLE   = "crawlChannelTitle";
+    public static final String META_EPISODE_TITLE   = "crawlEpisodeTitle";
     public static final String META_VIDEO_THUMBNAIL = "crawlVideoThumb";
-    public static final String META_FAVICON = "favicon";
-    public static final String OS_ANDROID = "android";
-    public static final String OS_IOS = "ios";
-    public static final String OS_WEB = "web";
-    
-    private NnUserManager userMngr;
-    private MsoConfigManager configMngr;
-    private MsoManager msoMngr;
-    
-    @Autowired
-    public PlayerService(NnUserManager userMngr, MsoConfigManager configMngr, MsoManager msoMngr) {
-        
-        this.userMngr = userMngr;
-        this.configMngr = configMngr;
-        this.msoMngr = msoMngr;
-    }
-    
-    public PlayerService() {
-        
-        this.userMngr = new NnUserManager();
-        this.configMngr = new MsoConfigManager();
-        this.msoMngr = new MsoManager();
-    }
+    public static final String META_FAVICON         = "favicon";
+    public static final String OS_ANDROID           = "android";
+    public static final String OS_IOS               = "ios";
+    public static final String OS_WEB               = "web";
     
     public Model prepareBrand(Model model, String msoName, HttpServletResponse resp) {        
         if (msoName != null) {
@@ -67,14 +48,14 @@ public class PlayerService {
         }
         
         // bind favicon
-        Mso mso = msoMngr.findByName(msoName);
+        Mso mso = NNF.getMsoMngr().findByName(msoName);
         if (mso == null)
             return model;
         
-        model.addAttribute(PlayerService.META_TITLE, mso.getTitle());
+        model.addAttribute(PlayerService.META_TITLE,       mso.getTitle());
         model.addAttribute(PlayerService.META_DESCRIPTION, mso.getIntro());
-        model.addAttribute(PlayerService.META_THUMBNAIL, mso.getLogoUrl());
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        model.addAttribute(PlayerService.META_THUMBNAIL,   mso.getLogoUrl());
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         String faviconUrl = config == null ? null : config.getValue();
         if (faviconUrl != null) { 
             model.addAttribute(META_FAVICON, "<link rel='icon' href='" + faviconUrl + 
@@ -109,10 +90,9 @@ public class PlayerService {
     public String findFirstSubepisodeId(String eId) {
         if (eId != null && eId.matches("e[0-9]+")) {
             String eid = eId.replace("e", "");
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
-            NnEpisode episodeObj = episodeMngr.findById(Long.valueOf(eid));
+            NnEpisode episodeObj = NNF.getEpisodeMngr().findById(Long.valueOf(eid));
             if (episodeObj != null) {
-                List<NnProgram> programs = new NnProgramManager().findByEpisodeId(episodeObj.getId());
+                List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeObj.getId());
                 if (programs.size() > 0)
                     eId = String.valueOf(programs.get(0).getId());
             }
@@ -147,8 +127,7 @@ public class PlayerService {
         if (pid == null)
             return model;
         if (pid.matches("[0-9]+")) {
-            NnProgramManager programMngr = new NnProgramManager();
-            NnProgram program = programMngr.findById(Long.valueOf(pid));
+            NnProgram program = NNF.getProgramMngr().findById(Long.valueOf(pid));
             if (program != null) {
                 log.info("nnprogram found = " + pid);
                 model.addAttribute(META_EPISODE_TITLE, program.getName());
@@ -160,8 +139,7 @@ public class PlayerService {
             }
         } else if (pid.matches("e[0-9]+")){
             String eid = pid.replace("e", "");
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
-            NnEpisode episode = episodeMngr.findById(Long.valueOf(eid));
+            NnEpisode episode = NNF.getEpisodeMngr().findById(Long.valueOf(eid));
             if (episode != null) {
                 log.info("nnepisode found = " + eid);
                 model.addAttribute(META_EPISODE_TITLE, episode.getName());
@@ -183,11 +161,11 @@ public class PlayerService {
 
     public Model prepareChannel(Model model, String cid,
             String mso, HttpServletResponse resp) {
-        NnChannelManager channelMngr = new NnChannelManager();
+        
         if (cid == null || !cid.matches("[0-9]+")) {
             return model;
         }
-        NnChannel channel = channelMngr.findById(Long.valueOf(cid));
+        NnChannel channel = NNF.getChannelMngr().findById(Long.valueOf(cid));
         if (channel != null) {
             log.info("found channel = " + cid);
             model.addAttribute(META_CHANNEL_TITLE, channel.getName());
@@ -208,7 +186,7 @@ public class PlayerService {
         if (jsp != null && jsp.length() > 0) {
             log.info("alternate is enabled: " + jsp);
         }
-        model.addAttribute("locale", userMngr.findLocaleByHttpRequest(req));
+        model.addAttribute("locale", NNF.getUserMngr().findLocaleByHttpRequest(req));
         return model;
     }
 
@@ -312,8 +290,7 @@ public class PlayerService {
         
         //-- channel/episode info --
         if (ch != null) {
-            NnChannelManager channelMngr = new NnChannelManager();        
-            NnChannel c = channelMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null) {
                 String sharingUrl = NnStringUtil.getSharingUrl(false, context, ch, (ep == null ? youtubeEp : ep));
                 model.addAttribute(META_URL, this.prepareFb(sharingUrl, 3));
@@ -328,8 +305,7 @@ public class PlayerService {
                 
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
-                    NnEpisodeManager episodeMngr = new NnEpisodeManager(); 
-                    List<NnEpisode> episodes = episodeMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
+                    List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                     int i = 1;                    
                     for (NnEpisode e : episodes) {
                         if (i > 1 && i < 4) {
@@ -353,8 +329,7 @@ public class PlayerService {
                         }
                     }            
                 } else {
-                    NnProgramManager programMngr = new NnProgramManager();
-                    List<NnProgram> programs = programMngr.findPlayerProgramsByChannel(c.getId());
+                    List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(c.getId());
                     if (programs.size() > 0) {
                         int i=1;                    
                         if (ep == null)

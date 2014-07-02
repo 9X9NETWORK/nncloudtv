@@ -10,7 +10,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
-@PersistenceCapable(table="billing_profile", detachable="true")
+@PersistenceCapable(table = "billing_profile", detachable = "true")
 public class BillingProfile {
     
     @PrimaryKey
@@ -24,7 +24,7 @@ public class BillingProfile {
     private Date updateDate;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String token;
     
     @Persistent
@@ -40,55 +40,55 @@ public class BillingProfile {
     public static final short CHARGED  = 3;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String ccRefTransId;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String ccRefOrderId;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String cardHolderName;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String cardRemainDigits;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String email;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String addr1;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String addr2;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String city;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String state;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String zip;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String country;
     
     @Persistent
-    @Column(jdbcType = "VARCHAR", length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String phone;
     
     public long getId() {

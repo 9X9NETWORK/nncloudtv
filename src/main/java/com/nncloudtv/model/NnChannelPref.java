@@ -9,35 +9,37 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnStringUtil;
+
 /**
  * 9x9 user preference, stored in key/value pair
  */
-@PersistenceCapable(table="nnchannel_pref", detachable="true")
-public class NnChannelPref implements Serializable {        
-
+@PersistenceCapable(table = "nnchannel_pref", detachable = "true")
+public class NnChannelPref implements Serializable {
+    
     private static final long serialVersionUID = -1556581263719714732L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-        
+    
     @Persistent
     private long channelId;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String item;
     
-    public static final String FB_AUTOSHARE = "fb-autoshare";
+    public static final String FB_AUTOSHARE    = "fb-autoshare";
     public static final String BRAND_AUTOSHARE = "brand-autoshare"; // indicate which brand the channel sharing at, the value is mso's name
-    public static final String AUTO_SYNC = "auto-sync"; // indicate YouTube-sync-channel is auto sync to YouTube
+    public static final String AUTO_SYNC       = "auto-sync";       // indicate YouTube-sync-channel is auto sync to YouTube
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String value;
     
-    public static final String ON = "on";
-    public static final String OFF = "off";
+    public static final String ON     = "on";
+    public static final String OFF    = "off";
     public static final String FAILED = "failed";
     
     public NnChannelPref(Long channelId, String item, String value) {

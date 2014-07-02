@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.BillingPackageDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.BillingPackage;
 
 @Service
@@ -15,12 +16,7 @@ public class BillingPackageManager {
     
     protected static final Logger log = Logger.getLogger(BillingPackageManager.class.getName());
     
-    BillingPackageDao dao;
-    
-    public BillingPackageManager() {
-        
-        dao = new BillingPackageDao();
-    }
+    BillingPackageDao dao = NNF.getPackageDao();
     
     public List<BillingPackage> findAll() {
         

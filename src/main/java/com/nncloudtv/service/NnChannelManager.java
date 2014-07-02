@@ -14,12 +14,12 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -45,20 +45,8 @@ public class NnChannelManager {
 
     protected static final Logger log = Logger.getLogger(NnChannelManager.class.getName());
     
-    private NnChannelDao dao = new NnChannelDao();
-    private MsoConfigManager configMngr;
+    private NnChannelDao dao = NNF.getChannelDao();
     
-    @Autowired
-    public NnChannelManager(MsoConfigManager configMngr) {
-        
-        this.configMngr = configMngr;
-    }
-    
-    public NnChannelManager() {
-        
-        this.configMngr = new MsoConfigManager();
-    }
-
     public static String convertChannelId(String channelIdStr) {
     	if (channelIdStr != null && channelIdStr.contains("yt")) {
     		channelIdStr = channelIdStr.replace("yt", "");
@@ -141,9 +129,6 @@ public class NnChannelManager {
                     log.info("channel can't find author:" + youtubeName + ";url:" + sourceUrl);
                     channel.setPublic(false);
                 }
-                //NnUserManager mngr = new NnUserManager();
-                //NnUser user = mngr.createFakeYoutube(info, req);
-                //channel.setUserIdStr(user.getIdStr());
             }
         }
         channel.setPublic(false);
@@ -158,16 +143,9 @@ public class NnChannelManager {
             new DepotService().submitToTranscodingService(channel.getId(), channel.getSourceUrl(), req);                                
         }
         
-        // piwik
-        /*
-        if (channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
-            channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) {            
-            PiwikLib.createPiwikSite(channel.getId());
-        } 
-        */       
         return channel;
     }
-
+    
     public NnChannel createYouTubeWithMeta(String sourceUrl, String name, String intro, String lang, String imageUrl, HttpServletRequest req) {
         if (sourceUrl == null) 
             return null;
@@ -267,11 +245,10 @@ public class NnChannelManager {
         NnChannel favoriteCh = dao.findFavorite(user.getIdStr());
         if (favoriteCh == null)
             return;
-        NnProgramManager pMngr = new NnProgramManager();
-        NnProgram p = pMngr.findById(pId);
+        NnProgram p = NNF.getProgramMngr().findById(pId);
         if (p != null) {
             if (p.getChannelId() == favoriteCh.getId())
-                pMngr.delete(p);
+                NNF.getProgramMngr().delete(p);
         }
         
         // update episode count
@@ -305,14 +282,14 @@ public class NnChannelManager {
         if (favoriteCh == null) {
             favoriteCh = this.createFavorite(user);
         }
-        NnProgramManager pMngr = new NnProgramManager();        
         if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
             if (p != null && p.getContentType() != NnProgram.CONTENTTYPE_REFERENCE) {
                 fileUrl = p.getFileUrl();
                 name = p.getName();
                 imageUrl = p.getImageUrl();
             }
-        }        
+        }
+        NnProgramManager pMngr = NNF.getProgramMngr();
         if (fileUrl != null) {
             NnProgram existFavorite = pMngr.findByChannelAndFileUrl(favoriteCh.getId(), fileUrl);
             if (existFavorite == null) {
@@ -322,7 +299,7 @@ public class NnChannelManager {
                 existFavorite.setDuration(duration);
                 existFavorite.setStorageId(String.valueOf(c.getId()));
                 existFavorite.setStatus(NnProgram.STATUS_OK);                
-                pMngr.save(existFavorite);                
+                NNF.getProgramMngr().save(existFavorite);                
                 
                 // update episode count
                 favoriteCh.setCntEpisode(calcuateEpisodeCount(favoriteCh));
@@ -386,8 +363,7 @@ public class NnChannelManager {
         channel = dao.save(channel);
         
         NnChannel[] channels = {original, channel};
-        if (configMngr.isQueueEnabled(true)) {
-            //new QueueMessage().fanout("localhost",QueueMessage.CHANNEL_CUD_RELATED, channels);
+        if (NNF.getConfigMngr().isQueueEnabled(true)) {
         } else {
             this.processChannelRelatedCounter(channels);
         }
@@ -438,7 +414,7 @@ public class NnChannelManager {
     public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
         Stack st = SearchLib.search(core, keyword, content, extra, all, start, limit);
         List<Long> ids = (List<Long>) st.pop();
-        List<NnChannel> channels = new NnChannelDao().findByIds(ids);
+        List<NnChannel> channels = NNF.getChannelDao().findAllByIds(ids);
         st.push(channels);
         return st;
     }
@@ -483,15 +459,13 @@ public class NnChannelManager {
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
             
-            NnProgramManager programMngr = new NnProgramManager();
-            List<NnProgram> programs = programMngr.findByChannelId(channel.getId());
+            List<NnProgram> programs = NNF.getProgramMngr().findByChannelId(channel.getId());
             
             return programs.size();
             
         } else {
             
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
-            List<NnEpisode> episodes = episodeMngr.findByChannelId(channel.getId());
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channel.getId());
             
             return episodes.size();
         }
@@ -618,7 +592,7 @@ public class NnChannelManager {
     }
         
     public List<NnChannel> findByIds(List<Long> ids) {        
-        return dao.findByIds(ids);
+        return dao.findAllByIds(ids);
     }
     
     public List<NnChannel> findByStatus(short status) {
@@ -803,8 +777,7 @@ public class NnChannelManager {
     //return List<ChannelLineup>
     @SuppressWarnings("unchecked")
     public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
-        NnProgramManager programMngr = new NnProgramManager();
-        //List<String> result = new ArrayList<String>();
+        
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         String channelOutput = "";
         if (isReduced) {
@@ -832,7 +805,7 @@ public class NnChannelManager {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-                programStr = (String) programMngr.findLatestProgramInfoByChannels(channels, format);
+                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);
                 result.add(programStr);
             } 
             String size[] = new String[result.size()];
@@ -865,9 +838,8 @@ public class NnChannelManager {
         List<String> imgs = new ArrayList<String>();
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-            NnProgramManager programMngr = new NnProgramManager();
             String filter = "channelId == " + channel.getId();
-            List<NnProgram> programs = programMngr.list(1, 50, "updateDate", "desc", filter);
+            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate", "desc", filter);
             
             for (int i = 0; i < programs.size() && imgs.size() < 3; i++) {
                 
@@ -878,9 +850,9 @@ public class NnChannelManager {
             }
             
         } else {
-            NnEpisodeManager episodeMngr = new NnEpisodeManager();
+            
             String filter = "channelId == " + channel.getId();
-            List<NnEpisode> episodes = episodeMngr.list(1, 50, "seq", "asc", filter);
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq", "asc", filter);
             
             for (int i = 0; i < episodes.size() && imgs.size() < 3; i++) {
                 
@@ -916,8 +888,7 @@ public class NnChannelManager {
             return false;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(channel.getUserId(), 1);
+        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
         if(user == null) {
             return false;
         }
@@ -928,7 +899,7 @@ public class NnChannelManager {
         
         return false;
     }
-
+    
     public void reorderUserChannels(NnUser user) {
         
         // the results should be same as ApiUser.userChannels() GET operation, but not include fake channel.
@@ -996,8 +967,7 @@ public class NnChannelManager {
             return null;
         }
         
-        MsoManager msoMngr = new MsoManager();
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         StoreService storeServ = new StoreService();
         List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channelId, nnMso.getId());
         if (categoryIds != null && categoryIds.size() > 0) {
@@ -1012,8 +982,7 @@ public class NnChannelManager {
         if (channel == null)
             return;
         
-        MsoManager msoMngr = new MsoManager();
-        Mso nnMso = msoMngr.findNNMso();
+        Mso nnMso = NNF.getMsoMngr().findNNMso();
         StoreService storeServ = new StoreService();
         
         List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channel.getId(), nnMso.getId());
@@ -1054,15 +1023,15 @@ public class NnChannelManager {
                 log.info("v31 imageUrl:" + imageUrl);
         }
         if (version > 31 && (
-                c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP ||
+            c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP ||
             c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY ||
             c.getContentType() == NnChannel.CONTENTTYPE_MIXED ||
             c.getContentType() == NnChannel.CONTENTTYPE_FAVORITE)) {
+            
             if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
-                NnProgramManager pMngr = new NnProgramManager();
-                List<NnProgram> programs = pMngr.findPlayerProgramsByChannel(c.getId());
+                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(c.getId());
                 log.info("programs = " + programs.size());
-                Collections.sort(programs, pMngr.getProgramComparator("updateDate"));
+                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
                 for (int i=0; i<3; i++) {
                     if (i < programs.size()) {
                        //lastEpisodeTitle = programs.get(0).getName();
@@ -1073,10 +1042,9 @@ public class NnChannelManager {
                     }
                 }
             } else {
-                NnEpisodeManager eMngr = new NnEpisodeManager();
-                List<NnEpisode> episodes = eMngr.findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
-                Collections.sort(episodes, eMngr.getEpisodePublicSeqComparator());
+                Collections.sort(episodes, NNF.getEpisodeMngr().getEpisodePublicSeqComparator());
                 for (int i=0; i<3; i++) {
                     if (i < episodes.size()) {
                        //lastEpisodeTitle = episodes.get(0).getName();
@@ -1249,9 +1217,7 @@ public class NnChannelManager {
         
         if (channel == null) return;
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
-        
-        List<NnChannelPref> channelPrefs = prefMngr.findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        List<NnChannelPref> channelPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
         if (channelPrefs == null || channelPrefs.isEmpty()) {
             
             channel.setAutoSync(NnChannelPref.OFF);

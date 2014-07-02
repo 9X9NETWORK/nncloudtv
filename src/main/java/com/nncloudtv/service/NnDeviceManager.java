@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnDeviceDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnUser;
@@ -19,18 +20,9 @@ import com.nncloudtv.web.json.player.PlayerDevice;
 public class NnDeviceManager {
     protected static final Logger log = Logger.getLogger(NnDeviceManager.class.getName());
     
-    private NnDeviceDao dao = new NnDeviceDao();
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+    private NnDeviceDao dao = NNF.getDeviceDao();
     private HttpServletRequest req;
-    private NnUserManager userMngr;
-            
-    public NnDeviceManager() {
-        this.userMngr = new NnUserManager();
-    }
-    public NnDeviceManager(NnUserManager userMngr) {
-        
-        this.userMngr = userMngr;
-    }
+    
     public HttpServletRequest getReq() { return req; }
     public void setReq(HttpServletRequest req) { this.req = req;}
     
@@ -61,7 +53,7 @@ public class NnDeviceManager {
         if (device == null)
             device = new NnDevice();
         if (device.getToken() == null)
-            device.setToken(NnUserManager.generateToken(userMngr.getShardByLocale(req)));
+            device.setToken(NnUserManager.generateToken(NNF.getUserMngr().getShardByLocale(req)));
         if (user != null) {
             device.setUserId(user.getId());
             device.setShard(user.getShard()); //for future reference
@@ -120,10 +112,10 @@ public class NnDeviceManager {
     
     public void delete(NnDevice device) {
         
-        List<NnDeviceNotification> notifications = notificationMngr.findByDeviceId(device.getId());
+        List<NnDeviceNotification> notifications = NNF.getDeviceNotiMngr().findByDeviceId(device.getId());
         
         dao.delete(device);
-        notificationMngr.delete(notifications);
+        NNF.getDeviceNotiMngr().delete(notifications);
     }
     
     public void delete(List<NnDevice> deleteDevices) {
@@ -131,11 +123,11 @@ public class NnDeviceManager {
         List<NnDeviceNotification> notifications = new ArrayList<NnDeviceNotification>();
         
         for (NnDevice device : deleteDevices) {
-            notifications.addAll(notificationMngr.findByDeviceId(device.getId()));
+            notifications.addAll(NNF.getDeviceNotiMngr().findByDeviceId(device.getId()));
         }
         
         dao.deleteAll(deleteDevices);
-        notificationMngr.delete(notifications);
+        NNF.getDeviceNotiMngr().delete(notifications);
     }
     
     public Object getPlayerDeviceInfo(NnDevice device, short format, List<NnUser> users) {

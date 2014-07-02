@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
@@ -23,17 +24,16 @@ public class ApiContentService {
     protected static final Logger log = Logger.getLogger(ApiContentService.class.getName());
     
     private NnChannelManager channelMngr;
-    private MsoManager msoMngr;
     private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     private NnEpisodeManager episodeMngr;
     private NnProgramManager programMngr;
     
     @Autowired
-    public ApiContentService(NnChannelManager channelMngr, MsoManager msoMngr, StoreService storeService,
-                NnChannelPrefManager channelPrefMngr, NnEpisodeManager episodeMngr, NnProgramManager programMngr) {
+    public ApiContentService(NnChannelManager channelMngr, StoreService storeService, NnChannelPrefManager channelPrefMngr,
+                NnEpisodeManager episodeMngr, NnProgramManager programMngr) {
+        
         this.channelMngr = channelMngr;
-        this.msoMngr = msoMngr;
         this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
         this.episodeMngr = episodeMngr;
@@ -66,7 +66,7 @@ public class ApiContentService {
         // filter part
         if (msoId != null) {
             
-            List<Long> verifiedChannel = msoMngr.getPlayableChannels(results, msoId);
+            List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, msoId);
             
             results = channelMngr.findByIds(verifiedChannel);
             Collections.sort(results, channelMngr.getChannelComparator("updateDate"));

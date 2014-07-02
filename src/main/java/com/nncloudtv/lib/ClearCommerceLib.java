@@ -21,8 +21,6 @@ import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
-import com.nncloudtv.service.BillingPackageManager;
-import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -242,10 +240,8 @@ public class ClearCommerceLib {
     public static CcApiDocument referencedAuth(BillingOrder order, boolean isProduction) throws NnDataIntegrityException, NnBillingException, CcApiBadValueException, CcApiBadKeyException, NnClearCommerceException {
         
         CcApiDocument ccResult = null;
-        BillingProfileManager profileMngr = new BillingProfileManager();
-        BillingPackageManager packageMngr = new BillingPackageManager();
-        BillingProfile profile = profileMngr.findById(order.getProfileId());
-        BillingPackage pack = packageMngr.findById(order.getPackageId());
+        BillingProfile profile = NNF.getBillingProfileMngr().findById(order.getProfileId());
+        BillingPackage pack = NNF.getPackageMngr().findById(order.getPackageId());
         if (profile == null)
             throw new NnDataIntegrityException("billingOrder " + order.getId() + " has invalid profileId");
         if (pack == null)

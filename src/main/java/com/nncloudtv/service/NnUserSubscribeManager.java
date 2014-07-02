@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserSubscribeDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
@@ -111,26 +112,18 @@ public class NnUserSubscribeManager {
         List<NnUserSubscribe> subs = subDao.findAllByUser(user);
         log.info("subscription size:" + subs.size());        
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager channelMngr = new NnChannelManager();
-        //CntSubscribeManager cntMngr = new CntSubscribeManager();
         for (NnUserSubscribe s : subs) {
-            NnChannel c = channelMngr.findById(s.getChannelId()); //!!!
+            NnChannel c = NNF.getChannelMngr().findById(s.getChannelId()); //!!!
             if (c != null) {
                 c.setSeq(s.getSeq());
                 c.setType(s.getType());
-                /*
-                CntView cnt = cntMngr.findByChannel(c.getId());            
-                if (cnt != null) {
-                    c.setCntSubscribe(cnt.getCnt());
-                }
-                */
                 channels.add(c);
             }
         }
         log.info("final subs size:" + channels.size());        
         return channels;             
     }
-
+    
     //move from seq1 to seq2
     public boolean moveSeq(NnUser user, short seq1, short seq2) {                        
         NnUserSubscribe sub = subDao.findByUserAndSeq(user, seq1);

@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.logging.Logger;
+
 import javax.servlet.http.HttpSession;
 
 import junit.framework.Assert;
@@ -11,12 +12,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.nncloudtv.lib.CacheFactory;
-import com.nncloudtv.mock.service.MockMsoConfigManager;
-import com.nncloudtv.mock.service.MockMsoManager;
-import com.nncloudtv.mock.service.MockNnChannelManager;
-import com.nncloudtv.mock.service.MockNnUserManager;
-import com.nncloudtv.mock.service.MockNnUserPrefManager;
-import com.nncloudtv.mock.service.MockNnUserProfileManager;
+import com.nncloudtv.mock.lib.MockNNF;
 import com.nncloudtv.web.api.ApiContext;
 
 public class PlayerApiServiceTest {
@@ -27,35 +23,27 @@ public class PlayerApiServiceTest {
 	
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;    
-    private MockNnUserManager mockUserMngr;    
-    private MockMsoManager mockMsoMngr;
-    private MockNnChannelManager mockChMngr;
-    private MockMsoConfigManager mockConfigMngr;
-    private MockNnUserPrefManager mockPrefMngr;
-    private MockNnUserProfileManager mockProfileMngr;
 
     @Before
     public void setUp() {
         
         CacheFactory.isEnabled = false;
         
+        MockNNF.initAll();
+        
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();
-        mockPrefMngr = new MockNnUserPrefManager();
-        mockUserMngr = new MockNnUserManager(mockPrefMngr);
-        mockMsoMngr = new MockMsoManager();
-        mockChMngr = new MockNnChannelManager();
-        mockConfigMngr = new MockMsoConfigManager();
-        mockProfileMngr = new MockNnUserProfileManager();
+        
+        MockNNF.initAll();
         
         req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
         HttpSession session = req.getSession();
         session.setMaxInactiveInterval(60);
-        service = new PlayerApiService(mockUserMngr, mockMsoMngr, mockChMngr, mockConfigMngr, mockPrefMngr, mockProfileMngr, null, null);
+        service = new PlayerApiService();
         service.prepService(req, resp);
         System.out.println("@Before - setUp");
     }
-	 	 	
+    
 	@Test
 	public void testBrandInfo() {
 	    

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -29,8 +30,6 @@ public class ApiContext {
     public final static String PARAM_LANG = "lang";
     public final static String PARAM_SPHERE = "shpere";
     public final static String PARAM_VERSION = "v";
-    
-    MsoManager msoMngr;
     
     HttpServletRequest httpReq;
     Locale locale;
@@ -59,19 +58,12 @@ public class ApiContext {
     @Autowired
     public ApiContext(HttpServletRequest req) {
         
-        msoMngr = new MsoManager();
-        init(req);
-    }
-    
-    @Autowired
-    public ApiContext(HttpServletRequest req, MsoManager mngr) {
-        
-        msoMngr = mngr;
         init(req);
     }
     
     private void init(HttpServletRequest req) {
         
+        MsoManager msoMngr = NNF.getMsoMngr();
         httpReq = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         
@@ -130,7 +122,7 @@ public class ApiContext {
             if (splits.length == 3) {
                 String subdomain = splits[0];
                 log.info("subdomain = " + subdomain);
-                if (msoMngr.findByName(subdomain) != null) {
+                if (NNF.getMsoMngr().findByName(subdomain) != null) {
                     
                     return (productionSite = true);
                 }
@@ -149,7 +141,7 @@ public class ApiContext {
             return MsoManager.isNNMso(mso) ? "www." + domain : mso.getName() + "." + domain;
         
         log.info("subdomain = " + splits.get(0));
-        if (msoMngr.findByName(splits.get(0)) != null) {
+        if (NNF.getMsoMngr().findByName(splits.get(0)) != null) {
             
             splits.remove(0);
         }

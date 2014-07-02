@@ -42,8 +42,10 @@ public class GenericDao<T> {
     }
     
     public T save(T dao) {
+        
         if (dao == null) {return null;}
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
+        
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
@@ -54,8 +56,10 @@ public class GenericDao<T> {
     }
     
     public List<T> saveAll(List<T> list) {
+        
         if (list == null) {return list;}
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
+        
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -72,8 +76,10 @@ public class GenericDao<T> {
     }
     
     public void delete(T dao) {
+        
         if (dao == null) return;
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
+        
         try {
             pm.deletePersistent(dao);
         } finally {
@@ -84,7 +90,7 @@ public class GenericDao<T> {
     public void deleteAll(List<T> list) {
         if (list == null || list.isEmpty()) return;
         
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -103,21 +109,13 @@ public class GenericDao<T> {
      */
     
     public int total() {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
-        int result = 0;
-        try {
-            Query query = pm.newQuery(daoClass);
-            @SuppressWarnings("unchecked")
-            int total = ((List<T>)query.execute()).size();
-            result = total;
-        } finally {
-            pm.close();
-        }
-        return result;
+        
+        return total(null);
     }
     
     public int total(String filter) {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        
+        PersistenceManager pm = getPersistenceManager();
         int result = 0;
         try {
             Query query = pm.newQuery(daoClass);
@@ -141,7 +139,8 @@ public class GenericDao<T> {
      * @param sord   sorting direction (asc, desc)
      */
     public List<T> list(int page, int limit, String sidx, String sord) {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        
+        PersistenceManager pm = getPersistenceManager();
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
@@ -149,8 +148,8 @@ public class GenericDao<T> {
                 query.setOrdering(sidx + " " + sord);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
-            List<T> tmp = (List<T>)query.execute();
-            results = (List<T>)pm.detachCopyAll(tmp);
+            List<T> tmp = (List<T>) query.execute();
+            results = (List<T>) pm.detachCopyAll(tmp);
         } finally {
             pm.close();
         }
@@ -158,7 +157,8 @@ public class GenericDao<T> {
     }
     
     public List<T> list(long page, long limit, String sidx, String sord, String filter) {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        
+        PersistenceManager pm = getPersistenceManager();
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
@@ -168,8 +168,8 @@ public class GenericDao<T> {
                 query.setOrdering(sidx + " " + sord);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
-            List<T> tmp = (List<T>)query.execute();
-            results = (List<T>)pm.detachCopyAll(tmp);
+            List<T> tmp = (List<T>) query.execute();
+            results = (List<T>) pm.detachCopyAll(tmp);
         } finally {
             pm.close();
         }
@@ -180,11 +180,10 @@ public class GenericDao<T> {
     public List<T> findAllByIds(Collection<Long> ids) {
         
         List<T> results = new ArrayList<T>();
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(daoClass, ":p.contains(id)");
-            results = (List<T>) query.execute(ids);
-            results = (List<T>) pm.detachCopyAll(results);
+            results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
             query.closeAll();
         } finally {
             pm.close();
@@ -193,20 +192,22 @@ public class GenericDao<T> {
     }
     
     public T findById(long id) {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        
+        PersistenceManager pm = getPersistenceManager();
         T dao = null;
         try {
-            T tmp = (T)pm.getObjectById(daoClass, id);
-            dao = (T)pm.detachCopy(tmp);
+            T tmp = (T) pm.getObjectById(daoClass, id);
+            dao = (T) pm.detachCopy(tmp);
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
-        return dao;        
+        return dao;
     }    
     
     public List<T> findAll() {
-        PersistenceManager pm = PMF.get(daoClass).getPersistenceManager();
+        
+        PersistenceManager pm = getPersistenceManager();
         List<T> results = new ArrayList<T>();
         
         try {
@@ -224,7 +225,7 @@ public class GenericDao<T> {
     
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, PMF.get(daoClass).getPersistenceManager());
+        return sql(queryStr, getPersistenceManager());
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
@@ -235,15 +236,16 @@ public class GenericDao<T> {
             return detached;
         
         queryStr = queryStr.replaceAll(" +", " ");
+        log.info("[sql] " + queryStr);
         
         try {
-            log.info("[sql] " + queryStr);
             Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
             query.setClass(daoClass);
             @SuppressWarnings("unchecked")
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
             query.closeAll();
+            
         } finally {
             pm.close();
         }
@@ -254,6 +256,6 @@ public class GenericDao<T> {
     @Override
     protected void finalize() throws Throwable {
         
-        log.info(this.getClass().getName() + " is recycled");
+        log.info(getClass().getName() + " is recycled");
     }
 }

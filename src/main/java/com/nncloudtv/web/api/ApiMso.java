@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.LangTable;
@@ -29,7 +30,6 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.MsoNotificationManager;
-import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
@@ -45,7 +45,6 @@ public class ApiMso extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
     private MsoManager msoMngr;
-    private NnChannelManager channelMngr;
     private StoreService storeService;
     private SetService setService;
     private ApiMsoService apiMsoService;
@@ -55,13 +54,12 @@ public class ApiMso extends ApiGeneric {
     private MsoConfigManager configMngr;
     
     @Autowired
-    public ApiMso(MsoManager msoMngr, NnChannelManager channelMngr, StoreService storeService,
+    public ApiMso(MsoManager msoMngr, StoreService storeService,
             NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
             CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr,
             MsoConfigManager configMngr) {
         
         this.msoMngr = msoMngr;
-        this.channelMngr = channelMngr;
         this.storeService = storeService;
         this.setService = setService;
         this.apiMsoService = apiMsoService;
@@ -495,7 +493,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         NnChannel channel = null;
-        channel = channelMngr.findById(channelId);
+        channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             badRequest(resp, "Channel Not Found");
             log.info(printExitState(now, req, "400"));
@@ -911,7 +909,7 @@ public class ApiMso extends ApiGeneric {
         
         Date now = new Date();
         log.info(printEnterState(now, req));
-        ApiContext context = new ApiContext(req, msoMngr);
+        ApiContext context = new ApiContext(req);
         
         Mso mso = null;
         
@@ -1714,7 +1712,7 @@ public class ApiMso extends ApiGeneric {
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-            ApiContext context = new ApiContext(req, msoMngr);
+            ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
@@ -1909,7 +1907,7 @@ public class ApiMso extends ApiGeneric {
             
             Mso mso = msoMngr.findById(savedNotification.getMsoId());
             MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-            ApiContext context = new ApiContext(req, msoMngr);
+            ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 

@@ -17,10 +17,8 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.nncloudtv.lib.CacheFactory;
-import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.mock.service.MockMsoConfigManager;
-import com.nncloudtv.mock.service.MockMsoManager;
+import com.nncloudtv.mock.lib.MockNNF;
 
 public class PlayerApiControllerTest {
     
@@ -29,20 +27,17 @@ public class PlayerApiControllerTest {
     private PlayerApiController playerAPI;
     
     private MockHttpServletRequest req;
-    private MockMsoManager mockMsoMngr;
-    private MockMsoConfigManager mockConfigMngr;
     
     @Before
     public void setUp() {
         
         CacheFactory.isEnabled = false;
         
-        mockConfigMngr = new MockMsoConfigManager();
-        mockMsoMngr = new MockMsoManager();
+        MockNNF.initAll();
+        
         req = new MockHttpServletRequest();
         
-        playerAPI = new PlayerApiController(mockMsoMngr);
-        FacebookLib.setConfigMngr(mockConfigMngr);
+        playerAPI = new PlayerApiController();
     }
     
     @Test
