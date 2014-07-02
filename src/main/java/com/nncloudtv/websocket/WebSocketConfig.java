@@ -13,7 +13,6 @@ public class WebSocketConfig extends WebSocketConfigurationSupport {
     protected void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         
         registry.addHandler(new NnSocketHandler(), "/websocket")
-                .addInterceptors(new HandshakeInterceptor())
-                .withSockJS();
+                .addInterceptors(new HandshakeInterceptor());
     }
 }
