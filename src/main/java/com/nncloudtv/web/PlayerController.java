@@ -86,38 +86,6 @@ public class PlayerController {
     }    
     
     /**
-     * original url: /durp
-     * redirect to:  #!landing=durp  
-     */    
-    @RequestMapping("{name}")
-    public String zooatomics(
-            @PathVariable("name") String name,
-            @RequestParam(value="jsp",required=false) String jsp,
-            @RequestParam(value="js",required=false) String js,
-            @RequestParam(value="mso",required=false) String mso,
-            HttpServletRequest req, HttpServletResponse resp, Model model) {
-        PlayerService service = new PlayerService();
-        if (name != null) {
-            if (name.matches("[a-zA-Z].+")) {
-                NnUser user = NNF.getUserMngr().findByProfileUrl(name, 1);
-                if (user != null) {
-                    log.info("user enter from curator brand url:" + name);
-                    name = "#!" + user.getProfile().getProfileUrl();
-                } else {
-                    log.info("invalid curator brand url:" + name);
-                    name = "";
-                }
-            }
-            String url = service.rewrite(req) + name;
-            log.info("redirect url:" + url);
-            return "redirect:/" + url;
-        }
-        //should never hit here, intercept by index
-        service.preparePlayer(model, js, jsp, req);
-        return "player/zooatomics";
-    }
-    
-    /**
      * original url: view?channel=x&episode=y
      * redirect to:  #!ch=x!ep=y  
      */
