@@ -149,7 +149,7 @@ public class ApiMsoServiceTest {
     }
     
     /**
-     * missing required arguments
+     * missing required arguments : msoId
      */
     @Test
     public void testMsoSetsMissingArgus() {
@@ -166,10 +166,10 @@ public class ApiMsoServiceTest {
     }
     
     /**
-     * 
+     * normal case
      */
     @Test
-    public void msoSetCreate_0() {
+    public void testMsoSetCreate() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -230,9 +230,11 @@ public class ApiMsoServiceTest {
         assertEquals(expected, actual);
     }
     
-    // if NnSet exist
+    /**
+     * normal case
+     */
     @Test
-    public void set_0() {
+    public void testSet() {
         
         when(setService.findById(anyLong())).thenReturn(new Set());
         
@@ -242,9 +244,11 @@ public class ApiMsoServiceTest {
         verify(setService).findById(anyLong());
     }
     
-    // if NnSet not exist
+    /**
+     * empty result
+     */
     @Test
-    public void set_1() {
+    public void testSetEmptyResult() {
         
         when(setService.findById(anyLong())).thenReturn(null);
         
@@ -254,9 +258,11 @@ public class ApiMsoServiceTest {
         verify(setService).findById(anyLong());
     }
     
-    // if invalid input such as NULL
+    /**
+     * missing arguments : setId
+     */
     @Test
-    public void set_2() {
+    public void testSetMissingArgus() {
         
         Set result = apiMsoService.set(null);
         assertNull(result);
@@ -264,9 +270,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(setService);
     }
     
-    // given arguments and return wanted result
+    /**
+     * normal case : given arguments and return wanted result
+     */
     @Test
-    public void setUpdate_0() {
+    public void testSetUpdate() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -320,8 +328,11 @@ public class ApiMsoServiceTest {
         assertEquals(expected, actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void setDelete_0() {
+    public void testSetDelete() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -333,8 +344,11 @@ public class ApiMsoServiceTest {
         verify(setService).delete(setId);
     }
     
+    /**
+     * missing arguments : setId
+     */
     @Test
-    public void setDelete_1() {
+    public void testSetDeleteMissingArgus() {
         
         // input arguments
         final Long setId = null;
@@ -346,8 +360,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(setService);
     }
     
+    /**
+     * normal case : order by sequence
+     */
     @Test
-    public void setChannels_0() {
+    public void testSetChannelsOrderBySeq() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -375,8 +392,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case : order by update time
+     */
     @Test
-    public void setChannels_1() {
+    public void testSetChannelsOrderByUpdateTime() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -404,8 +424,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * missing arguments : setId
+     */
     @Test
-    public void setChannels_2() {
+    public void testSetChannelsMissingArgus() {
         
         // input arguments
         final Long setId = null;
@@ -417,8 +440,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void setChannelAdd_0() {
+    public void testSetChannelAdd() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -435,8 +461,11 @@ public class ApiMsoServiceTest {
         verify(setService).addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
     }
     
+    /**
+     * missing arguments : setId, channelId
+     */
     @Test
-    public void setChannelAdd_1() {
+    public void testSetChannelAddMissingArgus() {
         
         // input arguments
         final Long setId = null;
@@ -453,8 +482,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(setService);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void setChannelRemove_0() {
+    public void testSetChannelRemove() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -474,8 +506,11 @@ public class ApiMsoServiceTest {
         verify(sysTagMapMngr).delete(sysTagMap);
     }
     
+    /**
+     * missing arguments : setId, channelId
+     */
     @Test
-    public void setChannelRemove_1() {
+    public void testSetChannelRemoveMissingArgus() {
         
         // input arguments
         final Long setId = null;
@@ -488,9 +523,12 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(sysTagMapMngr);
     }
     
+    /**
+     * normal case
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void setChannelsSorting_0() {
+    public void testSetChannelsSorting() {
         
         // input arguments
         final Long setId = (long) 1;
@@ -525,9 +563,12 @@ public class ApiMsoServiceTest {
         assertEquals(1, sysTagMaps.get(2).getChannelId());
     }
     
+    /**
+     * normal case : query are channels in store ?
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void storeChannels_0() {
+    public void testStoreChannelsChannelsInStore() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -561,8 +602,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case : list channels in category
+     */
     @Test
-    public void storeChannels_1() {
+    public void testStoreChannelsChannelsInCategory() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -582,8 +626,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case : list all channels in store
+     */
     @Test
-    public void storeChannels_2() {
+    public void testStoreChannelsAllChannelsInStore() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -602,8 +649,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * missing arguments : msoId
+     */
     @Test
-    public void storeChannels_3() {
+    public void testStoreChannelsMissingArgus() {
         
         // input arguments
         final Long msoId = null;
@@ -619,8 +669,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void storeChannelRemove_0() {
+    public void testStoreChannelRemove() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -634,8 +687,11 @@ public class ApiMsoServiceTest {
         verify(storeListingMngr).addChannelsToBlackList(channelIds, msoId);
     }
     
+    /**
+     * missing arguments : msoId, channelIds
+     */
     @Test
-    public void storeChannelRemove_1() {
+    public void testStoreChannelRemoveMissingArgus() {
         
         // input arguments
         final Long msoId = null;
@@ -648,8 +704,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(storeListingMngr);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void storeChannelAdd_0() {
+    public void testStoreChannelAdd() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -663,8 +722,11 @@ public class ApiMsoServiceTest {
         verify(storeListingMngr).removeChannelsFromBlackList(channelIds, msoId);
     }
     
+    /**
+     * missing arguments : msoId, channelIds
+     */
     @Test
-    public void storeChannelAdd_1() {
+    public void testStoreChannelAddMissingArgus() {
         
         // input arguments
         final Long msoId = null;
@@ -677,8 +739,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(storeListingMngr);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void mso_0() {
+    public void testMso() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -712,8 +777,11 @@ public class ApiMsoServiceTest {
         assertEquals(MsoConfig.MAXCHPERSET_DEFAULT + 1, actual.getMaxChPerSet());
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void msoUpdate() {
+    public void testMsoUpdate() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -744,8 +812,11 @@ public class ApiMsoServiceTest {
         assertEquals(logoUrl, actual.getLogoUrl());
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void msoCategories_0() {
+    public void testMsoCategories() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -764,8 +835,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * missing arguments : msoId
+     */
     @Test
-    public void msoCategories_1() {
+    public void testMsoCategoriesMissingArgus() {
         
         // input argument
         final Long msoId = null;
