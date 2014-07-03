@@ -85,9 +85,11 @@ public class ApiMsoServiceTest {
         apiMsoService = null;
     }
     
-    // normal case and provide lang
+    /**
+     * normal case and provide lang
+     */
     @Test
-    public void msoSets_0() {
+    public void testMsoSets() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -104,16 +106,18 @@ public class ApiMsoServiceTest {
         assertEquals(new ArrayList<Set>(), actual);
     }
     
-    // when bad result returned, should obey contract
+    /**
+     * when find nothing (empty result), should obey contract
+     */
     @Test
-    public void msoSets_1() {
+    public void testMsoSetsEmptyResult() {
         
         // input arguments
         final Long msoId = (long) 1;
         final String lang = "zh";
         
         // stubs
-        when(setService.findByMsoIdAndLang((Long) anyLong(), anyString())).thenReturn(null);// bad result
+        when(setService.findByMsoIdAndLang((Long) anyLong(), anyString())).thenReturn(null); // empty result
         
         // execute
         List<Set> actual = apiMsoService.msoSets(msoId, lang);
@@ -123,9 +127,11 @@ public class ApiMsoServiceTest {
         assertEquals(new ArrayList<Set>(), actual);
     }
     
-    // normal case but not provide lang
+    /**
+     * normal case but not provide lang
+     */
     @Test
-    public void msoSets_2() {
+    public void testMsoSetsNotProvideLang() {
         
         // input arguments
         final Long msoId = (long) 1;
@@ -142,9 +148,11 @@ public class ApiMsoServiceTest {
         assertEquals(new ArrayList<Set>(), actual);
     }
     
-    // invalid input
+    /**
+     * missing required arguments
+     */
     @Test
-    public void msoSets_3() {
+    public void testMsoSetsMissingArgus() {
         
         // input arguments
         final Long msoId = null;
@@ -157,6 +165,9 @@ public class ApiMsoServiceTest {
         assertEquals(new ArrayList<Set>(), actual);
     }
     
+    /**
+     * 
+     */
     @Test
     public void msoSetCreate_0() {
         

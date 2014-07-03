@@ -12,7 +12,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
@@ -43,10 +42,10 @@ public class PlayerApiServiceTest {
     protected static final Logger log = Logger.getLogger(PlayerApiServiceTest.class.getName());
     
     private PlayerApiService service;
-	
+    
     private MockHttpServletRequest req;
-    private MockHttpServletResponse resp;    
-    @Mock private NnUserManager mockUserMngr;    
+    private MockHttpServletResponse resp;
+    @Mock private NnUserManager mockUserMngr;
     @Mock private MsoManager mockMsoMngr;
     @Mock private NnChannelManager mockChMngr;
     @Mock private MsoConfigManager mockConfigMngr;
@@ -83,87 +82,87 @@ public class PlayerApiServiceTest {
         service = null;
     }
     
-	@Test
-	public void testBrandInfo() {
-	    
-	    // input arguments
-	    String os = null;
-	    
-	    // mock data
-	    String locale = "zh";
-	    Object brandInfo = "brandInfo";
-	    Object result = "result";
-	    
-	    // stubs
-	    when(service.findLocaleByHttpRequest((MockHttpServletRequest) anyObject())).thenReturn(locale);
-	    when(mockMsoMngr.getBrandInfo((MockHttpServletRequest) anyObject(), (Mso) anyObject(),
-	            anyString(), anyShort(), anyString(), anyLong(), anyString(), anyString())).thenReturn(brandInfo);
-	    when(service.assembleMsgs(anyInt(), anyObject())).thenReturn(result);
-	    
-	    // execute
-	    Object actual = service.brandInfo(os, req);
-	    
-	    // verify
-	    verify(service).findLocaleByHttpRequest(req);
-	    verify(mockMsoMngr).getBrandInfo((MockHttpServletRequest) anyObject(), (Mso) anyObject(),
+    @Test
+    public void testBrandInfo() {
+        
+        // input arguments
+        String os = null;
+        
+        // mock data
+        String locale = "zh";
+        Object brandInfo = "brandInfo";
+        Object result = "result";
+        
+        // stubs
+        when(service.findLocaleByHttpRequest((MockHttpServletRequest) anyObject())).thenReturn(locale);
+        when(mockMsoMngr.getBrandInfo((MockHttpServletRequest) anyObject(), (Mso) anyObject(),
+                anyString(), anyShort(), anyString(), anyLong(), anyString(), anyString())).thenReturn(brandInfo);
+        when(service.assembleMsgs(anyInt(), anyObject())).thenReturn(result);
+        
+        // execute
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        verify(service).findLocaleByHttpRequest(req);
+        verify(mockMsoMngr).getBrandInfo((MockHttpServletRequest) anyObject(), (Mso) anyObject(),
                 anyString(), anyShort(), anyString(), anyLong(), anyString(), anyString());
-	    verify(service).assembleMsgs(NnStatusCode.SUCCESS, brandInfo);
+        verify(service).assembleMsgs(NnStatusCode.SUCCESS, brandInfo);
         assertEquals(result, actual);
-	}
-	
-	@Test
-	public void testSetProfile() {
-	    
-	    // input arguments
-	    final String userToken = "mock-user-token-xxoo";
-	    final String items = "name,phone";
-	    final String name = "MockUser";
-	    final String phone = "7777777";
-	    final String values = name + "," + phone;
-	    
-	    // mock data
-	    final Long msoId = (long) 1;
-	    Mso mso = new Mso("name", "intro", "contactEmail", Mso.TYPE_MSO);
-	    mso.setId(msoId);
-	    
-	    final Long userId = (long) 1;
-	    NnUser user = new NnUser("_mock_@9x9.tv", "_password_", NnUser.TYPE_USER);
-	    user.setId(userId);
-	    
-	    // stubs
-	    when(mockMsoMngr.getByNameFromCache(anyString())).thenReturn(mso);
-	    when(mockUserMngr.findByToken(anyString(), anyLong())).thenReturn(user);
-	    when(mockProfileMngr.findByUser((NnUser) anyObject())).thenReturn(null);
-	    when(mockProfileMngr.save((NnUser) anyObject(), (NnUserProfile) anyObject())).thenReturn(null);
-	    
-	    // execute
-	    service.prepService(req, resp);
-	    Object actual = service.setUserProfile(userToken, items, values, req);
-	    
-	    // verify
-	    verify(mockMsoMngr).getByNameFromCache(anyString());
-	    verify(mockUserMngr).findByToken(userToken, msoId);
-	    verify(mockProfileMngr).findByUser(user);
-	    
-	    ArgumentCaptor<NnUserProfile> arg = ArgumentCaptor.forClass(NnUserProfile.class);
-	    verify(mockProfileMngr).save(eq(user), arg.capture());
-	    NnUserProfile profile = arg.getValue();
-	    assertEquals(msoId, (Long) profile.getMsoId());
-	    assertEquals(userId, (Long) profile.getUserId());
-	    assertEquals(name, profile.getName());
-	    assertEquals(phone, profile.getPhoneNumber());
-	    
+    }
+    
+    @Test
+    public void testSetProfile() {
+        
+        // input arguments
+        final String userToken = "mock-user-token-xxoo";
+        final String items = "name,phone";
+        final String name = "MockUser";
+        final String phone = "7777777";
+        final String values = name + "," + phone;
+        
+        // mock data
+        final Long msoId = (long) 1;
+        Mso mso = new Mso("name", "intro", "contactEmail", Mso.TYPE_MSO);
+        mso.setId(msoId);
+        
+        final Long userId = (long) 1;
+        NnUser user = new NnUser("_mock_@9x9.tv", "_password_", NnUser.TYPE_USER);
+        user.setId(userId);
+        
+        // stubs
+        when(mockMsoMngr.getByNameFromCache(anyString())).thenReturn(mso);
+        when(mockUserMngr.findByToken(anyString(), anyLong())).thenReturn(user);
+        when(mockProfileMngr.findByUser((NnUser) anyObject())).thenReturn(null);
+        when(mockProfileMngr.save((NnUser) anyObject(), (NnUserProfile) anyObject())).thenReturn(null);
+        
+        // execute
+        service.prepService(req, resp);
+        Object actual = service.setUserProfile(userToken, items, values, req);
+        
+        // verify
+        verify(mockMsoMngr).getByNameFromCache(anyString());
+        verify(mockUserMngr).findByToken(userToken, msoId);
+        verify(mockProfileMngr).findByUser(user);
+        
+        ArgumentCaptor<NnUserProfile> arg = ArgumentCaptor.forClass(NnUserProfile.class);
+        verify(mockProfileMngr).save(eq(user), arg.capture());
+        NnUserProfile profile = arg.getValue();
+        assertEquals(msoId, (Long) profile.getMsoId());
+        assertEquals(userId, (Long) profile.getUserId());
+        assertEquals(name, profile.getName());
+        assertEquals(phone, profile.getPhoneNumber());
+        
         assertNotNull(actual);
-	}
-	/*
-	@Test
-	public void testLogin() {
-		String email = "a@a.com";
-		String password = "123456";
-		Object loginObj = service.login(email, password, req, resp);
-		
+    }
+    /*
+    @Test
+    public void testLogin() {
+        String email = "a@a.com";
+        String password = "123456";
+        Object loginObj = service.login(email, password, req, resp);
+        
         assertNotNull(loginObj);
-	}
+    }
     
     @Test
     public void testQuickLogin() {
