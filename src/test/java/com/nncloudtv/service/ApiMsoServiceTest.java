@@ -852,8 +852,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void msoCategoryCreate_0() {
+    public void testMsoCategoryCreate() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -882,8 +885,11 @@ public class ApiMsoServiceTest {
         assertEquals(category, actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void category_0() {
+    public void testCategory() {
         
         // input argument
         final Long categoryId = (long) 1;
@@ -902,8 +908,11 @@ public class ApiMsoServiceTest {
         assertEquals(category, actual);
     }
     
+    /**
+     * missing arguments : categoryId
+     */
     @Test
-    public void category_1() {
+    public void testCategoryMissingArgus() {
         
         // input argument
         final Long categoryId = null;
@@ -916,8 +925,11 @@ public class ApiMsoServiceTest {
         assertNull(actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void categoryUpdate_0() {
+    public void testCategoryUpdate() {
         
         // input argument
         final Long categoryId = (long) 1;
@@ -952,8 +964,11 @@ public class ApiMsoServiceTest {
         assertEquals(category, actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void categoryDelete_0() {
+    public void testCategoryDelete() {
         
         // input argument
         final Long categoryId = (long) 1;
@@ -965,8 +980,11 @@ public class ApiMsoServiceTest {
         verify(categoryService).delete(categoryId);
     }
     
+    /**
+     * missing arguments : categoryId
+     */
     @Test
-    public void categoryDelete_1() {
+    public void testCategoryDeleteMissingArgus() {
         
         // input argument
         final Long categoryId = null;
@@ -978,8 +996,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(categoryService);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void categoryChannels_0() {
+    public void testCategoryChannels() {
         
         // input argument
         final Long categoryId = (long) 1;
@@ -1000,8 +1021,11 @@ public class ApiMsoServiceTest {
         assertEquals(channels, actual);
     }
     
+    /**
+     * missing arguments : categoryId
+     */
     @Test
-    public void categoryChannels_1() {
+    public void testCategoryChannelsMissingArgus() {
         
         // input argument
         final Long categoryId = null;
@@ -1013,8 +1037,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case : add channels
+     */
     @Test
-    public void categoryChannelAdd_0() {
+    public void testCategoryChannelAddAddChannels() {
         
         // input argument
         final Category category = new Category();
@@ -1047,8 +1074,11 @@ public class ApiMsoServiceTest {
         verify(categoryService).addChannelsToCategory(category.getId(), verifiedChannelIds);
     }
     
+    /**
+     * normal case : add channel with settings
+     */
     @Test
-    public void categoryChannelAdd_1() {
+    public void testCategoryChannelAddAddChannelWithSettings() {
         
         // input argument
         final Category category = new Category();
@@ -1077,8 +1107,11 @@ public class ApiMsoServiceTest {
         verify(categoryService).addChannelToCategory(category.getId(), channelId, seq, alwaysOnTop);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void categoryChannelRemove_0() {
+    public void testCategoryChannelRemove() {
         
         // input argument
         final Long categoryId = (long) 1;
@@ -1094,8 +1127,11 @@ public class ApiMsoServiceTest {
         verify(categoryService).removeChannelsFromCategory(categoryId, channelIds);
     }
     
+    /**
+     * missing arguments : categoryId, channelIds
+     */
     @Test
-    public void categoryChannelRemove_1() {
+    public void testCategoryChannelRemoveMissingArgus() {
         
         // input argument
         final Long categoryId = null;
@@ -1108,8 +1144,11 @@ public class ApiMsoServiceTest {
         verifyZeroInteractions(categoryService);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void msoSystemCategoryLocks_0() {
+    public void testMsoSystemCategoryLocks() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -1128,8 +1167,11 @@ public class ApiMsoServiceTest {
         assertEquals(locks, actual);
     }
     
+    /**
+     * missing arguments : msoId
+     */
     @Test
-    public void msoSystemCategoryLocks_1() {
+    public void testMsoSystemCategoryLocksMissingArgus() {
         
         // input argument
         final Long msoId = null;
@@ -1142,8 +1184,11 @@ public class ApiMsoServiceTest {
         assertNotNull(actual);
     }
     
+    /**
+     * normal case
+     */
     @Test
-    public void msoSystemCategoryLocksUpdate_0() {
+    public void testMsoSystemCategoryLocksUpdate() {
         
         // input argument
         final Long msoId = (long) 1;
@@ -1166,8 +1211,11 @@ public class ApiMsoServiceTest {
         assertEquals(locks, actual);
     }
     
+    /**
+     * missing arguments : msoId, systemCategoryLocks
+     */
     @Test
-    public void msoSystemCategoryLocksUpdate_1() {
+    public void testMsoSystemCategoryLocksUpdateMissingArgus() {
         
         // input argument
         final Long msoId = null;
