@@ -223,15 +223,5 @@ public class PlayerApiServiceTest {
         
         assertEquals(result, actual);
     }
-    /*
-    @Test
-    //public void testQuickLogin() {
-        String email = "a@a.com";
-        String password = "123456";        
-        Object userInfo = service.login(email, password, req, resp);
-        System.out.println(userInfo);
-        
-        assertNotNull(userInfo);
-    }
-    */
+    
 }
