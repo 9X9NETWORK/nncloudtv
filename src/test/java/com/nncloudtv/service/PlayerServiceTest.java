@@ -2,21 +2,28 @@ package com.nncloudtv.service;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 
-import com.nncloudtv.mock.service.MockMsoConfigManager;
-import com.nncloudtv.mock.service.MockMsoManager;
-import com.nncloudtv.mock.service.MockNnUserManager;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 
+@RunWith(MockitoJUnitRunner.class)
 public class PlayerServiceTest {
     
     protected static final Logger log = Logger.getLogger(PlayerServiceTest.class.getName());
@@ -24,28 +31,59 @@ public class PlayerServiceTest {
     private PlayerService service;
     
     private MockHttpServletResponse resp;
-    private MockMsoConfigManager mockConfigMngr;
-    private MockNnUserManager mockUserMngr;
-    private MockMsoManager mockMsoMngr;
+    @Mock private MsoConfigManager mockConfigMngr;
+    @Mock private NnUserManager mockUserMngr;
+    @Mock private MsoManager mockMsoMngr;
     
     @Before
     public void setUp() {
         
         resp = new MockHttpServletResponse();
-        mockConfigMngr = new MockMsoConfigManager();
-        mockUserMngr = new MockNnUserManager();
-        mockMsoMngr = new MockMsoManager();
         
         service = new PlayerService(mockUserMngr, mockConfigMngr, mockMsoMngr);
+    }
+    
+    @After
+    public void tearDown() {
+        resp = null;
+        mockUserMngr = null;
+        mockMsoMngr = null;
+        mockConfigMngr = null;
+        
+        service = null;
     }
     
     @Test
     public void testPrepareBrand() {
         
+        // input arguments
         Model mockModel = new ExtendedModelMap();
-        mockModel = service.prepareBrand(mockModel, Mso.NAME_9X9, resp);
+        final String msoName = Mso.NAME_9X9;
         
-        Map<String, Object> map = mockModel.asMap();
+        // mock data
+        final Long msoId = (long) 1;
+        final String title = "title";
+        final String logoUrl = "logoUrl";
+        Mso mso = new Mso(msoName, "intro", "contactEmail", Mso.TYPE_MSO);
+        mso.setId(msoId);
+        mso.setTitle(title);
+        mso.setLogoUrl(logoUrl);
+        
+        final String faviconUrl = "faviconUrl";
+        MsoConfig config = new MsoConfig(msoId, MsoConfig.FAVICON_URL, faviconUrl);
+        
+        // stubs
+        when(mockMsoMngr.findByName(anyString())).thenReturn(mso);
+        when(mockConfigMngr.findByMsoAndItem((Mso) anyObject(), anyString())).thenReturn(config);
+        
+        // execute
+        Model actual = service.prepareBrand(mockModel, msoName, resp);
+        
+        // verify
+        verify(mockMsoMngr).findByName(msoName);
+        verify(mockConfigMngr).findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        
+        Map<String, Object> map = actual.asMap();
         log.info(map.toString());
         
         assertTrue("META_FAVICON is not null.", map.containsKey(PlayerService.META_FAVICON) && map.get(PlayerService.META_FAVICON) != null);
