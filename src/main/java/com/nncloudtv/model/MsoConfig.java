@@ -57,13 +57,17 @@ public class MsoConfig {
     public static String SIGNUP_ENFORCE        = "signup-enforce";
     public static String AD_IOS                = "ad-ios";
     public static String AD_ANDROID            = "ad-android";
+    public static String SIGNUP_ENFORCE        = "signup-enforce";
+    public static String AD_IOS                = "ad-ios";
+    public static String AD_ANDROID            = "ad-android";
+    public static String AUDIO_BACKGROUND      = "audio-background";
     public static String GOOGLE_ANALYTICS_IOS         = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID     = "google-analytics-android";
     public static String GOOGLE_ANALYTICS_WEB         = "google-analytics-web";
     public static String FLURRY_ANALYTICS_ANDROID     = "flurry-analytics-android";
     public static String FLURRY_ANALYTICS_IOS         = "flurry-analytics-ios";
     public static String NOTIFICATION_SOUND_VIBRATION = "notification-sound-vibration";
-    
+ 
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;
     

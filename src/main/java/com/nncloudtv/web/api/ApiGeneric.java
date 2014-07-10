@@ -38,7 +38,7 @@ public class ApiGeneric {
     public static final String API_DOC                = "API-DOC";
     public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
     public static final String BLACK_HOLE             = "Black Hole!";
-    public static final String MSG_OK                 = "'OK'";
+    public static final String MSG_OK                 = "\"OK\"";
     public static final String NULL                   = "null";
     
     public static final short HTTP_200 = 200;

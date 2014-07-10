@@ -112,7 +112,6 @@ public class MsoManager {
         boolean facebookId = false;
         
         for (MsoConfig c : list) {
-            System.out.println(c.getItem() + ";" + c.getValue());
             if (c.getItem().equals(MsoConfig.DEBUG))
                 result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
             if (c.getItem().equals(MsoConfig.FBTOKEN))
@@ -150,7 +149,7 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.ABOUT_US)) {
                 String aboutus = c.getValue().replaceAll("\t", "").replaceAll("\n", "{BR}");
                 result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, aboutus);
-            }
+            }            
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -194,6 +193,15 @@ public class MsoManager {
             result += PlayerApiService.assembleKeyValue("ad", ad);
         }
 
+        MsoConfig audioConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AUDIO_BACKGROUND);
+        String audio = "off";
+        if (audioConfig != null) {
+        	audio = audioConfig.getValue();
+        }
+        if (!os.equals(PlayerService.OS_WEB)) {
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, audio);
+        }
+        
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {
             MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);
