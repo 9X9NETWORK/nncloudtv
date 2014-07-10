@@ -56,7 +56,7 @@ public class ApiMso extends ApiGeneric {
         this.categoryService = categoryService;
     }
     
-    @RequestMapping(value = "mao/{msoId/properties}", method = RequestMethod.GET)
+    @RequestMapping(value = "mao/{msoId}/properties", method = RequestMethod.GET)
     public @ResponseBody List<MsoConfig> msoProperties(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
