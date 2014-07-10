@@ -363,6 +363,13 @@ public class MsoManager {
         return mso;
     }
     
+    public Mso findByIdOrName(String idStr) {
+        
+        if (idStr == null) { return null; }
+        
+        return NnStringUtil.isDigits(idStr) ? dao.findById(idStr) : dao.findByName(idStr);
+    }
+    
     public Mso findByName(String name) {
         if (name == null) {return null;}
         Mso mso = dao.findByName(name);

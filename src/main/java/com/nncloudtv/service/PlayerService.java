@@ -275,7 +275,7 @@ public class PlayerService {
             youtubeEp = null;
         }        
         if (ch == null) {
-            pattern = Pattern.compile("^\\d+$");
+            pattern = Pattern.compile(NnStringUtil.DIGITS_REGEX);
             m = pattern.matcher(escaped);
             if (m.find()) {
                 ch = m.group(0);

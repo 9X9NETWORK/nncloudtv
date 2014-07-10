@@ -11,6 +11,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 
 public class GenericDao<T> {
@@ -189,6 +190,23 @@ public class GenericDao<T> {
             pm.close();
         }
         return results;
+    }
+    
+    public T findById(String idStr) {
+        
+        if (idStr == null || !NnStringUtil.isDigits(idStr)) {
+            
+            return null;
+        }
+        
+        long id = 0;
+        try {
+            id = Long.valueOf(idStr);
+            
+        } catch(NumberFormatException e) {
+        }
+        
+        return findById(id);
     }
     
     public T findById(long id) {

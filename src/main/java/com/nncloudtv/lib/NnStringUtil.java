@@ -18,6 +18,7 @@ public class NnStringUtil {
     public static final String UTF8    = "UTF-8";
     public static final String ASCII   = "US-ASCII";
     public static final String VARCHAR = "VARCHAR";
+    public static final String DIGITS_REGEX = "^\\d+$";
     
     public static final int VERY_SHORT_STRING_LENGTH =    5;
     public static final int SHORT_STRING_LENGTH      =   25;
@@ -33,6 +34,13 @@ public class NnStringUtil {
       if (s.equals("0"))
         return false;
       throw new IllegalArgumentException(s + " is not a bool");
+    }
+    
+    public static boolean isDigits(String digits) {
+        
+        if (digits == null) return false;
+        
+        return digits.matches(DIGITS_REGEX);
     }
     
     public static String urlencode(String text) {

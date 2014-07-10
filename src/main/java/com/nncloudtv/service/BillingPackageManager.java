@@ -50,16 +50,7 @@ public class BillingPackageManager {
     
     public BillingPackage findById(String idStr) {
         
-        if (idStr == null) return null;
-        
-        long packageId = 0;
-        try {
-            packageId = Long.valueOf(idStr);
-            
-        } catch(NumberFormatException e) {
-        }
-        
-        return dao.findById(packageId);
+        return dao.findById(idStr);
     }
     
     public BillingPackage save(BillingPackage billingPackage) {

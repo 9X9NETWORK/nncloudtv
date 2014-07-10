@@ -14,6 +14,7 @@ import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.MsoNotificationManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnDeviceManager;
@@ -31,31 +32,32 @@ public class NNF {
     
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
     
-    protected static NnChannelManager      channelMngr        = null;
-    protected static MsoConfigManager      configMngr         = null;
-    protected static MsoManager            msoMngr            = null;
-    protected static NnUserPrefManager     prefMngr           = null;
-    protected static NnUserManager         userMngr           = null;
-    protected static NnUserProfileManager  profileMngr        = null;
-    protected static NnChannelPrefManager  chPrefMngr         = null;
-    protected static BillingProfileManager billingProfileMngr = null;
-    protected static BillingOrderManager   orderMngr          = null;
-    protected static BillingPackageManager packageMngr        = null;
-    protected static NnEpisodeManager      episodeMngr        = null;
-    protected static NnProgramManager      programMngr        = null;
-    protected static NnDeviceManager       deviceMngr         = null;
+    protected static NnChannelManager       channelMngr         = null;
+    protected static MsoConfigManager       configMngr          = null;
+    protected static MsoManager             msoMngr             = null;
+    protected static MsoNotificationManager msoNotiMngr         = null;
+    protected static NnUserPrefManager      prefMngr            = null;
+    protected static NnUserManager          userMngr            = null;
+    protected static NnUserProfileManager   profileMngr         = null;
+    protected static NnChannelPrefManager   chPrefMngr          = null;
+    protected static BillingProfileManager  billingProfileMngr  = null;
+    protected static BillingOrderManager    orderMngr           = null;
+    protected static BillingPackageManager  packageMngr         = null;
+    protected static NnEpisodeManager       episodeMngr         = null;
+    protected static NnProgramManager       programMngr         = null;
+    protected static NnDeviceManager        deviceMngr          = null;
     protected static NnDeviceNotificationManager deviceNotiMngr = null;
-    protected static SysTagDisplayManager  displayMngr        = null;
-    protected static SysTagMapManager      sysTagMapMngr      = null;
-    protected static SysTagManager         sysTagMngr         = null;
+    protected static SysTagDisplayManager   displayMngr         = null;
+    protected static SysTagMapManager       sysTagMapMngr       = null;
+    protected static SysTagManager          sysTagMngr          = null;
     
-    protected static MsoDao                msoDao             = null;
-    protected static BillingOrderDao       orderDao           = null;
-    protected static BillingProfileDao     billingProfileDao  = null;
-    protected static BillingPackageDao     packageDao         = null;
-    protected static NnEpisodeDao          episodeDao         = null;
-    protected static NnChannelDao          channelDao         = null;
-    protected static NnDeviceDao           deviceDao          = null;
+    protected static MsoDao            msoDao            = null;
+    protected static BillingOrderDao   orderDao          = null;
+    protected static BillingProfileDao billingProfileDao = null;
+    protected static BillingPackageDao packageDao        = null;
+    protected static NnEpisodeDao      episodeDao        = null;
+    protected static NnChannelDao      channelDao        = null;
+    protected static NnDeviceDao       deviceDao         = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -132,6 +134,17 @@ public class NNF {
         }
         
         return deviceDao;
+    }
+    
+    public static MsoNotificationManager getMsoNotiMngr() {
+        
+        if (msoNotiMngr == null) {
+            
+            log.info("create msoNotiMngr");
+            msoNotiMngr = new MsoNotificationManager();
+        }
+        
+        return msoNotiMngr;
     }
     
     public static SysTagDisplayManager getDisplayMngr() {

@@ -28,9 +28,6 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.MsoNotificationManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.StoreService;
@@ -44,29 +41,55 @@ public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
-    private MsoManager msoMngr;
     private StoreService storeService;
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
-    private NnUserManager userMngr;
-    private MsoNotificationManager notificationMngr;
-    private MsoConfigManager configMngr;
     
     @Autowired
-    public ApiMso(MsoManager msoMngr, StoreService storeService,
-            NnUserProfileManager userProfileMngr, SetService setService, ApiMsoService apiMsoService,
-            CategoryService categoryService, NnUserManager userMngr, MsoNotificationManager notificationMngr,
-            MsoConfigManager configMngr) {
+    public ApiMso(StoreService storeService, NnUserProfileManager userProfileMngr,
+            SetService setService, ApiMsoService apiMsoService, CategoryService categoryService) {
         
-        this.msoMngr = msoMngr;
         this.storeService = storeService;
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
-        this.userMngr = userMngr;
-        this.notificationMngr = notificationMngr;
-        this.configMngr = configMngr;
+    }
+    
+    @RequestMapping(value = "mao/{msoId/properties}", method = RequestMethod.GET)
+    public @ResponseBody List<MsoConfig> msoProperties(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+        
+        List<MsoConfig> results = new ArrayList<MsoConfig>();
+        
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        if (mso == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        
+        String[] properties = {
+            
+            MsoConfig.ANDROID_URL_ORIGIN,
+            MsoConfig.ANDROID_URL_LANDING_DIRECT,
+            MsoConfig.ANDROID_URL_LANDING_SUGGESTED,
+            MsoConfig.ANDROID_URL_MARKET_DIRECT,
+            MsoConfig.ANDROID_URL_MARKET_SUGGESTED,
+            MsoConfig.IOS_URL_ORIGIN,
+            MsoConfig.IOS_URL_LANDING_DIRECT,
+            MsoConfig.IOS_URL_LANDING_SUGGESTED
+        };
+        
+        for (String property : properties) {
+            
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, property);
+            if (config != null) {
+                
+                results.add(config);
+            }
+        }
+        
+        return results;
     }
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.GET)
@@ -84,7 +107,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -140,7 +163,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -500,8 +523,8 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(set.getMsoId());
-        if (msoMngr.isPlayableChannel(channel, mso.getId()) == false) {
+        Mso mso = NNF.getMsoMngr().findById(set.getMsoId());
+        if (NNF.getMsoMngr().isPlayableChannel(channel, mso.getId()) == false) {
             badRequest(resp, "Channel Cant Play On This Mso");
             log.info(printExitState(now, req, "400"));
             return null;
@@ -723,7 +746,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -793,7 +816,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -855,7 +878,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -911,23 +934,7 @@ public class ApiMso extends ApiGeneric {
         log.info(printEnterState(now, req));
         ApiContext context = new ApiContext(req);
         
-        Mso mso = null;
-        
-        if (msoIdStr.matches("^\\d+$")) {
-            
-            Long msoId = evaluateLong(msoIdStr);
-            if (msoId == null) {
-                notFound(resp, INVALID_PATH_PARAMETER);
-                log.info(printExitState(now, req, "404"));
-                return null;
-            }
-            
-            mso = msoMngr.findById(msoId);
-            
-        } else {
-            
-            mso = msoMngr.findByName(msoIdStr);
-        }
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             return null;
         }
@@ -937,7 +944,7 @@ public class ApiMso extends ApiGeneric {
         // check if push notification was enabled
         boolean apnsEnabled = true;
         boolean gcmEnabled = true;
-        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
         File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
         if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
             gcmEnabled = false;
@@ -967,7 +974,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1016,7 +1023,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1040,10 +1047,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = userMngr.findLocaleByHttpRequest(req);
+                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
             }
         } else {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         List<Category> results = apiMsoService.msoCategories(mso.getId());
@@ -1078,7 +1085,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1129,10 +1136,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = userMngr.findLocaleByHttpRequest(req);
+                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
             }
         } else {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.msoCategoryCreate(mso.getId(), seq, zhName, enName);
@@ -1194,10 +1201,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = userMngr.findLocaleByHttpRequest(req);
+                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
             }
         } else {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.category(category.getId());
@@ -1284,10 +1291,10 @@ public class ApiMso extends ApiGeneric {
         if (lang != null) {
             lang = NnStringUtil.validateLangCode(lang);
             if (lang == null) {
-                lang = userMngr.findLocaleByHttpRequest(req);
+                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
             }
         } else {
-            lang = userMngr.findLocaleByHttpRequest(req);
+            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         Category result = apiMsoService.categoryUpdate(category.getId(), seq, zhName, enName);
@@ -1561,7 +1568,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1600,7 +1607,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso mso = msoMngr.findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1645,23 +1652,7 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
     
-        Mso mso = null;
-        
-        if (msoIdStr.matches("^\\d+$")) {
-            
-            Long msoId = evaluateLong(msoIdStr);
-            if (msoId == null) {
-                notFound(resp, INVALID_PATH_PARAMETER);
-                return null;
-            }
-            
-            mso = msoMngr.findById(msoId);
-            
-        } else {
-            
-            mso = msoMngr.findByName(msoIdStr);
-        }
-        
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "MSO_NOT_FOUND");
             return null;
@@ -1707,11 +1698,11 @@ public class ApiMso extends ApiGeneric {
             notification.setScheduleDate(new Date(scheduleDateLong));
         }
         
-        notification = notificationMngr.save(notification);
+        notification = NNF.getMsoNotiMngr().save(notification);
         
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
-            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
             ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
@@ -1725,7 +1716,7 @@ public class ApiMso extends ApiGeneric {
             
             Date now = new Date();
             notification.setPublishDate(now);
-            notification = notificationMngr.save(notification);
+            notification = NNF.getMsoNotiMngr().save(notification);
         }
         
         return notification;
@@ -1735,23 +1726,7 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody List<MsoNotification> notifications(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Mso mso = null;
-        log.info("mso = " + msoIdStr);
-        if (msoIdStr.matches("^\\d+$")) {
-            
-            Long msoId = evaluateLong(msoIdStr);
-            if (msoId == null) {
-                notFound(resp, INVALID_PATH_PARAMETER);
-                return null;
-            }
-            
-            mso = msoMngr.findById(msoId);
-            
-        } else {
-            
-            mso = msoMngr.findByName(msoIdStr);
-        }
-        
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "MSO_NOT_FOUND");
             return null;
@@ -1773,11 +1748,11 @@ public class ApiMso extends ApiGeneric {
         String type = req.getParameter("type");
         
         if ("history".equals(type)) {
-            return notificationMngr.list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
+            return NNF.getMsoNotiMngr().list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
         } else if ("schedule".equals(type)) {
-            return notificationMngr.listScheduled(1, 20, "msoId == " + mso.getId());
+            return NNF.getMsoNotiMngr().listScheduled(1, 20, "msoId == " + mso.getId());
         } else {
-            return notificationMngr.list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+            return NNF.getMsoNotiMngr().list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
         }
     }
     
@@ -1793,7 +1768,7 @@ public class ApiMso extends ApiGeneric {
         log.info(printEnterState(now, req));
         
         Date dueDate = new Date(now.getTime() + 60*10*1000); // 10 mins interval
-        List<MsoNotification> notifications = notificationMngr.listScheduled(dueDate);
+        List<MsoNotification> notifications = NNF.getMsoNotiMngr().listScheduled(dueDate);
         
         for (MsoNotification notification : notifications) {
             QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
@@ -1803,7 +1778,7 @@ public class ApiMso extends ApiGeneric {
             notification.setPublishDate(new Date());
         }
         
-        notificationMngr.saveAll(notifications);
+        NNF.getMsoNotiMngr().saveAll(notifications);
         
         okResponse(resp);
         log.info(printExitState(now, req, "ok"));
@@ -1824,7 +1799,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        MsoNotification notification = notificationMngr.findById(notificationId);
+        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1861,7 +1836,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        MsoNotification notification = notificationMngr.findById(notificationId);
+        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1901,12 +1876,12 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoNotification savedNotification = notificationMngr.save(notification);
+        MsoNotification savedNotification = NNF.getMsoNotiMngr().save(notification);
         
         if ("NOW".equalsIgnoreCase(scheduleDateStr)) {
             
-            Mso mso = msoMngr.findById(savedNotification.getMsoId());
-            MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+            Mso mso = NNF.getMsoMngr().findById(savedNotification.getMsoId());
+            MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
             ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
@@ -1920,7 +1895,7 @@ public class ApiMso extends ApiGeneric {
             
             savedNotification.setPublishDate(new Date());
             savedNotification.setScheduleDate(null);
-            savedNotification = notificationMngr.save(savedNotification);
+            savedNotification = NNF.getMsoNotiMngr().save(savedNotification);
         }
         
         log.info(printExitState(now, req, "ok"));
@@ -1941,7 +1916,7 @@ public class ApiMso extends ApiGeneric {
             return ;
         }
         
-        MsoNotification notification = notificationMngr.findById(notificationId);
+        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1960,7 +1935,7 @@ public class ApiMso extends ApiGeneric {
             return ;
         }
         
-        notificationMngr.delete(notification);
+        NNF.getMsoNotiMngr().delete(notification);
         
         okResponse(resp);
         log.info(printExitState(now, req, "ok"));
