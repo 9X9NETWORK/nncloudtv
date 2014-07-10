@@ -43,16 +43,7 @@ public class BillingProfileManager {
     
     public BillingProfile findById(String idStr) {
         
-        if (idStr == null) return null;
-        
-        long profileId = 0;
-        try {
-            profileId = Long.valueOf(idStr);
-            
-        } catch(NumberFormatException e) {
-        }
-        
-        return dao.findById(profileId);
+        return dao.findById(idStr);
     }
     
     public BillingProfile updateAuthInfo(BillingProfile profile, CreditCard creditCard, CcApiDocument ccResult) throws CcApiBadKeyException {
