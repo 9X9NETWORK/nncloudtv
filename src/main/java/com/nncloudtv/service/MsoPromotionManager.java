@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,6 +28,14 @@ public class MsoPromotionManager {
     }
     
     public MsoPromotion save(MsoPromotion promotion) {
+        
+        Date now = new Date();
+        
+        if (promotion.getCreateDate() == null) {
+            
+            promotion.setCreateDate(now);
+        }
+        promotion.setUpdateDate(now);
         
         return dao.save(promotion);
     }

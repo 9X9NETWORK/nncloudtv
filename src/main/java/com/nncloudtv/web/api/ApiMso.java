@@ -57,6 +57,52 @@ public class ApiMso extends ApiGeneric {
         this.categoryService = categoryService;
     }
     
+    @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.PUT)
+    public @ResponseBody MsoPromotion msoPromotionUpdate(HttpServletRequest req,
+            HttpServletResponse resp, @PathVariable("id") String promotionIdStr) {
+        
+        MsoPromotion promotion = NNF.getMsoPromotionMngr().findById(promotionIdStr);
+        if (promotion == null) {
+            nullResponse(resp);
+            return null;
+        }
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(userId, promotion.getMsoId(), "111") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        String title = req.getParameter("title");
+        if (title != null) {
+            promotion.setTitle(title);
+        }
+        String link = req.getParameter("link");
+        if (link != null) {
+            promotion.setLink(link);
+        }
+        String logoUrl = req.getParameter("logoUrl");
+        if (logoUrl != null) {
+            promotion.setLogoUrl(logoUrl);
+        }
+        Short type = evaluateShort(req.getParameter("type"));
+        if (type != null) {
+            promotion.setType(type);
+        }
+        Short seq = evaluateShort(req.getParameter("seq"));
+        if (seq != null) {
+            promotion.setSeq(seq);
+        }
+        
+        return NNF.getMsoPromotionMngr().save(promotion);
+    }
+    
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.GET)
     public @ResponseBody MsoPromotion msoPromotion(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("id") String promotionIdStr) {
@@ -67,6 +113,24 @@ public class ApiMso extends ApiGeneric {
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.DELETE)
     public @ResponseBody String msoPromotionDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("id") String promotionIdStr) {
+        
+        MsoPromotion promotion = NNF.getMsoPromotionMngr().findById(promotionIdStr);
+        if (promotion == null) {
+            nullResponse(resp);
+            return null;
+        }
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (hasRightAccessPCS(userId, promotion.getMsoId(), "111") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
         
         NNF.getMsoPromotionMngr().delete(NNF.getMsoPromotionMngr().findById(promotionIdStr));
         
