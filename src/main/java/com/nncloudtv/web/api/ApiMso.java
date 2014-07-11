@@ -1101,45 +1101,51 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "110") == false) {
+            
+        } else if (hasRightAccessPCS(userId, mso.getId(), "110") == false) {
+            
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        // title
         String title = req.getParameter("title");
         if (title != null) {
-            title = NnStringUtil.htmlSafeAndTruncated(title);
+            mso.setTitle(NnStringUtil.htmlSafeAndTruncated(title));
+        }
+        String logoUrl = req.getParameter("logoUrl");
+        if (logoUrl != null) {
+            mso.setLogoUrl(logoUrl);
+        }
+        String intro = req.getParameter("into");
+        if (intro != null) {
+            mso.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.EXTENDED_STRING_LENGTH));
+        }
+        String shortIntro = req.getParameter("shortIntro");
+        if (shortIntro != null) {
+            mso.setShortIntro(NnStringUtil.htmlSafeAndTruncated(shortIntro));
+        }
+        String slogan = req.getParameter("slogan");
+        if (slogan != null) {
+            mso.setSlogan(NnStringUtil.htmlSafeAndTruncated(slogan));
         }
         
-        // logoUrl
-        String logoUrl = req.getParameter("logoUrl");
-        
-        Mso result = apiMsoService.msoUpdate(mso.getId(), title, logoUrl);
-        
         log.info(printExitState(now, req, "ok"));
-        return result;
+        
+        return NNF.getMsoMngr().save(mso);
     }
     
     @RequestMapping(value = "mso/{msoId}/categories", method = RequestMethod.GET)
