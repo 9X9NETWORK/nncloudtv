@@ -56,28 +56,36 @@ public class MsoManager {
             return null;
         }
         
-        Date now = new Date();        
-        if (mso.getCreateDate() == null)
+        Date now = new Date();
+        if (mso.getCreateDate() == null) {
+            
             mso.setCreateDate(now);
+        }
         mso.setUpdateDate(now);
         dao.save(mso);
-        /*
-        if (mso.getType() == Mso.TYPE_NN)
-            this.processCache();
-            */
+        resetCache(mso);
+        
         return mso;
     }
     
-    public void resetCache(String mso) {
-    	if (mso == null)
-    		return;
-        String key = "brandInfo(" + mso + ")";
-        String web = key + "(web)";
-        String ios = key + "(ios)";
-        String android = key + "(android)";
-        CacheFactory.delete(web);
-        CacheFactory.delete(ios);
-        CacheFactory.delete(android);
+    public void resetCache(Mso mso) {
+        
+        if (mso == null) { return; }
+        
+        String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_JSON);
+        String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+        String keyIosJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
+        String keyIosPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        String keyWebJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
+        String keyWebPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        
+        CacheFactory.delete(keyAndroidJson);
+        CacheFactory.delete(keyAndroidPlain);
+        CacheFactory.delete(keyIosJson);
+        CacheFactory.delete(keyIosPlain);
+        CacheFactory.delete(keyWebJson);
+        CacheFactory.delete(keyWebPlain);
+        
     }
     
     public Mso findNNMso() {
