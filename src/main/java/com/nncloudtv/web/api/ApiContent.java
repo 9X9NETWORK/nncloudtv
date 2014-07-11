@@ -114,8 +114,7 @@ public class ApiContent extends ApiGeneric {
         
         prefMngr.delete(prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.POST)
@@ -192,11 +191,9 @@ public class ApiContent extends ApiGeneric {
         }
         
         chPrefMngr.delete(chPrefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
-        
         chPrefMngr.save(prefList);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.GET)
@@ -275,8 +272,7 @@ public class ApiContent extends ApiGeneric {
         // mark as hook position
         NNF.getEpisodeMngr().autoShareToFacebook(episode);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.GET)
@@ -318,9 +314,7 @@ public class ApiContent extends ApiGeneric {
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.PUT)
-    public @ResponseBody
-    Map<String, Object> brandAutosharingSet(HttpServletRequest req,
-            HttpServletResponse resp,
+    public @ResponseBody String brandAutosharingSet(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
         Date now = new Date();
@@ -374,9 +368,8 @@ public class ApiContent extends ApiGeneric {
         
         NNF.getChPrefMngr().setBrand(channel.getId(), mso);
         
-        okResponse(resp);
         log.info(printExitState(now, req, "ok"));
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
@@ -613,8 +606,7 @@ public class ApiContent extends ApiGeneric {
         
         NNF.getProgramMngr().delete(program);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     // delete programs in one episode
@@ -694,13 +686,10 @@ public class ApiContent extends ApiGeneric {
             }
         }
         log.info("program delete count = " + programDeleteList.size());
-        //log.info("titlecard delete count = " + titlecardDeleteList.size());
         
-        //titlecardMngr.delete(titlecardDeleteList);
         programMngr.delete(programDeleteList);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "episodes/{episodeId}/programs", method = RequestMethod.POST)
@@ -1173,9 +1162,10 @@ public class ApiContent extends ApiGeneric {
         return savedChannel;
     }
     
+    // TODO: fix me
     @RequestMapping(value = "channels/{channelId}/youtubeSyncData", method = RequestMethod.PUT)
     public @ResponseBody
-    void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
+    String channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
         Date now = new Date();
@@ -1185,31 +1175,30 @@ public class ApiContent extends ApiGeneric {
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
-            return ;
+            return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
-            return ;
+            return null;
         }
         if (NnChannelManager.isValidChannelSourceUrl(channel.getSourceUrl()) == false) {
             notFound(resp, INVALID_YOUTUBE_URL);
             log.info(printExitState(now, req, "404"));
-            return ;
+            return null;
         }
-        
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
-            return ;
+            return null;
         } else if (verifiedUserId != channel.getUserId()) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
-            return ;
+            return null;
         }
         
         Map<String, String> response = apiContentService.channelYoutubeDataSync(channel.getId());
@@ -1217,12 +1206,11 @@ public class ApiContent extends ApiGeneric {
                 "Ack\n".equals(response.get(NnNetUtil.TEXT)) == false) {
             msgResponse(resp, "NOT OK");
             log.info(printExitState(now, req, "not ok"));
-            return ;
+            return null;
         }
         
-        okResponse(resp);
         log.info(printExitState(now, req, "ok"));
-        return ;
+        return ok(resp);
     }
     
     @RequestMapping(value = "tags", method = RequestMethod.GET)
@@ -1416,8 +1404,7 @@ public class ApiContent extends ApiGeneric {
         String episodeIdsStr = req.getParameter("episodes");
         if (episodeIdsStr == null) {
             episodeMngr.reorderChannelEpisodes(channelId);
-            okResponse(resp);
-            return null;
+            return ok(resp);
         }
         String[] episodeIdStrList = episodeIdsStr.split(",");
         
@@ -1463,8 +1450,7 @@ public class ApiContent extends ApiGeneric {
         episodeMngr.save(orderedEpisodes);
         channelMngr.renewChannelUpdateDate(channel.getId());
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "episodes", method = RequestMethod.GET)
@@ -1582,8 +1568,7 @@ public class ApiContent extends ApiGeneric {
             channelMngr.save(channel);
         }
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "episodes/{episodeId}", method = RequestMethod.GET)
@@ -2020,8 +2005,7 @@ public class ApiContent extends ApiGeneric {
             adMngr.delete(nnad);
         }
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "episodes/{episodeId}/shopping_info", method = RequestMethod.POST)
@@ -2361,8 +2345,7 @@ public class ApiContent extends ApiGeneric {
         
         titleCardMngr.delete(titleCard);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "my_uploads/{id}", method = RequestMethod.GET)
@@ -2480,8 +2463,7 @@ public class ApiContent extends ApiGeneric {
         
         libMngr.delete(lib);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
 }

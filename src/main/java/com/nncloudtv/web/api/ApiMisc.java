@@ -94,8 +94,7 @@ public class ApiMisc extends ApiGeneric {
 		CookieHelper.deleteCookie(resp, CookieHelper.USER);
 		CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
 		
-		okResponse(resp);
-        return null;
+		return ok(resp);
 	}
 	
 	/** super profile's msoId priv will replace the result one if super profile exist */
@@ -384,8 +383,7 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
 
 }
