@@ -401,7 +401,7 @@ public class PlayerApiController {
             @RequestParam(value="version", required=false)String version,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp) {
-        //resp.setContentType(ApiGeneric.PLAIN_TEXT_UTF8); // Louis: this be work as well (return value is not correct to me)
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
@@ -417,7 +417,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-
+    
     //http://stackoverflow.com/questions/4403643/supporting-multiple-content-types-in-a-spring-mvc-controller/4404881#4404881
     //http://stackoverflow.com/questions/3620323/how-to-change-default-media-type-for-spring-mvc-from-xml-to-json
     //http://www.mkyong.com/spring-mvc/spring-3-mvc-contentnegotiatingviewresolver-example/
