@@ -102,10 +102,6 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_TRENDING         = 15;
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
-    private String piwik;
-    
-    @Persistent
     private short status;
     //general
     public static final short STATUS_SUCCESS           = 0;
@@ -445,14 +441,6 @@ public class NnChannel implements Serializable {
 
     public void setRecentlyWatchedProgram(String recentlyWatchedProgram) {
         this.recentlyWatchedProgram = recentlyWatchedProgram;
-    }
-
-    public String getPiwik() {
-        return piwik;
-    }
-
-    public void setPiwik(String piwik) {
-        this.piwik = piwik;
     }
 
     public String getTag() {

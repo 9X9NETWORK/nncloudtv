@@ -1103,7 +1103,7 @@ public class NnChannelManager {
             ori.add(c.getPlayerPrefSource());
             ori.add(String.valueOf(c.getUpdateDate().getTime()));
             ori.add(String.valueOf(getPlayerDefaultSorting(c))); //use default sorting for all
-            ori.add(c.getPiwik());
+            ori.add(""); // piwik
             ori.add(""); //recently watched program
             ori.add(c.getOriName());
             ori.add(String.valueOf(c.getCntSubscribe())); //cnt subscribe, replace
@@ -1141,7 +1141,7 @@ public class NnChannelManager {
             lineup.setChannelSource(c.getPlayerPrefSource());
             lineup.setLastUpdateTime(c.getUpdateDate().getTime());
             lineup.setSorting(getPlayerDefaultSorting(c)); //use default sorting for all
-            lineup.setPiwikId(c.getPiwik());
+            lineup.setPiwikId(""); // piwik
             lineup.setRecentlyWatchedPrograms(""); //recently watched program
             lineup.setYoutubeName(c.getOriName());
             lineup.setNumberOfSubscribers(c.getCntSubscribe()); //cnt subscribe, replace

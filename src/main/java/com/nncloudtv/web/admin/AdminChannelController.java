@@ -217,7 +217,7 @@ public class AdminChannelController {
                 cell.add(channel.getStatus());
                 cell.add(channel.getContentType());
                 cell.add(channel.isPublic());
-                cell.add(channel.getPiwik());
+                cell.add(""); // piwik
                 cell.add(channel.getImageUrl());
                 cell.add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(channel.getUpdateDate()));
                 cell.add(channel.getCntEpisode());
