@@ -6,6 +6,7 @@ import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
+import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
@@ -15,6 +16,7 @@ import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.MsoNotificationManager;
+import com.nncloudtv.service.MsoPromotionManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnDeviceManager;
@@ -50,8 +52,10 @@ public class NNF {
     protected static SysTagDisplayManager   displayMngr         = null;
     protected static SysTagMapManager       sysTagMapMngr       = null;
     protected static SysTagManager          sysTagMngr          = null;
+    protected static MsoPromotionManager    msoPromotionMngr    = null;
     
     protected static MsoDao            msoDao            = null;
+    protected static MsoPromotionDao   msoPromotionDao   = null;
     protected static BillingOrderDao   orderDao          = null;
     protected static BillingProfileDao billingProfileDao = null;
     protected static BillingPackageDao packageDao        = null;
@@ -134,6 +138,17 @@ public class NNF {
         }
         
         return deviceDao;
+    }
+    
+    public static MsoPromotionDao getMsoPromotionDao() {
+        
+        if (msoPromotionDao == null) {
+            
+            log.info("create msoPromotionDao");
+            msoPromotionDao = new MsoPromotionDao();
+        }
+        
+        return msoPromotionDao;
     }
     
     public static MsoNotificationManager getMsoNotiMngr() {
@@ -332,5 +347,15 @@ public class NNF {
         }
         
         return chPrefMngr;
+    }
+    
+    public static MsoPromotionManager getMsoPromotionMngr() {
+        
+        if (msoPromotionMngr == null) {
+            
+            log.info("create msoPromotionMngr");
+            msoPromotionMngr = new MsoPromotionManager();
+        }
+        return msoPromotionMngr;
     }
 }

@@ -31,8 +31,16 @@ public class Mso implements Serializable {
     private String title;
     
     @Persistent 
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String intro;
+    
+    @Persistent 
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String shortIntro;
+    
+    @Persistent 
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String slogan;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
@@ -217,5 +225,21 @@ public class Mso implements Serializable {
 
     public void setGcmEnabled(boolean gcmEnabled) {
         this.gcmEnabled = gcmEnabled;
+    }
+
+    public String getShortIntro() {
+        return shortIntro;
+    }
+
+    public void setShortIntro(String shortIntro) {
+        this.shortIntro = shortIntro;
+    }
+
+    public String getSlogan() {
+        return slogan;
+    }
+
+    public void setSlogan(String slogan) {
+        this.slogan = slogan;
     }
 }

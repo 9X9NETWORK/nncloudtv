@@ -371,10 +371,9 @@ public class ApiPoi extends ApiGeneric {
         }
         
         campaignMngr.delete(campaign);
-        
-        okResponse(resp);
         log.info(printExitState(now, req, "ok"));
-        return null;
+        
+        return ok(resp);
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.GET)
@@ -751,10 +750,9 @@ public class ApiPoi extends ApiGeneric {
         }
         
         campaignMngr.delete(poi);
-        
-        okResponse(resp);
         log.info(printExitState(now, req, "ok"));
-        return null;
+        
+        return ok(resp);
     }
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.GET)
@@ -1076,7 +1074,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         Long ownerUserId = pointMngr.findOwner(point);
-        if (ownerUserId == null) { // no one can access orphan object
+        if (ownerUserId == null) { // orphan object
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1092,11 +1090,10 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        pointMngr.delete(point); // TODO currently delete point will delete event and poi too, will modify if logic change.
-        
-        okResponse(resp);
+        pointMngr.delete(point);
         log.info(printExitState(now, req, "ok"));
-        return null;
+        
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/poi_events", method = RequestMethod.POST)
@@ -1445,10 +1442,9 @@ public class ApiPoi extends ApiGeneric {
         }
         
         eventMngr.delete(event);
-        
-        okResponse(resp);
         log.info(printExitState(now, req, "ok"));
-        return null;
+        
+        return ok(resp);
     }
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.GET)

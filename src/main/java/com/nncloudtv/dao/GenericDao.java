@@ -194,7 +194,7 @@ public class GenericDao<T> {
     
     public T findById(String idStr) {
         
-        if (idStr == null || !NnStringUtil.isDigits(idStr)) {
+        if (idStr == null || NnStringUtil.isDigits(idStr) == false) {
             
             return null;
         }

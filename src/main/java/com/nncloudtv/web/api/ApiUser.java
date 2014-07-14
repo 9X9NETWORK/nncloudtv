@@ -445,8 +445,7 @@ public class ApiUser extends ApiGeneric {
         
         libMngr.save(lib);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
@@ -639,8 +638,7 @@ public class ApiUser extends ApiGeneric {
         
         channelMngr.saveAll(orderedChannels);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
@@ -842,7 +840,6 @@ public class ApiUser extends ApiGeneric {
         }
         
         if (userId != channel.getUserId()) {
-            //return "Not The Channel Owner";
             forbidden(resp);
             return null;
         }
@@ -852,8 +849,7 @@ public class ApiUser extends ApiGeneric {
         channel.setPublic(false);
         channelMngr.save(channel);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.POST)
@@ -948,8 +944,7 @@ public class ApiUser extends ApiGeneric {
         }
         prefMngr.save(user, userPref);
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.DELETE)
@@ -1002,8 +997,7 @@ public class ApiUser extends ApiGeneric {
             prefMngr.delete(user, userPref);
         }
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.GET)

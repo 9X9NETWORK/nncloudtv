@@ -38,7 +38,6 @@ public class ApiGeneric {
     public static final String API_DOC                = "API-DOC";
     public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
     public static final String BLACK_HOLE             = "Black Hole!";
-    public static final String MSG_OK                 = "\"OK\"";
     public static final String NULL                   = "null";
     
     public static final short HTTP_200 = 200;
@@ -170,16 +169,11 @@ public class ApiGeneric {
 	    return userId;
 	}
 	
-    public void okResponse(HttpServletResponse resp) {
+    public String ok(HttpServletResponse resp) {
         
-        try {
-            resp.setContentType(APPLICATION_JSON_UTF8);
-            resp.getWriter().print(MSG_OK);
-            resp.flushBuffer();
-        } catch (IOException e) {
-            internalError(resp, e);
-        }
+        resp.setContentType(APPLICATION_JSON_UTF8);
         
+        return "\"OK\"";
     }
     
     public void msgResponse(HttpServletResponse resp, String msg) {

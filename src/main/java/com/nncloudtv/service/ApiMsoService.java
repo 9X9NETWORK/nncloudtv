@@ -393,36 +393,6 @@ public class ApiMsoService {
         return mso;
     }
     
-    /** service for ApiMso.msoUpdate
-     *  update object Mso
-     *  @param msoId required, the Mso's Id
-     *  @param title optional, Mso's title
-     *  @param logoUrl optional, Mso's logoUrl
-     *  @return object Mso or null if not exist */
-    public Mso msoUpdate(Long msoId, String title, String logoUrl) {
-        
-        if (msoId == null) {
-            return null;
-        }
-        
-        Mso mso = msoMngr.findById(msoId);
-        if (mso == null) {
-            return null;
-        }
-        
-        if (title != null) {
-            mso.setTitle(title);
-        }
-        if (logoUrl != null) {
-            mso.setLogoUrl(logoUrl);
-        }
-        
-        Mso savedMso = msoMngr.save(mso);
-        
-        MsoManager.normalize(savedMso);
-        return savedMso;
-    }
-    
     /**
      * service for ApiMso.msoCategories
      * Get MSO promotion Categories.
