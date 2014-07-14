@@ -31,7 +31,6 @@ import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
-import com.nncloudtv.model.NnAd;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
@@ -46,7 +45,6 @@ import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.NnAdManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
@@ -1566,13 +1564,6 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        // delete shopping_info
-        NnAdManager adMngr = new NnAdManager();
-        NnAd nnAd = adMngr.findByEpisode(episode);
-        if(nnAd != null) {
-            adMngr.delete(nnAd);
-        }
-        
         // delete episode
         NNF.getEpisodeMngr().delete(episode);
         
@@ -1975,151 +1966,6 @@ public class ApiContent extends ApiGeneric {
         }
         
         return results;
-    }
-    
-    @RequestMapping(value = "episodes/{episodeId}/shopping_info", method = RequestMethod.DELETE)
-    public @ResponseBody
-    String shoppingInfoDelete(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable(value = "episodeId") String episodeIdStr) {
-        
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnAdManager adMngr = new NnAdManager();
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
-        if (episode == null) {
-            
-            notFound(resp, "Episode Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        }
-        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
-            forbidden(resp);
-            return null;
-        }
-        
-        episode.setAdId(0);
-        NNF.getEpisodeMngr().save(episode);
-        
-        NnAd nnad = adMngr.findByEpisode(episode);
-        if (nnad != null) {
-            adMngr.delete(nnad);
-        }
-        
-        okResponse(resp);
-        return null;
-    }
-    
-    @RequestMapping(value = "episodes/{episodeId}/shopping_info", method = RequestMethod.POST)
-    public @ResponseBody
-    NnAd shoppingInfoCreate(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable(value = "episodeId") String episodeIdStr) {        
-        
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnAdManager adMngr = new NnAdManager();
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
-        if (episode == null) {
-            notFound(resp, "Episode Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        }
-        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
-            forbidden(resp);
-            return null;
-        }
-        
-        NnAd nnad = adMngr.findByEpisode(episode);
-        if (nnad == null) {
-            nnad = new NnAd();
-        }
-        
-        // merchantEmail
-        String merchantEmail = req.getParameter("merchantEmail");
-        if (merchantEmail != null) {
-            nnad.setMerchantEmail(merchantEmail);
-        }
-        
-        // message
-        String message = req.getParameter("message");
-        if (message != null) {
-            nnad.setMessage(NnStringUtil.htmlSafeAndTruncated(message));
-        }
-        
-        // url
-        String url = req.getParameter("url");
-        if (url != null) {
-            nnad.setUrl(url);
-        }
-        
-        resp.setStatus(201);
-        
-        nnad = adMngr.save(nnad, episode);
-        nnad.setMessage(NnStringUtil.revertHtml(nnad.getMessage()));
-        
-        return nnad;
-    }
-    
-    @RequestMapping(value = "episodes/{episodeId}/shopping_info", method = RequestMethod.GET)
-    public @ResponseBody
-    NnAd shoppingInfo(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable(value = "episodeId") String episodeIdStr) {
-        
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnAdManager adMngr = new NnAdManager();
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
-        if (episode == null) {
-            
-            notFound(resp, "Episode Not Found");
-            return null;
-        }
-        
-        NnAd nnad = adMngr.findByEpisode(episode);
-        
-        if (nnad != null) {
-            nnad.setMessage(NnStringUtil.revertHtml(nnad.getMessage()));
-        }
-        
-        return nnad;
     }
     
     @RequestMapping(value = "programs/{programId}/title_cards", method = RequestMethod.GET)

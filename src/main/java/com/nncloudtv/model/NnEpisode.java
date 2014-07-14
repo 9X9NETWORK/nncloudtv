@@ -30,6 +30,9 @@ public class NnEpisode implements Serializable {
     private long channelId;
     
     @Persistent
+    private long storageId;
+    
+    @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name;
     
@@ -40,9 +43,6 @@ public class NnEpisode implements Serializable {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
     private String intro;
-    
-    @Persistent
-    private long adId;
     
     @Persistent
     private boolean isPublic; 
@@ -105,14 +105,6 @@ public class NnEpisode implements Serializable {
 
     public void setIntro(String intro) {
         this.intro = intro;
-    }
-
-    public long getAdId() {
-        return adId;
-    }
-
-    public void setAdId(long adId) {
-        this.adId = adId;
     }
 
     public Date getPublishDate() {
@@ -211,5 +203,13 @@ public class NnEpisode implements Serializable {
 	public void setScheduleDate(Date scheduleDate) {
 		this.scheduleDate = scheduleDate;
 	}
+
+    public long getStorageId() {
+        return storageId;
+    }
+
+    public void setStorageId(long storageId) {
+        this.storageId = storageId;
+    }
      
 }

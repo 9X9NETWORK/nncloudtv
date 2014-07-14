@@ -863,7 +863,7 @@ public class NnProgramManager {
         String output = "";
         if (e.getPublishDate() == null)
             e.setPublishDate(new Date()); //should not happen, just in case
-        long channelId = (e.getChannelId() == 0) ? e.getAdId() : e.getChannelId(); // orphan episode
+        long channelId = (e.getChannelId() == 0) ? e.getStorageId() : e.getChannelId(); // orphan episode
         String eId = "e" + String.valueOf(e.getId());
         long publishTime = e.getPublishDate().getTime();
          
