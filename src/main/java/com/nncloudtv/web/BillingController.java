@@ -20,13 +20,12 @@ import com.nncloudtv.exception.NnBillingException;
 import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
-import com.nncloudtv.service.BillingOrderManager;
-import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -79,9 +78,7 @@ public class BillingController {
     @RequestMapping("recurringCharge")
     public ResponseEntity<String> recurringCharge(HttpServletRequest req) {
         
-        BillingPackageManager packMngr = new BillingPackageManager(); 
-        BillingOrderManager orderMngr = new BillingOrderManager();
-        List<BillingOrder> orders = orderMngr.findByStatus(BillingOrder.RECURRING);
+        List<BillingOrder> orders = NNF.getOrderMngr().findByStatus(BillingOrder.RECURRING);
         ApiContext context = new ApiContext(req);
         String results = "";
         int total = 0;
@@ -129,7 +126,7 @@ public class BillingController {
                     continue;
                 }
                 
-                BillingPackage pack = packMngr.findById(order.getPackageId());
+                BillingPackage pack = NNF.getPackageMngr().findById(order.getPackageId());
                 if (BillingPackage.DAILY.equals(pack.getChargeCycle())) {
                     order.setExpiryDate(NnDateUtil.tomorrow());
                 } else if (BillingPackage.WEEKLY.equals(pack.getChargeCycle())) {
@@ -139,7 +136,7 @@ public class BillingController {
                 }
                 order.setTotalPaymentAmount(order.getTotalPaymentAmount() + pack.getPrice());
                 order.setCntPayment(order.getCntPayment() + 1);
-                orderMngr.save(order);
+                NNF.getOrderMngr().save(order);
                 result[1] = "successfully charged";
                 results += NnStringUtil.getDelimitedStr(result) + "\n";
             }

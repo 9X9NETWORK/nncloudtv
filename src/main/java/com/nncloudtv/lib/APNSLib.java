@@ -14,7 +14,6 @@ import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.service.NnDeviceManager;
-import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsDelegate;
 import com.notnoop.apns.ApnsNotification;
@@ -27,9 +26,6 @@ import com.notnoop.apns.PayloadBuilder;
 public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
-    
-    private NnDeviceManager deviceMngr = new NnDeviceManager();
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
     
     public void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
         
@@ -53,7 +49,7 @@ public class APNSLib {
                     return ;
                 }
                 NnDevice device = messageIdMap.get(messageId);
-                deviceMngr.delete(device);
+                NNF.getDeviceMngr().delete(device);
             }
             
             public void messageSent(ApnsNotification notification, boolean isRetry) {
@@ -160,7 +156,7 @@ public class APNSLib {
         removeInactiveDevices(service, msoNotification.getMsoId());
         
         // prepare notifications
-        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
+        List<NnDevice> fetchedDevices = NNF.getDeviceMngr().findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_APNS);
         if (fetchedDevices == null) {
             log.info("fetchedDevices=null");
             return ;
@@ -212,8 +208,8 @@ public class APNSLib {
         delegate.setMessageIdMap(messageIdMap);
         
         // update all fetchedDevices with new badge
-        deviceMngr.save(fetchedDevices);
-        notificationMngr.save(deviceNotifications);
+        NNF.getDeviceMngr().save(fetchedDevices);
+        NNF.getDeviceNotiMngr().save(deviceNotifications);
         
         // TODO performance issue
         for (EnhancedApnsNotification notification : notifications) {
@@ -235,6 +231,7 @@ public class APNSLib {
             return ;
         }
         
+        NnDeviceManager deviceMngr = NNF.getDeviceMngr();
         List<NnDevice> deleteDevices = new ArrayList<NnDevice>();
         if (inactiveDevices != null) {
             for(String inactiveDevice : inactiveDevices.keySet()) {

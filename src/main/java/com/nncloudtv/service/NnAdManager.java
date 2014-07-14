@@ -13,22 +13,6 @@ public class NnAdManager {
     
     private NnAdDao dao = new NnAdDao();
     
-    public NnAd findByEpisode(NnEpisode episode) {
-        
-        if (episode == null) {
-            return null;
-        }
-        
-        long adId = episode.getAdId();
-        
-        if (adId == 0) {
-            return null;
-        }
-        
-        return dao.findById(adId);
-        
-    }
-    
     public void delete(NnAd nnad) {
         
         if (nnad == null) {
@@ -52,16 +36,6 @@ public class NnAdManager {
         
         nnad.setUpdateDate(now);
         nnad = dao.save(nnad);
-        
-        NnAd origAd = findByEpisode(episode);
-        if (origAd != null && origAd.getId() != nnad.getId()) {
-            
-            delete(origAd);
-        }
-        
-        NnEpisodeManager episodeMngr = new NnEpisodeManager();
-        episode.setAdId(nnad.getId());
-        episodeMngr.save(episode);
         
         return nnad;
     }

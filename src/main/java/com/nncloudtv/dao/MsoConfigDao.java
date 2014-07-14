@@ -40,9 +40,9 @@ public class MsoConfigDao {
         } finally {
             pm.close();
         }
-        return config;        
+        return config; 
     }
-
+    
     public MsoConfig findByItem(String item) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         MsoConfig config = null;

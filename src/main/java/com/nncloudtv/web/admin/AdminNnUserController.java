@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.JqgridHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
-import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserSubscribeManager;
 
@@ -51,7 +51,6 @@ public class AdminNnUserController {
                                                            OutputStream out) {
         
         NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
-        NnChannelManager channelMngr = new NnChannelManager();
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> dataRows = new ArrayList<Map<String, Object>>();
         
@@ -68,7 +67,7 @@ public class AdminNnUserController {
             Map<String, Object> map = new HashMap<String, Object>();
             List<Object> cell = new ArrayList<Object>();
             
-            NnChannel channel = channelMngr.findById(sub.getChannelId());
+            NnChannel channel = NNF.getChannelMngr().findById(sub.getChannelId());
             
             cell.add(sub.getChannelId());
             cell.add(channel.getName());

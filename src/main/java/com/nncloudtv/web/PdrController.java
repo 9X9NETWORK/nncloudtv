@@ -14,15 +14,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserReport;
 import com.nncloudtv.model.Pdr;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnDeviceManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserReportManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -42,27 +40,25 @@ public class PdrController {
     public ResponseEntity<String> listDevice(
             @RequestParam(required=false) String user,
             @RequestParam(required=false) String mso) {
-        NnUserManager userMngr = new NnUserManager();
-        NnDeviceManager deviceMngr = new NnDeviceManager();
+        
         PlayerApiService pservice = new PlayerApiService();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            msoMngr.findNNMso();
+            NNF.getMsoMngr().findNNMso();
         }
-        NnUser u = userMngr.findByToken(user, brand.getId());
+        NnUser u = NNF.getUserMngr().findByToken(user, brand.getId());
         if (u == null)
             return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
-        List<NnDevice> devices = deviceMngr.findByUser(u);
+        List<NnDevice> devices = NNF.getDeviceMngr().findByUser(u);
         
         if (devices.size() == 0)
             return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, null));
-
+        
         String[] result = {""};
         for (NnDevice d : devices) {
             result[0] += d.getToken() + "\t" + d.getType() + "\n";
         }
-        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
+        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));
     }    
     
     /**
@@ -83,25 +79,23 @@ public class PdrController {
             @RequestParam(required=false) String ip,
             @RequestParam(required=false) String mso,
             @RequestParam(required=false) String since) {
+        
         PdrManager pdrMngr = new PdrManager();
-        NnUserManager userMngr = new NnUserManager();
-        NnDeviceManager deviceMngr = new NnDeviceManager();
         PlayerApiService pservice = new PlayerApiService();
         NnUser u = null;
         List<NnDevice> ds = new ArrayList<NnDevice>();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            brand = msoMngr.findNNMso();
+            brand = NNF.getMsoMngr().findNNMso();
         }
         NnDevice d = null;
         if (user != null) {
-            u = userMngr.findByToken(user, brand.getId());
+            u = NNF.getUserMngr().findByToken(user, brand.getId());
             if (u == null)
                 return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
         }
         if (device!= null) {
-            ds = deviceMngr.findByToken(device);
+            ds = NNF.getDeviceMngr().findByToken(device);
             if (ds.size() == 0)
                 return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.DEVICE_INVALID, null));
             d = ds.get(0);
@@ -168,15 +162,13 @@ public class PdrController {
         }
         String output = "";
         String email = "guest";
-        NnUserManager mngr = new NnUserManager();
-        MsoManager msoMngr = new MsoManager();
-        Mso brand = msoMngr.findByName(mso);
+        Mso brand = NNF.getMsoMngr().findByName(mso);
         if (brand == null) {
-            brand = msoMngr.findNNMso();
+            brand = NNF.getMsoMngr().findNNMso();
         }
         String nbsp = "&nbsp;&nbsp;&nbsp;";
         for (NnUserReport r : list) {
-            NnUser found = mngr.findByToken(r.getUserToken(), brand.getId());
+            NnUser found = NNF.getUserMngr().findByToken(r.getUserToken(), brand.getId());
             if (found != null)
                 email = found.getEmail();
             output += "<p>" +

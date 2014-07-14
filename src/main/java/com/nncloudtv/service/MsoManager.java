@@ -8,9 +8,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
+
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -24,18 +26,7 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
-    private MsoDao msoDao = new MsoDao();
-    protected MsoConfigManager configMngr;
-    
-    public MsoManager(MsoConfigManager configMngr, MsoDao msoDao) {
-        
-        this.configMngr = configMngr;
-        this.msoDao = msoDao;
-    }
-    
-    public MsoManager() {
-        configMngr = new MsoConfigManager();
-    }
+    private MsoDao dao = NNF.getMsoDao();
     
     public Mso findOneByName(String name) {
         if (name == null)
@@ -65,28 +56,36 @@ public class MsoManager {
             return null;
         }
         
-        Date now = new Date();        
-        if (mso.getCreateDate() == null)
+        Date now = new Date();
+        if (mso.getCreateDate() == null) {
+            
             mso.setCreateDate(now);
+        }
         mso.setUpdateDate(now);
-        msoDao.save(mso);
-        /*
-        if (mso.getType() == Mso.TYPE_NN)
-            this.processCache();
-            */
+        dao.save(mso);
+        resetCache(mso);
+        
         return mso;
     }
     
-    public void resetCache(String mso) {
-    	if (mso == null)
-    		return;
-        String key = "brandInfo(" + mso + ")";
-        String web = key + "(web)";
-        String ios = key + "(ios)";
-        String android = key + "(android)";
-        CacheFactory.delete(web);
-        CacheFactory.delete(ios);
-        CacheFactory.delete(android);
+    public void resetCache(Mso mso) {
+        
+        if (mso == null) { return; }
+        
+        String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_JSON);
+        String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+        String keyIosJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
+        String keyIosPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        String keyWebJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
+        String keyWebPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        
+        CacheFactory.delete(keyAndroidJson);
+        CacheFactory.delete(keyAndroidPlain);
+        CacheFactory.delete(keyIosJson);
+        CacheFactory.delete(keyIosPlain);
+        CacheFactory.delete(keyWebJson);
+        CacheFactory.delete(keyWebPlain);
+        
     }
     
     public Mso findNNMso() {
@@ -103,6 +102,9 @@ public class MsoManager {
     }
     
     private String composeBrandInfoStr(Mso mso, String os) {
+        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result += PlayerApiService.assembleKeyValue("name", mso.getName());
@@ -251,7 +253,7 @@ public class MsoManager {
         info.setLogoUrl(mso.getLogoUrl());
         info.setJingleUrl(mso.getJingleUrl());
         info.setPreferredLangCode(mso.getLang());
-        List<MsoConfig> list = configMngr.findByMso(mso);
+        List<MsoConfig> list = NNF.getConfigMngr().findByMso(mso);
         //config
         for (MsoConfig c : list) {
             System.out.println(c.getItem() + ";" + c.getValue());
@@ -288,7 +290,7 @@ public class MsoManager {
             }
             return os;
         }
-        ApiContext service = new ApiContext(req, this);
+        ApiContext service = new ApiContext(req);
         os = PlayerService.OS_WEB;
         if (service.isIos()) {
             os = PlayerService.OS_IOS;
@@ -334,13 +336,13 @@ public class MsoManager {
     }
             
     public List<Mso> findByType(short type) {
-        return msoDao.findByType(type);
+        return dao.findByType(type);
     }
     
     public Mso findByName(String name, boolean extend) {
         
         if (name == null) return null;
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         if (mso == null) return null;
         
         if (extend) {
@@ -354,14 +356,14 @@ public class MsoManager {
     
     private Mso populateMso(Mso mso) {
         
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
             mso.setSupportedRegion(null);
         } else {
             mso.setSupportedRegion(config.getValue());
         }
         
-        config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (config != null) {
             mso.setJingleUrl(config.getValue());
         }
@@ -369,9 +371,16 @@ public class MsoManager {
         return mso;
     }
     
+    public Mso findByIdOrName(String idStr) {
+        
+        if (idStr == null) { return null; }
+        
+        return NnStringUtil.isDigits(idStr) ? dao.findById(idStr) : dao.findByName(idStr);
+    }
+    
     public Mso findByName(String name) {
         if (name == null) {return null;}
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         return mso;
     }
     
@@ -388,20 +397,20 @@ public class MsoManager {
             log.info("memcache error");
         }        
         log.info("NOT get mso object from cache:" + name);
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         CacheFactory.set(cacheKey, mso);
         return mso;
     }
     
     public Mso findById(long id) {
-        return msoDao.findById(id);
+        return dao.findById(id);
     }
     
     /** rewrite method findById, populate supportedRegion information 
      * @param extend TODO*/
     public Mso findById(long id, boolean extend) {
         
-        Mso mso = msoDao.findById(id);
+        Mso mso = dao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
@@ -412,23 +421,23 @@ public class MsoManager {
     }
     
     public List<Mso> findAll() {
-        return msoDao.findAll();
+        return dao.findAll();
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord) {
-        return msoDao.list(page, limit, sidx, sord);
+        return dao.list(page, limit, sidx, sord);
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord, String filter) {
-        return msoDao.list(page, limit, sidx, sord, filter);
+        return dao.list(page, limit, sidx, sord, filter);
     }
     
     public int total() {
-        return msoDao.total();
+        return dao.total();
     }
     
     public int total(String filter) {
-        return msoDao.total(filter);
+        return dao.total(filter);
     }
     
     /** indicate which brands that channel can play on, means channel is in the brand's store */
@@ -454,7 +463,7 @@ public class MsoManager {
         List<Mso> msos = findByType(Mso.TYPE_MSO);
         for (Mso mso : msos) {
             
-            supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
+            supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
             if (supportedRegion == null) {
                 validMsos.add(mso); // mso support all region
             } else {
@@ -496,7 +505,7 @@ public class MsoManager {
         }
         
         // support region check
-        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion == null) {
             return true; // Mso's region support all sphere
         } else {

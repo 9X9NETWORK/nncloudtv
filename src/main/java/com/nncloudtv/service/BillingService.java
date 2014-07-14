@@ -16,12 +16,12 @@ import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
 import com.clearcommerce.ccxclientapi.CcApiRecord;
-import com.google.common.collect.Lists;
 import com.nncloudtv.exception.NnApiBadRequestException;
 import com.nncloudtv.exception.NnApiInternalErrorException;
 import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
@@ -35,17 +35,6 @@ import com.nncloudtv.web.json.cms.CreditCard;
 public class BillingService {
     
     protected static final Logger   log = Logger.getLogger(BillingService.class.getName());
-    
-    protected BillingOrderManager   orderMngr;
-    protected BillingProfileManager profileMngr;
-    protected BillingPackageManager packageMngr;
-    
-    public BillingService() {
-        
-        orderMngr = new BillingOrderManager();
-        profileMngr = new BillingProfileManager();
-        packageMngr = new BillingPackageManager();
-    }
     
     public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException,
             NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {
@@ -107,11 +96,11 @@ public class BillingService {
         for (BillingOrder order : orders) {
             ids.add(order.getId());
         }
-        orders = orderMngr.findByIds(ids);
+        orders = NNF.getOrderMngr().findByIds(ids);
         ids.clear();
         if (orders.isEmpty())
             throw new NnDataIntegrityException("can not find those order IDs - " + StringUtils.join(ids, ','));
-        BillingProfile profile = profileMngr.findById(orders.get(0).getProfileId());
+        BillingProfile profile = NNF.getBillingProfileMngr().findById(orders.get(0).getProfileId());
         if (profile == null)
             throw new NnDataIntegrityException("can not find billingProfile " + orders.get(0).getId());
         for (BillingOrder order : orders) {
@@ -120,7 +109,7 @@ public class BillingService {
             ids.add(order.getPackageId());
         }
         List<BillingPackage> packages = new ArrayList<BillingPackage>();
-        packages = Lists.reverse(packageMngr.findByIds(ids));
+        packages = NNF.getPackageMngr().findByIds(ids);
         if (packages.isEmpty()) {
             log.warning("no packages was found");
             return;

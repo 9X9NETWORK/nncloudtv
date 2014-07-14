@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoConfigDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
@@ -307,9 +308,7 @@ public class MsoConfigManager {
         }
         
         // populate System's CategoryIds
-        MsoManager msoMngr = new MsoManager();
-        SysTagManager sysTagMngr = new SysTagManager();
-        List<SysTag> systemCategories = sysTagMngr.findByMsoIdAndType(msoMngr.findNNMso().getId(), SysTag.TYPE_CATEGORY);
+        List<SysTag> systemCategories = NNF.getSysTagMngr().findByMsoIdAndType(NNF.getMsoMngr().findNNMso().getId(), SysTag.TYPE_CATEGORY);
         Map<Long, Long> systemCategoryIds = new TreeMap<Long, Long>();
         for (SysTag systemCategory : systemCategories) {
             systemCategoryIds.put(systemCategory.getId(), systemCategory.getId());
