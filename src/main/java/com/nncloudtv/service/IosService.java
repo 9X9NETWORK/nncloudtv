@@ -120,7 +120,7 @@ public class IosService {
                             youtubeId,
                             String.valueOf(c.getUpdateDate().getTime()),
                             String.valueOf(c.getSorting()),
-                            c.getPiwik(),
+                            "", // piwik
                             String.valueOf(c.getRecentlyWatchedProgram()),
                             c.getOriName(),
                             String.valueOf(c.getCntSubscribe()),
