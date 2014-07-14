@@ -356,7 +356,7 @@ public class WatchDogController {
     @RequestMapping("brandCache")
     public ResponseEntity<String> brandCache(@RequestParam(value="mso", required=false)String mso) {
         
-        NNF.getMsoMngr().resetCache(mso);
+        NNF.getMsoMngr().resetCache(NNF.getMsoMngr().findByIdOrName(mso));
         return NnNetUtil.textReturn("cache delete:" + mso);
     }   
     
