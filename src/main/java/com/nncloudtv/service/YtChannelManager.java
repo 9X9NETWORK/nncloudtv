@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import com.nncloudtv.dao.YtChannelDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.NnChannel;
@@ -24,7 +25,7 @@ public class YtChannelManager {
     
 	public NnChannel convert(String ytId) {
 		YtChannel yt = this.findById(ytId);
-		NnChannelManager chMngr = new NnChannelManager();
+		NnChannelManager chMngr = NNF.getChannelMngr();
 		NnChannel c = chMngr.findBySourceUrl(yt.getSourceUrl());
 		if (c != null) {
 			log.info("pool channel already existing in nnchannel. ytId:" + yt.getId() + ";nnId:" + c.getId());

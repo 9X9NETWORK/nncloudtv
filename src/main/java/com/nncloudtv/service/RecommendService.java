@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.DeepDao;
-import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.ShallowDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Deep;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
@@ -20,8 +20,7 @@ public class RecommendService {
     
     private ShallowDao shallowDao = new ShallowDao();    
     private DeepDao deepDao = new DeepDao();
-    private NnChannelDao chDao = new NnChannelDao();
-
+    
     /*
      * for GUESTs and FRESHMAN USERs, SHALLOW RECOMMENDATION,
      * but for USERs, DEEP RECOMMENDATIONS
@@ -38,7 +37,7 @@ public class RecommendService {
             log.info("maylike: guest user find from shallow");
             channels = this.findShallowChannels(cid);
         } else {
-            NnUser user = new NnUserManager().findByToken(userToken, msoId);
+            NnUser user = NNF.getUserMngr().findByToken(userToken, msoId);
             if (user != null) {
                 System.out.println("what the user u find:" + user.getId());
                 channels = this.findDeepChannels(user);
@@ -71,7 +70,7 @@ public class RecommendService {
             log.info("recommend: guest user find from billboard");
             channels = this.findBillboardPool(10, lang);
         } else {
-            NnUser user = new NnUserManager().findByToken(userToken, msoId);
+            NnUser user = NNF.getUserMngr().findByToken(userToken, msoId);
             if (user != null) {
                 Deep deep = deepDao.findByUser(user.getShard(), user.getId());
                 if (deep != null) {
@@ -92,7 +91,7 @@ public class RecommendService {
     
     //randomly pick from billboard, based on language
     public List<NnChannel> findBillboardPool(int limit, String lang) {
-        List<NnChannel> channels = chDao.findSpecial(NnChannel.POOL_BILLBOARD, lang, limit);
+        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_BILLBOARD, lang, limit);
         List<NnChannel> recommended = new ArrayList<NnChannel>();
         int i=0;
         for (NnChannel c : channels) {
@@ -106,7 +105,7 @@ public class RecommendService {
 
     //randomly pick from fdm    
     public List<NnChannel> findFdm(String lang, int limit) {
-        List<NnChannel> channels = chDao.findSpecial(NnChannel.POOL_FDM, lang, limit);
+        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_FDM, lang, limit);
         List<NnChannel> recommended = new ArrayList<NnChannel>();
         int i=0;
         for (NnChannel c : channels) {
@@ -120,7 +119,6 @@ public class RecommendService {
     
     public List<NnChannel> findShallowChannels(long chId) {
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager chMngr = new NnChannelManager();
         Shallow shallow = shallowDao.findByChannelId(chId);
         if (shallow == null)
             return channels; //need to come up something
@@ -128,7 +126,7 @@ public class RecommendService {
         String list = shallow.getRecommendIds();
         String[] chs = list.split(",");
         for (String ch : chs) {
-            NnChannel c = chMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null)
                 channels.add(c);                        
         }
@@ -137,7 +135,6 @@ public class RecommendService {
     
     public List<NnChannel> findDeepChannels(NnUser user) {
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager chMngr = new NnChannelManager();
         Deep deep = deepDao.findByUser(user.getShard(), user.getId());
         if (deep == null)
             return channels; //need to come up something
@@ -145,7 +142,7 @@ public class RecommendService {
         String list = deep.getRecommendIds();
         String[] chs = list.split(",");
         for (String ch : chs) {
-            NnChannel c = chMngr.findById(Long.parseLong(ch));
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null)
                 channels.add(c);                        
         }

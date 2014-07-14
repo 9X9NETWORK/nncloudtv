@@ -23,21 +23,15 @@ import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnDeviceManager;
-import com.nncloudtv.service.NnDeviceNotificationManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.YtProgramManager;
 
 @Service
 public class GCMLib {
     
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
-    private static final Executor threadPool = Executors.newFixedThreadPool(5);
-    private static final int MULTICAST_SIZE = 1000;
     
-    private NnDeviceManager deviceMngr = new NnDeviceManager();
-    private NnDeviceNotificationManager notificationMngr = new NnDeviceNotificationManager();
+    private static final Executor threadPool = Executors.newFixedThreadPool(5);
+    private static final int MULTICAST_SIZE  = 1000;
     
     public void doPost(MsoNotification msoNotification, String apiKey) {
         
@@ -54,7 +48,8 @@ public class GCMLib {
             return;
         }
         
-        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
+        List<NnDevice> fetchedDevices = NNF.getDeviceMngr()
+                                           .findByMsoAndType(msoNotification.getMsoId(), NnDevice.TYPE_GCM);
         // used to handle NnDevice if send failed event occur
         Map<String, NnDevice> deviceMap = new HashMap<String, NnDevice>();
         List<String> devices = new ArrayList<String>();
@@ -72,7 +67,7 @@ public class GCMLib {
                 notification.setLogo(msg.getLogo());
                 notifications.add(notification);
             }
-            notificationMngr.save(notifications);
+            NNF.getDeviceNotiMngr().save(notifications);
         }
         
         // send a multicast message using JSON
@@ -157,7 +152,7 @@ public class GCMLib {
                         }
                     }
                 }
-                deviceMngr.delete(deleteDevices);
+                NNF.getDeviceMngr().delete(deleteDevices);
             }
         });
     }
@@ -169,7 +164,7 @@ public class GCMLib {
             return ;
         }
         
-        List<NnDevice> fetchedDevices = deviceMngr.findByMsoAndType(notification.getMsoId(), NnDevice.TYPE_GCM);
+        List<NnDevice> fetchedDevices = NNF.getDeviceMngr().findByMsoAndType(notification.getMsoId(), NnDevice.TYPE_GCM);
         List<NnDevice> targetDevices = new ArrayList<NnDevice>();
         for (NnDevice device : fetchedDevices) {
             if (regId.equals(device.getToken()) || canonicalRegId.equals(device.getToken())) {
@@ -181,12 +176,12 @@ public class GCMLib {
             NnDevice device = targetDevices.get(0);
             if (canonicalRegId.equals(device.getToken()) == false) {
                 device.setToken(canonicalRegId);
-                deviceMngr.save(device);
+                NNF.getDeviceMngr().save(device);
             }
             
             if (targetDevices.size() > 1) {
                 List<NnDevice> deleteDevices = targetDevices.subList(1, targetDevices.size() - 1);
-                deviceMngr.delete(deleteDevices);
+                NNF.getDeviceMngr().delete(deleteDevices);
             }
         }
     }
@@ -197,7 +192,6 @@ public class GCMLib {
             return null;
         }
         YtProgramManager ytMngr = new YtProgramManager();
-        NnEpisodeManager epMngr = new NnEpisodeManager();
         NnDeviceNotification message = new NnDeviceNotification(0, msoNotification.getMessage());
         
         message.setCreateDate(new Date());
@@ -215,8 +209,7 @@ public class GCMLib {
             
             if (splits[1].matches("^[0-9]+$")) {
                 
-                NnChannelManager chMngr = new NnChannelManager();
-                NnChannel channel = chMngr.findById(Long.valueOf(splits[1]));
+                NnChannel channel = NNF.getChannelMngr().findById(Long.valueOf(splits[1]));
                 if (channel == null)
                     return message;
                 String logo = null;
@@ -239,7 +232,7 @@ public class GCMLib {
             if (episodeId == null) {
                 return message;
             }
-            NnEpisode episode = epMngr.findById(episodeId);
+            NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
             if (episode == null) {
                 return message;
             }

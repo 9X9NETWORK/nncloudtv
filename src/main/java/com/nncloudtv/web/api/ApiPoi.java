@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -25,8 +26,6 @@ import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PoiCampaignManager;
@@ -44,17 +43,15 @@ public class ApiPoi extends ApiGeneric {
     NnProgramManager programMngr;
     PoiCampaignManager campaignMngr;
     PoiPointManager pointMngr;
-    NnChannelManager channelMngr;
     PoiEventManager eventMngr;
     
     @Autowired
     public ApiPoi(NnUserManager userMngr, NnProgramManager programMngr, PoiCampaignManager campaignMngr,
-                    PoiPointManager pointMngr, NnChannelManager channelMngr, PoiEventManager eventMngr) {
+                    PoiPointManager pointMngr, PoiEventManager eventMngr) {
         this.userMngr = userMngr;
         this.programMngr = programMngr;
         this.campaignMngr = campaignMngr;
         this.pointMngr = pointMngr;
-        this.channelMngr = channelMngr;
         this.eventMngr = eventMngr;
     }
     
@@ -75,7 +72,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -125,7 +122,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -826,7 +823,7 @@ public class ApiPoi extends ApiGeneric {
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        NnChannel channel = channelMngr.findById(program.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if (channel == null) {
             // ownership crashed, it is orphan object
             forbidden(resp);
@@ -1119,7 +1116,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        Mso brand = new MsoManager().findOneByName(mso);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = userMngr.findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
@@ -1470,7 +1467,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1507,7 +1504,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));

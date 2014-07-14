@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.YtProgram;
 
@@ -37,9 +38,8 @@ public class YtProgramManager {
         }    	    	
         String result = "";
         List<YtProgram> programs = dao.findByChannels(channels);
-        NnProgramManager programMngr = new NnProgramManager();
         for (YtProgram p : programs) {
-            result += (String)programMngr.composeEachYtProgramInfo(c, p, PlayerApiService.FORMAT_PLAIN);
+            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(c, p, PlayerApiService.FORMAT_PLAIN);
         }
         CacheFactory.set(cacheKey, result);
         return result;
@@ -58,9 +58,8 @@ public class YtProgramManager {
         List<NnChannel> channels = new ArrayList<NnChannel>();
         channels.add(c);
         List<YtProgram> programs = dao.findByChannels(channels);
-        NnProgramManager programMngr = new NnProgramManager();
         for (YtProgram p : programs) {
-            result += (String)programMngr.composeEachYtProgramInfo(c, p, PlayerApiService.FORMAT_PLAIN);
+            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(c, p, PlayerApiService.FORMAT_PLAIN);
         }
         CacheFactory.set(cacheKey, result);
         return result;

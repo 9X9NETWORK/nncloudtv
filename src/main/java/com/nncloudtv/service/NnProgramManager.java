@@ -12,13 +12,13 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -43,21 +43,6 @@ public class NnProgramManager {
     
     private NnProgramDao dao = new NnProgramDao();
     private YtProgramDao ytDao = new YtProgramDao();
-    private NnChannelManager chMngr;
-    private NnEpisodeManager epMngr;
-    
-    public NnProgramManager() {
-        
-        this.chMngr = new NnChannelManager();
-        this.epMngr = new NnEpisodeManager();
-    }
-    
-    @Autowired
-    public NnProgramManager(NnChannelManager chMngr, NnEpisodeManager epMngr) {
-        
-        this.chMngr = chMngr;
-        this.epMngr = epMngr;
-    }
     
     public NnProgram create(NnEpisode episode, NnProgram program) {
         
@@ -68,7 +53,6 @@ public class NnProgramManager {
             reorderEpisodePrograms(episode.getId());
         }
         
-        // episode.setDuration(0); // set 0 to notify episode get operation to recalculate duration.                
         return program;
     }
     
@@ -84,13 +68,11 @@ public class NnProgramManager {
         //set channel count
         int count = channel.getCntEpisode() + 1;
         channel.setCntEpisode(count);
-        NnChannelManager channelMngr = new NnChannelManager();
-        channelMngr.save(channel);
-
+        NNF.getChannelMngr().save(channel);
+        
         //if the channel's original programCount is zero, its count will not be in the category, adding it now.
         if (count == 1) {
-            SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-            displayMngr.addChannelCounter(channel);
+            NNF.getDisplayMngr().addChannelCounter(channel);
         }
     } 
 
@@ -257,7 +239,7 @@ public class NnProgramManager {
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
-                List<NnEpisode> episodes = new NnEpisodeManager().findPlayerLatestEpisodes(c.getId(), c.getSorting());                
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(c.getId(), c.getSorting());                
                 if (episodes.size() > 0) {
                     log.info("find latest episode id:" + episodes.get(0).getId());
                     List<NnProgram> programs = this.findByEpisodeId(episodes.get(0).getId());
@@ -442,10 +424,9 @@ public class NnProgramManager {
     
     public List<NnProgram> getUserFavorites(NnUser user) {
     
-        NnChannelManager channelMngr = new NnChannelManager();
         List<NnProgram> empty = new ArrayList<NnProgram>();
         
-        List<NnChannel> channelFavorites = channelMngr.findByUser(user, 0, false);
+        List<NnChannel> channelFavorites = NNF.getChannelMngr().findByUser(user, 0, false);
         
         for (NnChannel channel : channelFavorites) {
             
@@ -469,7 +450,7 @@ public class NnProgramManager {
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
     public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format, short time, Mso mso) {
-        NnChannel c = new NnChannelManager().findById(channelId);
+        NnChannel c = NNF.getChannelMngr().findById(channelId);
         if (c == null)
             return "";
         //don't cache dayparting for now
@@ -502,7 +483,7 @@ public class NnProgramManager {
     //find "good" programs, to find nnchannel type of programs, use findPlayerNnProgramsByChannel
     public List<NnProgram> findPlayerProgramsByChannel(long channelId) {
         List<NnProgram> programs = new ArrayList<NnProgram>();
-        NnChannel c = chMngr.findById(channelId);
+        NnChannel c = NNF.getChannelMngr().findById(channelId);
         if (c == null)
             return programs;
         programs = dao.findPlayerProgramsByChannel(c); //sort by seq and subSeq
@@ -522,7 +503,7 @@ public class NnProgramManager {
         if (storageId == null)
             return null;
         storageId = storageId.replace("e", "");
-        NnEpisode episode = new NnEpisodeManager().findById(Long.parseLong(storageId));
+        NnEpisode episode = NNF.getEpisodeMngr().findById(Long.parseLong(storageId));
         if (episode == null)
             return null;
         if (episode.isPublic() == true) { //TODO and some other conditions?
@@ -546,20 +527,18 @@ public class NnProgramManager {
     //based on channel type, assemble programInfo string
     public Object assembleProgramInfo(NnChannel c, short format, int start, int end, short time, Mso mso) {
         if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED){
-            List<NnEpisode> episodes = epMngr.findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(c.getId());
             return this.composeNnProgramInfo(c, episodes, programs, format);
         } else if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {        	
-            SysTagDisplayManager displayMngr = new SysTagDisplayManager();
-            SysTagManager systagMngr = new SysTagManager();
-            SysTagDisplay dayparting = displayMngr.findDayparting(time, c.getLang(), mso.getId());
+            SysTagDisplay dayparting = NNF.getDisplayMngr().findDayparting(time, c.getLang(), mso.getId());
             List<YtProgram> ytprograms = new ArrayList<YtProgram>();
             if (dayparting != null) {
                 log.info("dayparting:" + dayparting.getName());
                 long msoId = 0;
                 if (mso != null)
                     msoId = mso.getId();
-                List<NnChannel> daypartingChannels = systagMngr.findDaypartingChannelsById(dayparting.getSystagId(), c.getLang(), msoId, time);
+                List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), c.getLang(), msoId, time);
                 return new YtProgramManager().findByDaypartingChannels(daypartingChannels, c, mso.getId(), time, c.getLang());
                 //ytprograms = new YtProgramDao().findByChannels(daypartingChannels);
             }
@@ -623,8 +602,6 @@ public class NnProgramManager {
     public Object composeProgramInfo(NnChannel c, List<NnProgram> programs, short format) {
         if (programs.size() == 0)
             return "";        
-        //NnProgram original = programs.get(0);
-        //NnChannel c = new NnChannelManager().findById(original.getChannelId());
         String result = "";
         List<ProgramInfo> jsonResult = new ArrayList<ProgramInfo>();
         if (c == null) return null;

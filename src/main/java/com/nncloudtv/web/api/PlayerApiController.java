@@ -22,15 +22,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FacebookMe;
@@ -139,17 +138,6 @@ public class PlayerApiController {
     protected static final Logger log = Logger.getLogger(PlayerApiController.class.getName());
     
     private Locale locale = Locale.ENGLISH;
-    private MsoManager msoMngr;
-    
-    public PlayerApiController() {
-        
-        this.msoMngr = new MsoManager();
-    }
-    
-    public PlayerApiController(MsoManager msoMngr) {
-        
-        this.msoMngr = msoMngr;
-    }
     
     /**
      * To be ignored  
@@ -444,7 +432,7 @@ public class PlayerApiController {
             return "empty\n";
             */
         }
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
         ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
         return json;
@@ -484,19 +472,6 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }                        
             boolean flatten = Boolean.parseBoolean(isFlatten);
-            /*
-            if (playerApiService.getVersion() < 32) {
-                log.info("category:" + category);
-                String msoName = req.getParameter("mso");
-                MsoManager msoMngr = new MsoManager();
-                Mso brand = msoMngr.findByName(msoName);
-                if (brand == null) {
-                   brand = msoMngr.findNNMso();
-                }                
-                return new IosService().category(category, lang, flatten, brand ); 
-            }
-            */
-            
             output = playerApiService.category(category, lang, flatten);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -652,16 +627,6 @@ public class PlayerApiController {
             NnLogUtil.logThrowable(t);
         }
         return playerApiService.response(output);      
-        
-        /*
-        String msoName = req.getParameter("mso");
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.findByName(msoName);
-        if (mso == null) {
-           mso = msoMngr.findNNMso();
-        }
-        return new IosService().setInfo(id, beautifulUrl, mso);        
-        */
     }
 
     /** 
@@ -2557,7 +2522,7 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        ApiContext context = new ApiContext(req, msoMngr);
+        ApiContext context = new ApiContext(req);
         String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("uri:" + referrer);
@@ -2568,7 +2533,7 @@ public class PlayerApiController {
         
         String fbLoginUri = appDomain + "/fb/login";
         String mso = req.getParameter("mso");
-        Mso brand = msoMngr.findOneByName(mso);   
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);   
         String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, brand);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);
@@ -2600,13 +2565,13 @@ public class PlayerApiController {
     @RequestMapping(value="episodeUpdate")
     public @ResponseBody Object episodeUpdate(
             @RequestParam(value="epId", required=false) long epId ) {
-        NnEpisodeManager mngr = new NnEpisodeManager();
-        NnEpisode e = new NnEpisodeManager().findById(epId);
+        
+        NnEpisode e = NNF.getEpisodeMngr().findById(epId);
         if (e != null) {
-            int duration = mngr.calculateEpisodeDuration(e);
+            int duration = NNF.getEpisodeMngr().calculateEpisodeDuration(e);
             log.info("new duration:" + duration);
             e.setDuration(duration);
-            mngr.save(e);
+            NNF.getEpisodeMngr().save(e);
         }
         return "OK";                
     }

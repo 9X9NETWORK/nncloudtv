@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
@@ -25,7 +26,7 @@ public class NnEpisodeManager {
     
     protected static final Logger log = Logger.getLogger(NnEpisodeManager.class.getName());
     
-    private NnEpisodeDao dao = new NnEpisodeDao();
+    private NnEpisodeDao dao = NNF.getEpisodeDao();
     
     public NnEpisode findById(long id) {
         return dao.findById(id);
@@ -37,7 +38,7 @@ public class NnEpisodeManager {
         
         episode.setUpdateDate(now);
         
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         return dao.save(episode);
         
@@ -56,11 +57,9 @@ public class NnEpisodeManager {
             }
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
         log.info("channel count = " + channelIds.size());
         for (Long channelId : channelIds) {
-            programMngr.resetCache(channelId);
+            NNF.getProgramMngr().resetCache(channelId);
         }
         
         return dao.saveAll(episodes);
@@ -103,9 +102,7 @@ public class NnEpisodeManager {
             return 0;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         
         return programs.size();
     }
@@ -175,12 +172,11 @@ public class NnEpisodeManager {
     
     public void delete(NnEpisode episode) {
     
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         // delete programs
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
-        programMngr.delete(programs);
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
+        NNF.getProgramMngr().delete(programs);
         
         // TODO delete poiPoints at episode level
         
@@ -203,9 +199,8 @@ public class NnEpisodeManager {
     
     public int calculateEpisodeDuration(NnEpisode episode) {
     
-        NnProgramManager programMngr = new NnProgramManager();
         TitleCardManager titleCardMngr = new TitleCardManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         List<TitleCard> titleCards = titleCardMngr.findByEpisodeId(episode.getId());
         
         int totalDuration = 0;
@@ -229,19 +224,17 @@ public class NnEpisodeManager {
         fbPost.setLink(url);
         log.info("share link: " + url);
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if (channel == null) {
             return ;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(channel.getUserId(), 1);
+        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
         if (user == null) {
             return ;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;

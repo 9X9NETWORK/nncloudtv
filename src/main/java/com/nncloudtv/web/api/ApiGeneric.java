@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.nncloudtv.lib.CookieHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
@@ -18,9 +19,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
@@ -168,8 +166,7 @@ public class ApiGeneric {
 	    if (token == null) {
             return null;
         }
-	    NnUserManager userMngr = new NnUserManager();
-	    Long userId = userMngr.findUserIdByToken(token);
+	    Long userId = NNF.getUserMngr().findUserIdByToken(token);
 	    return userId;
 	}
 	
@@ -212,7 +209,6 @@ public class ApiGeneric {
     public User userResponse(NnUser user) {
         
         User userResp = new User();
-        MsoManager msoMngr = new MsoManager();
         
         userResp.setId(user.getId());
         userResp.setCreateDate(user.getCreateDate());
@@ -238,7 +234,7 @@ public class ApiGeneric {
             userResp.setPriv(user.getProfile().getPriv());
         }
         
-        Mso mso = msoMngr.findById(user.getProfile().getMsoId());
+        Mso mso = NNF.getMsoMngr().findById(user.getProfile().getMsoId());
         if (mso != null) {
             userResp.setMsoName(mso.getName());
         }
@@ -392,9 +388,7 @@ public class ApiGeneric {
             return false;
         }
         
-        NnUserProfileManager userProfileMngr = new NnUserProfileManager();
-        
-        NnUserProfile profile = userProfileMngr.findByUserIdAndMsoId(userId, msoId);
+        NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
         if (profile == null) {
             profile = new NnUserProfile();
             profile.setPriv("000111");

@@ -16,11 +16,11 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.lib.AuthLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -39,21 +39,8 @@ public class NnUserManager {
     
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
     
-    protected NnUserPrefManager prefMngr;
     private NnUserDao dao = new NnUserDao();
-    private NnUserProfileManager profileMngr = new NnUserProfileManager();
     public static short MSO_DEFAULT = 1; 
-    
-    public NnUserManager() {
-        
-        this.prefMngr = new NnUserPrefManager();
-    }
-    
-    @Autowired
-    public NnUserManager(NnUserPrefManager prefMngr) {
-        
-        this.prefMngr = prefMngr;
-    }
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {
@@ -76,7 +63,7 @@ public class NnUserManager {
         }                        
         dao.save(user);
         profile.setUserId(user.getId());
-        profileMngr.save(user, profile);
+        NNF.getProfileMngr().save(user, profile);
         resetChannelCache(user);        
         return NnStatusCode.SUCCESS;
     }
@@ -109,7 +96,7 @@ public class NnUserManager {
         profile.setProfileUrl(name);
         profile.setImageUrl(imageUrl);
         profile.setUserId(user.getId());
-        profileMngr.save(user, user.getProfile());
+        NNF.getProfileMngr().save(user, user.getProfile());
         log.info("fake youtube user created:" + email);
         return user;
     }
@@ -241,7 +228,7 @@ public class NnUserManager {
         user.setEmail(user.getEmail().toLowerCase());
         user.setUpdateDate(new Date());
         NnUserProfile profile = user.getProfile();
-        profile = profileMngr.save(user, profile);
+        profile = NNF.getProfileMngr().save(user, profile);
         resetChannelCache(user);
         long msoId = user.getMsoId();
         user = dao.save(user);
@@ -251,7 +238,7 @@ public class NnUserManager {
     }
 
     public void resetChannelCache(NnUser user) {
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         List<NnChannel> channels = chMngr.findByUser(user, 0, false);
         chMngr.resetCache(channels);
     }
@@ -274,7 +261,7 @@ public class NnUserManager {
     private NnUser setUserProfile(NnUser user) {
         if (user != null) {
             log.info("user mso id:" + user.getMsoId());
-            NnUserProfile profile = new NnUserProfileManager().findByUser(user);
+            NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
             if (profile == null)
                 profile = new NnUserProfile(user.getId(), user.getMsoId());
             user.setProfile(profile);
@@ -314,8 +301,8 @@ public class NnUserManager {
     }
      
     public void subscibeDefaultChannels(NnUser user) {
-        NnChannelManager channelMngr = new NnChannelManager();        
-        List<NnChannel> channels = channelMngr.findMsoDefaultChannels(user.getMsoId(), false);    
+        
+        List<NnChannel> channels = NNF.getChannelMngr().findMsoDefaultChannels(user.getMsoId(), false);    
         NnUserSubscribeManager subManager = new NnUserSubscribeManager();
         for (NnChannel c : channels) {
             subManager.subscribeChannel(user, c);
@@ -431,7 +418,7 @@ public class NnUserManager {
     public String composeCuratorInfo(List<NnUser> users, boolean chCntLimit, boolean isAllChannel, HttpServletRequest req, int version) {
         log.info("looking for all channels of a curator?" + isAllChannel);
         String result = "";
-        NnChannelManager chMngr = new NnChannelManager();
+        NnChannelManager chMngr = NNF.getChannelMngr();
         List<NnChannel> curatorChannels = new ArrayList<NnChannel>();
         for (NnUser u : users) {
             List<NnChannel> channels = new ArrayList<NnChannel>();
@@ -550,8 +537,7 @@ public class NnUserManager {
                 json.setCurator(curator);
                 json.setCreated(Boolean.parseBoolean(created));
                 json.setFbUser(Boolean.parseBoolean(fbUser));
-	            NnUserPrefManager prefMngr = new NnUserPrefManager();
-	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
 	            for (NnUserPref pref : list) {
 	                json.getPrefs().add(pref.getItem() + pref.getValue());
 	            }
@@ -566,7 +552,7 @@ public class NnUserManager {
 	            output += PlayerApiService.assembleKeyValue("curator", curator);
                 output += PlayerApiService.assembleKeyValue("created",created);
 	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
-	            List<NnUserPref> list = prefMngr.findByUser(user);
+	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
 	            for (NnUserPref pref : list) {
 	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
 	            }
