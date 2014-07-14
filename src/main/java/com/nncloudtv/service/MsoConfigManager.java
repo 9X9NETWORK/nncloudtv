@@ -192,11 +192,17 @@ public class MsoConfigManager {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.YOUTUBE_ID_ANDROID;
         }
-        if (function.contains("ad")) {
+        if (function.equals("ad")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.AD_ANDROID;
             if (os.equals(PlayerService.OS_IOS))
             	return MsoConfig.AD_IOS;
+        }
+        if (function.contains("admobkey")) {
+            if (os.equals(PlayerService.OS_ANDROID))
+                return MsoConfig.ADMOBKEY_ANDROID;
+            if (os.equals(PlayerService.OS_IOS))
+            	return MsoConfig.ADMOBKEY_IOS;        	
         }
         return null;
     }
