@@ -200,6 +200,13 @@ public class MsoManager {
                 ad = adConfig.getValue();
             result += PlayerApiService.assembleKeyValue("ad", ad);
         }
+        String admobkeyKeyName = configMngr.getKeyNameByOs(os, "admobkey");
+        if (admobkeyKeyName != null) {
+            MsoConfig admobKeyConfig = configMngr.findByMsoAndItem(mso, admobkeyKeyName);
+            if (admobKeyConfig != null) { 
+                result += PlayerApiService.assembleKeyValue("admob-key", admobKeyConfig.getValue());
+            }
+        }
 
         MsoConfig audioConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AUDIO_BACKGROUND);
         String audio = "off";
