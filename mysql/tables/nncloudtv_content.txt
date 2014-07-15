@@ -5,6 +5,7 @@ counter_shard
 mso
 mso_config
 mso_notification
+mso_promotion
 nnchannel
 nnchannel_pref
 nndevice

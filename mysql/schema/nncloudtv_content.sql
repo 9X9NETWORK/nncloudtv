@@ -92,29 +92,6 @@ CREATE TABLE `counter_shard` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `mso`
---
-
-DROP TABLE IF EXISTS `mso`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `mso` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `contactEmail` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `createDate` datetime DEFAULT NULL,
-  `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `jingleUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `logoUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `lang` varchar(5) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `type` smallint(6) NOT NULL,
-  `updateDate` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `mso_config`
 --
 
@@ -210,31 +187,6 @@ CREATE TABLE `nndevice` (
   PRIMARY KEY (`id`),
   KEY `nndevice_msoId` (`msoId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=653833 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `nnepisode`
---
-
-DROP TABLE IF EXISTS `nnepisode`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `nnepisode` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `imageUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
-  `channelId` bigint(20) DEFAULT '0',
-  `adId` bigint(20) DEFAULT '0',
-  `publishDate` timestamp NULL DEFAULT NULL,
-  `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `isPublic` bit(1) DEFAULT b'0',
-  `duration` int(11) DEFAULT '0',
-  `scheduleDate` datetime DEFAULT NULL,
-  `seq` int(11) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `nnepisode_channelId` (`channelId`)
-) ENGINE=InnoDB AUTO_INCREMENT=468896 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -625,3 +577,155 @@ CREATE TABLE `nndevice_notification` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+-- MySQL dump 10.13  Distrib 5.5.22, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: nncloudtv_content
+-- ------------------------------------------------------
+-- Server version	5.5.22-0ubuntu1-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `mso`
+--
+
+DROP TABLE IF EXISTS `mso`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mso` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `contactEmail` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `createDate` datetime DEFAULT NULL,
+  `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `jingleUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `logoUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `lang` varchar(5) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `type` smallint(6) NOT NULL,
+  `updateDate` datetime DEFAULT NULL,
+  `slogan` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `shortintro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-07-15  6:28:23
+-- MySQL dump 10.13  Distrib 5.5.22, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: nncloudtv_content
+-- ------------------------------------------------------
+-- Server version	5.5.22-0ubuntu1-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `mso_promotion`
+--
+
+DROP TABLE IF EXISTS `mso_promotion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mso_promotion` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `createdate` datetime DEFAULT NULL,
+  `link` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `logourl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `msoid` bigint(20) NOT NULL,
+  `seq` smallint(6) NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `type` smallint(6) NOT NULL,
+  `updatedate` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-07-15  6:29:03
+-- MySQL dump 10.13  Distrib 5.5.22, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: nncloudtv_content
+-- ------------------------------------------------------
+-- Server version	5.5.22-0ubuntu1-log
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `nnepisode`
+--
+
+DROP TABLE IF EXISTS `nnepisode`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `nnepisode` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `imageUrl` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `channelId` bigint(20) DEFAULT '0',
+  `storageId` bigint(20) DEFAULT NULL,
+  `publishDate` timestamp NULL DEFAULT NULL,
+  `updateDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `isPublic` bit(1) DEFAULT b'0',
+  `duration` int(11) DEFAULT '0',
+  `scheduleDate` datetime DEFAULT NULL,
+  `seq` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `nnepisode_channelId` (`channelId`)
+) ENGINE=InnoDB AUTO_INCREMENT=520207 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2014-07-15  6:53:41
