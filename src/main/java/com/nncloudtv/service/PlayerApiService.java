@@ -3164,13 +3164,11 @@ public class PlayerApiService {
             return this.assembleMsgs((Integer)map.get("s"), null);
         }
         NnUser user = (NnUser) map.get("u");
-        PoiPointManager poiMngr = new PoiPointManager();
         long lPoiId = Long.parseLong(poiId);
-        Poi poi = poiMngr.findPoiById(lPoiId);
+        Poi poi = NNF.getPoiPointMngr().findPoiById(lPoiId);
         if (poi == null)
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid
-        PoiEventManager eventMngr = new PoiEventManager();
-        PoiEvent event = eventMngr.findByPoi(lPoiId);
+        PoiEvent event = NNF.getPoiEventMngr().findByPoi(lPoiId);
         if (event == null) {
             log.info("event invalid");
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid

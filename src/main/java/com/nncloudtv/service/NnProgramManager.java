@@ -141,10 +141,9 @@ public class NnProgramManager {
         titleCardMngr.delete(titleCards);
         
         // delete poiPoints at program level
-        PoiPointManager pointMngr = new PoiPointManager();
-        List<PoiPoint> points = pointMngr.findByProgram(program.getId());
+        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
         if (points != null && points.size() > 0) {
-            pointMngr.delete(points);
+            NNF.getPoiPointMngr().delete(points);
         }
         
         long cId = program.getChannelId();
@@ -162,7 +161,6 @@ public class NnProgramManager {
         TitleCardManager titlecardMngr = new TitleCardManager();
         List<TitleCard> titlecards = null;
         List<TitleCard> titlecardDeleteList = new ArrayList<TitleCard>();
-        PoiPointManager pointMngr = new PoiPointManager();
         List<PoiPoint> points = null;
         List<PoiPoint> pointDeleteList = new ArrayList<PoiPoint>();
         for (NnProgram program : programs) { // TODO : sql in loop is bad
@@ -174,13 +172,13 @@ public class NnProgramManager {
                 titlecardDeleteList.addAll(titlecards);
             }
             
-            points = pointMngr.findByProgram(program.getId());
+            points = NNF.getPoiPointMngr().findByProgram(program.getId());
             if (points != null && points.size() > 0) {
                 pointDeleteList.addAll(points);
             }
         }
         titlecardMngr.delete(titlecardDeleteList);
-        pointMngr.delete(pointDeleteList);
+        NNF.getPoiPointMngr().delete(pointDeleteList);
         
         List<Long> channelIds = new ArrayList<Long>();
         
@@ -693,10 +691,8 @@ public class NnProgramManager {
         
         //find all the programs, and find its event
         //episode number;text;link;start time;end time|episode number;link;text;start time;end time
-        //List<Poi> pois = new PoiPointManager().findByChannel(channel.getId()); //find all the programs        
-        //List<PoiEvent> events = new PoiEventManager().findByChannel(channel.getId());
-        PoiPointManager pointMngr = new PoiPointManager();
-        PoiEventManager eventMngr = new PoiEventManager();
+        //List<Poi> pois = NNF.getPoiPointMngr().findByChannel(channel.getId()); //find all the programs        
+        //List<PoiEvent> events = NNF.getPoiEventMngr().findByChannel(channel.getId());
         List<ProgramInfo> programInfos = new ArrayList<ProgramInfo>();
         for (NnEpisode e : episodes) {
             List<NnProgram> list = (List<NnProgram>) map.get(e.getId());
@@ -736,12 +732,12 @@ public class NnProgramManager {
                 for (NnProgram p : list) { //sub-episodes
                     List<PlayerPoi> playerPois = new ArrayList<PlayerPoi>();
                     List<PlayerTitleCard> playerTitleCards = new ArrayList<PlayerTitleCard>();
-                    List<PoiPoint> points = pointMngr.findCurrentByProgram(p.getId());
+                    List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByProgram(p.getId());
                     //List<Poi> pois = pointMngr.findCurrentPoiByProgram(p.getId());                    
                     log.info("points size:" + points.size());                    
                     List<PoiEvent> events = new ArrayList<PoiEvent>();
                     for (PoiPoint point : points) {
-                        PoiEvent event = eventMngr.findByPoint(point.getId());
+                        PoiEvent event = NNF.getPoiEventMngr().findByPoint(point.getId());
                         events.add(event);
                     }
                     if (points.size() != events.size()) {
@@ -1021,7 +1017,7 @@ public class NnProgramManager {
     // TODO change to isPoiPointCollision
     /*
     public boolean isPoiCollision(NnProgram program, int startTime, int endTime) {
-        List<PoiPoint> pois = new PoiPointManager().findByProgramId(program.getId());
+        List<PoiPoint> pois = NNF.getPoiPointMngr().findByProgramId(program.getId());
         for (PoiPoint poi : pois) {
             if (startTime > poi.getStartTimeInt() || endTime < poi.getEndTimeInt()) {
                 return true;

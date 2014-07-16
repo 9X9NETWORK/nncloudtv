@@ -10,6 +10,10 @@ import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.dao.PoiCampaignDao;
+import com.nncloudtv.dao.PoiDao;
+import com.nncloudtv.dao.PoiEventDao;
+import com.nncloudtv.dao.PoiPointDao;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
@@ -26,6 +30,9 @@ import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.PoiCampaignManager;
+import com.nncloudtv.service.PoiEventManager;
+import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
@@ -53,6 +60,9 @@ public class NNF {
     protected static SysTagMapManager       sysTagMapMngr       = null;
     protected static SysTagManager          sysTagMngr          = null;
     protected static MsoPromotionManager    msoPromotionMngr    = null;
+    protected static PoiPointManager        poiPointMngr        = null;
+    protected static PoiEventManager        poiEventMngr        = null;
+    protected static PoiCampaignManager     poiCampaignMngr     = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -62,6 +72,10 @@ public class NNF {
     protected static NnEpisodeDao      episodeDao        = null;
     protected static NnChannelDao      channelDao        = null;
     protected static NnDeviceDao       deviceDao         = null;
+    protected static PoiDao            poiDao            = null;
+    protected static PoiPointDao       poiPointDao       = null;
+    protected static PoiEventDao       poiEventDao       = null;
+    protected static PoiCampaignDao    poiCampaignDao    = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -149,6 +163,83 @@ public class NNF {
         }
         
         return msoPromotionDao;
+    }
+    
+    public static PoiCampaignDao getPoiCampaignDao() {
+        
+        if (poiCampaignDao == null) {
+            
+            log.info("create poiCampaignDao");
+            poiCampaignDao = new PoiCampaignDao();
+        }
+        
+        return poiCampaignDao;
+    }
+    
+    public static PoiEventDao getPoiEventDao() {
+        
+        if (poiEventDao == null) {
+            
+            log.info("create poiEventDao");
+            poiEventDao = new PoiEventDao();
+        }
+        
+        return poiEventDao;
+    }
+    
+    public static PoiPointDao getPoiPointDao() {
+        
+        if (poiPointDao == null) {
+            
+            log.info("create poiPointDao");
+            poiPointDao = new PoiPointDao();
+        }
+        
+        return poiPointDao;
+    }
+    
+    public static PoiDao getPoiDao() {
+        
+        if (poiDao == null) {
+            
+            log.info("create poiDao");
+            poiDao = new PoiDao();
+        }
+        
+        return poiDao;
+    }
+    
+    public static PoiPointManager getPoiPointMngr() {
+        
+        if (poiPointMngr == null) {
+            
+            log.info("create poiPointMngr");
+            poiPointMngr = new PoiPointManager();
+        }
+        
+        return poiPointMngr;
+    }
+    
+    public static PoiEventManager getPoiEventMngr() {
+        
+        if (poiEventMngr == null) {
+            
+            log.info("create poiEventMngr");
+            poiEventMngr = new PoiEventManager();
+        }
+        
+        return poiEventMngr;
+    }
+    
+    public static PoiCampaignManager getPoiCanpaignMngr() {
+        
+        if (poiCampaignMngr == null) {
+            
+            log.info("create poiCampaignMngr");
+            poiCampaignMngr = new PoiCampaignManager();
+        }
+        
+        return poiCampaignMngr;
     }
     
     public static MsoNotificationManager getMsoNotiMngr() {

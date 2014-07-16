@@ -8,29 +8,26 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.PoiEventDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.PoiEvent;
 
 @Service
 public class PoiEventManager {
     
-    private PoiEventDao dao = new PoiEventDao();
-    
-    protected static final Logger log = Logger.getLogger(PoiEventManager.class
-            .getName());
+    protected static final Logger log = Logger.getLogger(PoiEventManager.class.getName());
     
     public PoiEvent create(PoiEvent poiEvent) {
         Date now = new Date();
         poiEvent.setCreateDate(now);
         poiEvent.setUpdateDate(now);
-        poiEvent = dao.save(poiEvent);
+        poiEvent = NNF.getPoiEventDao().save(poiEvent);
         return poiEvent;
     }
     
     public PoiEvent save(PoiEvent poiEvent) {
         Date now = new Date();
         poiEvent.setUpdateDate(now);
-        poiEvent = dao.save(poiEvent);
+        poiEvent = NNF.getPoiEventDao().save(poiEvent);
         return poiEvent;
     }
     
@@ -38,16 +35,16 @@ public class PoiEventManager {
         if (poiEvent == null) {
             return ;
         }
-        dao.delete(poiEvent);
+        NNF.getPoiEventDao().delete(poiEvent);
     }
     
     public void delete(List<PoiEvent> poiEvents) {
-        dao.deleteAll(poiEvents);
+        NNF.getPoiEventDao().deleteAll(poiEvents);
     }
     
     public void deleteByIds(List<Long> eventIds) {
-        List<PoiEvent> poiEvents = dao.findAllByIds(eventIds); // when List too long, TODO : will need rewrite
-        dao.deleteAll(poiEvents);
+        List<PoiEvent> poiEvents = NNF.getPoiEventDao().findAllByIds(eventIds); // when List too long, TODO : will need rewrite
+        NNF.getPoiEventDao().deleteAll(poiEvents);
     }
     
     public static String composeContext(Map<String, Object> context, int eventType) {
@@ -102,11 +99,11 @@ public class PoiEventManager {
     }
     
     public PoiEvent findEventsByPoi(long poiId) {
-        return dao.findByPoi(poiId);
+        return NNF.getPoiEventDao().findByPoi(poiId);
     }
     
     public PoiEvent findByPoint(long pointId) {
-        return dao.findByPoint(pointId);
+        return NNF.getPoiEventDao().findByPoint(pointId);
     }
     
     public PoiEvent findById(Long eventId) {
@@ -115,7 +112,7 @@ public class PoiEventManager {
             return null;
         }
         
-        PoiEvent result = dao.findById(eventId);
+        PoiEvent result = NNF.getPoiEventDao().findById(eventId);
         return result;
     }
     
@@ -144,7 +141,7 @@ public class PoiEventManager {
     }
 
     public PoiEvent findByPoi(Long poiId) {        
-        PoiEvent result = dao.findByPoi(poiId);
+        PoiEvent result = NNF.getPoiEventDao().findByPoi(poiId);
         return result;
     }
     
