@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserProfileDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.web.json.player.PlayerUserProfile;
@@ -17,7 +18,7 @@ public class NnUserProfileManager {
 
     protected static final Logger log = Logger.getLogger(NnUserProfileManager.class.getName());
     
-    private NnUserProfileDao dao = new NnUserProfileDao();
+    private NnUserProfileDao dao = NNF.getProfileDao();
     
     public NnUserProfile findByUser(NnUser user) {
         if (user == null)

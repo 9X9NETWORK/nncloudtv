@@ -15,7 +15,7 @@ public class MsoPromotionManager {
     
     protected static final Logger log = Logger.getLogger(MsoPromotionManager.class.getName());
     
-    protected static final MsoPromotionDao dao = NNF.getMsoPromotionDao();
+    protected MsoPromotionDao dao = NNF.getMsoPromotionDao();
     
     public List<MsoPromotion> findByMso(long msoId) {
         

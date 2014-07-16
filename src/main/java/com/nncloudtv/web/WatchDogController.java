@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnChannelDao;
-import com.nncloudtv.dao.SysTagDao;
-import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
@@ -101,15 +99,15 @@ public class WatchDogController {
        String chId = req.getParameter("channel");
        String categoryId = req.getParameter("category");
        
-       SysTagMapDao dao = new SysTagMapDao();
-       SysTagDisplay display = new SysTagDisplayDao().findById(Long.parseLong(categoryId));
+       SysTagMapDao dao = NNF.getSysTagMapDao();
+       SysTagDisplay display = NNF.getDisplayDao().findById(Long.parseLong(categoryId));
        String result = "";
        if (display != null) {       
 	       SysTagMap map = dao.findBySysTagIdAndChannelId(display.getSystagId(), Long.parseLong(chId));
 	       if (map == null) {
 	    	   NnChannel c = NNF.getChannelDao().findById(Long.parseLong(chId));
 	    	   if (c != null) {
-	    		   SysTag systag = new SysTagDao().findById(display.getSystagId());
+	    		   SysTag systag = NNF.getSysTagDao().findById(display.getSystagId());
 	    		   if (systag == null) {
 	    			   result = "category (systagId) is null";
 	    		   } else {

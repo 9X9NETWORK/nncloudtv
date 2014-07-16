@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.SysTagMap;
 
 @Service
@@ -17,7 +18,7 @@ public class SysTagMapManager {
     
     protected static final Logger log = Logger.getLogger(SysTagMapManager.class.getName());
     
-    private SysTagMapDao dao = new SysTagMapDao();
+    private SysTagMapDao dao = NNF.getSysTagMapDao();
     
     public SysTagMap save(SysTagMap sysTagMap) {
         

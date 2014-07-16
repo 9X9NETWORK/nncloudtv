@@ -41,8 +41,7 @@ public class NnProgramManager {
     protected static final Logger log = Logger.getLogger(NnProgramManager.class
                                               .getName());
     
-    private NnProgramDao dao = new NnProgramDao();
-    private YtProgramDao ytDao = new YtProgramDao();
+    private NnProgramDao dao = NNF.getProgramDao();
     
     public NnProgram create(NnEpisode episode, NnProgram program) {
         
@@ -303,7 +302,7 @@ public class NnProgramManager {
     }
     
     public YtProgram findYtProgramById(Long ytProgramId) {
-        return ytDao.findById(ytProgramId);
+        return NNF.getYtProgramDao().findById(ytProgramId);
     }
     
     public NnProgram findByStorageId(String storageId) {

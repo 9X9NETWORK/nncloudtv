@@ -10,10 +10,18 @@ import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.dao.NnProgramDao;
+import com.nncloudtv.dao.NnUserDao;
+import com.nncloudtv.dao.NnUserPrefDao;
+import com.nncloudtv.dao.NnUserProfileDao;
 import com.nncloudtv.dao.PoiCampaignDao;
 import com.nncloudtv.dao.PoiDao;
 import com.nncloudtv.dao.PoiEventDao;
 import com.nncloudtv.dao.PoiPointDao;
+import com.nncloudtv.dao.SysTagDao;
+import com.nncloudtv.dao.SysTagDisplayDao;
+import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
@@ -76,6 +84,14 @@ public class NNF {
     protected static PoiPointDao       poiPointDao       = null;
     protected static PoiEventDao       poiEventDao       = null;
     protected static PoiCampaignDao    poiCampaignDao    = null;
+    protected static NnProgramDao      programDao        = null;
+    protected static YtProgramDao      ytProgramDao      = null;
+    protected static NnUserDao         userDao           = null;
+    protected static NnUserProfileDao  profileDao        = null;
+    protected static NnUserPrefDao     prefDao           = null;
+    protected static SysTagDao         sysTagDao         = null;
+    protected static SysTagDisplayDao  displayDao        = null;
+    protected static SysTagMapDao      sysTagMapDao      = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -207,6 +223,94 @@ public class NNF {
         }
         
         return poiDao;
+    }
+    
+    public static NnProgramDao getProgramDao() {
+        
+        if (programDao == null) {
+            
+            log.info("create programDao");
+            programDao = new NnProgramDao();
+        }
+        
+        return programDao;
+    }
+    
+    public static YtProgramDao getYtProgramDao() {
+        
+        if (ytProgramDao == null) {
+            
+            log.info("create ytProgramDao");
+            ytProgramDao = new YtProgramDao();
+        }
+        
+        return ytProgramDao;
+    }
+    
+    public static NnUserDao getUserDao() {
+        
+        if (userDao == null) {
+            
+            log.info("create userDao");
+            userDao = new NnUserDao();
+        }
+        
+        return userDao;
+    }
+    
+    public static NnUserProfileDao getProfileDao() {
+        
+        if (profileDao == null) {
+            
+            log.info("create profileDao");
+            profileDao = new NnUserProfileDao();
+        }
+        
+        return profileDao;
+    }
+    
+    public static NnUserPrefDao getPrefDao() {
+        
+        if (prefDao == null) {
+            
+            log.info("create prefDao");
+            prefDao = new NnUserPrefDao();
+        }
+        
+        return prefDao;
+    }
+    
+    public static SysTagMapDao getSysTagMapDao() {
+        
+        if (sysTagMapDao == null) {
+            
+            log.info("create sysTagMapDao");
+            sysTagMapDao = new SysTagMapDao();
+        }
+        
+        return sysTagMapDao;
+    }
+    
+    public static SysTagDisplayDao getDisplayDao() {
+        
+        if (displayDao == null) {
+            
+            log.info("create displayDao");
+            displayDao = new SysTagDisplayDao();
+        }
+        
+        return displayDao;
+    }
+    
+    public static SysTagDao getSysTagDao() {
+        
+        if (sysTagDao == null) {
+            
+            log.info("create sysTagDao");
+            sysTagDao = new SysTagDao();
+        }
+        
+        return sysTagDao;
     }
     
     public static PoiPointManager getPoiPointMngr() {
