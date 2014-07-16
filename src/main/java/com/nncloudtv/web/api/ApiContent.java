@@ -36,7 +36,6 @@ import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserLibrary;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
@@ -49,7 +48,6 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.NnUserLibraryManager;
 import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
@@ -2194,123 +2192,4 @@ public class ApiContent extends ApiGeneric {
         
         return ok(resp);
     }
-    
-    @RequestMapping(value = "my_uploads/{id}", method = RequestMethod.GET)
-    public @ResponseBody
-    NnUserLibrary userUpload(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable("id") String idStr) {
-        
-        Long id = null;
-        try {
-            id = Long.valueOf(idStr);
-        } catch (NumberFormatException e) {
-        }
-        if (id == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnUserLibraryManager libMngr = new NnUserLibraryManager();
-        NnUserLibrary lib = libMngr.findById(id);
-        if (lib == null) {
-            notFound(resp, "Item Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != lib.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        lib.setName(NnStringUtil.revertHtml(lib.getName()));
-        
-        return lib;
-    }
-    
-    @RequestMapping(value = "my_uploads/{id}", method = RequestMethod.PUT)
-    public @ResponseBody
-    NnUserLibrary userUploadUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable("id") String idStr) {
-        
-        Long id = null;
-        try {
-            id = Long.valueOf(idStr);
-        } catch (NumberFormatException e) {
-        }
-        if (id == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnUserLibraryManager libMngr = new NnUserLibraryManager();
-        NnUserLibrary lib = libMngr.findById(id);
-        if (lib == null) {
-            notFound(resp, "Item Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != lib.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        String name = req.getParameter("name");
-        if (name != null) {
-            lib.setName(NnStringUtil.htmlSafeAndTruncated(name));
-        }
-        
-        String imageUrl = req.getParameter("imageUrl");
-        if (imageUrl != null) {
-            lib.setImageUrl(imageUrl);
-        }
-        
-        lib = libMngr.save(lib);
-        lib.setName(NnStringUtil.revertHtml(lib.getName()));
-        
-        return lib;
-    }
-    
-    @RequestMapping(value = { "my_uploads/{id}", "my_library/{id}" }, method = RequestMethod.DELETE)
-    public @ResponseBody
-    String userUploadsDelete(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable("id") String idStr) {        
-        
-        Long id = null;
-        try {
-            id = Long.valueOf(idStr);
-        } catch (NumberFormatException e) {
-        }
-        if (id == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnUserLibraryManager libMngr = new NnUserLibraryManager();
-        NnUserLibrary lib = libMngr.findById(id);
-        if (lib == null) {
-            return "Item Not Found";
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != lib.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        libMngr.delete(lib);
-        
-        return ok(resp);
-    }
-    
 }
