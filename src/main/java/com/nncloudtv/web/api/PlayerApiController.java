@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
@@ -535,6 +536,8 @@ public class PlayerApiController {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("redirection failed");
             }
+        } catch(ConnectException e) {
+            log.warning("connect to pdr server timeout, but not big problem.");
         } catch (Exception e) {
             e.printStackTrace();
         }
