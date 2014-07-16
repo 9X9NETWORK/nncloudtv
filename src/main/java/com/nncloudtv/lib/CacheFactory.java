@@ -47,7 +47,14 @@ public class CacheFactory {
         Future<Object> future = null;
         long now = new Date().getTime();
         try {
-            cache = new MemcachedClient(addr);
+            cache = new MemcachedClient(addr) {
+                
+                @Override
+                protected void finalize() throws Throwable {
+                    
+                    log.info("MemcachedClient is recycled");
+                }
+            };
             cache.set(key, EXP_DEFAULT, addr);
             future = cache.asyncGet(key);
             if (future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS) != null) {
