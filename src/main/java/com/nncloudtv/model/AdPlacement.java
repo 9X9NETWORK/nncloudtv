@@ -54,6 +54,15 @@ public class AdPlacement {
     @Persistent
     private Date endDate;
     
+    public AdPlacement(long msoId, String url, short type) {
+        
+        this.msoId = msoId;
+        this.url = url;
+        this.type = type;
+        this.seq = 0;
+        this.status = ON;
+    }
+    
     public long getId() {
         return id;
     }
