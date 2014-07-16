@@ -24,7 +24,7 @@ public class AdPlacement {
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     String name;
     
-    @PrimaryKey
+    @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     String url;
     
@@ -33,7 +33,7 @@ public class AdPlacement {
     public static final short ON = 0;
     public static final short OFF = 1;
     
-    @PrimaryKey
+    @Persistent
     short type;
     public static final short DIRECT = 0;
     public static final short VAST10 = 1;
