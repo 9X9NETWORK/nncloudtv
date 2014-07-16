@@ -342,7 +342,7 @@ public class WatchDogController {
         return output;        
     }
     
-    @RequestMapping(value = "msoCache", produces = "text/plain; charset=urf-8")
+    @RequestMapping(value = "msoCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String msoCache(@RequestParam(value="mso", required = true) long msoId) {
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
