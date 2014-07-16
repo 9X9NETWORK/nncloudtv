@@ -14,6 +14,7 @@ import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -72,20 +73,23 @@ public class MsoManager {
         
         if (mso == null) { return; }
         
+        String keyAdInfoPlain  = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        String keyAdInfoJson   = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON);
         String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_JSON);
         String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-        String keyIosJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
-        String keyIosPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-        String keyWebJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
-        String keyWebPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        String keyIosJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
+        String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        String keyWebJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
+        String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
         
+        CacheFactory.delete(keyAdInfoPlain);
+        CacheFactory.delete(keyAdInfoJson);
         CacheFactory.delete(keyAndroidJson);
         CacheFactory.delete(keyAndroidPlain);
         CacheFactory.delete(keyIosJson);
         CacheFactory.delete(keyIosPlain);
         CacheFactory.delete(keyWebJson);
         CacheFactory.delete(keyWebPlain);
-        
     }
     
     public Mso findNNMso() {
@@ -318,30 +322,75 @@ public class MsoManager {
             log.info("memcache error");
         }
         if (format == PlayerApiService.FORMAT_JSON) {
-        	BrandInfo json = (BrandInfo)cached;
-        	if (cached == null) {
-        		log.info("plain text is not cached");
-        		json =  (BrandInfo)this.composeBrandInfoJson(mso, os);
-        	}
-        	json.setLocale(locale);
-        	json.setBrandInfoCounter(counter);
-        	json.setPiwik(piwik);
-        	json.setAcceptLang(acceptLang);        	
-        	return json;
+            BrandInfo json = (BrandInfo) cached;
+            if (cached == null) {
+                log.info("plain text is not cached");
+                json = (BrandInfo) this.composeBrandInfoJson(mso, os);
+            }
+            json.setLocale(locale);
+            json.setBrandInfoCounter(counter);
+            json.setPiwik(piwik);
+            json.setAcceptLang(acceptLang);
+            return json;
+            // TODO: not knowing how to append AD info in json format
         } else {
-	    	String[] plain = {(String) cached};
-	    	if (cached == null) {
-	    		log.info("plain text is not cached");
-	    		plain[0] = this.composeBrandInfoStr(mso, os);
-	    	}
-	    	plain[0] += PlayerApiService.assembleKeyValue("locale", locale);
-	        plain[0] += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
-	        plain[0] += PlayerApiService.assembleKeyValue("piwik", piwik);
-	        plain[0] += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);        
-	        return plain;        	
-        }        
-    }
             
+            String brandInfo = (String) cached;
+            if (cached == null) {
+                log.info("plain text is not cached");
+                brandInfo = this.composeBrandInfoStr(mso, os);
+            }
+            brandInfo += PlayerApiService.assembleKeyValue("locale", locale);
+            brandInfo += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
+            brandInfo += PlayerApiService.assembleKeyValue("piwik", piwik);
+            brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
+            
+            if (req.getParameter("ad") == null) {
+                
+                String[] plain = { brandInfo };
+                return plain;
+                
+            } else {
+                
+                String adKey = CacheFactory.getAdInfoKey(mso, format);
+                String adInfo = null;
+                try {
+                    adInfo = (String) CacheFactory.get(adKey);
+                } catch (Exception e) {
+                    log.info("memcache error");
+                }
+                
+                if (adInfo == null) {
+                    
+                    log.info("plain text is not cached (adInfo)");
+                    adInfo = this.composeAdInfoStr(mso);
+                }
+                
+                String[] plain = { brandInfo, adInfo };
+                
+                return plain;
+            }
+        }
+    }
+    
+    private String composeAdInfoStr(Mso mso) {
+        
+        String adInfo = "";
+        List<AdPlacement> ads = NNF.getAdMngr().findByMso(mso.getId());
+        for (AdPlacement ad : ads) {
+            
+            String[] ori = {
+                  String.valueOf(ad.getId()),
+                  String.valueOf(ad.getType()),
+                  NnStringUtil.htmlSafeChars(ad.getName()),
+                  ad.getUrl()
+            };
+            adInfo += NnStringUtil.getDelimitedStr(ori) + "\n";
+        }
+        CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN), adInfo);
+        return adInfo;
+    }
+    
     public List<Mso> findByType(short type) {
         return dao.findByType(type);
     }

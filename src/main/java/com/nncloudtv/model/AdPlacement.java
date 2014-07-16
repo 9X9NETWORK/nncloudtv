@@ -54,4 +54,92 @@ public class AdPlacement {
     @Persistent
     private Date endDate;
     
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
+    
+    public long getMsoId() {
+        return msoId;
+    }
+    
+    public void setMsoId(long msoId) {
+        this.msoId = msoId;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public String getUrl() {
+        return url;
+    }
+    
+    public void setUrl(String url) {
+        this.url = url;
+    }
+    
+    public short getStatus() {
+        return status;
+    }
+    
+    public void setStatus(short status) {
+        this.status = status;
+    }
+    
+    public short getType() {
+        return type;
+    }
+    
+    public void setType(short type) {
+        this.type = type;
+    }
+    
+    public short getSeq() {
+        return seq;
+    }
+    
+    public void setSeq(short seq) {
+        this.seq = seq;
+    }
+    
+    public Date getCreateDate() {
+        return createDate;
+    }
+    
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+    
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+    
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+    
+    public Date getStarteDate() {
+        return starteDate;
+    }
+    
+    public void setStarteDate(Date starteDate) {
+        this.starteDate = starteDate;
+    }
+    
+    public Date getEndDate() {
+        return endDate;
+    }
+    
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+    
 }

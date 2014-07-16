@@ -564,20 +564,15 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        //boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
-        /*
-        if (!readOnly)
-            counter = this.addMsoInfoVisitCounter(readOnly);
-            */     
         String acceptLang = req.getHeader("Accept-Language");
         String piwik = "http://piwik.9x9.tv/";
         Object result = NNF.getMsoMngr().getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }    
-
+    
     public String findLocaleByHttpRequest(HttpServletRequest req) {
         
         return NNF.getUserMngr().findLocaleByHttpRequest(req);
