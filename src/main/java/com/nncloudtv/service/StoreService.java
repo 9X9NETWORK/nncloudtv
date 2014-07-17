@@ -288,7 +288,7 @@ public class StoreService {
         SysTagMapManager sysTagMapMngr = NNF.getSysTagMapMngr();
         Mso nnMso = NNF.getMsoMngr().findNNMso();
         List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMapsByChannelId(channelId, nnMso.getId());
-        sysTagMapMngr.deleteAll(tagMaps);
+        sysTagMapMngr.delete(tagMaps);
         sysTagMapMngr.save(new SysTagMap(categoryId, channelId));
     }
     

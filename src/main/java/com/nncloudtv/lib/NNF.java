@@ -46,6 +46,7 @@ import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
+import com.nncloudtv.service.YtProgramManager;
 
 public class NNF {
     
@@ -74,6 +75,7 @@ public class NNF {
     protected static PoiEventManager        poiEventMngr        = null;
     protected static PoiCampaignManager     poiCampaignMngr     = null;
     protected static AdPlacementManager     adMngr              = null;
+    protected static YtProgramManager       ytProgramMngr       = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -326,6 +328,17 @@ public class NNF {
         }
         
         return adDao;
+    }
+    
+    public static YtProgramManager getYtProgramMngr() {
+        
+        if (ytProgramMngr == null) {
+            
+            log.info("create ytProgramMngr");
+            ytProgramMngr = new YtProgramManager();
+        }
+        
+        return ytProgramMngr;
     }
     
     public static AdPlacementManager getAdMngr() {

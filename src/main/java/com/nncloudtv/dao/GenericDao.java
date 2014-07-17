@@ -58,7 +58,7 @@ public class GenericDao<T> {
     
     public List<T> saveAll(List<T> list) {
         
-        if (list == null) {return list;}
+        if (list == null) { return list; }
         PersistenceManager pm = getPersistenceManager();
         
         Transaction tx = pm.currentTransaction();
@@ -78,7 +78,7 @@ public class GenericDao<T> {
     
     public void delete(T dao) {
         
-        if (dao == null) return;
+        if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
         
         try {
@@ -89,6 +89,7 @@ public class GenericDao<T> {
     }
     
     public void deleteAll(List<T> list) {
+        
         if (list == null || list.isEmpty()) return;
         
         PersistenceManager pm = getPersistenceManager();

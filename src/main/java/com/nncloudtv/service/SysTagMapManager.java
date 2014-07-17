@@ -22,9 +22,7 @@ public class SysTagMapManager {
     
     public SysTagMap save(SysTagMap sysTagMap) {
         
-        if (sysTagMap == null) {
-            return null;
-        }
+        if (sysTagMap == null) { return null; }
         
         Date now = new Date();
         if (sysTagMap.getCreateDate() == null) {
@@ -32,31 +30,20 @@ public class SysTagMapManager {
         }
         sysTagMap.setUpdateDate(now);
         
-        SysTagMap result = dao.save(sysTagMap);
-        
-        return result;
+        return NNF.getSysTagMapDao().save(sysTagMap);
     }
     
-    public List<SysTagMap> saveAll(List<SysTagMap> sysTagMaps) {
-        
-        if (sysTagMaps == null || sysTagMaps.size() == 0) {
-            return new ArrayList<SysTagMap>();
-        }
+    public List<SysTagMap> save(List<SysTagMap> sysTagMaps) {
         
         Date now = new Date();
-        for (SysTagMap item : sysTagMaps) {
-            if (item.getCreateDate() == null) {
-                item.setCreateDate(now);
+        for (SysTagMap sysTagMap : sysTagMaps) {
+            if (sysTagMap.getCreateDate() == null) {
+                sysTagMap.setCreateDate(now);
             }
-            item.setUpdateDate(now);
+            sysTagMap.setUpdateDate(now);
         }
         
-        List<SysTagMap> results = dao.saveAll(sysTagMaps);
-        if (results == null) {
-            return new ArrayList<SysTagMap>();
-        }
-        
-        return results;
+        return dao.saveAll(sysTagMaps);
     }
     
     public void reorderSysTagMaps(Long sysTagId) {
@@ -92,24 +79,16 @@ public class SysTagMapManager {
     }
     
     public void delete(SysTagMap sysTagMap) {
-        if (sysTagMap == null) {
-            return ;
-        }
+        
         dao.delete(sysTagMap);
     }
     
-    public void deleteAll(List<SysTagMap> sysTagMaps) {
-        if (sysTagMaps == null || sysTagMaps.size() == 0) {
-            return ;
-        }
+    public void delete(List<SysTagMap> sysTagMaps) {
+        
         dao.deleteAll(sysTagMaps);
     }
     
-    public SysTagMap findBySysTagIdAndChannelId(Long sysTagId, Long channelId) {
-        
-        if (sysTagId == null || channelId == null) {
-            return null;
-        }
+    public SysTagMap findOne(Long sysTagId, Long channelId) {
         
         return dao.findBySysTagIdAndChannelId(sysTagId, channelId);
     }
@@ -145,16 +124,7 @@ public class SysTagMapManager {
     
     public List<SysTagMap> findBySysTagId(Long sysTagId) {
         
-        if (sysTagId == null) {
-            return new ArrayList<SysTagMap>();
-        }
-        
-        List<SysTagMap> sysTagMaps = dao.findBySysTagId(sysTagId);
-        if (sysTagMaps == null) {
-            return new ArrayList<SysTagMap>();
-        }
-        
-        return sysTagMaps;
+        return dao.findBySysTagId(sysTagId);
     }
     
     public List<SysTagMap> findCategoryMapsByChannelId(Long channelId, Long msoId) {

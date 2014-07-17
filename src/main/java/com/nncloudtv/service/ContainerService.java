@@ -3,16 +3,12 @@ package com.nncloudtv.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.SysTag;
-import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 
 /**
@@ -26,86 +22,28 @@ public class ContainerService {
     
     protected static final Logger log = Logger.getLogger(ContainerService.class.getName());
     
-    private SysTagManager sysTagMngr;
-    private SysTagDisplayManager sysTagDisplayMngr;
-    private SysTagMapManager sysTagMapMngr;
-    private NnChannelManager channelMngr;
-    
-    @Autowired
-    public ContainerService(SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr,
-                        SysTagMapManager sysTagMapMngr, NnChannelManager channelMngr) {
-        this.sysTagMngr = sysTagMngr;
-        this.sysTagDisplayMngr = sysTagDisplayMngr;
-        this.sysTagMapMngr = sysTagMapMngr;
-        this.channelMngr = channelMngr;
-    }
-    
-    /**
-     * Delete a Container(SysTag, SysTagDisplay, SysTagMap).
-     * @param sysTagId required, SysTag ID
-     */
-    public void delete(Long sysTagId) {
-        
-        // delete SysTagMap
-        List<SysTagMap>  channels = sysTagMapMngr.findBySysTagId(sysTagId);
-        if (channels != null && channels.size() > 0) {
-            sysTagMapMngr.deleteAll(channels);
-        }
-        // delete SysTagDisplay
-        List<SysTagDisplay> displays = sysTagDisplayMngr.findAllBySysTagId(sysTagId);
-        if (displays != null && displays.size() > 0) {
-            sysTagDisplayMngr.deleteAll(displays);
-        }
-        // delete SysTag
-        SysTag sysTag = sysTagMngr.findById(sysTagId);
-        if (sysTag != null) {
-            sysTagMngr.delete(sysTag);
-        }
-    }
-    
     /**
      * Get Channels from Container ordered by sequence, the Channels populate additional information (TimeStart, TimeEnd, Seq, AlwaysOnTop)
      *   retrieve from SysTagMap.
      * @param sysTagId required, SysTag ID
      * @return list of Channels */
-    public List<NnChannel> getChannelsOrderBySeq(Long sysTagId) {
+    public List<NnChannel> findChannels(Long sysTagId) {
         
-        if (sysTagId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<SysTagMap> sysTagMaps = sysTagMapMngr.findBySysTagId(sysTagId);
-        if (sysTagMaps == null || sysTagMaps.isEmpty()) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<Long> channelIdList = new ArrayList<Long>();
-        for (SysTagMap item : sysTagMaps) {
-            channelIdList.add(item.getChannelId());
-        }
-        List<NnChannel> channels = channelMngr.findByIds(channelIdList);
-        if (channels == null || channels.isEmpty()) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        Map<Long, NnChannel> channelMap = new TreeMap<Long, NnChannel>();
-        for (NnChannel channel : channels) {
-            channelMap.put(channel.getId(), channel);
-        }
+        List<SysTagMap> sysTagMaps = NNF.getSysTagMapMngr().findBySysTagId(sysTagId);
         
         List<NnChannel> results = new ArrayList<NnChannel>();
         for (SysTagMap sysTagMap : sysTagMaps) {
-            NnChannel result = channelMap.get(sysTagMap.getChannelId());
-            if (result != null) {
-                result.setTimeStart(sysTagMap.getTimeStart());
-                result.setTimeEnd(sysTagMap.getTimeEnd());
-                result.setSeq(sysTagMap.getSeq());
-                result.setAlwaysOnTop(sysTagMap.isAlwaysOnTop());
-                result.setFeatured(sysTagMap.isFeatured());
+            
+            NnChannel channel = NNF.getChannelMngr().findById(sysTagMap.getChannelId());
+            if (channel != null) {
                 
-                results.add(result);
-            } else {
-                // TODO : Channel not exist, delete SysTagMap ?
+                channel.setTimeStart(sysTagMap.getTimeStart());
+                channel.setTimeEnd(sysTagMap.getTimeEnd());
+                channel.setSeq(sysTagMap.getSeq());
+                channel.setAlwaysOnTop(sysTagMap.isAlwaysOnTop());
+                channel.setFeatured(sysTagMap.isFeatured());
+                
+                results.add(channel);
             }
         }
         
@@ -122,7 +60,7 @@ public class ContainerService {
         if (sysTagId == null) {
             return new ArrayList<NnChannel>();
         }
-        List<NnChannel> channels = getChannelsOrderBySeq(sysTagId);
+        List<NnChannel> channels = findChannels(sysTagId);
         if (channels == null) {
             return new ArrayList<NnChannel>();
         }
@@ -140,7 +78,7 @@ public class ContainerService {
             }
         }
         
-        Collections.sort(sortedChannels, channelMngr.getChannelComparator("default"));
+        Collections.sort(sortedChannels, NNF.getChannelMngr().getChannelComparator("default"));
         results.addAll(sortedChannels);
         
         return results;
@@ -149,11 +87,11 @@ public class ContainerService {
     public void addChannel(Long sysTagId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Boolean featured, Short seq) {
         
         if (sysTagId == null || channelId == null) {
-            return ;
+            throw new IllegalArgumentException("sysTagId or channelId is null");
         }
         
         // create if not exist
-        SysTagMap sysTagMap = sysTagMapMngr.findBySysTagIdAndChannelId(sysTagId, channelId);
+        SysTagMap sysTagMap = NNF.getSysTagMapMngr().findOne(sysTagId, channelId);
         if (sysTagMap == null) {
             sysTagMap = new SysTagMap(sysTagId, channelId);
             sysTagMap.setSeq((short) 0);
@@ -163,23 +101,13 @@ public class ContainerService {
             sysTagMap.setFeatured(false);
         }
         
-        if (timeStart != null) {
-            sysTagMap.setTimeStart(timeStart);
-        }
-        if (timeEnd != null) {
-            sysTagMap.setTimeEnd(timeEnd);
-        }
-        if (alwaysOnTop != null) {
-            sysTagMap.setAlwaysOnTop(alwaysOnTop);
-        }
-        if (featured != null) {
-            sysTagMap.setFeatured(featured);
-        }
-        if (seq != null) {
-            sysTagMap.setSeq(seq);
-        }
+        sysTagMap.setTimeStart(timeStart);
+        sysTagMap.setTimeEnd(timeEnd);
+        sysTagMap.setAlwaysOnTop(alwaysOnTop);
+        sysTagMap.setFeatured(featured);
+        sysTagMap.setSeq(seq);
         
-        sysTagMapMngr.save(sysTagMap);
+        NNF.getSysTagMapMngr().save(sysTagMap);
     }
 
 }

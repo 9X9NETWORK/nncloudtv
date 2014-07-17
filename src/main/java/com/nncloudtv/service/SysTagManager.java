@@ -49,9 +49,15 @@ public class SysTagManager {
     }
     
     public void delete(SysTag sysTag) {
-        if (sysTag == null) {
-            return ;
-        }
+        
+        if (sysTag == null) { return ; }
+        
+        //SysTagMap(s)
+        NNF.getSysTagMapDao().deleteAll(NNF.getSysTagMapDao().findBySysTagId(sysTag.getId()));;
+        
+        //SysTagDisplay(s)
+        NNF.getDisplayDao().deleteAll(NNF.getDisplayDao().findAllBySysTagId(sysTag.getId()));;
+        
         dao.delete(sysTag);
     }
     

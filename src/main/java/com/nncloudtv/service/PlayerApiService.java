@@ -1171,10 +1171,10 @@ public class PlayerApiService {
         startI = startI / PAGING_ROWS;
         startI = startI * PAGING_ROWS;
         end = startI + countI; 
-
+        
         Short shortTime = 24;
         if (time != null)
-            shortTime = Short.valueOf(time);            
+            shortTime = Short.valueOf(time);
         
         String programInfoStr = "";
         String paginationStr = "";
@@ -1229,8 +1229,9 @@ public class PlayerApiService {
                     return this.assembleMsgs(NnStatusCode.SUCCESS, null);
             }
         } else if (chArr.length > 1) {
+            
             List<Long> list = new ArrayList<Long>();
-            for (int i=0; i<chArr.length; i++) { list.add(Long.valueOf(chArr[i]));}
+            for (int i = 0; i < chArr.length; i++) { list.add(Long.valueOf(chArr[i])); }
             for (Long l : list) {
                 if (version < 32) {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
@@ -1302,7 +1303,7 @@ public class PlayerApiService {
                     userInfoStr = (String) this.prepareUserInfo(user, null, context.getHttpRequest(), true);
                     result.add(userInfoStr);
                 } else {
-                    playerProgramInfo.setUserInfo((UserInfo)this.prepareUserInfo(user, null, context.getHttpRequest(), true));
+                    playerProgramInfo.setUserInfo((UserInfo) this.prepareUserInfo(user, null, context.getHttpRequest(), true));
                 }
             }
         }
@@ -1317,7 +1318,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.SUCCESS, result.toArray(size));
         }
     }    
-
+    
     public Object saveIpg(String userToken, String channelId, String programId) {
         //obsolete
         return this.assembleMsgs(NnStatusCode.ERROR, null);                 

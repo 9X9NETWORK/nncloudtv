@@ -31,6 +31,7 @@ public class CategoryService {
     @Autowired
     public CategoryService(SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr,
                         SysTagMapManager sysTagMapMngr, ContainerService containerService) {
+        
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
@@ -230,19 +231,6 @@ public class CategoryService {
     }
     
     /**
-     * Delete a Category.
-     * @param categoryId required, Category ID
-     */
-    public void delete(Long categoryId) {
-        
-        if (categoryId == null) {
-            return ;
-        }
-        
-        containerService.delete(categoryId);
-    }
-    
-    /**
      * Add Channels to Category.
      * @param categoryId required, Category ID
      * @param channelIds required, Channel's IDs
@@ -273,7 +261,7 @@ public class CategoryService {
             }
         }
         
-        sysTagMapMngr.saveAll(newChannels);
+        sysTagMapMngr.save(newChannels);
     }
     
     /**
@@ -305,7 +293,7 @@ public class CategoryService {
         
         List<SysTagMap> existChannels = sysTagMapMngr.findBySysTagIdAndChannelIds(categoryId, channelIds);
         
-        sysTagMapMngr.deleteAll(existChannels);
+        sysTagMapMngr.delete(existChannels);
     }
     
     /**

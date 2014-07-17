@@ -21,25 +21,10 @@ public class SysTagMapDao extends GenericDao<SysTagMap> {
     
     public SysTagMap findBySysTagIdAndChannelId(long sysTagId, long channelId) {
         
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        SysTagMap detached = null;
+        List<SysTagMap> detached = sql("select * from systag_map where sysTagId = " + sysTagId
+                                     + " and channelId = " + channelId);
         
-        try {
-            String sql = " select * from systag_map where sysTagId = " + sysTagId +
-                           " and channelId = " + channelId;
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(SysTagMap.class);
-            @SuppressWarnings("unchecked")
-            List<SysTagMap> results = (List<SysTagMap>) q.execute();
-            if (results != null && results.size() > 0) {
-                detached = pm.detachCopy(results.get(0));
-            }
-        } finally {
-            pm.close();
-        }
-        
-        return detached;
+        return detached.size() > 0 ? detached.get(0) : null;
     }
     
     // see SysTagDao.findCategoriesByChannelId
@@ -57,25 +42,7 @@ public class SysTagMapDao extends GenericDao<SysTagMap> {
     
     public List<SysTagMap> findBySysTagId(long sysTagId) {
         
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<SysTagMap> detached = new ArrayList<SysTagMap>();
-        
-        try {
-            String sql = " select * from systag_map where sysTagId = " + sysTagId +
-                           " order by seq asc";
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(SysTagMap.class);
-            @SuppressWarnings("unchecked")
-            List<SysTagMap> results = (List<SysTagMap>) q.execute();
-            if (results != null && results.size() > 0) {
-                detached = (List<SysTagMap>) pm.detachCopyAll(results);
-            }
-        } finally {
-            pm.close();
-        }
-        
-        return detached;
+        return sql("select * from systag_map where sysTagId = " + sysTagId + " order by seq asc");
     }
     
     @SuppressWarnings("unchecked")

@@ -100,6 +100,7 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_YOUTUBE_LIVE     = 13;
     public static final short CONTENTTYPE_DAYPARTING_MASK  = 14;
     public static final short CONTENTTYPE_TRENDING         = 15;
+    public static final short CONTENTTYPE_VIRTUAL_CHANNEL  = 16; // experiment
     
     @Persistent
     private short status;
@@ -128,15 +129,13 @@ public class NnChannel implements Serializable {
     @Persistent
     private short seq; //use with subscription, to specify sequence in IPG. 
     
-    //not used
+    @Persistent
+    private short sorting;
     public static final short SORT_NEWEST_TO_OLDEST = 1; //default
     public static final short SORT_OLDEST_TO_NEWEST = 2;
     public static final short SORT_DESIGNATED       = 3;
     public static final short SORT_POSITION_FORWARD = 4;
     public static final short SORT_POSITION_REVERSE = 5;
-    
-    @Persistent
-    private short sorting;
     
     //define channel type. anything > 10 is fdm pool. anything > 20 is browse pool
     @Persistent

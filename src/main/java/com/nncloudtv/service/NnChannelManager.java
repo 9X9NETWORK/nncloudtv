@@ -591,7 +591,8 @@ public class NnChannelManager {
         return new ChannelComparator();
     }
         
-    public List<NnChannel> findByIds(List<Long> ids) {        
+    public List<NnChannel> findByIds(List<Long> ids) {
+        
         return dao.findAllByIds(ids);
     }
     

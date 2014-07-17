@@ -214,7 +214,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
                             "and isPublic = true " +
                             "and status != " + NnProgram.STATUS_ERROR + " " +
              "order by " + ordering;
-
+            
             log.info("sql:" + sql);
             Query q= pm.newQuery("javax.jdo.query.SQL", sql);
             q.setClass(NnProgram.class);
@@ -226,7 +226,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         }
         return detached;
     }
-
+    
     public List<NnProgram> findByChannel(long channelId) {
         
         log.info("find by channelId = " + channelId);

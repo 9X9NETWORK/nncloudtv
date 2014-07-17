@@ -39,6 +39,7 @@ public class ApiMsoService {
                             NnChannelManager channelMngr, StoreService storeService,
                             StoreListingManager storeListingMngr, MsoManager msoMngr,
                             CategoryService categoryService, MsoConfigManager configMngr) {
+        
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
@@ -49,30 +50,6 @@ public class ApiMsoService {
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
         this.configMngr = configMngr;
-    }
-    
-    /** service for ApiMso.msoSets
-     *  get Sets that belong to target Mso
-     *  @param msoId required, Mso's Id
-     *  @param lang optional, filter for Set's lang
-     *  @return list of Sets */
-    public List<Set> msoSets(Long msoId, String lang) {
-        
-        if (msoId == null) {
-            return new ArrayList<Set>();
-        }
-        
-        List<Set> results = null;
-        if (lang != null) {
-            results = setService.findByMsoIdAndLang(msoId, lang);
-        } else {
-            results = setService.findByMsoId(msoId);
-        }
-        
-        if (results == null) {
-            return new ArrayList<Set>();
-        }
-        return results;
     }
     
     public Set msoSetCreate(Long msoId, Short seq, String tag, String name, Short sortingType) {
@@ -173,15 +150,6 @@ public class ApiMsoService {
         return setService.composeSet(set, setMeta);
     }
     
-    public void setDelete(Long setId) {
-        
-        if (setId == null) {
-            return ;
-        }
-        
-        setService.delete(setId);
-    }
-    
     /** service for ApiMso.setChannels
      *  get Channels from Set
      *  @param setId required, SysTag's Id with SysTag's type = Set
@@ -232,25 +200,7 @@ public class ApiMsoService {
             return ;
         }
         
-        setService.addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
-    }
-    
-    /** service for ApiMso.setChannelRemove
-     *  remove Channel from Set
-     *  @param setId required, SysTag's Id with SysTag's type = Set
-     *  @param channelId required, Channel's Id */
-    public void setChannelRemove(Long setId, Long channelId) {
-        
-        if (setId == null || channelId == null) {
-            return ;
-        }
-        
-        SysTagMap sysTagMap = sysTagMapMngr.findBySysTagIdAndChannelId(setId, channelId);
-        if (sysTagMap == null) {
-            // do nothing
-        } else {
-            sysTagMapMngr.delete(sysTagMap);
-        }
+        setService.addChannel(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
     }
     
     /** service for ApiMso.setChannelsSorting
@@ -301,7 +251,7 @@ public class ApiMsoService {
             seq++;
         }
         
-        sysTagMapMngr.saveAll(newSequence);
+        sysTagMapMngr.save(newSequence);
     }
     
     /** service for ApiMso.storeChannels
@@ -493,20 +443,6 @@ public class ApiMsoService {
         Category savedCategory = categoryService.save(category);
         
         return savedCategory;
-    }
-    
-    /**
-     * service for ApiMso.categoryDelete
-     * Delete promotion Category.
-     * @param categoryId required, Category ID
-     */
-    public void categoryDelete(Long categoryId) {
-        
-        if (categoryId == null) {
-            return ;
-        }
-        
-        categoryService.delete(categoryId);
     }
     
     /**

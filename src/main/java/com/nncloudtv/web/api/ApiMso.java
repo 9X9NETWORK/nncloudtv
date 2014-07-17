@@ -275,10 +275,12 @@ public class ApiMso extends ApiGeneric {
             lang = NnStringUtil.validateLangCode(lang);
         }
         
-        List<Set> results = apiMsoService.msoSets(mso.getId(), lang);
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
-            return new ArrayList<Set>();
+        List<Set> results;
+        
+        if (lang != null) {
+            results = setService.findByMsoIdAndLang(mso.getId(), lang);
+        } else {
+            results = setService.findByMsoId(mso.getId());
         }
         
         for (Set result : results) {
@@ -557,8 +559,7 @@ public class ApiMso extends ApiGeneric {
             log.info(printExitState(now, req, "403"));
             return null;
         }
-        
-        apiMsoService.setDelete(set.getId());
+        NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(setId));;
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -792,7 +793,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        apiMsoService.setChannelRemove(set.getId(), channelId);
+        NNF.getSysTagMapMngr().delete(NNF.getSysTagMapMngr().findOne(setId, channelId));
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -1490,8 +1491,7 @@ public class ApiMso extends ApiGeneric {
             log.info(printExitState(now, req, "403"));
             return null;
         }
-        
-        apiMsoService.categoryDelete(category.getId());
+        NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(categoryId));
         log.info(printExitState(now, req, "ok"));
         return ok(resp);
     }

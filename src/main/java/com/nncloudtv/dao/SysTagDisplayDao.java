@@ -206,7 +206,7 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
     public List<SysTagDisplay> findAllBySysTagId(long sysTagId) {
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<SysTagDisplay> detached;
+        List<SysTagDisplay> detached = new ArrayList<SysTagDisplay>();
         
         try {
             Query query = pm.newQuery(SysTagDisplay.class);
@@ -216,8 +216,6 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
             
             if (results != null && results.size() > 0) {
                 detached = (List<SysTagDisplay>) pm.detachCopyAll(results);
-            } else {
-                detached = new ArrayList<SysTagDisplay>();
             }
         } finally {
             pm.close();
