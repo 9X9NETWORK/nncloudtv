@@ -2,6 +2,7 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import com.nncloudtv.dao.AdPlacementDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
@@ -22,6 +23,7 @@ import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
@@ -71,6 +73,7 @@ public class NNF {
     protected static PoiPointManager        poiPointMngr        = null;
     protected static PoiEventManager        poiEventMngr        = null;
     protected static PoiCampaignManager     poiCampaignMngr     = null;
+    protected static AdPlacementManager     adMngr              = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -92,6 +95,7 @@ public class NNF {
     protected static SysTagDao         sysTagDao         = null;
     protected static SysTagDisplayDao  displayDao        = null;
     protected static SysTagMapDao      sysTagMapDao      = null;
+    protected static AdPlacementDao    adDao             = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -311,6 +315,28 @@ public class NNF {
         }
         
         return sysTagDao;
+    }
+    
+    public static AdPlacementDao getAdDao() {
+        
+        if (adDao == null) {
+            
+            log.info("create adDao");
+            adDao = new AdPlacementDao();
+        }
+        
+        return adDao;
+    }
+    
+    public static AdPlacementManager getAdMngr() {
+        
+        if (adMngr == null) {
+            
+            log.info("create adMngr");
+            adMngr = new AdPlacementManager();
+        }
+        
+        return adMngr;
     }
     
     public static PoiPointManager getPoiPointMngr() {

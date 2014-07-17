@@ -342,11 +342,23 @@ public class WatchDogController {
         return output;        
     }
     
-    @RequestMapping(value="programCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "msoCache", produces = "text/plain; charset=utf-8")
+    public @ResponseBody String msoCache(@RequestParam(value="mso", required = true) long msoId) {
+        
+        Mso mso = NNF.getMsoMngr().findById(msoId);
+        
+        NNF.getMsoMngr().resetCache(mso);
+        
+        return "OK";
+    }
+    
+    
+    @RequestMapping(value = "programCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programCache(
-            @RequestParam(value="channel", required=false) long chId ) {
+            @RequestParam(value  ="channel", required = true) long chId ) {
         
         NNF.getProgramMngr().resetCache(chId);
+        
         return "OK";
     }
     

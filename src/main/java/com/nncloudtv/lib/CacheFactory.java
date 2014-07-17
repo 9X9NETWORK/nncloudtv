@@ -395,5 +395,16 @@ public class CacheFactory {
         log.info("ytprogram key:" + key);
         return key;
     }
+
+    public static String getAdInfoKey(Mso mso, short format) {
+        String key = "";
+        if (format == PlayerApiService.FORMAT_PLAIN) {
+            key = "adInfo(" + mso.getName() + ")";
+        } else {
+            key = "adInfo(" + mso.getName() + ")[json]";
+        }
+        log.info("adInfoKey:" + key);
+        return key;
+    }
     
 }
