@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 
@@ -17,7 +18,7 @@ public class SysTagManager {
     
     protected static final Logger log = Logger.getLogger(SysTagManager.class.getName());
     
-    private SysTagDao dao = new SysTagDao();
+    private SysTagDao dao = NNF.getSysTagDao();
 
     public SysTag findById(long id) {
         return dao.findById(id);

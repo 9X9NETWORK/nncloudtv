@@ -1063,13 +1063,11 @@ public class NnChannelManager {
         //poi
         String poiStr = "";
         if (version > 32) {
-            PoiEventManager eventMngr = new PoiEventManager();
-            PoiPointManager pointMngr = new PoiPointManager();
-            List<PoiPoint> points = pointMngr.findCurrentByChannel(c.getId());
+            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(c.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
             for (PoiPoint p : points) {
-                PoiEvent event = eventMngr.findByPoint(p.getId());
+                PoiEvent event = NNF.getPoiEventMngr().findByPoint(p.getId());
                 events.add(event);
             }
             if (points.size() != events.size()) {

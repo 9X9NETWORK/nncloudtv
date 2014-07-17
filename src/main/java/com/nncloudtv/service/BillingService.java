@@ -34,7 +34,7 @@ import com.nncloudtv.web.json.cms.CreditCard;
 @Service
 public class BillingService {
     
-    protected static final Logger   log = Logger.getLogger(BillingService.class.getName());
+    protected static final Logger log = Logger.getLogger(BillingService.class.getName());
     
     public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException,
             NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {

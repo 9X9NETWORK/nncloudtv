@@ -564,20 +564,15 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        //boolean readOnly = configMngr.isInReadonlyMode(false);
         //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
-        /*
-        if (!readOnly)
-            counter = this.addMsoInfoVisitCounter(readOnly);
-            */     
         String acceptLang = req.getHeader("Accept-Language");
         String piwik = "http://piwik.9x9.tv/";
         Object result = NNF.getMsoMngr().getBrandInfo(req, mso, os, this.format, locale, counter, piwik, acceptLang);
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }    
-
+    
     public String findLocaleByHttpRequest(HttpServletRequest req) {
         
         return NNF.getUserMngr().findLocaleByHttpRequest(req);
@@ -3164,13 +3159,11 @@ public class PlayerApiService {
             return this.assembleMsgs((Integer)map.get("s"), null);
         }
         NnUser user = (NnUser) map.get("u");
-        PoiPointManager poiMngr = new PoiPointManager();
         long lPoiId = Long.parseLong(poiId);
-        Poi poi = poiMngr.findPoiById(lPoiId);
+        Poi poi = NNF.getPoiPointMngr().findPoiById(lPoiId);
         if (poi == null)
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid
-        PoiEventManager eventMngr = new PoiEventManager();
-        PoiEvent event = eventMngr.findByPoi(lPoiId);
+        PoiEvent event = NNF.getPoiEventMngr().findByPoi(lPoiId);
         if (event == null) {
             log.info("event invalid");
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid

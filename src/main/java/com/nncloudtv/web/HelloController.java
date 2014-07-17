@@ -54,7 +54,7 @@ public class HelloController {
     		log.info("user id:" + user.getId());
     	}
     	/*
-    	SysTagMapDao dao = new SysTagMapDao();
+    	SysTagMapDao dao = NNF.getSysTagMapDao();
     	List<SysTagMap> list = dao.findCategoryMapsByChannelId(1);
     	for (SysTagMap m : list) {
     		System.out.println(m.getId());

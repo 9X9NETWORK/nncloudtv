@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnChannelDao;
-import com.nncloudtv.dao.SysTagDao;
-import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
@@ -101,15 +99,15 @@ public class WatchDogController {
        String chId = req.getParameter("channel");
        String categoryId = req.getParameter("category");
        
-       SysTagMapDao dao = new SysTagMapDao();
-       SysTagDisplay display = new SysTagDisplayDao().findById(Long.parseLong(categoryId));
+       SysTagMapDao dao = NNF.getSysTagMapDao();
+       SysTagDisplay display = NNF.getDisplayDao().findById(Long.parseLong(categoryId));
        String result = "";
        if (display != null) {       
 	       SysTagMap map = dao.findBySysTagIdAndChannelId(display.getSystagId(), Long.parseLong(chId));
 	       if (map == null) {
 	    	   NnChannel c = NNF.getChannelDao().findById(Long.parseLong(chId));
 	    	   if (c != null) {
-	    		   SysTag systag = new SysTagDao().findById(display.getSystagId());
+	    		   SysTag systag = NNF.getSysTagDao().findById(display.getSystagId());
 	    		   if (systag == null) {
 	    			   result = "category (systagId) is null";
 	    		   } else {
@@ -344,11 +342,23 @@ public class WatchDogController {
         return output;        
     }
     
-    @RequestMapping(value="programCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "msoCache", produces = "text/plain; charset=utf-8")
+    public @ResponseBody String msoCache(@RequestParam(value="mso", required = true) long msoId) {
+        
+        Mso mso = NNF.getMsoMngr().findById(msoId);
+        
+        NNF.getMsoMngr().resetCache(mso);
+        
+        return "OK";
+    }
+    
+    
+    @RequestMapping(value = "programCache", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programCache(
-            @RequestParam(value="channel", required=false) long chId ) {
+            @RequestParam(value  ="channel", required = true) long chId ) {
         
         NNF.getProgramMngr().resetCache(chId);
+        
         return "OK";
     }
     

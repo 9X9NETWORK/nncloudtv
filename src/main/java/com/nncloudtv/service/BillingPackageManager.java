@@ -16,7 +16,7 @@ public class BillingPackageManager {
     
     protected static final Logger log = Logger.getLogger(BillingPackageManager.class.getName());
     
-    BillingPackageDao dao = NNF.getPackageDao();
+    protected BillingPackageDao dao = NNF.getPackageDao();
     
     public List<BillingPackage> findAll() {
         

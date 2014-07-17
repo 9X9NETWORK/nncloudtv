@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
@@ -381,6 +382,14 @@ public class PlayerApiController {
      *          preferredLangCode    en<br/>
      *          debug    1<br/>
      *         </p>
+     *         <p>Ff <b>ad=1</b> parameter is carried, AdInfo will be appended as a section block.<br/>
+     *         Format: [id] TAB [type] TAB [name] TAB [url]<br/>
+     *         </p>
+     *         <p>Example: <br/>
+     *          --<br/>
+     *          1   0   ad hello world!!   http://s3.aws.amazon.com/creative_video0.mp4<br/>
+     *          2   1   vastAd hello world!!   http://rec.scupio.com/recweb/vast.aspx?creativeid=9x9test&d=15&video=VAD20140507123513649.mp4&adid=133872&rid=7241<br/>
+     *         </p>
      */    
     @RequestMapping(value="brandInfo")
     public @ResponseBody Object brandInfo(
@@ -535,6 +544,8 @@ public class PlayerApiController {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("redirection failed");
             }
+        } catch(ConnectException e) {
+            log.warning("connect to pdr server timeout, but not big problem.");
         } catch (Exception e) {
             e.printStackTrace();
         }

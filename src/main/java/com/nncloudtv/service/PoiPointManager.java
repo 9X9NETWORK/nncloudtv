@@ -9,8 +9,6 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.PoiDao;
-import com.nncloudtv.dao.PoiPointDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
@@ -21,22 +19,18 @@ import com.nncloudtv.model.PoiPoint;
 public class PoiPointManager {
     protected static final Logger log = Logger.getLogger(PoiPointManager.class.getName());
     
-    private PoiPointDao pointDao = new PoiPointDao();
-    private PoiDao poiDao = new PoiDao();
-    private PoiEventManager poiEventMngr = new PoiEventManager();
-    
     public PoiPoint create(PoiPoint point) {
         Date now = new Date();
         point.setCreateDate(now);
         point.setUpdateDate(now);
-        point = pointDao.save(point);
+        point = NNF.getPoiPointDao().save(point);
         return point;
     }
     
     public PoiPoint save(PoiPoint point) {
         Date now = new Date();
         point.setUpdateDate(now);
-        point = pointDao.save(point);
+        point = NNF.getPoiPointDao().save(point);
         return point;
     }
     
@@ -46,7 +40,7 @@ public class PoiPointManager {
             return ;
         }
         
-        List<Poi> pois = poiDao.findByPointId(point.getId());
+        List<Poi> pois = NNF.getPoiDao().findByPointId(point.getId());
         List<Long> eventIds = new ArrayList<Long>();
         if (pois != null) {
             for (Poi p : pois) {
@@ -56,12 +50,12 @@ public class PoiPointManager {
         
         // TODO : rewrite when AD's cms is ready
         if (eventIds.size() > 0) {
-            poiEventMngr.deleteByIds(eventIds);
+            NNF.getPoiEventMngr().deleteByIds(eventIds);
         }
         if (pois != null && pois.size() > 0) {
-            poiDao.deleteAll(pois);
+            NNF.getPoiDao().deleteAll(pois);
         }
-        pointDao.delete(point);
+        NNF.getPoiPointDao().delete(point);
     }
     
     public void delete(List<PoiPoint> points) {
@@ -69,7 +63,7 @@ public class PoiPointManager {
         List<Poi> temps;
         List<Long> eventIds = new ArrayList<Long>();
         for (PoiPoint point : points) {
-            temps = poiDao.findByPointId(point.getId()); // TODO: computing issue, try to reduce mysql queries
+            temps = NNF.getPoiDao().findByPointId(point.getId()); // TODO: computing issue, try to reduce mysql queries
             for (Poi temp : temps) {
                 eventIds.add(temp.getEventId());
             }
@@ -77,120 +71,36 @@ public class PoiPointManager {
         }
         
         // TODO : rewrite when AD's cms is ready
-        poiEventMngr.deleteByIds(eventIds);
-        poiDao.deleteAll(pois);
-        pointDao.deleteAll(points);
+        NNF.getPoiEventMngr().deleteByIds(eventIds);
+        NNF.getPoiDao().deleteAll(pois);
+        NNF.getPoiPointDao().deleteAll(points);
     }
-    
-    /*
-    public boolean hookEvent(long pointId, long eventId) {
-        Poi poi = new Poi();
-        Date now = new Date();
-        poi.setPointId(pointId);
-        poi.setEventId(eventId);
-        poi.setUpdateDate(now);
-        poi = poiDao.save(poi);
-        
-        if (poi != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    */
     
     public PoiPoint findById(long id) {
-        return pointDao.findById(id);
+        return NNF.getPoiPointDao().findById(id);
     }
     
     public List<PoiPoint> findByChannel(long channelId) {
-        return pointDao.findByChannel(channelId);
+        return NNF.getPoiPointDao().findByChannel(channelId);
     }
 
     public List<PoiPoint> findCurrentByChannel(long channelId) {
-        return pointDao.findCurrentByChannel(channelId);
+        return NNF.getPoiPointDao().findCurrentByChannel(channelId);
     }
     
     public List<PoiPoint> findCurrentByProgram(long programId) {
-        return pointDao.findCurrentByProgram(programId);
+        return NNF.getPoiPointDao().findCurrentByProgram(programId);
     }
     
     public List<PoiPoint> findByProgram(long programId) {
         
-        List<PoiPoint> points = pointDao.findByProgram(programId);
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(programId);
         if (points != null) {
             Collections.sort(points, getPointStartTimeComparator());
         }
         
         return points;
     }
-    
-    /*
-    public Map<String, Object> getEventByPoi(PoiPoint poi) {
-        Map<String, Object> result = new TreeMap<String, Object>();
-        if (poi == null) {
-            return result;
-        }
-        
-        // event part
-        List<PoiEvent> poiEvents = poiEventMngr.findPoiEventsByPoiId(poi.getId());
-        if (poiEvents.size() == 0) {
-            // dynamic assign event by rules
-            
-        } else {
-            // there should apply some rule to choose an event
-            PoiEvent event = poiEvents.get(0);
-            result.putAll(poiEventMngr.eventExplainFactory(event));
-        }
-        
-        // POI part
-        result.put("id", poi.getId());
-        result.put("programId", poi.getTargetId());
-        result.put("name", poi.getName());
-        //result.put("intro", poi.getIntro());
-        result.put("intro", null);
-        result.put("startTime", poi.getStartTimeInt());
-        result.put("endTime", poi.getEndTimeInt());
-        result.put("tag", poi.getTag());
-        
-        return result;
-    }
-    */
-    
-    /*
-    public List<Map<String, Object>> getEventsByProgram(NnProgram program) {
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        if (program == null) {
-            return results;
-        }
-        
-        // sort
-        List<PoiPoint> pois = pointDao.findByProgram(program.getId());
-        Collections.sort(pois, getPoiStartTimeComparator());
-        
-        for (PoiPoint poi : pois) {
-            results.add(getEventByPoi(poi)); // TODO: computing issue, try to reduce mysql queries, List<List<PoiEvent>> List<int>
-        }
-        return results;
-    }
-    */
-    
-    // list which need revertHtml, should avoid collision issue
-    /*
-    public static Map<String, Object> revertHtml(Map<String, Object> responseObj) {
-        String[] keys = {"name", "intro", "message", "button"}; 
-        
-        for (String key : keys) {
-            if(responseObj.containsKey(key)) {
-                String temp = (String) responseObj.get(key);
-                temp = NnStringUtil.revertHtml(temp);
-                responseObj.put(key, temp);
-            }
-        }
-        
-        return responseObj;
-    }
-    */
     
     public boolean isPointCollision(PoiPoint originPoint, NnProgram program, int startTime, int endTime) {
         if (program == null) {
@@ -207,7 +117,7 @@ public class PoiPointManager {
             return true;
         }
         
-        List<PoiPoint> points = pointDao.findByProgram(program.getId());
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(program.getId());
         if (originPoint != null) {
             if (points.contains(originPoint)) {
                 points.remove(originPoint);
@@ -274,15 +184,15 @@ public class PoiPointManager {
     }
 
     public Poi findPoiById(long id) {
-        return poiDao.findById(id);
+        return NNF.getPoiDao().findById(id);
     }
     
     public List<Poi> findCurrentPoiByChannel(long channelId) {
-        return poiDao.findCurrentByChannel(channelId);
+        return NNF.getPoiDao().findCurrentByChannel(channelId);
     }
     
     public List<Poi> findCurrentPoiByProgram(long programId) {
-        return poiDao.findCurrentByProgram(programId);
+        return NNF.getPoiDao().findCurrentByProgram(programId);
     }
     
 }

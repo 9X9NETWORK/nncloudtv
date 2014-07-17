@@ -30,7 +30,7 @@ public class SysTagDisplayManager {
     
     protected static final Logger log = Logger.getLogger(SysTagDisplayManager.class.getName());
     
-    private SysTagDisplayDao dao = new SysTagDisplayDao();
+    private SysTagDisplayDao dao = NNF.getDisplayDao();
     
     public List<SysTagDisplay> findPlayerCategories(String lang, long msoId) {
         return dao.findPlayerCategories(lang, msoId);       
