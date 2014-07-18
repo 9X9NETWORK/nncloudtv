@@ -782,8 +782,13 @@ public class NnProgramManager {
                     }
                     if (p.getStartTime() != null && p.getStartTime().equals("0") &&
                         p.getEndTime() != null && p.getEndTime().equals("0")) {
-                        p.setStartTime("");
-                        p.setEndTime("");
+                    	if (p.getDuration() != null && !p.getDuration().equals("0")) {
+                            p.setStartTime("0");
+                    	    p.setEndTime(p.getDuration());
+                    	} else {
+                    	    p.setStartTime("");
+                            p.setEndTime("");
+                    	}
                     }
                     String f1 = p.getFileUrl();
                     if (p.getAudioFileUrl() != null)
