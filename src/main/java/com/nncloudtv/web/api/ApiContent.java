@@ -1180,11 +1180,6 @@ public class ApiContent extends ApiGeneric {
             log.info(printExitState(now, req, "404"));
             return null;
         }
-        if (NnChannelManager.isValidChannelSourceUrl(channel.getSourceUrl()) == false) {
-            notFound(resp, INVALID_YOUTUBE_URL);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
