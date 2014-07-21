@@ -677,14 +677,14 @@ public class ApiMso extends ApiGeneric {
         
         // alwaysOnTop
         String alwaysOnTopStr = req.getParameter("alwaysOnTop");
-        Boolean alwaysOnTop = null;
+        boolean alwaysOnTop = false;
         if (alwaysOnTopStr != null) {
             alwaysOnTop = Boolean.valueOf(alwaysOnTopStr);
         }
         
         // featured
         String featuredStr = req.getParameter("featured");
-        Boolean featured = null;
+        boolean featured = false;
         if (featuredStr != null) {
             featured = Boolean.valueOf(featuredStr);
         }
