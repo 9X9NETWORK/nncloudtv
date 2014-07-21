@@ -567,7 +567,7 @@ public class NnProgramManager {
             List<NnProgram> programs = new ArrayList<NnProgram>();
             Long categoryId = Long.parseLong(channel.getSourceUrl());
             
-            if (categoryId != null || start < PlayerApiService.PAGING_ROWS) {
+            if (categoryId != null && start < PlayerApiService.PAGING_ROWS) {
                 
                 List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
                 episodes = NNF.getEpisodeMngr().findByChannels(channels);
@@ -589,7 +589,7 @@ public class NnProgramManager {
             List<NnProgram> programs = new ArrayList<NnProgram>();
             Long categoryId = Long.parseLong(channel.getSourceUrl());
             
-            if (categoryId != null || start < PlayerApiService.PAGING_ROWS) {
+            if (categoryId != null && start < PlayerApiService.PAGING_ROWS) {
                 
                 List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
                 for (NnChannel ch : channels) {
