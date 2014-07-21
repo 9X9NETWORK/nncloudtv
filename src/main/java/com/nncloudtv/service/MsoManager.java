@@ -98,11 +98,11 @@ public class MsoManager {
     }
     
     public static boolean isNNMso(Mso mso) {
-    	if (mso == null)
-    		return false;
-    	if (mso.getId() == 1)
-    		return true;
-    	return false;
+        if (mso == null)
+            return false;
+        if (mso.getId() == 1)
+            return true;
+        return false;
     }
     
     private String composeBrandInfoStr(Mso mso, String os) {

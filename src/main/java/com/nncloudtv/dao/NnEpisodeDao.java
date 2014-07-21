@@ -84,7 +84,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
 
     public List<NnEpisode> findPlayerLatestEpisode(long channelId, short sort) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();        
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnEpisode.class);
             query.setFilter("channelId == channelIdParam && isPublic == isPublicParam");

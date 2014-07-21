@@ -69,7 +69,7 @@ public class ApiContentService {
             List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, msoId);
             
             results = channelMngr.findByIds(verifiedChannel);
-            Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
         }
         
         return results;
@@ -196,9 +196,9 @@ public class ApiContentService {
         } else {
             results = episodeMngr.findByChannelId(channelId);
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
-                Collections.sort(results, episodeMngr.getEpisodeReverseSeqComparator());
+                Collections.sort(results, NnEpisodeManager.getComparator("reverse"));
             } else {
-                Collections.sort(results, episodeMngr.getEpisodeSeqComparator());
+                Collections.sort(results, NnEpisodeManager.getComparator("seq"));
             }
         }
         

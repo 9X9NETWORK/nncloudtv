@@ -113,7 +113,7 @@ public class SysTagDisplayManager {
         }
         return dao.findAllBySysTagId(sysTagId);
     }
-
+    
     public SysTagDisplay findByName(String name, long msoId) {
         return dao.findByName(name);
     }
@@ -139,17 +139,15 @@ public class SysTagDisplayManager {
         dao.delete(sysTagDisplay);
     }
     
-    public void deleteAll(List<SysTagDisplay> sysTagDisplays) {
-        if (sysTagDisplays == null || sysTagDisplays.size() < 1) {
-            return ;
-        }
+    public void delete(List<SysTagDisplay> sysTagDisplays) {
+        
         dao.deleteAll(sysTagDisplays);
     }
     
     public void addChannelCounter(NnChannel channel) {
         
     }
-
+    
     @SuppressWarnings("unchecked")
     public Object getPlayerCategoryInfo(SysTagDisplay display, boolean programInfo, List<NnChannel> channels, long start, long limit, long total, int version, short format) {
         String id = String.valueOf(display.getId());
@@ -227,7 +225,6 @@ public class SysTagDisplayManager {
      */
     public Object getPlayerWhatson(String lang, short time, short format, Mso mso, boolean minimal, int version) {
         
-        YtProgramManager ytprogramMngr = new YtProgramManager();
         List<NnChannel> listingChannels = new ArrayList<NnChannel>();
         String programInfo = "";
         String channelInfo = "";
@@ -242,7 +239,7 @@ public class SysTagDisplayManager {
 	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
 	                    daypartingChannel = c;                    
 	                } else {
-	                    programInfo += (String)ytprogramMngr.findByChannel(c);
+	                    programInfo += (String) NNF.getYtProgramMngr().findByChannel(c);
 	                }
 	            }	            
 	        }	        
@@ -251,7 +248,7 @@ public class SysTagDisplayManager {
 	        if (dayparting != null) {
 	            log.info("dayparting:" + dayparting.getName());
 	            List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), lang, mso.getId(), time);
-	            programInfo += (String)ytprogramMngr.findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);
+	            programInfo += (String) NNF.getYtProgramMngr().findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, lang);
 	        } else {
 	            return new String[]{"", "", ""};
 	        }
@@ -442,6 +439,7 @@ public class SysTagDisplayManager {
     }       
     
     public Object getPlayerSetInfo(Mso mso, SysTag systag, SysTagDisplay display, List<NnChannel> channels, List<NnProgram>programs, int version, short format, short time, boolean isProgramInfo) {
+        
         String name = mso.getName();
         String imageUrl = mso.getLogoUrl();
         String intro = mso.getIntro();
@@ -450,50 +448,61 @@ public class SysTagDisplayManager {
         String setImageUrl = display.getImageUrl();
         String bannerImageUrl = display.getBannerImageUrl();
         String bannerImageUrl2 = display.getBannerImageUrl2();
+        
         if (format == PlayerApiService.FORMAT_PLAIN) {
-        String result[] = {"", "", "", ""};
-        //mso info
-        result[0] += PlayerApiService.assembleKeyValue("name", name);
-        result[0] += PlayerApiService.assembleKeyValue("imageUrl", imageUrl); 
-        result[0] += PlayerApiService.assembleKeyValue("intro", intro);            
-        //set info
-        result[1] += PlayerApiService.assembleKeyValue("id", setId);
-        result[1] += PlayerApiService.assembleKeyValue("name", setName);
-        result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
-        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
-        result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);
-        result[1] += PlayerApiService.assembleKeyValue("channeltag", this.getTag(display.getSystagId(), "portal"));
-        //channel info
-        result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
-        //program info
-        String programStr = "";
-        if (isProgramInfo) {
-	        if (systag.getType() != SysTag.TYPE_WHATSON) {
-	            programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);            
-	        } else {
-	        	//please reference getPlayerWhatson
-	            NnChannel daypartingChannel = null;
-	            for (NnChannel c : channels) {
-	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
-	                   daypartingChannel = c;                    
-	            }   
-	            //find real dayparting channels and its programs
-	            SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
-	            if (dayparting != null) {
-	               log.info("dayparting:" + dayparting.getName());
-	               List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), display.getLang(), mso.getId(), time);
-	               //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
-	               //programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
-	               programStr += (String) new YtProgramManager().findByDaypartingChannels(daypartingChannels, daypartingChannel, mso.getId(), time, display.getLang());
-	            }
-	            //find trending channels' programs
-	            List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);            
-	            programStr += NNF.getProgramMngr().composeYtProgramInfo(null, ytprograms, format);                                                            
-	        }
-        }
-        result[3] = programStr;
-        return result;
-       } else {
+            
+            String result[] = { "", "", "", "" };
+            //mso info
+            result[0] += PlayerApiService.assembleKeyValue("name", name);
+            result[0] += PlayerApiService.assembleKeyValue("imageUrl", imageUrl);
+            result[0] += PlayerApiService.assembleKeyValue("intro", intro);
+            //set info
+            result[1] += PlayerApiService.assembleKeyValue("id", setId);
+            result[1] += PlayerApiService.assembleKeyValue("name", setName);
+            result[1] += PlayerApiService.assembleKeyValue("imageUrl", setImageUrl);
+            result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl", bannerImageUrl);
+            result[1] += PlayerApiService.assembleKeyValue("bannerImageUrl2", bannerImageUrl2);
+            result[1] += PlayerApiService.assembleKeyValue("channeltag", this.getTag(display.getSystagId(), "portal"));
+            //channel info
+            result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, version,
+                    PlayerApiService.FORMAT_PLAIN);
+            //program info
+            String programStr = "";
+            if (isProgramInfo) {
+                
+                if (systag.getType() != SysTag.TYPE_WHATSON) {
+                    
+                    programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);
+                    
+                } else {
+                    
+                    //please reference getPlayerWhatson
+                    NnChannel daypartingChannel = null;
+                    for (NnChannel c : channels) {
+                        if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK)
+                            daypartingChannel = c;
+                    }
+                    //find real dayparting channels and its programs
+                    SysTagDisplay dayparting = this.findDayparting(time, display.getLang(), mso.getId());
+                    if (dayparting != null) {
+                        log.info("dayparting:" + dayparting.getName());
+                        List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(
+                                dayparting.getSystagId(), display.getLang(), mso.getId(), time);
+                        //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
+                        //programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
+                        programStr += (String) new YtProgramManager().findByDaypartingChannels(daypartingChannels,
+                                daypartingChannel, mso.getId(), time, display.getLang());
+                    }
+                    //find trending channels' programs
+                    List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);
+                    programStr += NNF.getProgramMngr().composeYtProgramInfo(null, ytprograms, format);
+                }
+            }
+            result[3] = programStr;
+            return result;
+            
+        } else {
+            
             PlayerSetInfo json = new PlayerSetInfo();
             json.setMsoName(name);
             json.setMsoImageUrl(imageUrl);
@@ -508,13 +517,14 @@ public class SysTagDisplayManager {
             setInfoList.add(setInfo);
             json.setSetInfo(setInfoList);
             @SuppressWarnings("unchecked")
-            List<ChannelLineup> lineups = (List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels, version, PlayerApiService.FORMAT_JSON);
-            json.setChannels(lineups);            
+            List<ChannelLineup> lineups = (List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels,
+                    version, PlayerApiService.FORMAT_JSON);
+            json.setChannels(lineups);
             @SuppressWarnings("unchecked")
-            List<ProgramInfo> programInfo = (List<ProgramInfo>) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);
+            List<ProgramInfo> programInfo = (List<ProgramInfo>) NNF.getProgramMngr().findLatestProgramInfoByChannels(
+                    channels, format);
             json.setPrograms(programInfo);
-            return json; 
+            return json;
         }
     }
-    
 }
