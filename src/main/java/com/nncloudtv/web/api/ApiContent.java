@@ -1500,7 +1500,7 @@ public class ApiContent extends ApiGeneric {
             return new ArrayList<NnEpisode>();
         }
         
-        Collections.sort(results, NNF.getEpisodeMngr().getEpisodeSeqComparator());
+        Collections.sort(results, NnEpisodeManager.getComparator("seq"));
         
         for (NnEpisode episode : results) {
             
