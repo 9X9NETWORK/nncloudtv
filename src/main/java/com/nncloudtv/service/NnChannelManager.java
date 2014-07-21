@@ -1025,44 +1025,81 @@ public class NnChannelManager {
     }
     
     //ChannelLineup or String
-    public Object composeEachChannelLineup(NnChannel c, int version, short format) {
+    public Object composeEachChannelLineup(NnChannel channel, int version, short format) {
         Object result = null;
         log.info("version number: " + version);
 
-        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(c.getId()), version, format);
+        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), version, format);
         try {
             result = CacheFactory.get(cacheKey);
         } catch (Exception e) {
             log.info("memcache error");
         }
-        if (result != null && c.getId() != 0) { //id = 0 means fake channel, it is dynamic
-            log.info("get channel lineup from cache" + ". v=" + version +";channel=" + c.getId());
+        if (result != null && channel.getId() != 0) { //id = 0 means fake channel, it is dynamic
+            log.info("get channel lineup from cache" + ". v=" + version +";channel=" + channel.getId());
             return result;
         }
        
-        log.info("channel lineup NOT from cache:" + c.getId());
+        log.info("channel lineup NOT from cache:" + channel.getId());
         //name and last episode title
         //favorite channel name will be overwritten later
-        String name = c.getPlayerName() == null ? "" : c.getPlayerName();
+        String name = channel.getPlayerName() == null ? "" : channel.getPlayerName();
         String[] split = name.split("\\|");
         name = split.length > 2 ? split[0] : name;
         String lastEpisodeTitle = name;
         //String lastEpisodeTitle = split.length == 2 ? split[1] : "";
 
         //image url, favorite channel image will be overwritten later
-        String imageUrl = c.getPlayerPrefImageUrl();
+        String imageUrl = channel.getPlayerPrefImageUrl();
         if (version < 32) {
                 imageUrl = imageUrl.indexOf("|") < 0 ? imageUrl : imageUrl.substring(0, imageUrl.indexOf("|"));
                 log.info("v31 imageUrl:" + imageUrl);
         }
         if (version > 31 && (
-            c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP ||
-            c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY ||
-            c.getContentType() == NnChannel.CONTENTTYPE_MIXED ||
-            c.getContentType() == NnChannel.CONTENTTYPE_FAVORITE)) {
+            channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP       ||
+            channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY    ||
+            channel.getContentType() == NnChannel.CONTENTTYPE_MIXED            ||
+            channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE         ||
+            channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL1 ||
+            channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL2)) {
             
-            if (c.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
-                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(c.getId());
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL1) {
+                
+                Long categoryId = Long.parseLong(channel.getSourceUrl());
+                if (categoryId != null) {
+                    
+                    List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                    List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannels(channels);
+                    Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
+                    for (int i = 0; i < 3 && i < episodes.size(); i++) {
+                        lastEpisodeTitle += "|" + episodes.get(i).getName();
+                        imageUrl += "|" + episodes.get(i).getImageUrl();
+                    }
+                }
+            } else if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL2) {
+                
+                List<NnEpisode> episodes = new ArrayList<NnEpisode>();
+                Long categoryId = Long.parseLong(channel.getSourceUrl());
+                if (categoryId != null) {
+                    
+                    List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                    for (NnChannel ch : channels) {
+                        List<NnEpisode> candidates = NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting());
+                        if (candidates.size() > 0) {
+                            
+                            episodes.add(candidates.get(0));
+                        }
+                    }
+                    
+                    Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
+                    
+                    for (int i = 0; i < 3 && i < episodes.size(); i++) {
+                        lastEpisodeTitle += "|" + episodes.get(i).getName();
+                        imageUrl += "|" + episodes.get(i).getImageUrl();
+                    }
+                }
+            } else if (channel.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
+                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channel.getId());
                 log.info("programs = " + programs.size());
                 Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
                 for (int i=0; i<3; i++) {
@@ -1075,7 +1112,7 @@ public class NnChannelManager {
                     }
                 }
             } else {
-                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
                 Collections.sort(episodes, NnEpisodeManager.getComparator("isPublicFirst"));
                 for (int i=0; i<3; i++) {
@@ -1090,13 +1127,13 @@ public class NnChannelManager {
                 }
             }
         }
-        short contentType = c.getContentType();
+        short contentType = channel.getContentType();
         if (contentType == NnChannel.CONTENTTYPE_FAKE_FAVORITE)
             contentType = NnChannel.CONTENTTYPE_FAVORITE;
         //poi
         String poiStr = "";
         if (version > 32) {
-            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(c.getId());
+            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(channel.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
             for (PoiPoint p : points) {
@@ -1123,23 +1160,23 @@ public class NnChannelManager {
         if (format == PlayerApiService.FORMAT_PLAIN) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
-            ori.add(c.getIdStr());
+            ori.add(channel.getIdStr());
             ori.add(name);
-            ori.add(c.getPlayerIntro());
+            ori.add(channel.getPlayerIntro());
             ori.add(imageUrl); //c.getPlayerPrefImageUrl());                        
-            ori.add(String.valueOf(c.getCntEpisode()));
-            ori.add(String.valueOf(c.getType()));
-            ori.add(String.valueOf(c.getStatus()));
-            ori.add(String.valueOf(c.getContentType()));
-            ori.add(c.getPlayerPrefSource());
-            ori.add(String.valueOf(c.getUpdateDate().getTime()));
-            ori.add(String.valueOf(getPlayerDefaultSorting(c))); //use default sorting for all
+            ori.add(String.valueOf(channel.getCntEpisode()));
+            ori.add(String.valueOf(channel.getType()));
+            ori.add(String.valueOf(channel.getStatus()));
+            ori.add(String.valueOf(channel.getContentType()));
+            ori.add(channel.getPlayerPrefSource());
+            ori.add(String.valueOf(channel.getUpdateDate().getTime()));
+            ori.add(String.valueOf(getPlayerDefaultSorting(channel))); //use default sorting for all
             ori.add(""); // piwik
             ori.add(""); //recently watched program
-            ori.add(c.getOriName());
-            ori.add(String.valueOf(c.getCntSubscribe())); //cnt subscribe, replace
-            ori.add(String.valueOf(populateCntView(c).getCntView()));
-            ori.add(c.getTag());
+            ori.add(channel.getOriName());
+            ori.add(String.valueOf(channel.getCntSubscribe())); //cnt subscribe, replace
+            ori.add(String.valueOf(populateCntView(channel).getCntView()));
+            ori.add(channel.getTag());
             ori.add(""); //ciratorProfile, curator id
             ori.add(""); //userName
             ori.add(""); //userIntro
@@ -1161,23 +1198,23 @@ public class NnChannelManager {
         } else {
             ChannelLineup lineup = new ChannelLineup();
             lineup.setPosition((short)0);
-            lineup.setId(c.getId());
+            lineup.setId(channel.getId());
             lineup.setName(name);
-            lineup.setDescription(c.getPlayerIntro());
+            lineup.setDescription(channel.getPlayerIntro());
             lineup.setThumbnail(imageUrl); //c.getPlayerPrefImageUrl());                        
-            lineup.setNumberOfEpisode(c.getCntEpisode());
-            lineup.setType(c.getType());
-            lineup.setStatus(c.getStatus());
-            lineup.setContentType(c.getContentType());
-            lineup.setChannelSource(c.getPlayerPrefSource());
-            lineup.setLastUpdateTime(c.getUpdateDate().getTime());
-            lineup.setSorting(getPlayerDefaultSorting(c)); //use default sorting for all
+            lineup.setNumberOfEpisode(channel.getCntEpisode());
+            lineup.setType(channel.getType());
+            lineup.setStatus(channel.getStatus());
+            lineup.setContentType(channel.getContentType());
+            lineup.setChannelSource(channel.getPlayerPrefSource());
+            lineup.setLastUpdateTime(channel.getUpdateDate().getTime());
+            lineup.setSorting(getPlayerDefaultSorting(channel)); //use default sorting for all
             lineup.setPiwikId(""); // piwik
             lineup.setRecentlyWatchedPrograms(""); //recently watched program
-            lineup.setYoutubeName(c.getOriName());
-            lineup.setNumberOfSubscribers(c.getCntSubscribe()); //cnt subscribe, replace
-            lineup.setNumberOfViews(populateCntView(c).getCntView());
-            lineup.setTags(c.getTag());
+            lineup.setYoutubeName(channel.getOriName());
+            lineup.setNumberOfSubscribers(channel.getCntSubscribe()); //cnt subscribe, replace
+            lineup.setNumberOfViews(populateCntView(channel).getCntView());
+            lineup.setTags(channel.getTag());
             lineup.setCuratorProfile(""); //ciratorProfile, curator id
             lineup.setCuratorName(""); //userName
             lineup.setCuratorDescription(""); //userIntro
