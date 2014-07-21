@@ -28,7 +28,7 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
                      + "            and s.type = " + type
                      + "            and d.lang = " + NnStringUtil.escapedQuote(lang)
                      + "            and s.id = d.systagId "
-                     + "            order by s.seq) a2"
+                     + "            order by s.seq) a2 "
                      + "on a1.id = a2.id";
         
         return sql(query);
