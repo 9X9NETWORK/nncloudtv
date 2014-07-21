@@ -26,6 +26,7 @@ import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.SysTag;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
@@ -363,13 +364,13 @@ public class ApiMso extends ApiGeneric {
             try {
                 sortingType = Short.valueOf(sortingTypeStr);
             } catch (NumberFormatException e) {
-                sortingType = Set.SORT_DEFAULT;
+                sortingType = SysTag.SORT_SEQ;
             }
             if (SetService.isValidSortingType(sortingType) == false) {
-                sortingType = Set.SORT_DEFAULT;
+                sortingType = SysTag.SORT_SEQ;
             }
         } else {
-            sortingType = Set.SORT_DEFAULT;
+            sortingType = SysTag.SORT_SEQ;
         }
         
         Set result = apiMsoService.msoSetCreate(mso.getId(), seq, tag, name, sortingType);
@@ -674,55 +675,6 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        // timeStart
-        String timeStartStr = req.getParameter("timeStart");
-        Short timeStart = null;
-        if (timeStartStr != null) {
-            try {
-                timeStart = Short.valueOf(timeStartStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-            if (timeStart < 0 || timeStart > 23) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-        }
-        
-        // timeEnd
-        String timeEndStr = req.getParameter("timeEnd");
-        Short timeEnd = null;
-        if (timeEndStr != null) {
-            try {
-                timeEnd = Short.valueOf(timeEndStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-            if (timeEnd < 0 || timeEnd > 23) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-        }
-        
-        if (timeStartStr == null && timeEndStr == null) {
-            // as origin setting
-        } else if (timeStartStr != null && timeEndStr != null) {
-            if (timeStart == timeEnd) {
-                timeStart = 0;
-                timeEnd = 0;
-            }
-        } else { // they should be pair
-            badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
-        }
-        
         // alwaysOnTop
         String alwaysOnTopStr = req.getParameter("alwaysOnTop");
         Boolean alwaysOnTop = null;
@@ -736,8 +688,7 @@ public class ApiMso extends ApiGeneric {
         if (featuredStr != null) {
             featured = Boolean.valueOf(featuredStr);
         }
-        
-        apiMsoService.setChannelAdd(set.getId(), channel.getId(), timeStart, timeEnd, alwaysOnTop, featured);
+        NNF.getSysTagMngr().addChannel(setId, channelId, alwaysOnTop, featured, (short) 0);
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -926,12 +877,13 @@ public class ApiMso extends ApiGeneric {
                 }
             }
         }
-        
-        List<Long> results = apiMsoService.storeChannels(mso.getId(), channelIds, categoryId);
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
-            return new ArrayList<Long>();
-        }
+        List<Long> results = new ArrayList<Long>();
+        if (channelIds != null) {
+            List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
+            results = storeService.checkChannelsInMsoStore(channels, msoId);
+        } else if (categoryId != null) {
+            results = storeService.getMsoCategoryChannels(categoryId, msoId);
+        }        
         log.info(printExitState(now, req, "ok"));
         return results;
     }
@@ -1530,7 +1482,8 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<NnChannel> results = apiMsoService.categoryChannels(category.getId());
+        List<NnChannel> results = categoryService.getChannels(categoryId);
+        NNF.getChannelMngr().normalize(results);
         log.info(printExitState(now, req, "ok"));
         return results;
     }
@@ -1623,8 +1576,13 @@ public class ApiMso extends ApiGeneric {
         if (alwaysOnTopStr != null) {
             alwaysOnTop = Boolean.valueOf(alwaysOnTopStr);
         }
+        //TODO: fix me!!!
+        if (channelId != null) {
+            NNF.getSysTagMngr().addChannel(categoryId, channelId, alwaysOnTop, false, seq);
+        } else if (channelIds != null) {
+            categoryService.addChannels(categoryId, channelIds);
+        }
         
-        apiMsoService.categoryChannelAdd(category, channelIds, channelId, seq, alwaysOnTop);
         log.info(printExitState(now, req, "ok"));
         return ok(resp);
     }

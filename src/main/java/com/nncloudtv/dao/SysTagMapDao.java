@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
-import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagMap;
 
@@ -28,14 +27,14 @@ public class SysTagMapDao extends GenericDao<SysTagMap> {
     }
     
     // see SysTagDao.findCategoriesByChannelId
-    public List<SysTagMap> findCategoryMapsByChannelId(long channelId, long msoId) {
+    public List<SysTagMap> findCategoryMaps(long channelId, long msoId) {
         
         String query = " select * from systag_map a1"
                      + " inner join (select m.id from systag s, systag_map m"
-                     +             " where s.type = "      + SysTag.TYPE_CATEGORY
-                     +               " and s.msoId = "     + msoId
-                     +               " and m.channelId = " + channelId
-                     +               " and s.id = m.systagId) a2 on a1.id = a2.id";
+                     + "             where s.type = "      + SysTag.TYPE_CATEGORY
+                     + "               and s.msoId = "     + msoId
+                     + "               and m.channelId = " + channelId
+                     + "               and s.id = m.systagId) a2 on a1.id = a2.id";
         
         return sql(query);
     }
@@ -48,17 +47,14 @@ public class SysTagMapDao extends GenericDao<SysTagMap> {
     @SuppressWarnings("unchecked")
     public List<SysTagMap> findByChannelIds(List<Long> channelIds) {
         
-        List<SysTagMap> detached;
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        List<SysTagMap> detached = new ArrayList<SysTagMap>();
+        PersistenceManager pm = getPersistenceManager();
         
         try {
             Query q = pm.newQuery(SysTagMap.class, ":p.contains(channelId)");
-            //q.setOrdering("updateDate desc");
             List<SysTagMap> results = ((List<SysTagMap>) q.execute(channelIds));
             if (results != null && results.size() > 0) {
                 detached = (List<SysTagMap>) pm.detachCopyAll(results);
-            } else {
-                detached = new ArrayList<SysTagMap>();
             }
         } finally {
             pm.close();

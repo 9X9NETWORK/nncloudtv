@@ -27,6 +27,7 @@ import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
+import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.MsoNotificationManager;
@@ -43,6 +44,8 @@ import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
 import com.nncloudtv.service.PoiPointManager;
+import com.nncloudtv.service.SetService;
+import com.nncloudtv.service.StoreListingManager;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
@@ -76,6 +79,10 @@ public class NNF {
     protected static PoiCampaignManager     poiCampaignMngr     = null;
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
+    protected static StoreListingManager    storeListingMngr    = null;
+    
+    protected static SetService      setService = null;
+    protected static CategoryService categoryService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -328,6 +335,39 @@ public class NNF {
         }
         
         return adDao;
+    }
+    
+    public static CategoryService getCategoryService() {
+        
+        if (categoryService == null) {
+            
+            log.info("create categoryService");
+            categoryService = new CategoryService();
+        }
+        
+        return categoryService;
+    }
+    
+    public static SetService getSetService() {
+        
+        if (setService == null) {
+            
+            log.info("create setService");
+            setService = new SetService();
+        }
+        
+        return setService;
+    }
+    
+    public static StoreListingManager getStoreListingMngr() {
+        
+        if (storeListingMngr == null) {
+            
+            log.info("create storeListingMngr");
+            storeListingMngr = new StoreListingManager();
+        }
+        
+        return storeListingMngr;
     }
     
     public static YtProgramManager getYtProgramMngr() {

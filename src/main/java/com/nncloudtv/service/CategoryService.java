@@ -1,12 +1,12 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
@@ -22,21 +22,6 @@ import com.nncloudtv.web.json.cms.Category;
 public class CategoryService {
     
     protected static final Logger log = Logger.getLogger(CategoryService.class.getName());
-    
-    private SysTagManager sysTagMngr;
-    private SysTagDisplayManager sysTagDisplayMngr;
-    private SysTagMapManager sysTagMapMngr;
-    private ContainerService containerService;
-    
-    @Autowired
-    public CategoryService(SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr,
-                        SysTagMapManager sysTagMapMngr, ContainerService containerService) {
-        
-        this.sysTagMngr = sysTagMngr;
-        this.sysTagDisplayMngr = sysTagDisplayMngr;
-        this.sysTagMapMngr = sysTagMapMngr;
-        this.containerService = containerService;
-    }
     
     /** build promotion Category (MSO owned) from SysTag and SysTagDisplay */
     private Category composeCategory(SysTag category, SysTagDisplay zhDisplay, SysTagDisplay enDisplay) {
@@ -75,12 +60,12 @@ public class CategoryService {
             return new ArrayList<Category>();
         }
         
-        List<SysTag> categories = sysTagMngr.findByMsoIdAndType(msoId, SysTag.TYPE_CATEGORY);
+        List<SysTag> categories = NNF.getSysTagMngr().findByMsoIdAndType(msoId, SysTag.TYPE_CATEGORY);
         
         List<Category> results = new ArrayList<Category>();
         for (SysTag category : categories) {
-            SysTagDisplay zhCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(category.getId(), LangTable.LANG_ZH);
-            SysTagDisplay enCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(category.getId(), LangTable.LANG_EN);
+            SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_ZH);
+            SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_EN);
             
             if (zhCategoryDisplay != null && enCategoryDisplay != null) {
                 Category result = composeCategory(category, zhCategoryDisplay, enCategoryDisplay);
@@ -114,13 +99,13 @@ public class CategoryService {
             return null;
         }
         
-        SysTag category = sysTagMngr.findById(categoryId);
+        SysTag category = NNF.getSysTagMngr().findById(categoryId);
         if (category == null || category.getType() != SysTag.TYPE_CATEGORY) {
             return null;
         }
         
-        SysTagDisplay zhCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(categoryId, LangTable.LANG_ZH);
-        SysTagDisplay enCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(categoryId, LangTable.LANG_EN);
+        SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LangTable.LANG_ZH);
+        SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LangTable.LANG_EN);
         
         Category result;
         if (zhCategoryDisplay != null && enCategoryDisplay != null) {
@@ -150,84 +135,83 @@ public class CategoryService {
             return null;
         }
         
-        SysTag newCategory = new SysTag();
-        newCategory.setMsoId(category.getMsoId());
-        newCategory.setType(SysTag.TYPE_CATEGORY);
-        newCategory.setSeq(category.getSeq());
-        newCategory.setSorting(SysTag.SORT_DATE);
-        SysTag savedCategory = sysTagMngr.save(newCategory);
+        SysTag sysTag = new SysTag();
+        sysTag.setMsoId(category.getMsoId());
+        sysTag.setType(SysTag.TYPE_CATEGORY);
+        sysTag.setSeq(category.getSeq());
+        sysTag.setSorting(SysTag.SORT_DATE);
+        sysTag = NNF.getSysTagMngr().save(sysTag);
         
-        SysTagDisplay newZhCategoryDisplay = new SysTagDisplay();
-        newZhCategoryDisplay.setSystagId(savedCategory.getId());
-        newZhCategoryDisplay.setLang(LangTable.LANG_ZH);
-        newZhCategoryDisplay.setCntChannel(0);
-        newZhCategoryDisplay.setName(category.getZhName());
-        SysTagDisplay savedZhCategoryDisplay = sysTagDisplayMngr.save(newZhCategoryDisplay);
+        SysTagDisplay zh = new SysTagDisplay();
+        zh.setSystagId(sysTag.getId());
+        zh.setLang(LangTable.LANG_ZH);
+        zh.setCntChannel(0);
+        zh.setName(category.getZhName());
+        zh = NNF.getDisplayMngr().save(zh);
         
-        SysTagDisplay newEnCategoryDisplay = new SysTagDisplay();
-        newEnCategoryDisplay.setSystagId(savedCategory.getId());
-        newEnCategoryDisplay.setLang(LangTable.LANG_EN);
-        newEnCategoryDisplay.setCntChannel(0);
-        newEnCategoryDisplay.setName(category.getEnName());
-        SysTagDisplay savedEnCategoryDisplay = sysTagDisplayMngr.save(newEnCategoryDisplay);
+        SysTagDisplay en = new SysTagDisplay();
+        en.setSystagId(sysTag.getId());
+        en.setLang(LangTable.LANG_EN);
+        en.setCntChannel(0);
+        en.setName(category.getEnName());
+        en = NNF.getDisplayMngr().save(en);
         
-        Category result = composeCategory(savedCategory, savedZhCategoryDisplay, savedEnCategoryDisplay);
+        Category result = composeCategory(sysTag, zh, en);
         
         return result;
     }
     
     /**
      * Save a modified Category.
-     * @param modifiedCategory required, the Category that has modified
+     * @param category required, the Category that has modified
      * @return saved Category
      */
-    public Category save(Category modifiedCategory) {
+    public Category save(Category category) {
         
-        if (modifiedCategory == null) {
+        if (category == null) {
             return null;
         }
         
-        SysTag category = sysTagMngr.findById(modifiedCategory.getId());
-        if (category == null || category.getType() != SysTag.TYPE_CATEGORY ||
-                category.getMsoId() != modifiedCategory.getMsoId()) {
+        SysTag sysTag = NNF.getSysTagMngr().findById(category.getId());
+        if (sysTag == null || sysTag.getType() != SysTag.TYPE_CATEGORY ||
+                sysTag.getMsoId() != category.getMsoId()) {
             return null;
         }
         
-        SysTagDisplay zhCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(modifiedCategory.getId(), LangTable.LANG_ZH);
-        if (zhCategoryDisplay == null) {
+        SysTagDisplay zh = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_ZH);
+        if (zh == null) {
             // create one
-            zhCategoryDisplay = new SysTagDisplay();
-            zhCategoryDisplay.setSystagId(category.getId());
-            zhCategoryDisplay.setLang(LangTable.LANG_ZH);
-            zhCategoryDisplay.setCntChannel(0);
+            zh = new SysTagDisplay();
+            zh.setSystagId(sysTag.getId());
+            zh.setLang(LangTable.LANG_ZH);
+            zh.setCntChannel(0);
         }
         
-        SysTagDisplay enCategoryDisplay = sysTagDisplayMngr.findBySysTagIdAndLang(modifiedCategory.getId(), LangTable.LANG_EN);
-        if (enCategoryDisplay == null) {
+        SysTagDisplay en = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_EN);
+        if (en == null) {
             // create one
-            enCategoryDisplay = new SysTagDisplay();
-            enCategoryDisplay.setSystagId(category.getId());
-            enCategoryDisplay.setLang(LangTable.LANG_EN);
-            enCategoryDisplay.setCntChannel(0);
+            en = new SysTagDisplay();
+            en.setSystagId(sysTag.getId());
+            en.setLang(LangTable.LANG_EN);
+            en.setCntChannel(0);
         }
         
         // modify SysTag category
-        category.setSeq(modifiedCategory.getSeq());
-        SysTag savedCategory = sysTagMngr.save(category);
+        sysTag.setSeq(category.getSeq());
+        sysTag = NNF.getSysTagMngr().save(sysTag);
         
         // modify SysTagDisplay zhCategoryDisplay
-        zhCategoryDisplay.setName(modifiedCategory.getZhName());
-        zhCategoryDisplay.setCntChannel(modifiedCategory.getCntChannel());
-        SysTagDisplay savedZhCategoryDisplay = sysTagDisplayMngr.save(zhCategoryDisplay);
+        zh.setName(category.getZhName());
+        zh.setCntChannel(category.getCntChannel());
+        zh = NNF.getDisplayMngr().save(zh);
         
         // modify SysTagDisplay zhCategoryDisplay
-        enCategoryDisplay.setName(modifiedCategory.getEnName());
-        enCategoryDisplay.setCntChannel(modifiedCategory.getCntChannel());
-        SysTagDisplay savedEnCategoryDisplay = sysTagDisplayMngr.save(enCategoryDisplay);
+        en.setName(category.getEnName());
+        en.setCntChannel(category.getCntChannel());
+        en = NNF.getDisplayMngr().save(en);
         
-        Category result = composeCategory(savedCategory, savedZhCategoryDisplay, savedEnCategoryDisplay);
+        return composeCategory(sysTag, zh, en);
         
-        return result;
     }
     
     /**
@@ -235,13 +219,13 @@ public class CategoryService {
      * @param categoryId required, Category ID
      * @param channelIds required, Channel's IDs
      */
-    public void addChannelsToCategory(Long categoryId, List<Long> channelIds) {
+    public void addChannels(Long categoryId, List<Long> channelIds) {
         
         if (categoryId == null || channelIds == null || channelIds.size() < 1) {
             return ;
         }
         
-        List<SysTagMap> existChannels = sysTagMapMngr.findBySysTagIdAndChannelIds(categoryId, channelIds);
+        List<SysTagMap> existChannels = NNF.getSysTagMapMngr().findAll(categoryId, channelIds);
         Map<Long, Long> existChannelIds = new TreeMap<Long, Long>();
         for (SysTagMap existChannel : existChannels) {
             existChannelIds.put(existChannel.getChannelId(), existChannel.getChannelId());
@@ -261,23 +245,7 @@ public class CategoryService {
             }
         }
         
-        sysTagMapMngr.save(newChannels);
-    }
-    
-    /**
-     * Add Channel to Category with additional setting.
-     * @param categoryId required, Category ID
-     * @param channelId required, Channel ID
-     * @param seq optional, the sequence of Channel in the Category
-     * @param alwaysOnTop optional, indicate the Channel is set on top in Category or not
-     */
-    public void addChannelToCategory(Long categoryId, Long channelId, Short seq, Boolean alwaysOnTop) {
-        
-        if (categoryId == null || channelId == null) {
-            return ;
-        }
-        
-        containerService.addChannel(categoryId, channelId, null, null, alwaysOnTop, null, seq);
+        NNF.getSysTagMapMngr().save(newChannels);
     }
     
     /**
@@ -285,34 +253,15 @@ public class CategoryService {
      * @param categoryId required, Category ID
      * @param channelIds required, Channel's IDs to be removed
      */
-    public void removeChannelsFromCategory(Long categoryId, List<Long> channelIds) {
+    public void removeChannels(Long categoryId, List<Long> channelIds) {
         
         if (categoryId == null || channelIds == null || channelIds.size() < 1) {
             return ;
         }
         
-        List<SysTagMap> existChannels = sysTagMapMngr.findBySysTagIdAndChannelIds(categoryId, channelIds);
+        List<SysTagMap> sysTagMaps = NNF.getSysTagMapMngr().findAll(categoryId, channelIds);
         
-        sysTagMapMngr.delete(existChannels);
-    }
-    
-    /**
-     * Get Channels from Category, Channels are order by update time.
-     * @param categoryId required, Category ID
-     * @return list of Channels
-     */
-    public List<NnChannel> getChannelsFromCategory(Long categoryId) {
-        
-        if (categoryId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<NnChannel> results = NNF.getChannelDao().getStoreChannelsFromCategory(categoryId, null);
-        if (results == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        return results;
+        NNF.getSysTagMapMngr().delete(sysTagMaps);
     }
     
     /**
@@ -320,16 +269,10 @@ public class CategoryService {
      * @param categoryId required, Category ID
      * @return list of Channels
      */
-    public List<NnChannel> getChannelsOrderByUpdateTime(Long categoryId) {
+    public List<NnChannel> getChannels(Long categoryId) {
         
-        if (categoryId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<NnChannel> results = containerService.getChannelsOrderByUpdateTime(categoryId);
-        if (results == null) {
-            return new ArrayList<NnChannel>();
-        }
+        List<NnChannel> results = NNF.getChannelDao().getCategoryChannels(categoryId, null);
+        Collections.sort(results, NnChannelManager.getComparator("updateDate"));
         
         return results;
     }
@@ -345,7 +288,7 @@ public class CategoryService {
             return 0;
         }
         
-        List<SysTagMap> channels = sysTagMapMngr.findBySysTagId(categoryId);
+        List<SysTagMap> channels = NNF.getSysTagMapMngr().findBySysTagId(categoryId);
         return channels.size();
     }
 

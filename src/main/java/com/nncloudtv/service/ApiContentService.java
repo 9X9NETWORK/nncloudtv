@@ -69,7 +69,7 @@ public class ApiContentService {
             List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, msoId);
             
             results = channelMngr.findByIds(verifiedChannel);
-            Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
         }
         
         return results;

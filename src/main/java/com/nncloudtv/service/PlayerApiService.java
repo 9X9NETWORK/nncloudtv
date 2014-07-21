@@ -959,9 +959,9 @@ public class PlayerApiService {
             if (user == null || user.getType() != NnUser.TYPE_YOUTUBE_CONNECT) {
                 if (sort != null && sort.equals(NnUserSubscribe.SORT_DATE)) {
                     log.info("sort by date");
-                    Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("updateDate"));
+                    Collections.sort(channels, NnChannelManager.getComparator("updateDate"));
                 } else {
-                    Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("seq"));
+                    Collections.sort(channels, NnChannelManager.getComparator("seq"));
                 }
             }
         }
@@ -3258,7 +3258,7 @@ public class PlayerApiService {
                     channels.add(ch);
             }
             
-            Collections.sort(channels, NNF.getChannelMngr().getChannelComparator("seq"));
+            Collections.sort(channels, NnChannelManager.getComparator("seq"));
             
             //set info
             result[1] += PlayerApiService.assembleKeyValue("id", String.valueOf(curator.getId()));

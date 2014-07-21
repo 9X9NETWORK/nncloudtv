@@ -56,7 +56,7 @@ public class SysTagMapManager {
         if (sysTagMaps == null || sysTagMaps.size() == 0) {
             return ;
         }
-        Collections.sort(sysTagMaps, getSysTagMapComparator());
+        Collections.sort(sysTagMaps, getDefaultComparator());
         
         log.info("sysTagMaps.size() = " + sysTagMaps.size());
         
@@ -67,15 +67,18 @@ public class SysTagMapManager {
         dao.saveAll(sysTagMaps);
     }
     
-    private Comparator<SysTagMap> getSysTagMapComparator() {
-        class SysTagMapComparator implements Comparator<SysTagMap> {
+    private Comparator<SysTagMap> getDefaultComparator() {
+        
+       return new Comparator<SysTagMap>() {
+           
             public int compare(SysTagMap sysTagMap1, SysTagMap sysTagMap2) {
+                
                 short seq1 = sysTagMap1.getSeq();
                 short seq2 = sysTagMap2.getSeq();
-                return (int) (seq1 - seq2);
+                
+                return ((int) seq1 -seq2);
             }
-        }
-        return new SysTagMapComparator();
+        };
     }
     
     public void delete(SysTagMap sysTagMap) {
@@ -88,23 +91,12 @@ public class SysTagMapManager {
         dao.deleteAll(sysTagMaps);
     }
     
-    public SysTagMap findOne(Long sysTagId, Long channelId) {
+    public SysTagMap findOne(long sysTagId, long channelId) {
         
         return dao.findBySysTagIdAndChannelId(sysTagId, channelId);
     }
     
-    public SysTagMap findByChannelId(Long channelId) {
-    	if (channelId == null)
-    		return null;
-    	List<Long> ids = new ArrayList<Long>();
-    	ids.add(channelId);
-        List<SysTagMap> channels = dao.findByChannelIds(ids);
-        if (channels.size() > 0)
-        	return channels.get(0);
-        return null;    	
-    }
-    
-    public List<SysTagMap> findBySysTagIdAndChannelIds(Long sysTadId, List<Long> channelIds) {
+    public List<SysTagMap> findAll(Long sysTadId, List<Long> channelIds) {
         
         if (sysTadId == null || channelIds == null || channelIds.size() < 1) {
             return new ArrayList<SysTagMap>();
@@ -122,33 +114,14 @@ public class SysTagMapManager {
         return results;
     }
     
-    public List<SysTagMap> findBySysTagId(Long sysTagId) {
+    public List<SysTagMap> findBySysTagId(long sysTagId) {
         
         return dao.findBySysTagId(sysTagId);
     }
     
-    public List<SysTagMap> findCategoryMapsByChannelId(Long channelId, Long msoId) {
+    public List<SysTagMap> findCategoryMaps(long channelId, long msoId) {
         
-        if (channelId == null || msoId == null) {
-            return new ArrayList<SysTagMap>();
-        }
-        
-        List<SysTagMap> results = dao.findCategoryMapsByChannelId(channelId, msoId);
-        if (results == null) {
-            return new ArrayList<SysTagMap>();
-        }
-        
-        return results;
-    }
-    
-    /** call when NnChannel is going to delete **/
-    public void deleteByChannelId(Long channelId) {
-        // delete sysTagMaps
-    }
-    
-    /** call when SysTag is going to delete **/
-    public void deleteBySysTagId(Long sysTagId) {
-        // delete sysTagMaps
+        return dao.findCategoryMaps(channelId, msoId);
     }
     
 }

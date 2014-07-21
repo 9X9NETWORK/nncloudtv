@@ -882,7 +882,7 @@ public class ApiContent extends ApiGeneric {
             
             results = channelMngr.findByUser(user, 0, false);
             
-            Collections.sort(results, channelMngr.getChannelComparator("seq"));
+            Collections.sort(results, NnChannelManager.getComparator("seq"));
             
         } else if (channelIdListStr != null) {
             
@@ -924,7 +924,7 @@ public class ApiContent extends ApiGeneric {
                 log.info("total channels (filtered) = " + results.size());
             }
             
-            Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
             
         } else if (keyword != null && keyword.length() > 0) {
             
@@ -956,8 +956,7 @@ public class ApiContent extends ApiGeneric {
             List<NnChannel> channels = new ArrayList<NnChannel>();
             if (type != null && type.equalsIgnoreCase("solr")) {
                 log.info("search from Solr");
-                @SuppressWarnings("rawtypes")
-                Stack stack = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+                Stack<?> stack = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
                 channels.addAll((List<NnChannel>) stack.pop());
                 long solrNum = (Long) stack.pop();
                 log.info("counts from solr = " + solrNum);
@@ -999,12 +998,12 @@ public class ApiContent extends ApiGeneric {
                 results = channels;
             }
             
-            Collections.sort(results, channelMngr.getChannelComparator("updateDate"));
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {
             results = apiContentService.channelsSearch(brand.getId(), ytPlaylistIdStr, ytUserIdStr);
         }
         
-        results = channelMngr.responseNormalization(results);
+        results = channelMngr.normalize(results);
         return results;
     }
     
@@ -1279,7 +1278,7 @@ public class ApiContent extends ApiGeneric {
         StoreService storeService = new StoreService();
         
         // categoryId
-        Long categoryId = null;
+        long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
         if (categoryIdStr != null) {
             try {
@@ -1315,8 +1314,11 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        
-        List<Long> channelIds = storeService.storeChannels(categoryId, spheres);
+        List<Long> channelIds = new ArrayList<Long>();
+        List<NnChannel> channels = storeService.getCategoryChannels(categoryId, spheres);
+        for (NnChannel channel : channels) {
+            channelIds.add(channel.getId());
+        }
         log.info(printExitState(now, req, "ok"));
         return channelIds;
     }

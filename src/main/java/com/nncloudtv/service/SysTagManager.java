@@ -12,6 +12,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
+import com.nncloudtv.model.SysTagMap;
 
 @Service
 public class SysTagManager {
@@ -19,15 +20,9 @@ public class SysTagManager {
     protected static final Logger log = Logger.getLogger(SysTagManager.class.getName());
     
     private SysTagDao dao = NNF.getSysTagDao();
-
-    public SysTag findById(long id) {
-        return dao.findById(id);
-    }
     
-    public SysTag findById(Long id) {
-        if(id == null) {
-            return null;
-        }
+    public SysTag findById(long id) {
+        
         return dao.findById(id);
     }
     
@@ -159,4 +154,49 @@ public class SysTagManager {
         return false;
     }
     
+    public SysTagMap addChannel(long sysTagId, long channelId, boolean alwaysOnTop, boolean featured, short seq) {
+        
+        // create if not exist
+        SysTagMap sysTagMap = NNF.getSysTagMapMngr().findOne(sysTagId, channelId);
+        if (sysTagMap == null) {
+            sysTagMap = new SysTagMap(sysTagId, channelId);
+            sysTagMap.setSeq((short) 0);
+            sysTagMap.setAlwaysOnTop(false);
+            sysTagMap.setFeatured(false);
+        }
+        
+        sysTagMap.setAlwaysOnTop(alwaysOnTop);
+        sysTagMap.setFeatured(featured);
+        sysTagMap.setSeq(seq);
+        
+        return NNF.getSysTagMapMngr().save(sysTagMap);
+    }
+    
+    /**
+     * Get Channels from Container ordered by sequence, the Channels populate additional information (TimeStart, TimeEnd, Seq, AlwaysOnTop)
+     *   retrieve from SysTagMap.
+     * @param sysTagId required, SysTag ID
+     * @return list of Channels */
+    public List<NnChannel> getChannels(Long sysTagId) {
+        
+        List<SysTagMap> sysTagMaps = NNF.getSysTagMapMngr().findBySysTagId(sysTagId);
+        
+        List<NnChannel> results = new ArrayList<NnChannel>();
+        for (SysTagMap sysTagMap : sysTagMaps) {
+            
+            NnChannel channel = NNF.getChannelMngr().findById(sysTagMap.getChannelId());
+            if (channel != null) {
+                
+                channel.setTimeStart(sysTagMap.getTimeStart());
+                channel.setTimeEnd(sysTagMap.getTimeEnd());
+                channel.setSeq(sysTagMap.getSeq());
+                channel.setAlwaysOnTop(sysTagMap.isAlwaysOnTop());
+                channel.setFeatured(sysTagMap.isFeatured());
+                
+                results.add(channel);
+            }
+        }
+        
+        return results;
+    }
 }

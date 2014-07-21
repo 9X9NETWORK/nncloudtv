@@ -545,7 +545,7 @@ public class NnChannelManager {
             log.info("find channelsByTag, tag:" + name);
             channels = tagMngr.findChannelsByTag(name, true);            
         }
-        Collections.sort(channels, this.getChannelComparator("updateDate"));
+        Collections.sort(channels, getComparator("updateDate"));
         return channels;
     }
 
@@ -556,41 +556,72 @@ public class NnChannelManager {
         //name += "(9x9" + lang + ")";
         log.info("find stack, tag:" + name);
         channels = dao.findChannelsByTag(name);
-        Collections.sort(channels, this.getChannelComparator("updateDate"));
+        Collections.sort(channels, getComparator("updateDate"));
         return channels;
     }
     
-    public Comparator<NnChannel> getChannelComparator(String sort) {
-        if (sort.equals("seq")) {
-            class ChannelComparator implements Comparator<NnChannel> {
-                public int compare(NnChannel channel1, NnChannel channel2) {
-                Short seq1 = channel1.getSeq();
-                Short seq2 = channel2.getSeq();
-                return seq1.compareTo(seq2);
-                }
-            }
-            return new ChannelComparator();    
-        }
-        if (sort.equals("cntView")) {
-            class ChannelComparator implements Comparator<NnChannel> {
-                public int compare(NnChannel channel1, NnChannel channel2) {
-                Long cntView1 = channel1.getCntView();
-                Long cntView2 = channel2.getCntView();
-                return cntView2.compareTo(cntView1);
-                }
-            }
-            return new ChannelComparator();    
-        }    
-        class ChannelComparator implements Comparator<NnChannel> {
-            public int compare(NnChannel channel1, NnChannel channel2) {
-                Date date1 = channel1.getUpdateDate();
-                Date date2 = channel2.getUpdateDate();                
-                return date2.compareTo(date1);
-            }
-        }        
-        return new ChannelComparator();
-    }
+    public static Comparator<NnChannel> getComparator(String sort) {
         
+        if (sort.equals("seq")) {
+            
+            return new Comparator<NnChannel>() {
+                
+                public int compare(NnChannel channel1, NnChannel channel2) {
+                    
+                    Short seq1 = channel1.getSeq();
+                    Short seq2 = channel2.getSeq();
+                    
+                    return seq1.compareTo(seq2);
+                }
+            };
+            
+        } else if (sort.equals("cntView")) {
+            
+            return new Comparator<NnChannel>() {
+                
+                public int compare(NnChannel channel1, NnChannel channel2) {
+                    
+                    Long cntView1 = channel1.getCntView();
+                    Long cntView2 = channel2.getCntView();
+                    
+                    return cntView2.compareTo(cntView1);
+                }
+            };
+            
+        } else if (sort.equals("updateDateInSet")) {
+            
+            return new Comparator<NnChannel>() {
+                
+                public int compare (NnChannel channel1, NnChannel channel2) {
+                    
+                    Date date1 = channel1.getUpdateDate();
+                    Date date2 = channel2.getUpdateDate();
+                    if (channel1.isAlwaysOnTop()) {
+                        date1 = new Date(date1.getTime() * 2);
+                    }
+                    if (channel2.isAlwaysOnTop()) {
+                        date2 = new Date(date2.getTime() * 2);
+                    }
+                    
+                    return date2.compareTo(date1);
+                }
+            };
+            
+        }else {
+            
+            return new Comparator<NnChannel>() {
+                
+                public int compare(NnChannel channel1, NnChannel channel2) {
+                    
+                    Date date1 = channel1.getUpdateDate();
+                    Date date2 = channel2.getUpdateDate();
+                    
+                    return date2.compareTo(date1);
+                }
+            };
+        }
+    }
+    
     public List<NnChannel> findByIds(List<Long> ids) {
         
         return dao.findAllByIds(ids);
@@ -907,7 +938,7 @@ public class NnChannelManager {
         String userIdStr = user.getShard() + "-" + user.getId();
         List<NnChannel> channels = dao.findByUser(userIdStr, 0, true);
         
-        Collections.sort(channels, getChannelComparator("seq"));
+        Collections.sort(channels, getComparator("seq"));
         
         for (int i = 0; i < channels.size(); i++) {
             
@@ -932,10 +963,11 @@ public class NnChannelManager {
     }
     
     /** adapt NnChannel to format that CMS API required */
-    public List<NnChannel> responseNormalization(List<NnChannel> channels) {
+    public List<NnChannel> normalize(List<NnChannel> channels) {
         
         for (NnChannel channel : channels) {
-            this.normalize(channel);
+            
+            normalize(channel);
         }
         
         return channels;

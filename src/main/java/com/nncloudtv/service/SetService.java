@@ -1,12 +1,13 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
@@ -19,28 +20,13 @@ public class SetService {
     
     protected static final Logger log = Logger.getLogger(SetService.class.getName());
     
-    private SysTagManager         sysTagMngr;
-    private SysTagDisplayManager  sysTagDisplayMngr;
-    private SysTagMapManager      sysTagMapMngr;
-    private ContainerService      containerService;
-    
-    @Autowired
-    public SetService(SysTagManager sysTagMngr, SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
-            ContainerService containerService) {
-        this.sysTagMngr = sysTagMngr;
-        this.sysTagDisplayMngr = sysTagDisplayMngr;
-        this.sysTagMapMngr = sysTagMapMngr;
-        this.containerService = containerService;
-    }
-    
     /** build Set from SysTag and SysTagDisplay */
     public Set composeSet(SysTag set, SysTagDisplay setMeta) {
         
         Set setResp = new Set();
         setResp.setId(set.getId());
         setResp.setMsoId(set.getMsoId());
-        setResp.setDisplayId(setMeta.getId());
-        setResp.setChannelCnt(setMeta.getCntChannel());
+        setResp.setCntChannel(setMeta.getCntChannel());
         setResp.setLang(setMeta.getLang());
         setResp.setSeq(set.getSeq());
         setResp.setTag(setMeta.getPopularTag());
@@ -76,7 +62,7 @@ public class SetService {
         }
         
         //List<SysTag> results = dao.findByMsoIdAndType(msoId, SysTag.TYPE_SET);
-        List<SysTag> sets = sysTagMngr.findByMsoIdAndType(msoId, SysTag.TYPE_SET);
+        List<SysTag> sets = NNF.getSysTagMngr().findByMsoIdAndType(msoId, SysTag.TYPE_SET);
         if (sets == null || sets.size() == 0) {
             return new ArrayList<Set>();
         }
@@ -85,9 +71,9 @@ public class SetService {
         for (SysTag set : sets) {
             
             if (lang != null) {
-                setMeta = sysTagDisplayMngr.findBySysTagIdAndLang(set.getId(), lang);
+                setMeta = NNF.getDisplayMngr().findBySysTagIdAndLang(set.getId(), lang);
             } else {
-                setMeta = sysTagDisplayMngr.findBySysTagId(set.getId());
+                setMeta = NNF.getDisplayMngr().findBySysTagId(set.getId());
             }
             
             if (setMeta != null) {
@@ -135,41 +121,18 @@ public class SetService {
             return null;
         }
         
-        SysTag set = sysTagMngr.findById(setId);
+        SysTag set = NNF.getSysTagMngr().findById(setId);
         if (set == null || set.getType() != SysTag.TYPE_SET) {
             return null;
         }
         
-        SysTagDisplay setMeta = sysTagDisplayMngr.findBySysTagId(set.getId());
+        SysTagDisplay setMeta = NNF.getDisplayMngr().findBySysTagId(set.getId());
         if (setMeta == null) {
             log.warning("invalid structure : SysTag's Id=" + set.getId() + " exist but not found any of SysTagDisPlay");
             return null;
         }
         
         return composeSet(set, setMeta);
-    }
-    
-    /**
-     * Get Channels from Set ordered by Seq, the Channels populate additional information (TimeStart, TimeEnd, Seq,
-     * AlwaysOnTop)
-     * retrieve from SysTagMap.
-     * 
-     * @param setId
-     *            required, Set ID
-     * @return list of Channels
-     */
-    public List<NnChannel> getChannelsOrderBySeq(Long setId) {
-        
-        if (setId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<NnChannel> results = containerService.findChannels(setId);
-        if (results == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        return results;
     }
     
     /**
@@ -181,18 +144,19 @@ public class SetService {
      *            required, Set ID
      * @return list of Channels
      */
-    public List<NnChannel> getChannelsOrderByUpdateTime(Long setId) {
+    public List<NnChannel> getChannels(Long setId) {
         
-        if (setId == null) {
-            return new ArrayList<NnChannel>();
+        SysTag sysTag = NNF.getSysTagMngr().findById(setId);
+        if (sysTag == null) { return null; }
+        List<NnChannel> channels = NNF.getSysTagMngr().getChannels(setId);
+        
+        if (sysTag.getSorting() == SysTag.SORT_DATE) {
+            
+            Collections.sort(channels, NnChannelManager.getComparator("updateDateInSet"));
+            
         }
         
-        List<NnChannel> results = containerService.getChannelsOrderByUpdateTime(setId);
-        if (results == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        return results;
+        return channels;
     }
     
     /**
@@ -211,7 +175,7 @@ public class SetService {
         }
         
         // it must same as setChannels's result
-        List<SysTagMap> setChannels = sysTagMapMngr.findBySysTagId(setId);
+        List<SysTagMap> setChannels = NNF.getSysTagMapMngr().findBySysTagId(setId);
         if (setChannels == null) {
             if (channelIds.size() == 0) {
                 return true;
@@ -239,32 +203,6 @@ public class SetService {
         return true;
     }
     
-    /**
-     * Add Channel to Set with additional setting.
-     * 
-     * @param setId
-     *            required, Set ID
-     * @param channelId
-     *            required, Channel ID
-     * @param timeStart
-     *            optional, set a period start that Channel appear in the Set
-     * @param timeEnd
-     *            optional, set a period end that Channel appear in the Set
-     * @param alwaysOnTop
-     *            optional, indicate the Channel is set on top in Set or not
-     * @param featured
-     *            TODO
-     */
-    public void addChannel(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop,
-            Boolean featured) {
-        
-        if (setId == null || channelId == null) {
-            return;
-        }
-        
-        containerService.addChannel(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured, null);
-    }
-    
     public Set create(Set set) {
         
         SysTag newSet = new SysTag();
@@ -280,9 +218,9 @@ public class SetService {
         newSetMeta.setName(set.getName());
         newSetMeta.setPopularTag(set.getTag());
         
-        SysTag savedSet = sysTagMngr.save(newSet);
+        SysTag savedSet = NNF.getSysTagMngr().save(newSet);
         newSetMeta.setSystagId(savedSet.getId());
-        SysTagDisplay savedSetMeta = sysTagDisplayMngr.save(newSetMeta);
+        SysTagDisplay savedSetMeta = NNF.getDisplayMngr().save(newSetMeta);
         
         Set result = composeSet(savedSet, savedSetMeta);
         
