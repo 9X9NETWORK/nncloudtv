@@ -68,11 +68,4 @@ public class FBPost implements Serializable {
     public String getFacebookId() {
         return facebookId;
     }
-    @Override
-    public String toString() {
-        return "FBPost [message=" + message + ", picture=" + picture
-                + ", link=" + link + ", name=" + name + ", caption=" + caption
-                + ", description=" + description + ", facebookId=" + facebookId
-                + "]";
-    }
 }

@@ -271,10 +271,11 @@ public class CategoryService {
      */
     public List<NnChannel> getChannels(Long categoryId) {
         
-        List<NnChannel> results = NNF.getChannelDao().getCategoryChannels(categoryId, null);
-        Collections.sort(results, NnChannelManager.getComparator("updateDate"));
+        List<NnChannel> channels = NNF.getSysTagMngr().getChannels(categoryId);
         
-        return results;
+        Collections.sort(channels, NnChannelManager.getComparator("updateDate"));
+        
+        return channels;
     }
     
     /**
