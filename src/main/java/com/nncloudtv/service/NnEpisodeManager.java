@@ -304,13 +304,13 @@ public class NnEpisodeManager {
     
     public List<NnEpisode> findByChannels(List<NnChannel> channels) {
         
-        List<Long> ids = new ArrayList<Long>();
+        List<NnEpisode> episodes = new ArrayList<NnEpisode>();
         
         for (NnChannel channel : channels) {
             
-            ids.add(channel.getId());
+            episodes.addAll(findByChannelId(channel.getId()));
         }
         
-        return dao.findAllByIds(ids);
+        return episodes;
     }
 }

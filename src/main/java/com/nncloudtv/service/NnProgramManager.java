@@ -579,6 +579,7 @@ public class NnProgramManager {
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
+            log.info("programs = " + programs.size());
             
             return composeNnProgramInfo(channel, episodes, programs, format);
             
@@ -599,13 +600,14 @@ public class NnProgramManager {
                     }
                 }
                 
-                log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
+                log.info("virtual_channel2 channels = " + channels.size() + ", episodes = " + episodes.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
                 episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
+            log.info("programs = " + programs.size());
             
             return composeNnProgramInfo(channel, episodes, programs, format);
             
@@ -620,14 +622,14 @@ public class NnProgramManager {
     
     private List<NnProgram> findByEipsodes(List<NnEpisode> episodes) {
         
-        List<Long> ids = new ArrayList<Long>();
+        List<NnProgram> programs = new ArrayList<NnProgram>();
         
         for (NnEpisode episode : episodes) {
             
-            ids.add(episode.getId());
+            programs.addAll(dao.findAllByEpisodeId(episode.getId()));
         }
         
-        return dao.findAllByIds(ids);
+        return programs;
     }
     
     //provide cache
@@ -982,7 +984,7 @@ public class NnProgramManager {
         long   channelId   = (episode.getChannelId() == 0) ? episode.getStorageId() : episode.getChannelId(); // orphan episode
         String eId         = "e" + String.valueOf(episode.getId());
         long   publishTime = episode.getPublishDate().getTime();
-         
+        
         if (format == PlayerApiService.FORMAT_PLAIN) {
             
             String[] ori = {
