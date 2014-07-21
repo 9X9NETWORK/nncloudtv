@@ -1077,7 +1077,7 @@ public class NnChannelManager {
             } else {
                 List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(c.getId(), c.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
-                Collections.sort(episodes, NNF.getEpisodeMngr().getEpisodePublicSeqComparator());
+                Collections.sort(episodes, NnEpisodeManager.getComparator("isPublicFirst"));
                 for (int i=0; i<3; i++) {
                     if (i < episodes.size()) {
                        //lastEpisodeTitle = episodes.get(0).getName();

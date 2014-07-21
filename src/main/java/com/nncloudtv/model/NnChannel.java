@@ -100,7 +100,8 @@ public class NnChannel implements Serializable {
     public static final short CONTENTTYPE_YOUTUBE_LIVE     = 13;
     public static final short CONTENTTYPE_DAYPARTING_MASK  = 14;
     public static final short CONTENTTYPE_TRENDING         = 15;
-    public static final short CONTENTTYPE_VIRTUAL_CHANNEL  = 16; // experiment
+    public static final short CONTENTTYPE_VIRTUAL_CHANNEL1 = 16; // experiment
+    public static final short CONTENTTYPE_VIRTUAL_CHANNEL2 = 17; // experiment
     
     @Persistent
     private short status;

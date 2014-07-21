@@ -205,11 +205,11 @@ public class NnProgramManager {
     }
     
     @SuppressWarnings("unchecked")
-    public Object findLatestProgramInfoByChannels(List<NnChannel> channels, short format) {        
+    public Object findLatestProgramInfoByChannels(List<NnChannel> channels, short format) {
         YtProgramDao ytDao = new YtProgramDao();
         String output = "";
         List<ProgramInfo> json = new ArrayList<ProgramInfo>();
-        for (NnChannel c : channels) {            
+        for (NnChannel c : channels) {
             String cacheKey = CacheFactory.getLatestProgramInfoKey(c.getId(), format);
             Object programInfo = CacheFactory.get(cacheKey);
             if (programInfo != null) {
@@ -236,7 +236,7 @@ public class NnProgramManager {
                 }
             }
             if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
-                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(c.getId(), c.getSorting());                
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(c.getId(), c.getSorting());
                 if (episodes.size() > 0) {
                     log.info("find latest episode id:" + episodes.get(0).getId());
                     List<NnProgram> programs = this.findByEpisodeId(episodes.get(0).getId());
@@ -533,7 +533,7 @@ public class NnProgramManager {
             List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(channel.getId());
             
-            return this.composeNnProgramInfo(channel, episodes, programs, format);
+            return composeNnProgramInfo(channel, episodes, programs, format);
             
         } else if (channel.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
@@ -561,6 +561,54 @@ public class NnProgramManager {
             
             return composeYtProgramInfo(channel, ytprograms, format);
             
+        } else if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL1) {
+            
+            List<NnEpisode> episodes = new ArrayList<NnEpisode>();
+            List<NnProgram> programs = new ArrayList<NnProgram>();
+            Long categoryId = Long.parseLong(channel.getSourceUrl());
+            
+            if (categoryId != null || start < PlayerApiService.PAGING_ROWS) {
+                
+                List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                episodes = NNF.getEpisodeMngr().findByChannels(channels);
+                
+                log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
+                
+                Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
+                episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                
+                programs = NNF.getProgramMngr().findByEipsodes(episodes);
+            }
+            
+            return composeNnProgramInfo(channel, episodes, programs, format);
+            
+        } else if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL2) {
+            
+            List<NnEpisode> episodes = new ArrayList<NnEpisode>();
+            List<NnProgram> programs = new ArrayList<NnProgram>();
+            Long categoryId = Long.parseLong(channel.getSourceUrl());
+            
+            if (categoryId != null || start < PlayerApiService.PAGING_ROWS) {
+                
+                List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                for (NnChannel ch : channels) {
+                    List<NnEpisode> candidates = NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting());
+                    if (candidates.size() > 0) {
+                        
+                        episodes.add(candidates.get(0));
+                    }
+                }
+                
+                log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
+                
+                Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
+                episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                
+                programs = NNF.getProgramMngr().findByEipsodes(episodes);
+            }
+            
+            return composeNnProgramInfo(channel, episodes, programs, format);
+            
         } else {
             
             List<NnProgram> programs = this.findPlayerProgramsByChannel(channel.getId());
@@ -568,6 +616,18 @@ public class NnProgramManager {
             
             return composeProgramInfo(channel, programs, format);
         }
+    }
+    
+    private List<NnProgram> findByEipsodes(List<NnEpisode> episodes) {
+        
+        List<Long> ids = new ArrayList<Long>();
+        
+        for (NnEpisode episode : episodes) {
+            
+            ids.add(episode.getId());
+        }
+        
+        return dao.findAllByIds(ids);
     }
     
     //provide cache

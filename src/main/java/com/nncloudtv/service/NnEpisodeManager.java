@@ -107,60 +107,80 @@ public class NnEpisodeManager {
         return programs.size();
     }
     
-    public Comparator<NnEpisode> getEpisodePublicSeqComparator() {
-    
-        class NnEpisodePublicSeqComparator implements Comparator<NnEpisode> {
+    public static Comparator<NnEpisode> getComparator(String sort) {
+        
+        if (sort.equals("publishDate")) {
             
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
+            return new Comparator<NnEpisode>() {
                 
-                if (episode1.isPublic() == episode2.isPublic()) {
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    Date publishDate1 = episode1.getPublishDate();
+                    Date publishDate2 = episode2.getPublishDate();
+                    
+                    if (publishDate1 == null && publishDate2 == null) {
+                        
+                        return 0;
+                        
+                    } else if (publishDate1 == null) {
+                        
+                        return 1;
+                        
+                    } else if (publishDate2 == null) {
+                        
+                        return -1;
+                        
+                    } else {
+                        
+                        return publishDate2.compareTo(publishDate1);
+                    }
+                }
+            };
+        } else if (sort.equals("isPublicFirst")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    if (episode1.isPublic() == episode2.isPublic()) {
+                        
+                        return (episode1.getSeq() - episode2.getSeq());
+                        
+                    } else if (episode1.isPublic() == false) {
+                        
+                        return -1;
+                                
+                    }
+                    
+                    return 1;
+                }
+            };
+        } else if (sort.equals("reverse")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    return (episode2.getSeq() - episode1.getSeq());
+                }
+            };
+        } else {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
                     
                     return (episode1.getSeq() - episode2.getSeq());
-                    
-                } else if (episode1.isPublic() == false) {
-                    
-                    return -1;
-                            
                 }
-                
-                return 1;
-            }
+            };
         }
-        
-        return new NnEpisodePublicSeqComparator();
     }
     
-    public Comparator<NnEpisode> getEpisodeSeqComparator() {
-        class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
-            
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
-                
-                return (episode1.getSeq() - episode2.getSeq());
-                
-            }
-        }
-        
-        return new NnEpisodeSeqComparator();
-    }
-    
-    public Comparator<NnEpisode> getEpisodeReverseSeqComparator() {
-        
-        class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
-            
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
-                
-                return (episode2.getSeq() - episode1.getSeq());
-                
-            }
-        }
-        
-        return new NnEpisodeSeqComparator();
-    }
     
     public void reorderChannelEpisodes(long channelId) {
         
         List<NnEpisode> episodes = findByChannelId(channelId);
-        Collections.sort(episodes, getEpisodeSeqComparator());
+        Collections.sort(episodes, getComparator("seq"));
         
         for (int i = 0; i < episodes.size(); i++) {
             
@@ -194,6 +214,7 @@ public class NnEpisodeManager {
     }
 
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {
+        
         return dao.findPlayerLatestEpisode(channelId, sort);
     }
     
@@ -273,12 +294,23 @@ public class NnEpisodeManager {
         }
     }
     
-    
     public int total() {
         return dao.total();
     }
     
     public int total(String filter) {
         return dao.total(filter);
+    }
+    
+    public List<NnEpisode> findByChannels(List<NnChannel> channels) {
+        
+        List<Long> ids = new ArrayList<Long>();
+        
+        for (NnChannel channel : channels) {
+            
+            ids.add(channel.getId());
+        }
+        
+        return dao.findAllByIds(ids);
     }
 }
