@@ -575,7 +575,7 @@ public class NnProgramManager {
                 log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
@@ -603,7 +603,7 @@ public class NnProgramManager {
                 log.info("virtual_channel2 channels = " + channels.size() + ", episodes = " + episodes.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
