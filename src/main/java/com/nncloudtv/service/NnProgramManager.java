@@ -938,6 +938,7 @@ public class NnProgramManager {
                     }
                     iAmHere++;
                 }
+                episode.setChannelId(channel.getId()); // workaround
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     poiStr = poiStr.replaceAll("\\|$", "");
                     result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
