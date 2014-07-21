@@ -156,7 +156,7 @@ public class IosService {
         log.info("request from != v32");
         String result = null;
         try {
-            result = (String)CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN));
+            result = (String) CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN));
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -170,7 +170,7 @@ public class IosService {
         CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN), str);
         return str;
     }    
-
+    
 	public String search(String text) {
 		List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
 		String[] result = {""};
