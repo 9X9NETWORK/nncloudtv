@@ -575,7 +575,7 @@ public class NnProgramManager {
                 log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                if (episode.size() > PlayerApiService.PAGING_ROWS) {
+                if (episodes.size() > PlayerApiService.PAGING_ROWS) {
                     episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 }
                 
