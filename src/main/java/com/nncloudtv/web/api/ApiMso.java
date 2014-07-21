@@ -1559,7 +1559,7 @@ public class ApiMso extends ApiGeneric {
         
         // seq
         String seqStr = req.getParameter("seq");
-        Short seq = null;
+        short seq = 0;
         if (seqStr != null) {
             try {
                 seq = Short.valueOf(seqStr);
@@ -1572,7 +1572,7 @@ public class ApiMso extends ApiGeneric {
         
         // alwaysOnTop
         String alwaysOnTopStr = req.getParameter("alwaysOnTop");
-        Boolean alwaysOnTop = null;
+        boolean alwaysOnTop = false;
         if (alwaysOnTopStr != null) {
             alwaysOnTop = Boolean.valueOf(alwaysOnTopStr);
         }
