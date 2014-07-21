@@ -1189,17 +1189,6 @@ public class NnChannelManager {
             return lineup;
         }
     }
-            
-    public static boolean isValidChannelSourceUrl(String urlStr) {        
-        if (urlStr == null) {
-            return false;
-        }
-        
-        if (urlStr.contains(YouTubeLib.youtubeChannelPrefix) || urlStr.contains(YouTubeLib.youtubePlaylistPrefix)) {
-            return true;
-        }
-        return false;
-    }
     
     public NnChannel populateCntView(NnChannel channel) {
         
@@ -1211,7 +1200,7 @@ public class NnChannelManager {
                 return channel;
             }
             log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
+            CounterFactory factory = new CounterFactory();
             long cntView = factory.getCount(name);
             channel.setCntView(cntView);
             CacheFactory.set(name, String.valueOf(cntView));
