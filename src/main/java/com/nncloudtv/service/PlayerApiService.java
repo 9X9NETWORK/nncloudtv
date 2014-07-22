@@ -1148,6 +1148,9 @@ public class PlayerApiService {
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
+        if (start != null && Integer.valueOf(start) > 200) {
+            return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
+        }
         PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();
         String[] chArr = channelIds.split(",");
         NnUser user = null;
