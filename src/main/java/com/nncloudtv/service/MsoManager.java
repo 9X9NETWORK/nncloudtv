@@ -30,12 +30,17 @@ public class MsoManager {
     private MsoDao dao = NNF.getMsoDao();
     
     public Mso findOneByName(String name) {
-        if (name == null)
-            return this.findNNMso(); //most of the situation
-        Mso mso = this.findByName(name);
-        if (mso == null)
-            return this.findNNMso(); 
-        return mso;
+        
+        if (name != null) {
+            
+            Mso mso = findByName(name);
+            if (mso != null) {
+                
+                return mso;
+            }
+        }
+        
+        return getSystemMso();
     }
     
     public long addMsoVisitCounter(boolean readOnly) {        
@@ -92,9 +97,16 @@ public class MsoManager {
         CacheFactory.delete(keyWebPlain);
     }
     
-    public Mso findNNMso() {
-        List<Mso> list = this.findByType(Mso.TYPE_NN);
+    public static Mso getSystemMso() {
+        
+        List<Mso> list = NNF.getMsoMngr().findByType(Mso.TYPE_NN);
+        
         return list.get(0);
+    }
+    
+    public static long getSystemMsoId() {
+        
+        return getSystemMso().getId();
     }
     
     public static boolean isNNMso(Mso mso) {
@@ -497,21 +509,21 @@ public class MsoManager {
     }
     
     /** indicate which brands that channel can play on, means channel is in the brand's store */
-    public List<Mso> getValidBrands(NnChannel channel) {
+    public List<Mso> findValidMso(NnChannel channel) {
         
         if (channel == null) {
             return new ArrayList<Mso>();
         }
         
-        List<Mso> validMsos = new ArrayList<Mso>();
-        validMsos.add(findNNMso()); // channel is always valid for brand 9x9
+        List<Mso> valids = new ArrayList<Mso>();
+        valids.add(getSystemMso()); // channel is always valid for brand 9x9
         
         if (channel.getStatus() == NnChannel.STATUS_SUCCESS &&
                 channel.getContentType() != NnChannel.CONTENTTYPE_FAVORITE &&
                 channel.isPublic() == true) {
             // the channel is in the official store
         } else {
-            return validMsos;
+            return valids;
         }
         
         MsoConfig supportedRegion = null;
@@ -521,13 +533,13 @@ public class MsoManager {
             
             supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
             if (supportedRegion == null) {
-                validMsos.add(mso); // mso support all region
+                valids.add(mso); // mso support all region
             } else {
                 spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
                 spheres.add(LangTable.OTHER);
                 for (String sphere : spheres) {
                     if (sphere.equals(channel.getSphere())) { // this channel's sphere that MSO supported
-                        validMsos.add(mso);
+                        valids.add(mso);
                         break;
                     }
                     // if not hit any of sphere, channel is not playable on this MSO, is not valid brand.
@@ -535,7 +547,7 @@ public class MsoManager {
             }
         }
         
-        return validMsos;
+        return valids;
     }
     
     /** indicate channel can or can't set brand for target MSO,

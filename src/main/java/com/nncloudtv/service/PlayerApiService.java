@@ -307,26 +307,26 @@ public class PlayerApiService {
         return this.fbSignup(me, expire, msoString, req, resp);
     }
     
-    private Object fbSignup(FacebookMe me, String expires, String msoString, HttpServletRequest req, HttpServletResponse resp) {
+    private Object fbSignup(FacebookMe me, String expires, String msoName, HttpServletRequest req, HttpServletResponse resp) {
         long expire = 0;
         if (expires != null && expires.length() > 0)
             expire = Long.parseLong(expires); //TODO pass to FacebookMe
         
-        Mso brand = NNF.getMsoMngr().findByName(msoString);
-        if (brand == null) {
-           brand = NNF.getMsoMngr().findNNMso();
+        Mso mso = NNF.getMsoMngr().findByName(msoName);
+        if (mso == null) {
+           mso = MsoManager.getSystemMso();
         }
         NnUserManager userMngr = NNF.getUserMngr();
-        NnUser user = userMngr.findByEmail(me.getId(), brand.getId(), req);        
+        NnUser user = userMngr.findByEmail(me.getId(), mso.getId(), req);        
         log.info("find user in db from fbId:" + me.getId());
         if (user == null) {
             log.info("FACEBOOK: signup with fb account:" + me.getEmail() + "(" + me.getId() + ")");
             user = new NnUser(me.getEmail(), me.getId(), me.getAccessToken());
-            NnUserProfile profile = new NnUserProfile(brand.getId(), me.getName(), null, null, null);
+            NnUserProfile profile = new NnUserProfile(mso.getId(), me.getName(), null, null, null);
             user.setProfile(profile);            
             user.setExpires(new Date().getTime() + expire);
             user.setTemp(false);
-            user.setMsoId(brand.getId());
+            user.setMsoId(mso.getId());
             user = userMngr.setFbProfile(user, me);
             int status = userMngr.create(user, req, (short)0);
             if (status != NnStatusCode.SUCCESS)
@@ -516,7 +516,7 @@ public class PlayerApiService {
         categories.addAll(NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId()));
         
         if (!disableAll && !MsoManager.isNNMso(mso)) {
-            List<SysTagDisplay> systemCategories = NNF.getDisplayMngr().findPlayerCategories(lang, NNF.getMsoMngr().findNNMso().getId());
+            List<SysTagDisplay> systemCategories = NNF.getDisplayMngr().findPlayerCategories(lang, MsoManager.getSystemMsoId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
                 if (map.get(d.getSystagId()) != null) {
@@ -3247,7 +3247,7 @@ public class PlayerApiService {
             
         } else {
             
-            curator = NNF.getUserMngr().findByIdStr(channel.getUserIdStr(), NNF.getMsoMngr().findNNMso().getId()); // use 9x9 profile
+            curator = NNF.getUserMngr().findByIdStr(channel.getUserIdStr(), MsoManager.getSystemMsoId()); // use 9x9 profile
             if (curator == null)
                 return this.assembleMsgs(NnStatusCode.USER_INVALID, null);
             

@@ -25,7 +25,6 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -993,33 +992,13 @@ public class NnChannelManager {
         
     }
     
-    /** get CategoryId that Channel belongs to */
-    public Long getCategoryId(Long channelId) {
-        
-        if (channelId == null) {
-            return null;
-        }
-        
-        Mso nnMso = NNF.getMsoMngr().findNNMso();
-        StoreService storeServ = new StoreService();
-        List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channelId, nnMso.getId());
-        if (categoryIds != null && categoryIds.size() > 0) {
-            return categoryIds.get(0);
-        } else {
-            return null;
-        }
-    }
-    
     public void populateCategoryId(NnChannel channel) {
         
-        if (channel == null)
-            return;
+        if (channel == null) { return; }
         
-        Mso nnMso = NNF.getMsoMngr().findNNMso();
-        StoreService storeServ = new StoreService();
+        List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
         
-        List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channel.getId(), nnMso.getId());
-        if (categoryIds != null && categoryIds.size() > 0) {
+        if (categoryIds.size() > 0) {
             channel.setCategoryId(categoryIds.get(0));
         }
     }

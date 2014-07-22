@@ -27,11 +27,11 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.EmailService;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -48,8 +48,8 @@ public class HelloController {
     //basic test
     @RequestMapping("world")
     public ModelAndView world(HttpServletRequest req) throws Exception {
-    	Mso mso = NNF.getMsoMngr().findNNMso();
-    	List<NnUser> users = NNF.getUserMngr().search(null, null, "hello", mso.getId());
+    	
+    	List<NnUser> users = NNF.getUserMngr().search(null, null, "hello", MsoManager.getSystemMsoId());
     	for (NnUser user : users) {
     		log.info("user id:" + user.getId());
     	}

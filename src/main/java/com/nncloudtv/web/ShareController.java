@@ -18,11 +18,11 @@ import com.nncloudtv.dao.NnUserSubscribeDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.UserInvite;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserSubscribeManager;
 import com.nncloudtv.service.PlayerService;
 
@@ -106,8 +106,7 @@ public class ShareController {
                 NnChannel c = NNF.getChannelMngr().findById(invite.getChannelId());
                 if (user == null) {
                     model = model.addAttribute("exist", "n");
-                    Mso mso = NNF.getMsoMngr().findNNMso();
-                    user = new NnUser(invite.getInviteeEmail(), "123456", NnUser.TYPE_USER, mso.getId());
+                    user = new NnUser(invite.getInviteeEmail(), "123456", NnUser.TYPE_USER, MsoManager.getSystemMsoId());
                     /*
                     user.setSphere("en");
                     user.setLang("en");

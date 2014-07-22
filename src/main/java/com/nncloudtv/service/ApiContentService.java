@@ -24,17 +24,15 @@ public class ApiContentService {
     protected static final Logger log = Logger.getLogger(ApiContentService.class.getName());
     
     private NnChannelManager channelMngr;
-    private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     private NnEpisodeManager episodeMngr;
     private NnProgramManager programMngr;
     
     @Autowired
-    public ApiContentService(NnChannelManager channelMngr, StoreService storeService, NnChannelPrefManager channelPrefMngr,
-                NnEpisodeManager episodeMngr, NnProgramManager programMngr) {
+    public ApiContentService(NnChannelManager channelMngr, NnChannelPrefManager channelPrefMngr, NnEpisodeManager episodeMngr,
+                NnProgramManager programMngr) {
         
         this.channelMngr = channelMngr;
-        this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
         this.episodeMngr = episodeMngr;
         this.programMngr = programMngr;
@@ -119,7 +117,7 @@ public class ApiContentService {
         NnChannel savedChannel = channelMngr.save(channel);
         
         if (categoryId != null) {
-            storeService.setupChannelCategory(categoryId, channel.getId());
+            NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
         if (autoSync != null) {

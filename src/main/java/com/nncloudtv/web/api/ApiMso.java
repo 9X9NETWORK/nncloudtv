@@ -32,7 +32,6 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
-import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
 import com.nncloudtv.web.json.cms.Set;
@@ -43,16 +42,14 @@ public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
-    private StoreService storeService;
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
     
     @Autowired
-    public ApiMso(StoreService storeService, NnUserProfileManager userProfileMngr,
-            SetService setService, ApiMsoService apiMsoService, CategoryService categoryService) {
+    public ApiMso(NnUserProfileManager userProfileMngr, SetService setService,
+            ApiMsoService apiMsoService, CategoryService categoryService) {
         
-        this.storeService = storeService;
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
@@ -850,7 +847,7 @@ public class ApiMso extends ApiGeneric {
                 log.info(printExitState(now, req, "400"));
                 return null;
             }
-            if (storeService.isNnCategory(categoryId) == false) {
+            if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
                 return null;
@@ -880,9 +877,9 @@ public class ApiMso extends ApiGeneric {
         List<Long> results = new ArrayList<Long>();
         if (channelIds != null) {
             List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
-            results = storeService.checkChannelsInMsoStore(channels, msoId);
+            results = NNF.getMsoMngr().getPlayableChannels(channels, msoId);
         } else if (categoryId != null) {
-            results = storeService.getMsoCategoryChannels(categoryId, msoId);
+            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, msoId);
         }        
         log.info(printExitState(now, req, "ok"));
         return results;
@@ -1683,7 +1680,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<String> results = apiMsoService.msoSystemCategoryLocks(mso.getId());
+        List<String> results = NNF.getConfigMngr().getCategoryMasks(mso.getId());
         log.info(printExitState(now, req, "ok"));
         return results;
     }
@@ -1739,9 +1736,9 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        List<String> results = apiMsoService.msoSystemCategoryLocksUpdate(mso.getId(), categoryIds);
         log.info(printExitState(now, req, "ok"));
-        return results;
+        
+        return NNF.getConfigMngr().setCategoryMasks(mso.getId(), categoryIds);
     }
     
     @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)

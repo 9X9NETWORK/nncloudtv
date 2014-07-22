@@ -279,7 +279,7 @@ public class MsoConfigManager {
         return spheres;
     }
     
-    public static List<String> parseSystemCategoryMask(String systemCategoryMask) {
+    public static List<String> parseCategoryMask(String systemCategoryMask) {
         
         if (systemCategoryMask == null) {
             return new ArrayList<String>();
@@ -298,30 +298,30 @@ public class MsoConfigManager {
         return results;
     }
     
-    public static String composeSystemCategoryMask(List<String> systemCategoryLocks) {
+    public static String composeCategoryMask(List<String> masks) {
         
-        if (systemCategoryLocks == null || systemCategoryLocks.size() < 1) {
+        if (masks == null || masks.size() < 1) {
             return "";
         }
         
-        return StringUtils.join(systemCategoryLocks, ",");
+        return StringUtils.join(validateMasks(masks), ",");
     }
     
-    public static List<String> verifySystemCategoryLocks(List<String> systemCategoryLocks) {
+    private static List<String> validateMasks(List<String> masks) {
         
-        if (systemCategoryLocks == null || systemCategoryLocks.size() < 1) {
+        if (masks == null || masks.size() < 1) {
             return new ArrayList<String>();
         }
         
         // populate System's CategoryIds
-        List<SysTag> systemCategories = NNF.getSysTagMngr().findByMsoIdAndType(NNF.getMsoMngr().findNNMso().getId(), SysTag.TYPE_CATEGORY);
+        List<SysTag> systemCategories = NNF.getSysTagMngr().findByMsoIdAndType(MsoManager.getSystemMsoId(), SysTag.TYPE_CATEGORY);
         Map<Long, Long> systemCategoryIds = new TreeMap<Long, Long>();
         for (SysTag systemCategory : systemCategories) {
             systemCategoryIds.put(systemCategory.getId(), systemCategory.getId());
         }
         
         List<String> verifiedLocks = new ArrayList<String>();
-        for (String lock : systemCategoryLocks) {
+        for (String lock : masks) {
             
             Long categoryId = null;
             try {
@@ -386,6 +386,60 @@ public class MsoConfigManager {
     public static String getCCPort() {
         
         return getProperty(PROPERTIES_CLEARCOMMRCE, "port");
+    }
+    
+    /**
+     * Get system Category locks setting from MSO store.
+     * @param msoId required, MSO ID
+     * @return system Category locks
+     */
+    public List<String> getCategoryMasks(long msoId) {
+        
+        List<String> empty = new ArrayList<String>();
+        
+        Mso mso = NNF.getMsoMngr().findById(msoId);
+        
+        if (mso != null) {
+            
+            MsoConfig mask = findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
+            if (mask != null) {
+                
+                return parseCategoryMask(mask.getValue());
+            }
+        }
+        
+        return empty;
+    }
+    
+    public List<String> setCategoryMasks(long msoId, List<String> masks) {
+        
+        List<String> empty = new ArrayList<String>();
+        
+        Mso mso = NNF.getMsoMngr().findById(msoId);
+        
+        if (mso != null) {
+            
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SYSTEM_CATEGORY_MASK);
+            if (config == null) {
+                config = new MsoConfig();
+                config.setMsoId(mso.getId());
+                config.setItem(MsoConfig.SYSTEM_CATEGORY_MASK);
+                config.setValue("");
+                config = NNF.getConfigMngr().create(config);
+            }
+            
+            if (masks == null || masks.isEmpty()) {
+                config.setValue("");
+            } else {
+                config.setValue(MsoConfigManager.composeCategoryMask(masks));
+            }
+            
+            config = NNF.getConfigMngr().save(mso, config);
+            
+            return MsoConfigManager.parseCategoryMask(config.getValue());
+        }
+        
+        return empty;
     }
 }
 
