@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
@@ -214,7 +213,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
                             "and isPublic = true " +
                             "and status != " + NnProgram.STATUS_ERROR + " " +
              "order by " + ordering;
-
+            
             log.info("sql:" + sql);
             Query q= pm.newQuery("javax.jdo.query.SQL", sql);
             q.setClass(NnProgram.class);
@@ -226,45 +225,26 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         }
         return detached;
     }
-
+    
     public List<NnProgram> findByChannel(long channelId) {
         
-        log.info("find by channelId = " + channelId);
-        
         List<NnProgram> detached = new ArrayList<NnProgram>();
+        PersistenceManager pm = getPersistenceManager();
         
-        if (channelId == 0) {
-            return detached;
-        }
-        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
         try {
-            Query q = pm.newQuery(NnProgram.class);
-            q.setFilter("channelId == channelIdParam");
-            q.declareParameters("long channelIdParam");
-            q.setOrdering("seq, subSeq asc");
+            Query query = pm.newQuery(NnProgram.class);
+            query.setFilter("channelId == channelIdParam");
+            query.declareParameters("long channelIdParam");
+            query.setOrdering("seq, subSeq asc");
             @SuppressWarnings("unchecked")
-            List<NnProgram> programs = (List<NnProgram>)q.execute(channelId);        
-            detached = (List<NnProgram>)pm.detachCopyAll(programs);
+            List<NnProgram> programs = (List<NnProgram>) query.execute(channelId);
+            detached = (List<NnProgram>) pm.detachCopyAll(programs);
         } finally {
             pm.close();
         }
+        
         return detached;
-    }    
-    
-    public NnProgram findById(long id) {
-        NnProgram program = null;
-        if (id == 0) return program;
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            program = pm.getObjectById(NnProgram.class, id);
-            program = pm.detachCopy(program);
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();
-        }
-        return program;        
-    }    
+    }
     
     public List<NnProgram> findPlayerNnProgramsByChannel(long channelId) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -346,4 +326,23 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         return detached;        
     }
     
+    public List<NnProgram> findAllByEpisodeId(long episodeId) {
+        
+        List<NnProgram> detached = new ArrayList<NnProgram>();
+        PersistenceManager pm = getPersistenceManager();
+        
+        try {
+            Query query = pm.newQuery(NnProgram.class);
+            query.setFilter("episodeId == episodeIdParam");
+            query.declareParameters("long episodeIdParam");
+            query.setOrdering("seq, subSeq asc");
+            @SuppressWarnings("unchecked")
+            List<NnProgram> programs = (List<NnProgram>) query.execute(episodeId);
+            detached = (List<NnProgram>) pm.detachCopyAll(programs);
+        } finally {
+            pm.close();
+        }
+        
+        return detached;
+    }
 }

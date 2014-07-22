@@ -47,26 +47,7 @@ public class SysTagDao extends GenericDao<SysTag> {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>();
         try {
-            /*
-            select * 
-              from nnchannel a1  
-            inner join ( 
-             select distinct c.id  
-               from systag_display d, systag_map m, nnchannel c  
-              where d.systagId = 3 
-                and d.systagId = m.systagId 
-                and c.id = m.channelId
-                and c.isPublic = true  
-                and c.status = 0                
-                and c.id not in (select channelId from store_listing where msoId=3)
-                and (c.sphere = 'en' or c.sphere = 'other')
-                order by c.updateDate desc
-                limit 3, 5                
-              ) a2 on a1.id=a2.id
-            */
             
-            // (alwaysOnTop == true)  ==>  order by 'seq'
-            // (alwaysOntop == flase) ==>  order by 'sphere', 'updateDate'
             String orderStr = " order by m.alwaysOnTop desc, " +
                                        " case m.alwaysOnTop when true then m.seq else (case c.sphere when '" + lang + "' then 1 else 2 end) end, " +
                                        " c.updateDate desc ";

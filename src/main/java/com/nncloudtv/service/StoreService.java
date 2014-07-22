@@ -8,10 +8,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -27,21 +25,6 @@ import com.nncloudtv.web.json.cms.Category;
 public class StoreService {
     
     protected static final Logger log = Logger.getLogger(StoreService.class.getName());
-    
-    private SysTagDao sysTagDao = new SysTagDao();
-
-    private StoreListingManager storeListingMngr;
-    
-    @Autowired
-    public StoreService(StoreListingManager storeListingMngr) {
-        
-        this.storeListingMngr = storeListingMngr;
-    }
-    
-    public StoreService() {
-        
-        this.storeListingMngr = new StoreListingManager();
-    }
     
     /** build system Category from SysTag and SysTagDisplay */
     private Category composeCategory(SysTag category, SysTagDisplay categoryMeta) {
@@ -72,47 +55,13 @@ public class StoreService {
         return results;
     }
     
-    /** Get Channel IDs from Mso's Store.
-     *  mso store = official store - channel's sphere not fit mso's supportedRegion
-     *  The result should pass MsoManager.isPlayableChannel check.
-     *  @param msoId required, indicate which Mso Store
-     *  @return list of Channel's ID */
-    public List<Long> getChannelIdsFromMsoStore(Long msoId) {
-        
-        if (msoId == null) {
-            return new ArrayList<Long>();
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId, true);
-        if (mso == null) {
-            return new ArrayList<Long>();
-        }
-        List<String> spheres;
-        if (mso.getSupportedRegion() == null) {
-            spheres = null;
-        } else {
-            spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
-        }
-        List<NnChannel> msoStoreChannels = getChannelsFromOfficialStore(spheres);
-        if (msoStoreChannels == null || msoStoreChannels.isEmpty()) {
-            return new ArrayList<Long>();
-        }
-        
-        List<Long> msoStoreChannelIds = new ArrayList<Long>();
-        for (NnChannel channel : msoStoreChannels) {
-            msoStoreChannelIds.add(channel.getId());
-        }
-        
-        return msoStoreChannelIds;
-    }
-    
     /** get Channel IDs from Mso's Store's Category
      *  mso store's category = official store's category - mso's blackList - channel's sphere not fit mso's supportedRegion
      *  The result should pass MsoManager.isPlayableChannel check.
      *  @param categoryId required, the official category's ID
      *  @param msoId required, indicate which Mso Store
      *  @return list of Channel's ID */
-    public List<Long> getChannelIdsFromMsoStoreCategory(Long categoryId, Long msoId) {
+    public List<Long> getMsoCategoryChannels(Long categoryId, Long msoId) {
         
         if (msoId == null || categoryId == null) {
             return new ArrayList<Long>();
@@ -128,12 +77,12 @@ public class StoreService {
         } else {
             spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
         }
-        List<NnChannel> channels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
+        List<NnChannel> channels = getCategoryChannels(categoryId, spheres);
         if (channels == null || channels.size() == 0) {
             return new ArrayList<Long>();
         }
         
-        List<StoreListing> blackList = storeListingMngr.getBlackListByMsoId(msoId);
+        List<StoreListing> blackList = NNF.getStoreListingMngr().getBlackListByMsoId(msoId);
         Map<Long, Long> blackListMap = new TreeMap<Long, Long>();
         if (blackList != null && blackList.isEmpty() == false) {
             for (StoreListing item : blackList) {
@@ -157,31 +106,9 @@ public class StoreService {
      *  @param categoryId required, the official category's ID
      *  @param spheres optional, used to filter the result channels
      *  @return list of Channels */
-    public List<NnChannel> getChannelsFromOfficialStoreCategory(Long categoryId, List<String> spheres) {
+    public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
         
-        if (categoryId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<NnChannel> channels = NNF.getChannelDao().getStoreChannelsFromCategory(categoryId, spheres);
-        if (channels == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        return channels;
-    }
-    
-    /** get Channels from official Store
-     *  @param spheres optional, the spheres used for filter the result channels
-     *  @return list of Channels */
-    public List<NnChannel> getChannelsFromOfficialStore(List<String> spheres) {
-        
-        List<NnChannel> channels = NNF.getChannelDao().getStoreChannels(spheres);
-        if (channels == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        return channels;
+        return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
     }
     
     /** indicate input Id is 9x9's CategoryId or not
@@ -211,7 +138,7 @@ public class StoreService {
      *  @return list of Category's ID */
     public List<Long> findCategoryIdsByChannelId(long channelId, long msoId) {
         
-        List<SysTag> sysTags = sysTagDao.findCategoriesByChannelId(channelId, msoId);
+        List<SysTag> sysTags = NNF.getSysTagDao().findCategoriesByChannelId(channelId, msoId);
         if (sysTags == null || sysTags.size() == 0) {
             return new ArrayList<Long>();
         }
@@ -287,33 +214,9 @@ public class StoreService {
         }
         SysTagMapManager sysTagMapMngr = NNF.getSysTagMapMngr();
         Mso nnMso = NNF.getMsoMngr().findNNMso();
-        List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMapsByChannelId(channelId, nnMso.getId());
-        sysTagMapMngr.deleteAll(tagMaps);
+        List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMaps(channelId, nnMso.getId());
+        sysTagMapMngr.delete(tagMaps);
         sysTagMapMngr.save(new SysTagMap(categoryId, channelId));
-    }
-    
-    /** service for ApiContent.storeChannels, get channels from official Store
-     *  @param categoryId optional, the official Category's ID, get channels from official Store's Category
-     *  @param spheres optional, used to filter the result Channels
-     *  @return list of Channel's IDs */
-    public List<Long> storeChannels(Long categoryId, List<String> spheres) {
-        
-        List<NnChannel> channels;
-        if (categoryId != null) {
-            channels = getChannelsFromOfficialStoreCategory(categoryId, spheres);
-        } else {
-            channels = getChannelsFromOfficialStore(spheres);
-        }
-        
-        if (channels == null) {
-            return new ArrayList<Long>();
-        }
-        
-        List<Long> channelIds = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            channelIds.add(channel.getId());
-        }
-        return channelIds;
     }
     
     /**

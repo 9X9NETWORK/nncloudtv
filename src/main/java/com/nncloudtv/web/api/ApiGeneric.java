@@ -243,8 +243,7 @@ public class ApiGeneric {
         
         setResp.setId(set.getId());
         setResp.setMsoId(set.getMsoId());
-        setResp.setDisplayId(setMeta.getId());
-        setResp.setChannelCnt(setMeta.getCntChannel());
+        setResp.setCntChannel(setMeta.getCntChannel());
         setResp.setLang(setMeta.getLang());
         setResp.setSeq(set.getSeq());
         setResp.setTag(setMeta.getPopularTag());

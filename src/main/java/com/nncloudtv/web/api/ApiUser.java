@@ -322,7 +322,7 @@ public class ApiUser extends ApiGeneric {
             
         }
         
-        Collections.sort(results, channelMngr.getChannelComparator("seq"));
+        Collections.sort(results, NnChannelManager.getComparator("seq"));
         
         return results;
     }
@@ -375,7 +375,7 @@ public class ApiUser extends ApiGeneric {
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
-        Collections.sort(results, channelMngr.getChannelComparator("seq"));
+        Collections.sort(results, NnChannelManager.getComparator("seq"));
         
         log.info(printExitState(now, req, "ok"));
         return results;
@@ -567,13 +567,6 @@ public class ApiUser extends ApiGeneric {
         
         // sourceUrl
         String sourceUrl = req.getParameter("sourceUrl");
-        if (sourceUrl != null) {
-            if (NnChannelManager.isValidChannelSourceUrl(sourceUrl) == false) {
-                badRequest(resp, INVALID_YOUTUBE_URL);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-        }
         
         // sorting
         Short sorting = null;
