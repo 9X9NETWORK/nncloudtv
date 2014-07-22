@@ -39,6 +39,7 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
@@ -186,7 +187,7 @@ public class WatchDogController {
     @RequestMapping(value="msoInfo")
     public ResponseEntity<String> msoInfo(HttpServletRequest req, HttpServletResponse resp) {
         
-        Mso mso = NNF.getMsoMngr().findNNMso();
+        Mso mso = MsoManager.getSystemMso();
         String[] result = {""};
         result[0] += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result[0] += PlayerApiService.assembleKeyValue("name", mso.getName());
