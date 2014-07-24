@@ -32,9 +32,9 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
+import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
-import com.nncloudtv.service.StoreService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.cms.UserFavorite;
@@ -48,13 +48,11 @@ public class ApiUser extends ApiGeneric {
 
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
     
-    private StoreService storeService;
     private ApiUserService apiUserService;
     
     @Autowired
-    public ApiUser(StoreService storeService, ApiUserService apiUserService) {
+    public ApiUser(ApiUserService apiUserService) {
         
-        this.storeService = storeService;
         this.apiUserService = apiUserService;
     }
     
@@ -560,7 +558,7 @@ public class ApiUser extends ApiGeneric {
         if (categoryIdStr != null) {
             
             categoryId = evaluateLong(categoryIdStr);
-            if (storeService.isNnCategory(categoryId) == false) {
+            if (CategoryService.isSystemCategory(categoryId) == false) {
                 categoryId = null;
             }
         }

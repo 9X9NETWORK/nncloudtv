@@ -27,7 +27,6 @@ public class ApiMsoService {
     private SysTagDisplayManager sysTagDisplayMngr;
     private SysTagMapManager sysTagMapMngr;
     private NnChannelManager channelMngr;
-    private StoreService storeService;
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
@@ -36,16 +35,15 @@ public class ApiMsoService {
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
                             SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
-                            NnChannelManager channelMngr, StoreService storeService,
-                            StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            CategoryService categoryService, MsoConfigManager configMngr) {
+                            NnChannelManager channelMngr, StoreListingManager storeListingMngr,
+                            MsoManager msoMngr, CategoryService categoryService,
+                            MsoConfigManager configMngr) {
         
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
         this.channelMngr = channelMngr;
-        this.storeService = storeService;
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
@@ -414,38 +412,4 @@ public class ApiMsoService {
         
         categoryService.removeChannels(categoryId, channelIds);
     }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocks
-     * Get system Category locks from MSO.
-     * @param msoId required, the Mso's Id
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocks(Long msoId) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.getStoreCategoryLocks(msoId);
-        return results;
-    }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocksUpdate
-     * Update system Category locks from MSO, overwrite previous one.
-     * @param msoId required, the Mso's Id
-     * @param systemCategoryLocks required, the locks indicate system Category should hide or not in MSO's player
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocksUpdate(Long msoId, List<String> systemCategoryLocks) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.setStoreCategoryLocks(msoId, systemCategoryLocks);
-        return results;
-    }
-
 }
