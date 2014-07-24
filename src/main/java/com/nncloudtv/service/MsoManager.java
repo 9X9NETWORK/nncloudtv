@@ -343,7 +343,7 @@ public class MsoManager {
             json.setAcceptLang(acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
-            if (ad != null && !ad.equals("off")) {
+            if (ad != null && ad.equals(MsoConfig.AD_DIRECT_VIDEO)) {
                 
                 String adKey = CacheFactory.getAdInfoKey(mso, format);
                 List<AdPlacement> adPlacements = null;
@@ -377,12 +377,7 @@ public class MsoManager {
             brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
-            if (ad == null || ad.equals("off")) {
-                
-                String[] plain = { brandInfo };
-                return plain;
-                
-            } else {
+            if (ad != null && ad.equals(MsoConfig.AD_DIRECT_VIDEO)) {
                 
                 String adKey = CacheFactory.getAdInfoKey(mso, format);
                 String adInfo = null;
@@ -399,7 +394,11 @@ public class MsoManager {
                 }
                 
                 String[] plain = { brandInfo, adInfo };
+                return plain;
                 
+            } else {
+                
+                String[] plain = { brandInfo };
                 return plain;
             }
         }
