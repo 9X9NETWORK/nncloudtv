@@ -25,7 +25,7 @@ public class AdPlacementDao extends GenericDao<AdPlacement> {
         PersistenceManager pm = getPersistenceManager(); 
         try {
             Query query = pm.newQuery(AdPlacement.class);
-            query.setFilter("msoId == msoIdParam");
+            query.setFilter("msoId == msoIdParam && status == 0");
             query.declareParameters("long msoIdParam");
             query.setOrdering("seq asc");
             List<AdPlacement> results = (List<AdPlacement>) query.execute(msoId);
