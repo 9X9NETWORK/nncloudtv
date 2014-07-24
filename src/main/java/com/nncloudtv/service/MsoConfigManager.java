@@ -441,5 +441,18 @@ public class MsoConfigManager {
         
         return empty;
     }
+    
+    public String getAdConfig(Mso mso, String os) {
+        
+        String adKeyName = getKeyNameByOs(os, "ad");
+        if (adKeyName != null) {
+            MsoConfig adConfig = findByMsoAndItem(mso, adKeyName);
+            String ad = "off";
+            if (adConfig != null)
+                ad = adConfig.getValue();
+            return ad;
+        }
+        return null;
+    }
 }
 

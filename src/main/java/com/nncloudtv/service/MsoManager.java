@@ -208,12 +208,8 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
         
-        String adKeyName = configMngr.getKeyNameByOs(os, "ad");
-        if (adKeyName != null) {
-            MsoConfig adConfig = configMngr.findByMsoAndItem(mso, adKeyName);
-            String ad = "off";
-            if (adConfig != null)
-                ad = adConfig.getValue();
+        String ad = configMngr.getAdConfig(mso, os);
+        if (ad != null) {
             result += PlayerApiService.assembleKeyValue("ad", ad);
         }
         String admobkeyKeyName = configMngr.getKeyNameByOs(os, "admobkey");
@@ -223,7 +219,7 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("admob-key", admobKeyConfig.getValue());
             }
         }
-
+        
         MsoConfig audioConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AUDIO_BACKGROUND);
         String audio = "off";
         if (audioConfig != null) {
@@ -323,6 +319,7 @@ public class MsoManager {
         return os;
     }
     
+    @SuppressWarnings("unchecked")
     public Object getBrandInfo(HttpServletRequest req, Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
         if (mso == null) {return null; }
         os = checkOs(os, req);        
@@ -334,6 +331,7 @@ public class MsoManager {
             log.info("memcache error");
         }
         if (format == PlayerApiService.FORMAT_JSON) {
+            
             BrandInfo json = (BrandInfo) cached;
             if (cached == null) {
                 log.info("plain text is not cached");
@@ -343,8 +341,29 @@ public class MsoManager {
             json.setBrandInfoCounter(counter);
             json.setPiwik(piwik);
             json.setAcceptLang(acceptLang);
+            
+            String ad = NNF.getConfigMngr().getAdConfig(mso, os);
+            if (ad != null && !ad.equals("off")) {
+                
+                String adKey = CacheFactory.getAdInfoKey(mso, format);
+                List<AdPlacement> adPlacements = null;
+                try {
+                    adPlacements = (List<AdPlacement>) CacheFactory.get(adKey);
+                } catch (Exception e) {
+                    log.info("memcache error");
+                }
+                
+                if (adPlacements == null) {
+                    
+                    log.info("json is not cached (adInfo)");
+                    adPlacements = (List<AdPlacement>) composeAdInfo(mso, format);
+                }
+                
+                json.setAdPlacements(adPlacements);
+            }
+            
             return json;
-            // TODO: not knowing how to append AD info in json format
+            
         } else {
             
             String brandInfo = (String) cached;
@@ -357,7 +376,8 @@ public class MsoManager {
             brandInfo += PlayerApiService.assembleKeyValue("piwik", piwik);
             brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
             
-            if (req.getParameter("ad") == null) {
+            String ad = NNF.getConfigMngr().getAdConfig(mso, os);
+            if (ad == null || ad.equals("off")) {
                 
                 String[] plain = { brandInfo };
                 return plain;
@@ -375,7 +395,7 @@ public class MsoManager {
                 if (adInfo == null) {
                     
                     log.info("plain text is not cached (adInfo)");
-                    adInfo = this.composeAdInfoStr(mso);
+                    adInfo = (String) composeAdInfo(mso, format);
                 }
                 
                 String[] plain = { brandInfo, adInfo };
@@ -385,10 +405,18 @@ public class MsoManager {
         }
     }
     
-    private String composeAdInfoStr(Mso mso) {
+    private Object composeAdInfo(Mso mso, short format) {
         
         String adInfo = "";
         List<AdPlacement> ads = NNF.getAdMngr().findByMso(mso.getId());
+        
+        if (format == PlayerApiService.FORMAT_JSON) {
+            
+            CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON), ads);
+            
+            return ads;
+        }
+        
         for (AdPlacement ad : ads) {
             
             String[] ori = {
@@ -399,7 +427,9 @@ public class MsoManager {
             };
             adInfo += NnStringUtil.getDelimitedStr(ori) + "\n";
         }
+        
         CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN), adInfo);
+        
         return adInfo;
     }
     
