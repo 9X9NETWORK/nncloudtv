@@ -83,9 +83,10 @@ public class MsoConfig {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String value;
-    public static String CDN_AMAZON = "amazon";
-    public static String CDN_AKAMAI = "akamai";
-    public static String DISABLE_ALL_SYSTEM_CATEGORY = "ALL";
+    public static final String CDN_AMAZON = "amazon";
+    public static final String CDN_AKAMAI = "akamai";
+    public static final String DISABLE_ALL_SYSTEM_CATEGORY = "ALL";
+    public static final String AD_DIRECT_VIDEO = "direct-video";
     
     @Persistent
     private Date createDate;
