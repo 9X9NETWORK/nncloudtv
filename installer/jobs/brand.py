@@ -17,7 +17,7 @@ if not "@" in email:
 #---- db check ----
 dbcontent = MySQLdb.connect (host = "localhost",
                              user = "root",
-                             passwd = "",
+                             passwd = "letlet",
                              charset = "utf8",
                              use_unicode = True,
                              db = "nncloudtv_content")
@@ -72,7 +72,7 @@ if row == None:
   userId = userRow[0]
   print "userId:" + str(userId) + ";msoId:" + str(msoId)
   cursor.execute("""
-     update nncloudtv_nnuser1.nnuser_profile set priv='111111' where userId=%s and msoId=%s;
+     update nncloudtv_nnuser1.nnuser_profile set priv='1110001' where userId=%s and msoId=%s;
         """, (userId, msoId))
   dbcontent.commit()
   
