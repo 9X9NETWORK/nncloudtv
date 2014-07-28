@@ -29,6 +29,7 @@ public class MsoConfigManager {
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
     protected static final String PROPERTIES_CLEARCOMMRCE = "clearcommerce.properties";
+    protected static final String PROPERTIES_AWS = "aws.properties";
     
     protected static String serverDomain = null; 
     
@@ -49,7 +50,7 @@ public class MsoConfigManager {
     static public String getSearchNnChannelServer() {
     	return getProperty("services.properties", "search_nncloudtv");
     }
-
+    
     static public String getSearchPoolServer() {
     	return getProperty("services.properties", "search_pool");
     }
@@ -57,7 +58,7 @@ public class MsoConfigManager {
     static public String getValue(String key) {
     	return getProperty("services.properties", key);
     }
- 
+    
     static public String getP12FilePath(Mso mso, boolean isProduction) {
         
         String path = "/var/opt/p12files/";
@@ -361,6 +362,16 @@ public class MsoConfigManager {
             }
         }
         return result;
+    }
+    
+    public static String getAWSId() {
+        
+        return getProperty(PROPERTIES_AWS, "aws_id");
+    }
+    
+    public static String getAWSKey() {
+        
+        return getProperty(PROPERTIES_AWS, "aws_key");
     }
     
     public static String getCCClientId() {

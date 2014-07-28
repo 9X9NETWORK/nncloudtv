@@ -83,7 +83,7 @@ public class ApiMisc extends ApiGeneric {
 		result.put("bucket", bucket);
 		result.put("policy", policy);
 		result.put("signature", signature);
-		result.put("id", AmazonLib.AWS_ID);
+		result.put("id", MsoConfigManager.getAWSId());
 		
 		return result;
 	}

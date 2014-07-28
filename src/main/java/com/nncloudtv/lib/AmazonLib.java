@@ -12,15 +12,14 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.google.api.client.util.Base64;
+import com.nncloudtv.service.MsoConfigManager;
 
 public class AmazonLib {
     
     protected static final Logger log = Logger.getLogger(AmazonLib.class.getName());
     
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    private static final String AWS_KEY = "fdXkONXak8YC8TylX7fVSte5nvhFJ0RB7KnXGhpl";
     
-    public static final String AWS_ID = "AKIAIUZXV6X5RKSG3QRQ";
     public static final String AWS_TOKEN = "QWJvdXQtTWU=";
     public static final String S3_TOKEN = "YWJvdXR5b3U=";
     public static final String S3_CONTEXT_CODE = "aHR0cDovL2dvby5nbC9lVTNtWg==";
@@ -42,7 +41,7 @@ public class AmazonLib {
         try {
             
             // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(AWS_KEY.getBytes(), HMAC_SHA1_ALGORITHM);
+            SecretKeySpec signingKey = new SecretKeySpec(MsoConfigManager.getAWSKey().getBytes(), HMAC_SHA1_ALGORITHM);
             
             // get an hmac_sha1 Mac instance and initialize with the signing key
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
