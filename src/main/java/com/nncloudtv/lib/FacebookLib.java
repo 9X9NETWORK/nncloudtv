@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -23,7 +21,6 @@ import twitter4j.auth.AccessToken;
 
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
-import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.web.json.facebook.FBPost;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.facebook.FacebookResponse;
@@ -31,13 +28,6 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 public class FacebookLib {
     
     protected static final Logger log = Logger.getLogger(FacebookLib.class.getName());
-    
-    @Autowired
-    private static MsoConfigManager configMngr = new MsoConfigManager();
-    
-    public static void setConfigMngr(MsoConfigManager configMngr) {
-        FacebookLib.configMngr = configMngr;
-    }
     
     private static String generateState() {
         String time = String.valueOf(new Date().getTime());
@@ -109,11 +99,11 @@ public class FacebookLib {
     }
     
     public String[] getOAuthAccessToken(String code, String uri, String fbLoginUri, Mso mso){
-        String urlBase = "https://graph.facebook.com/oauth/access_token";
-        String data[] = {null, null}; //token, expires
-        MsoConfigManager configMngr = new MsoConfigManager();
-        String clientId = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
-        String secret = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTSECRET, mso);                
+        
+        String urlBase  = "https://graph.facebook.com/oauth/access_token";
+        String data[]   = {null, null}; //token, expires
+        String clientId = NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
+        String secret   = NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_CLIENTSECRET, mso);
         log.info("pass back is?:" + uri);
         try {
             URL url = new URL(urlBase);
@@ -165,9 +155,8 @@ public class FacebookLib {
     public static String[] getLongLivedAccessToken(String shortLivedAccessToken, Mso mso){
         String urlBase = "https://graph.facebook.com/oauth/access_token";
         String data[] = {null, null}; //token, expires
-        MsoConfigManager configMngr = new MsoConfigManager();
-        String clientId = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
-        String secret = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTSECRET, mso);        
+        String clientId = NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
+        String secret = NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_CLIENTSECRET, mso);        
         try {
             URL url = new URL(urlBase);
             String params = "client_id=" + clientId +
@@ -213,7 +202,7 @@ public class FacebookLib {
     
     public static String getDialogOAuthPath(String referrer, String fbLoginUri, Mso mso) {
         
-        String clientId = configMngr.getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
+        String clientId = NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_CLIENTID, mso);
         
         String url = "http://www.facebook.com/dialog/oauth?" +
                      "client_id=" + clientId +
@@ -282,8 +271,7 @@ public class FacebookLib {
     
     public static void postToFacebook(FBPost fbPost) throws IOException {
         
-        MsoConfigManager configMngr = new MsoConfigManager();
-        MsoConfig fbConfig = configMngr.findByItem(MsoConfig.REALFBTOKEN);
+        MsoConfig fbConfig = NNF.getConfigMngr().findByItem(MsoConfig.REALFBTOKEN);
         String accessToken = null;
         if (fbConfig != null) {
             accessToken = fbConfig.getValue();

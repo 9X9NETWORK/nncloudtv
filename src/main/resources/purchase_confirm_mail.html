@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Confirmation Email</title>
+</head>
+<body style="background:#ffffff; margin: 0;font-family: Geneva, Verdana, Arial, Helvetica, sans-serif;">
+  <table align="center" bgcolor="#f9f9f9" border="0" cellpadding="0" cellspacing="0" style="color: #242424; width: 600px; font-size: 15px;padding: 6px;">
+    <tbody>
+      <tr>
+        <td colspan="3"><img src="http://www.flipr.tv/vidcon2014/images/banner.png" />
+        </td>
+      </tr>
+      <tr>
+        <td height="64" colspan="3" style="font-size: 17px;">
+          Dear <span id="username">{{user}}</span>,
+        </td>
+      <tr>
+        <td colspan="3">Thanks for signing up for FLIPr. This is confirmation that you have purchased:<br><br></td>
+      </tr>
+      <tr>
+        <td>
+          <table style="width: 600px; margin-bottom: 24px;">
+            <tr>
+              <td style="height:32px;border:1px solid #ccc;text-align: center; font-weight:bold;">Item</td>
+              <td style="height:32px;border:1px solid #ccc;text-align: center;font-weight:bold;">Unit Price</td>
+              <td style="height:32px;border:1px solid #ccc;text-align: center;font-weight:bold;">Total Cost</td>
+            </tr>
+            <tr>
+              <td style="height:32px;border-bottom: 1px solid #ccc;">{{item1}}</td>
+              <td style="height:32px;border-bottom: 1px solid #ccc;">{{price1}}</td>
+              <td rowspan="2" style="border: 1px solid #ccc;text-align: center">{{total}}</td>
+            </tr>
+            <tr>
+              <td style="height:32px;border-bottom: 1px solid #ccc;">{{item2}}</td>
+              <td style="height:32px;border-bottom: 1px solid #ccc;">{{price2}}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+Your Visa ending in <span>{{card}}</span> will be charged <span>{{total}}</span> a month as a recurring transaction after your app is ready for sale in the app store.<br><br>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3">
+Click here to view <a href="http://www.flipr.tv/vidcon2014/vidconTerms.html" target="terms-of-use">Terms of Use</a>. You can reach us at <a href="mailto:contact@flipr.tv">contact@flipr.tv</a> with any questions.<br><br>
+        </td>
+      </tr>
+      <tr>
+        <td>
+Sincerely,<br>
+
+The FLIPr Team<br>
+
+<a href="http://www.flipr.tv/" target="flipr">www.FLIPr.tv</a><br><br>
+</td>
+      </tr>
+      <tr><td colspan="3" style="font-size: 13px; background: #000; color: #fff;padding: 12px 0 12px 4px;">Follow us <a style="vertical-align: middle;" href="https://www.facebook.com/fliprtv?fref=ts" target="_bank"><img src="http://www.flipr.tv/vidcon2014/images/fb.png" width="20px"></a> | Contact us <a href="http://www.flipr.tv/" style="color: #fff;" target="_bank">FLIPr.tv</a></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

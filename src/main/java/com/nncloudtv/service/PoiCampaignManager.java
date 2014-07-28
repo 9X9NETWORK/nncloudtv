@@ -7,8 +7,7 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.PoiCampaignDao;
-import com.nncloudtv.dao.PoiDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 
@@ -17,16 +16,13 @@ public class PoiCampaignManager {
     
     protected static final Logger log = Logger.getLogger(PoiCampaignManager.class.getName());
     
-    private PoiCampaignDao poiCampaignDao = new PoiCampaignDao();
-    private PoiDao poiDao = new PoiDao();
-    
     public List<PoiCampaign> findByUserId(Long userId) {
         
         if (userId == null) {
             return new ArrayList<PoiCampaign>();
         }
         
-        List<PoiCampaign> results = poiCampaignDao.findByUserId(userId);
+        List<PoiCampaign> results = NNF.getPoiCampaignDao().findByUserId(userId);
         if (results == null) {
             return new ArrayList<PoiCampaign>();
         }
@@ -46,7 +42,7 @@ public class PoiCampaignManager {
         }
         campaign.setUpdateDate(now);
         
-        PoiCampaign result = poiCampaignDao.save(campaign);
+        PoiCampaign result = NNF.getPoiCampaignDao().save(campaign);
         
         return result;
     }
@@ -60,7 +56,7 @@ public class PoiCampaignManager {
         Date now = new Date();
         poi.setUpdateDate(now);
         
-        Poi result = poiDao.save(poi);
+        Poi result = NNF.getPoiDao().save(poi);
         
         return result;
     }
@@ -71,7 +67,7 @@ public class PoiCampaignManager {
             return new ArrayList<Poi>();
         }
         
-        List<Poi> results = poiDao.findByCompaignId(campaignId);
+        List<Poi> results = NNF.getPoiDao().findByCompaignId(campaignId);
         if (results == null) {
             return new ArrayList<Poi>();
         }
@@ -86,7 +82,7 @@ public class PoiCampaignManager {
             return new ArrayList<Poi>();
         }
         
-        List<Poi> results = poiDao.findByPointId(pointId);
+        List<Poi> results = NNF.getPoiDao().findByPointId(pointId);
         if (results == null) {
             return new ArrayList<Poi>();
         }
@@ -98,21 +94,21 @@ public class PoiCampaignManager {
         if (campaignId == null) {
             return null;
         }
-        return poiCampaignDao.findById(campaignId);
+        return NNF.getPoiCampaignDao().findById(campaignId);
     }
     
     public Poi findPoiById(Long poiId) {
         if (poiId == null) {
             return null;
         }
-        return poiDao.findById(poiId);
+        return NNF.getPoiDao().findById(poiId);
     }
     
     public void delete(Poi poi) {
         if (poi == null) {
             return ;
         }
-        poiDao.delete(poi);
+        NNF.getPoiDao().delete(poi);
     }
     
     public void delete(PoiCampaign campaign) {
@@ -124,10 +120,10 @@ public class PoiCampaignManager {
         // delete pois
         List<Poi> pois = findPoisByCampaignId(campaign.getId());
         if (pois != null && pois.size() > 0) {
-            poiDao.deleteAll(pois);
+            NNF.getPoiDao().deleteAll(pois);
         }
         
-        poiCampaignDao.delete(campaign);
+        NNF.getPoiCampaignDao().delete(campaign);
     }
 
 }

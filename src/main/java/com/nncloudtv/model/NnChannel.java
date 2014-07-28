@@ -11,32 +11,31 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.YouTubeLib;
-import com.nncloudtv.service.CounterFactory;
 
 /**
  * a Channel
  */
-@PersistenceCapable(table="nnchannel", detachable="true")
+@PersistenceCapable(table = "nnchannel", detachable = "true")
 public class NnChannel implements Serializable {
+    
     private static final long serialVersionUID = 6138621615980949044L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
             
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String name; //the name we define, versus oriName
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String oriName; //original podcast/youtube name 
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String intro;
     
     @NotPersistent
@@ -47,7 +46,7 @@ public class NnChannel implements Serializable {
     //                       getPlayerPrefImageUrl(reflect the status), 
     //                       getOneImageUrl (to get one image in "|" situation)
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl; 
     public static String IMAGE_PROCESSING_URL = "http://s3.amazonaws.com/9x9ui/war/v0/images/processing.png";
     public static String IMAGE_RADIO_URL      = "http://s3.amazonaws.com/9x9ui/war/v0/images/9x9-watermark.jpg";
@@ -56,140 +55,137 @@ public class NnChannel implements Serializable {
     public static String IMAGE_WATERMARK_URL  = "http://s3.amazonaws.com/9x9ui/war/v0/images/9x9-watermark.jpg";
     public static String IMAGE_DEFAULT_URL    = "http://s3.amazonaws.com/9x9ui/war/v0/images/9x9-watermark.jpg";
     public static String IMAGE_EPISODE_URL    = "http://s3.amazonaws.com/9x9ui/war/v0/images/episode-default.png";
-        
+    
     @Persistent
     private boolean isPublic;
-
+    
     //used for testing without changing the program logic
     //isTemp set to true means it can be wiped out
     @Persistent
-    private boolean isTemp;    
+    private boolean isTemp;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String lang; //used with LangTable
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String sphere; //used with LangTable
     
     @Persistent
-    private int cntEpisode; //episode count
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
+    private String sourceUrl; //unique if not null
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
-    private String sourceUrl; //unique if not null
-
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
+    private String tag;
+    
     @NotPersistent
     private short type; //Use with MsoIpg and Subscription, to define attributes such as MsoIpg.TYPE_READONLY
-
-    @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
-    private String tag;
     
     @Persistent
     public short contentType;
-    public static final short CONTENTTYPE_SYSTEM = 1;
-    public static final short CONTENTTYPE_PODCAST = 2;
-    public static final short CONTENTTYPE_YOUTUBE_CHANNEL = 3;
+    public static final short CONTENTTYPE_SYSTEM           = 1;
+    public static final short CONTENTTYPE_PODCAST          = 2;
+    public static final short CONTENTTYPE_YOUTUBE_CHANNEL  = 3;
     public static final short CONTENTTYPE_YOUTUBE_PLAYLIST = 4;
-    public static final short CONTENTTYPE_FACEBOOK = 5;
-    public static final short CONTENTTYPE_MIXED = 6; //9x9 channel
-    public static final short CONTENTTYPE_SLIDE = 7;
-    public static final short CONTENTTYPE_MAPLE_VARIETY = 8;
-    public static final short CONTENTTYPE_MAPLE_SOAP = 9;
+    public static final short CONTENTTYPE_FACEBOOK         = 5;
+    public static final short CONTENTTYPE_MIXED            = 6; //9x9 channel
+    public static final short CONTENTTYPE_SLIDE            = 7;
+    public static final short CONTENTTYPE_MAPLE_VARIETY    = 8;
+    public static final short CONTENTTYPE_MAPLE_SOAP       = 9;
     public static final short CONTENTTYPE_YOUTUBE_SPECIAL_SORTING = 10;
-    public static final short CONTENTTYPE_FAVORITE = 11;
-    public static final short CONTENTTYPE_FAKE_FAVORITE = 12;
-    public static final short CONTENTTYPE_YOUTUBE_LIVE = 13;
-    
-    @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
-    private String piwik;
+    public static final short CONTENTTYPE_FAVORITE         = 11;
+    public static final short CONTENTTYPE_FAKE_FAVORITE    = 12;
+    public static final short CONTENTTYPE_YOUTUBE_LIVE     = 13;
+    public static final short CONTENTTYPE_DAYPARTING_MASK  = 14;
+    public static final short CONTENTTYPE_TRENDING         = 15;
+    public static final short CONTENTTYPE_VIRTUAL_CHANNEL1 = 16; // experiment
+    public static final short CONTENTTYPE_VIRTUAL_CHANNEL2 = 17; // experiment
     
     @Persistent
     private short status;
     //general
-    public static final short STATUS_SUCCESS = 0;
-    public static final short STATUS_ERROR = 1;
-    public static final short STATUS_PROCESSING = 2;
+    public static final short STATUS_SUCCESS           = 0;
+    public static final short STATUS_ERROR             = 1;
+    public static final short STATUS_PROCESSING        = 2;
     public static final short STATUS_WAIT_FOR_APPROVAL = 3;
-    public static final short STATUS_REMOVED = 4;
+    public static final short STATUS_REMOVED           = 4;
     //invalid
-    public static final short STATUS_INVALID_FORMAT = 51;
-    public static final short STATUS_URL_NOT_FOUND = 53;
+    public static final short STATUS_INVALID_FORMAT    = 51;
+    public static final short STATUS_URL_NOT_FOUND     = 53;
     //quality
-    public static final short STATUS_NO_VALID_EPISODE = 100;
-    public static final short STATUS_BAD_QUALITY = 101;
+    public static final short STATUS_NO_VALID_EPISODE  = 100;
+    public static final short STATUS_BAD_QUALITY       = 101;
     //internal
     public static final short STATUS_TRANSCODING_DB_ERROR = 1000;
-    public static final short STATUS_NNVMSO_JSON_ERROR = 1001;        
+    public static final short STATUS_NNVMSO_JSON_ERROR = 1001;
                             
     //status note or pool status note
     //can be number to indicate any kind of status or text
     @Persistent
-    @Column(jdbcType="VARCHAR", length=10)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
     private String note;
     
     @Persistent
     private short seq; //use with subscription, to specify sequence in IPG. 
     
-    //not used
-    public static final short SORT_NEWEST_TO_OLDEST = 1; //default
-    public static final short SORT_OLDEST_TO_NEWEST = 2;
-    public static final short SORT_DESIGNATED = 3;
-    public static final short SORT_POSITION_FORWARD = 4;
-    public static final short SORT_POSITION_REVERSE = 5;    
-    
     @Persistent
     private short sorting;
-
+    public static final short SORT_NEWEST_TO_OLDEST = 1; //default
+    public static final short SORT_OLDEST_TO_NEWEST = 2;
+    public static final short SORT_DESIGNATED       = 3;
+    public static final short SORT_POSITION_FORWARD = 4;
+    public static final short SORT_POSITION_REVERSE = 5;
+    
     //define channel type. anything > 10 is fdm pool. anything > 20 is browse pool
     @Persistent
     private short poolType;
-    public static final short POOL_BASE = 0;
-    public static final short POOL_FDM = 10;
-    public static final short POOL_BROWSE = 20;
+    public static final short POOL_BASE      = 0;
+    public static final short POOL_FDM       = 10;
+    public static final short POOL_BROWSE    = 20;
     public static final short POOL_BILLBOARD = 30; 
     
     @NotPersistent
-    private String recentlyWatchedProgram;  
-
-    @NotPersistent
-    private int cntFollower; // follower count
+    private String recentlyWatchedProgram;
     
-    @Persistent    
-    private int cntSubscribe; //subscription count
-
-    @NotPersistent    
-    private long cntView; //viewing count, in shard table
-
-    @NotPersistent    
-    private long cntVisit; //cnt visit count
+    @Persistent
+    private int cntEpisode;   // episode count
+    
+    @NotPersistent
+    private int cntFollower;  // follower count
+    
+    @Persistent
+    private int cntSubscribe; // subscription count
+    
+    @NotPersistent
+    private long cntView;     // viewing count, in shard table
+    
+    @NotPersistent
+    private long cntVisit;    // cnt visit count
     
     @Persistent 
     private Date createDate;
         
     @Persistent
     private Date updateDate;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=25)    
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String transcodingUpdateDate; //timestamps from transcoding server
+    
+    @Persistent
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String userIdStr; //format: shard-userId, example: 1-1
     
     //can be removed if player making a separate query
     //format: shard-userId, example: 1-1, separated by ";"
     //up to 3 subscribers
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)    
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String subscribersIdStr; 
     
-    @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
-
-    private String transcodingUpdateDate; //timestamps from transcoding server           
-    
-    @NotPersistent    
+    @NotPersistent
     private long categoryId;
     
     @NotPersistent
@@ -201,7 +197,7 @@ public class NnChannel implements Serializable {
     // used in set, mark as true means the results sorting that this channel will put in the first
     @NotPersistent
     private boolean alwaysOnTop;
-
+    
     @NotPersistent
     private boolean featured;
     
@@ -216,7 +212,7 @@ public class NnChannel implements Serializable {
     @NotPersistent
     private String playbackUrl;
     
-    protected static final Logger log = Logger.getLogger(NnChannel.class.getName());    
+    protected static final Logger log = Logger.getLogger(NnChannel.class.getName());
     
     public NnChannel(String name, String intro, String imageUrl) {
         this.name = name;
@@ -230,19 +226,19 @@ public class NnChannel implements Serializable {
     public NnChannel(String sourceUrl) {
         this.sourceUrl = sourceUrl;
     }
-        
+    
     public long getId() {
         return id;
     }
-
+    
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public String getFakeId(String userProfileUrl) {
         return "f-" + userProfileUrl;
     }
-
+    
     //for fake channel implementation
     public String getIdStr() {
         if (contentType == NnChannel.CONTENTTYPE_FAKE_FAVORITE)
@@ -254,7 +250,7 @@ public class NnChannel implements Serializable {
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
@@ -270,7 +266,7 @@ public class NnChannel implements Serializable {
     public String getIntro() {
         return intro;
     }
-
+    
     public String getPlayerName() {
         String name = this.getName(); 
         if (name != null) {         
@@ -288,7 +284,6 @@ public class NnChannel implements Serializable {
             pintro = pintro.substring(0, len);           
         }
         return pintro;      
-        
     }
     
     public void setIntro(String intro) {
@@ -300,7 +295,7 @@ public class NnChannel implements Serializable {
         }
         this.intro = intro;
     }
-
+    
     public String getImageUrl() {
         return imageUrl;
     }
@@ -448,14 +443,6 @@ public class NnChannel implements Serializable {
         this.recentlyWatchedProgram = recentlyWatchedProgram;
     }
 
-    public String getPiwik() {
-        return piwik;
-    }
-
-    public void setPiwik(String piwik) {
-        this.piwik = piwik;
-    }
-
     public String getTag() {
         return tag;
     }
@@ -496,29 +483,13 @@ public class NnChannel implements Serializable {
         this.cntSubscribe = cntSubscribe;
     }
 
-    public long getCntView() {      
-        try {
-            String name = "u_ch" + id;        
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                return Integer.parseInt(result);
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            cntView = factory.getCount(name); 
-            CacheFactory.set(name, String.valueOf(cntView));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public long getCntView() {
         return cntView;
     }
     
-    /*
-    public void setCntView(int cntView) {
+    public void setCntView(long cntView) {
         this.cntView = cntView;
     }
-    */
 
     public short getShard(String userId) {
         if (userId == null)
@@ -618,26 +589,10 @@ public class NnChannel implements Serializable {
     }
 
     public long getCntVisit() {
-        try {
-            String name = "u_ch" + id;        
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                return Integer.parseInt(result);
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            cntVisit = factory.getCount(name);
-            CacheFactory.set(name, String.valueOf(cntVisit));
-        } catch (Exception e){
-            //e.printStackTrace();
-            System.out.println("msg:" + e.getMessage());
-            System.out.println("cause:" + e.getCause());
-            return 0;
-        }
         return cntVisit;
     }
 
-    public void setCntVisit(int cntVisit) {
+    public void setCntVisit(long cntVisit) {
         this.cntVisit = cntVisit;
     }
 

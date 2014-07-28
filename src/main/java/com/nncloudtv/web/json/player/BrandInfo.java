@@ -1,6 +1,9 @@
 package com.nncloudtv.web.json.player;
 
 import java.io.Serializable;
+import java.util.List;
+
+import com.nncloudtv.model.AdPlacement;
 
 public class BrandInfo  implements Serializable {
 	private static final long serialVersionUID = -7760475382568969843L;
@@ -23,8 +26,16 @@ public class BrandInfo  implements Serializable {
 	private String upgradeMessage;
 	private String tutorialVideo;
 	private String gcmSenderId;
+	private String aboutus;
+	private List<AdPlacement> adPlacements;
 	
-	public String getTutorialVideo() {
+	public List<AdPlacement> getAdPlacements() {
+        return adPlacements;
+    }
+    public void setAdPlacements(List<AdPlacement> adPlacements) {
+        this.adPlacements = adPlacements;
+    }
+    public String getTutorialVideo() {
 		return tutorialVideo;
 	}
 	public void setTutorialVideo(String tutorialVideo) {
@@ -131,6 +142,12 @@ public class BrandInfo  implements Serializable {
     }
     public void setGcmSenderId(String gcmSenderId) {
         this.gcmSenderId = gcmSenderId;
+    }
+    public String getAboutus() {
+        return aboutus;
+    }
+    public void setAboutus(String aboutus) {
+        this.aboutus = aboutus;
     }
 
 }

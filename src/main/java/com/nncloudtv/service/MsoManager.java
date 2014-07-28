@@ -8,10 +8,13 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Service;
+
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -24,26 +27,20 @@ public class MsoManager {
 
     protected static final Logger log = Logger.getLogger(MsoManager.class.getName());
     
-    private MsoDao msoDao = new MsoDao();
-    protected MsoConfigManager configMngr;
-    
-    public MsoManager(MsoConfigManager configMngr, MsoDao msoDao) {
-        
-        this.configMngr = configMngr;
-        this.msoDao = msoDao;
-    }
-    
-    public MsoManager() {
-        configMngr = new MsoConfigManager();
-    }
+    private MsoDao dao = NNF.getMsoDao();
     
     public Mso findOneByName(String name) {
-        if (name == null)
-            return this.findNNMso(); //most of the situation
-        Mso mso = this.findByName(name);
-        if (mso == null)
-            return this.findNNMso(); 
-        return mso;
+        
+        if (name != null) {
+            
+            Mso mso = findByName(name);
+            if (mso != null) {
+                
+                return mso;
+            }
+        }
+        
+        return getSystemMso();
     }
     
     public long addMsoVisitCounter(boolean readOnly) {        
@@ -65,44 +62,65 @@ public class MsoManager {
             return null;
         }
         
-        Date now = new Date();        
-        if (mso.getCreateDate() == null)
+        Date now = new Date();
+        if (mso.getCreateDate() == null) {
+            
             mso.setCreateDate(now);
+        }
         mso.setUpdateDate(now);
-        msoDao.save(mso);
-        /*
-        if (mso.getType() == Mso.TYPE_NN)
-            this.processCache();
-            */
+        dao.save(mso);
+        resetCache(mso);
+        
         return mso;
     }
     
-    public void resetCache(String mso) {
-    	if (mso == null)
-    		return;
-        String key = "brandInfo(" + mso + ")";
-        String web = key + "(web)";
-        String ios = key + "(ios)";
-        String android = key + "(android)";
-        CacheFactory.delete(web);
-        CacheFactory.delete(ios);
-        CacheFactory.delete(android);
+    public void resetCache(Mso mso) {
+        
+        if (mso == null) { return; }
+        
+        String keyAdInfoPlain  = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        String keyAdInfoJson   = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON);
+        String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_JSON);
+        String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+        String keyIosJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
+        String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        String keyWebJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
+        String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        
+        CacheFactory.delete(keyAdInfoPlain);
+        CacheFactory.delete(keyAdInfoJson);
+        CacheFactory.delete(keyAndroidJson);
+        CacheFactory.delete(keyAndroidPlain);
+        CacheFactory.delete(keyIosJson);
+        CacheFactory.delete(keyIosPlain);
+        CacheFactory.delete(keyWebJson);
+        CacheFactory.delete(keyWebPlain);
     }
     
-    public Mso findNNMso() {
-        List<Mso> list = this.findByType(Mso.TYPE_NN);
+    public static Mso getSystemMso() {
+        
+        List<Mso> list = NNF.getMsoMngr().findByType(Mso.TYPE_NN);
+        
         return list.get(0);
     }
     
+    public static long getSystemMsoId() {
+        
+        return getSystemMso().getId();
+    }
+    
     public static boolean isNNMso(Mso mso) {
-    	if (mso == null)
-    		return false;
-    	if (mso.getId() == 1)
-    		return true;
-    	return false;
+        if (mso == null)
+            return false;
+        if (mso.getId() == 1)
+            return true;
+        return false;
     }
     
     private String composeBrandInfoStr(Mso mso, String os) {
+        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        
         //general setting
         String result = PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
         result += PlayerApiService.assembleKeyValue("name", mso.getName());
@@ -118,7 +136,6 @@ public class MsoManager {
         boolean facebookId = false;
         
         for (MsoConfig c : list) {
-            System.out.println(c.getItem() + ";" + c.getValue());
             if (c.getItem().equals(MsoConfig.DEBUG))
                 result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
             if (c.getItem().equals(MsoConfig.FBTOKEN))
@@ -153,6 +170,10 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.SHAKE_DISCOVER) && (!os.equals(PlayerService.OS_WEB)) && c.getValue() != null && c.getValue().equals("on")) {
             	result += PlayerApiService.assembleKeyValue(MsoConfig.SHAKE_DISCOVER, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.ABOUT_US)) {
+                String aboutus = c.getValue().replaceAll("\t", "").replaceAll("\n", "{BR}");
+                result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, aboutus);
+            }            
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -187,6 +208,27 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("flurry", flurry);
         }
         
+        String ad = configMngr.getAdConfig(mso, os);
+        if (ad != null) {
+            result += PlayerApiService.assembleKeyValue("ad", ad);
+        }
+        String admobkeyKeyName = configMngr.getKeyNameByOs(os, "admobkey");
+        if (admobkeyKeyName != null) {
+            MsoConfig admobKeyConfig = configMngr.findByMsoAndItem(mso, admobkeyKeyName);
+            if (admobKeyConfig != null) { 
+                result += PlayerApiService.assembleKeyValue("admob-key", admobKeyConfig.getValue());
+            }
+        }
+        
+        MsoConfig audioConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AUDIO_BACKGROUND);
+        String audio = "off";
+        if (audioConfig != null) {
+        	audio = audioConfig.getValue();
+        }
+        if (!os.equals(PlayerService.OS_WEB)) {
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, audio);
+        }
+        
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {
             MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);
@@ -204,6 +246,16 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("homepage", homepage.getValue());
             else
                 result += PlayerApiService.assembleKeyValue("homepage", "portal");            	
+            MsoConfig sound = configMngr.findByMsoAndItem(mso, MsoConfig.NOTIFICATION_SOUND_VIBRATION);
+            String value = "sound off;vibration off";
+            if (sound != null)
+            	value = sound.getValue();
+            result += PlayerApiService.assembleKeyValue(MsoConfig.NOTIFICATION_SOUND_VIBRATION, value);
+            MsoConfig signup = configMngr.findByMsoAndItem(mso, MsoConfig.SIGNUP_ENFORCE);
+            value = "never";
+            if (signup != null)
+            	value = signup.getValue();
+            result += PlayerApiService.assembleKeyValue(MsoConfig.SIGNUP_ENFORCE, value);            
         }        
 
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
@@ -220,7 +272,7 @@ public class MsoManager {
         info.setLogoUrl(mso.getLogoUrl());
         info.setJingleUrl(mso.getJingleUrl());
         info.setPreferredLangCode(mso.getLang());
-        List<MsoConfig> list = configMngr.findByMso(mso);
+        List<MsoConfig> list = NNF.getConfigMngr().findByMso(mso);
         //config
         for (MsoConfig c : list) {
             System.out.println(c.getItem() + ";" + c.getValue());
@@ -242,6 +294,9 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
                 info.setGcmSenderId(c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.ABOUT_US)) {
+                info.setAboutus(c.getValue());
+            }
         }
         CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON), info);
         return info;    	
@@ -254,7 +309,7 @@ public class MsoManager {
             }
             return os;
         }
-        ApiContext service = new ApiContext(req, this);
+        ApiContext service = new ApiContext(req);
         os = PlayerService.OS_WEB;
         if (service.isIos()) {
             os = PlayerService.OS_IOS;
@@ -264,6 +319,7 @@ public class MsoManager {
         return os;
     }
     
+    @SuppressWarnings("unchecked")
     public Object getBrandInfo(HttpServletRequest req, Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
         if (mso == null) {return null; }
         os = checkOs(os, req);        
@@ -275,38 +331,115 @@ public class MsoManager {
             log.info("memcache error");
         }
         if (format == PlayerApiService.FORMAT_JSON) {
-        	BrandInfo json = (BrandInfo)cached;
-        	if (cached == null) {
-        		log.info("plain text is not cached");
-        		json =  (BrandInfo)this.composeBrandInfoJson(mso, os);
-        	}
-        	json.setLocale(locale);
-        	json.setBrandInfoCounter(counter);
-        	json.setPiwik(piwik);
-        	json.setAcceptLang(acceptLang);        	
-        	return json;
-        } else {
-	    	String[] plain = {(String) cached};
-	    	if (cached == null) {
-	    		log.info("plain text is not cached");
-	    		plain[0] = this.composeBrandInfoStr(mso, os);
-	    	}
-	    	plain[0] += PlayerApiService.assembleKeyValue("locale", locale);
-	        plain[0] += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
-	        plain[0] += PlayerApiService.assembleKeyValue("piwik", piwik);
-	        plain[0] += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);        
-	        return plain;        	
-        }        
-    }
             
+            BrandInfo json = (BrandInfo) cached;
+            if (cached == null) {
+                log.info("plain text is not cached");
+                json = (BrandInfo) this.composeBrandInfoJson(mso, os);
+            }
+            json.setLocale(locale);
+            json.setBrandInfoCounter(counter);
+            json.setPiwik(piwik);
+            json.setAcceptLang(acceptLang);
+            
+            String ad = NNF.getConfigMngr().getAdConfig(mso, os);
+            if (ad != null && ad.equals(MsoConfig.AD_DIRECT_VIDEO)) {
+                
+                String adKey = CacheFactory.getAdInfoKey(mso, format);
+                List<AdPlacement> adPlacements = null;
+                try {
+                    adPlacements = (List<AdPlacement>) CacheFactory.get(adKey);
+                } catch (Exception e) {
+                    log.info("memcache error");
+                }
+                
+                if (adPlacements == null) {
+                    
+                    log.info("json is not cached (adInfo)");
+                    adPlacements = (List<AdPlacement>) composeAdInfo(mso, format);
+                }
+                
+                json.setAdPlacements(adPlacements);
+            }
+            
+            return json;
+            
+        } else {
+            
+            String brandInfo = (String) cached;
+            if (cached == null) {
+                log.info("plain text is not cached");
+                brandInfo = this.composeBrandInfoStr(mso, os);
+            }
+            brandInfo += PlayerApiService.assembleKeyValue("locale", locale);
+            brandInfo += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
+            brandInfo += PlayerApiService.assembleKeyValue("piwik", piwik);
+            brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
+            
+            String ad = NNF.getConfigMngr().getAdConfig(mso, os);
+            if (ad != null && ad.equals(MsoConfig.AD_DIRECT_VIDEO)) {
+                
+                String adKey = CacheFactory.getAdInfoKey(mso, format);
+                String adInfo = null;
+                try {
+                    adInfo = (String) CacheFactory.get(adKey);
+                } catch (Exception e) {
+                    log.info("memcache error");
+                }
+                
+                if (adInfo == null) {
+                    
+                    log.info("plain text is not cached (adInfo)");
+                    adInfo = (String) composeAdInfo(mso, format);
+                }
+                
+                String[] plain = { brandInfo, adInfo };
+                return plain;
+                
+            } else {
+                
+                String[] plain = { brandInfo };
+                return plain;
+            }
+        }
+    }
+    
+    private Object composeAdInfo(Mso mso, short format) {
+        
+        String adInfo = "";
+        List<AdPlacement> ads = NNF.getAdMngr().findByMso(mso.getId());
+        
+        if (format == PlayerApiService.FORMAT_JSON) {
+            
+            CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON), ads);
+            
+            return ads;
+        }
+        
+        for (AdPlacement ad : ads) {
+            
+            String[] ori = {
+                  String.valueOf(ad.getId()),
+                  String.valueOf(ad.getType()),
+                  NnStringUtil.htmlSafeChars(ad.getName()),
+                  ad.getUrl()
+            };
+            adInfo += NnStringUtil.getDelimitedStr(ori) + "\n";
+        }
+        
+        CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN), adInfo);
+        
+        return adInfo;
+    }
+    
     public List<Mso> findByType(short type) {
-        return msoDao.findByType(type);
+        return dao.findByType(type);
     }
     
     public Mso findByName(String name, boolean extend) {
         
         if (name == null) return null;
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         if (mso == null) return null;
         
         if (extend) {
@@ -320,14 +453,14 @@ public class MsoManager {
     
     private Mso populateMso(Mso mso) {
         
-        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
             mso.setSupportedRegion(null);
         } else {
             mso.setSupportedRegion(config.getValue());
         }
         
-        config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (config != null) {
             mso.setJingleUrl(config.getValue());
         }
@@ -335,9 +468,16 @@ public class MsoManager {
         return mso;
     }
     
+    public Mso findByIdOrName(String idStr) {
+        
+        if (idStr == null) { return null; }
+        
+        return NnStringUtil.isDigits(idStr) ? dao.findById(idStr) : dao.findByName(idStr);
+    }
+    
     public Mso findByName(String name) {
         if (name == null) {return null;}
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         return mso;
     }
     
@@ -354,20 +494,20 @@ public class MsoManager {
             log.info("memcache error");
         }        
         log.info("NOT get mso object from cache:" + name);
-        Mso mso = msoDao.findByName(name);
+        Mso mso = dao.findByName(name);
         CacheFactory.set(cacheKey, mso);
         return mso;
     }
     
     public Mso findById(long id) {
-        return msoDao.findById(id);
+        return dao.findById(id);
     }
     
     /** rewrite method findById, populate supportedRegion information 
      * @param extend TODO*/
     public Mso findById(long id, boolean extend) {
         
-        Mso mso = msoDao.findById(id);
+        Mso mso = dao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
@@ -378,41 +518,41 @@ public class MsoManager {
     }
     
     public List<Mso> findAll() {
-        return msoDao.findAll();
+        return dao.findAll();
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord) {
-        return msoDao.list(page, limit, sidx, sord);
+        return dao.list(page, limit, sidx, sord);
     }
     
     public List<Mso> list(int page, int limit, String sidx, String sord, String filter) {
-        return msoDao.list(page, limit, sidx, sord, filter);
+        return dao.list(page, limit, sidx, sord, filter);
     }
     
     public int total() {
-        return msoDao.total();
+        return dao.total();
     }
     
     public int total(String filter) {
-        return msoDao.total(filter);
+        return dao.total(filter);
     }
     
     /** indicate which brands that channel can play on, means channel is in the brand's store */
-    public List<Mso> getValidBrands(NnChannel channel) {
+    public List<Mso> findValidMso(NnChannel channel) {
         
         if (channel == null) {
             return new ArrayList<Mso>();
         }
         
-        List<Mso> validMsos = new ArrayList<Mso>();
-        validMsos.add(findNNMso()); // channel is always valid for brand 9x9
+        List<Mso> valids = new ArrayList<Mso>();
+        valids.add(getSystemMso()); // channel is always valid for brand 9x9
         
         if (channel.getStatus() == NnChannel.STATUS_SUCCESS &&
                 channel.getContentType() != NnChannel.CONTENTTYPE_FAVORITE &&
                 channel.isPublic() == true) {
             // the channel is in the official store
         } else {
-            return validMsos;
+            return valids;
         }
         
         MsoConfig supportedRegion = null;
@@ -420,15 +560,15 @@ public class MsoManager {
         List<Mso> msos = findByType(Mso.TYPE_MSO);
         for (Mso mso : msos) {
             
-            supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
+            supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION); // TODO : sql in the for loop
             if (supportedRegion == null) {
-                validMsos.add(mso); // mso support all region
+                valids.add(mso); // mso support all region
             } else {
                 spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
                 spheres.add(LangTable.OTHER);
                 for (String sphere : spheres) {
                     if (sphere.equals(channel.getSphere())) { // this channel's sphere that MSO supported
-                        validMsos.add(mso);
+                        valids.add(mso);
                         break;
                     }
                     // if not hit any of sphere, channel is not playable on this MSO, is not valid brand.
@@ -436,7 +576,7 @@ public class MsoManager {
             }
         }
         
-        return validMsos;
+        return valids;
     }
     
     /** indicate channel can or can't set brand for target MSO,
@@ -462,7 +602,7 @@ public class MsoManager {
         }
         
         // support region check
-        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion == null) {
             return true; // Mso's region support all sphere
         } else {

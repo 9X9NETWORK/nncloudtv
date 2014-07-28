@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 public class NnLogUtil {
     
     protected final static Logger log = Logger.getLogger(NnLogUtil.class.getName());
-            
+    
     public static void logException(Exception e) {
         
         if (e == null) {
@@ -20,7 +20,7 @@ public class NnLogUtil {
         log.severe("exception:" + e.toString());
         log.severe("exception stacktrace:\n" + detail);        
     }
-
+    
     public static void logThrowable(Throwable t) {
         String detail = "";
         StackTraceElement[] elements = t.getStackTrace();

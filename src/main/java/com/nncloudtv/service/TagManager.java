@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.TagDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.Tag;
 import com.nncloudtv.model.TagMap;
@@ -22,11 +23,10 @@ public class TagManager {
     public List<NnChannel> findChannelsByTag(String name, boolean player) {        
         Tag tag = dao.findByName(name);
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager chMngr = new NnChannelManager();
         if (tag != null) {            
             List<TagMap> map = dao.findMapByTag(tag.getId());
             for (TagMap m : map) {
-                NnChannel c = chMngr.findById(m.getChannelId());
+                NnChannel c = NNF.getChannelMngr().findById(m.getChannelId());
                 if (c != null) {
                     if (!player)
                         channels.add(c);

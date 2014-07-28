@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
@@ -15,74 +16,76 @@ public class ApiUserService {
     protected static final Logger log = Logger.getLogger(ApiUserService.class.getName());
     
     private NnChannelManager channelMngr;
-    private StoreService storeService;
     private NnChannelPrefManager channelPrefMngr;
     
     @Autowired
-    public ApiUserService(NnChannelManager channelMngr, StoreService storeService, NnChannelPrefManager channelPrefMngr) {
+    public ApiUserService(NnChannelManager channelMngr, NnChannelPrefManager channelPrefMngr) {
         this.channelMngr = channelMngr;
-        this.storeService = storeService;
         this.channelPrefMngr = channelPrefMngr;
     }
     
     public NnChannel userChannelCreate(NnUser user, String name, String intro, String imageUrl, String lang, Boolean isPublic,
-                String sphere, String tag, Long categoryId, String autoSync, String sourceUrl, Short sorting, Short status) {
+                String sphere, String tag, Long categoryId, String autoSync, String sourceUrl, Short sorting, Short status,
+                Short contentType) {
         
         if (user == null || name == null) {
             return null;
         }
         
-        NnChannel newChannel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL); // default : watermark
-        newChannel.setContentType(NnChannel.CONTENTTYPE_MIXED);
-        newChannel.setPublic(true); // default : true
-        newChannel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
-        newChannel.setPoolType(NnChannel.POOL_BASE);
-        newChannel.setUserIdStr(user.getShard(), user.getId());
-        newChannel.setLang(LangTable.LANG_EN); // default : en
-        newChannel.setSphere(LangTable.LANG_EN); // default : en
-        newChannel.setSeq((short) 0);
+        NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL); // default : watermark
+        channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
+        channel.setPublic(true); // default : true
+        channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
+        channel.setPoolType(NnChannel.POOL_BASE);
+        channel.setUserIdStr(user.getShard(), user.getId());
+        channel.setLang(LangTable.LANG_EN); // default : en
+        channel.setSphere(LangTable.LANG_EN); // default : en
+        channel.setSeq((short) 0);
         
         if (intro != null) {
-            newChannel.setIntro(intro);
+            channel.setIntro(intro);
         }
         if (imageUrl != null) {
-            newChannel.setImageUrl(imageUrl);
+            channel.setImageUrl(imageUrl);
         }
         if (lang != null) {
-            newChannel.setLang(lang);
+            channel.setLang(lang);
         }
         if (isPublic != null) {
-            newChannel.setPublic(isPublic);
+            channel.setPublic(isPublic);
         }
         if (sphere != null) {
-            newChannel.setSphere(sphere);
+            channel.setSphere(sphere);
         }
         if (tag != null) {
-            newChannel.setTag(tag);
+            channel.setTag(tag);
         }
         if (sourceUrl != null) {
-            newChannel.setSourceUrl(sourceUrl);
+            channel.setSourceUrl(sourceUrl);
         }
         if (sorting != null) {
-            newChannel.setSorting(sorting);
+            channel.setSorting(sorting);
         }
         if (status != null) {
-            newChannel.setStatus(status);
+            channel.setStatus(status);
+        }
+        if (contentType != null) {
+            channel.setContentType(contentType);
         }
         
-        NnChannel savedChannel = channelMngr.save(newChannel);
+        channel = channelMngr.save(channel);
         
         channelMngr.reorderUserChannels(user);
         
         if (categoryId != null) {
-            storeService.setupChannelCategory(categoryId, savedChannel.getId());
+            NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
         if (autoSync != null) {
-            channelPrefMngr.setAutoSync(savedChannel.getId(), autoSync);
+            channelPrefMngr.setAutoSync(channel.getId(), autoSync);
         }
         
-        return savedChannel;
+        return channel;
     }
     
 }

@@ -13,54 +13,55 @@ import com.nncloudtv.lib.NnStringUtil;
  * Program: aka NnProgram. where video file is stored.
  * Episode: aka NnEpisode. Only 9x9 programs has "episode". It is "super-program", store each sub-episode's metadata.    
  */
-@PersistenceCapable(table="nnprogram", detachable="true")
+@PersistenceCapable(table = "nnprogram", detachable = "true")
 public class NnProgram implements Serializable {
+    
     private static final long serialVersionUID = 5553891672235566066L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
     
     @Persistent
     private long channelId;
-
+    
     @Persistent
     private long episodeId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String comment;
     
     @Persistent
     private short contentType;
     public static final short CONTENTTYPE_DIRECTLINK = 0;
-    public static final short CONTENTTYPE_YOUTUBE = 1;
-    public static final short CONTENTTYPE_SCRIPT = 2;
-    public static final short CONTENTTYPE_RADIO = 3;
-    public static final short CONTENTTYPE_REFERENCE = 4;
+    public static final short CONTENTTYPE_YOUTUBE    = 1;
+    public static final short CONTENTTYPE_SCRIPT     = 2;
+    public static final short CONTENTTYPE_RADIO      = 3;
+    public static final short CONTENTTYPE_REFERENCE  = 4;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
     private String intro;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageLargeUrl;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String fileUrl;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String audioFileUrl;
     
     /**
@@ -71,46 +72,46 @@ public class NnProgram implements Serializable {
      *    if a file url is stored, the original channel id is stored.  
      */
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String storageId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String errorCode;
-
+    
     @Persistent
     private short status;
     //general
-    public static short STATUS_OK = 0;
-    public static short STATUS_ERROR = 1;
+    public static short STATUS_OK             = 0;
+    public static short STATUS_ERROR          = 1;
     public static short STATUS_NEEDS_REVIEWED = 2;
     //quality
-    public static short STATUS_BAD_QUALITY = 101;    
+    public static short STATUS_BAD_QUALITY    = 101;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String duration;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String startTime;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String endTime;
     
     @Persistent
     private boolean isPublic; 
-
+    
     //used by maplestage channels, 9x9 channels, youtube special sorting channels
     //please not it is a string instead of digit, make 1 00000001, 8 digits total 
     @Persistent
-    @Column(jdbcType="VARCHAR", length=8)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = 8)
     private String seq;
-
+    
     //used with seq
     @Persistent
-    @Column(jdbcType="VARCHAR", length=8)    
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = 8)
     private String subSeq;
     
     @Persistent
@@ -121,7 +122,7 @@ public class NnProgram implements Serializable {
     
     @Persistent
     private Date publishDate;
-
+    
     @NotPersistent
     private int cntView;
     
@@ -228,9 +229,7 @@ public class NnProgram implements Serializable {
     public String getPlayerIntro() {
     	String pintro = this.getIntro(); 
         if (pintro != null) {
-            int len = (pintro.length() > 256 ? 256 : pintro.length()); 
-        	pintro = pintro.replaceAll("\\s", " ");                
-        	pintro = pintro.substring(0, len);           
+            pintro = pintro.replaceAll("\\s", " ");
         }
         return pintro;
     }
@@ -296,18 +295,6 @@ public class NnProgram implements Serializable {
     public String getStorageId() {
         return storageId;
     }
-
-    //used in favorite program, to reference the real 9x9 program (maplestage, youtube channel do not apply here)
-    /*
-    public String getReferenceStorageId() {
-        return this.getChannelId() + ";" + "00000000";
-    }
-
-    //compatibility with old scheme. 
-    public String getReferenceStorageIdOldScheme() {
-        return this.getChannelId() + ";" + "00000001";        
-    }
-    */
     
     public void setStorageId(String storageId) {
         this.storageId = storageId;

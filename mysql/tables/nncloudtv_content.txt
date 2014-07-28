@@ -1,12 +1,16 @@
+ad_placement
 app
 captcha
 counter
 counter_shard
 mso
 mso_config
+mso_notification
+mso_promotion
 nnchannel
 nnchannel_pref
 nndevice
+nndevice_notification
 nnepisode
 nnprogram
 poi

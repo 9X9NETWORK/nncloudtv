@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
-    <version>4.4.6-develop</version>
+    <version>4.5.4-RELEASE</version>
     <name>nncloudtv</name>
     <reporting>
         <outputDirectory>doc</outputDirectory>
@@ -61,45 +61,7 @@
                         <contextPath>/</contextPath>
                     </webAppConfig>
                     <reload>manual</reload>
-                    <!--
-                    <scanIntervalSeconds>5</scanIntervalSeconds>
-                    -->
-                    <systemProperties>
-                        <systemProperty>
-                            <name>org.apache.commons.logging.Log</name>
-                            <value>org.apache.commons.logging.impl.Log4JLogger</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>slf4j</name>
-                            <value>false</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>log4j.configuration</name>
-                            <value>file:./target/classes/log4j.properties</value>
-                        </systemProperty>
-                    </systemProperties>
                 </configuration>
-                <dependencies>
-                    <!-- http://docs.codehaus.org/display/JETTY/Maven+Jetty+Plugin -->
-                    <dependency>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                        <version>1.1.1</version>
-                        <type>jar</type>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-jcl</artifactId>
-                        <version>1.6.1</version>
-                        <type>jar</type>
-                    </dependency>
-                    <dependency>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                        <version>1.2.16</version>
-                        <type>jar</type>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <!--
@@ -114,7 +76,7 @@
                 -->
                 <groupId>org.datanucleus</groupId>
                 <artifactId>maven-datanucleus-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>${org.datanucleus.version}</version>
                 <configuration>
                     <verbose>true</verbose>
                     <fork>false</fork>
@@ -130,23 +92,23 @@
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-core</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-enhancer</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>5.1.15</version>
+                        <version>5.1.30</version>
                         <scope>compile</scope>
                     </dependency>
                     <dependency>
                         <groupId>org.datanucleus</groupId>
                         <artifactId>datanucleus-rdbms</artifactId>
-                        <version>3.0.1</version>
+                        <version>${org.datanucleus.version}</version>
                     </dependency>
                 </dependencies>
                 <executions>
@@ -205,8 +167,9 @@
     <properties>
         <!-- versions -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.springframework.version>3.1.2.RELEASE</org.springframework.version>
-        <servlet.version>2.5</servlet.version>
+        <org.springframework.version>4.0.5.RELEASE</org.springframework.version>
+        <org.springframework.security.version>3.2.0.RELEASE</org.springframework.security.version>
+        <org.datanucleus.version>3.0.1</org.datanucleus.version>
     </properties>
 
     <!--
@@ -242,17 +205,17 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <version>${org.springframework.version}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -261,26 +224,15 @@
         </dependency>
         <!-- logging -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-        </dependency>
-        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jcl</artifactId>
-            <version>1.6.1</version>
-            <type>jar</type>
-        </dependency>
         <!-- servlet -->
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servlet.version}</version>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -299,7 +251,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.15</version>
+            <version>5.1.30</version>
             <!-- <scope>runtime</scope> --> <!-- runtime fails -->
         </dependency>
         <!-- datanucleus jdo -->
@@ -312,31 +264,31 @@
         <dependency>
         <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-api-jdo</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-core</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-jdo-query</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-enhancer</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-rdbms</artifactId>
-            <version>3.0.1</version>
+            <version>${org.datanucleus.version}</version>
             <scope>runtime</scope>
         </dependency>
         <!-- dbcp -->
@@ -436,9 +388,29 @@
             <version>1.0.2</version>
         </dependency>
         <dependency>
-        	<groupId>com.notnoop.apns</groupId>
-        	<artifactId>apns</artifactId>
-        	<version>0.2.3</version>
+            <groupId>com.notnoop.apns</groupId>
+            <artifactId>apns</artifactId>
+            <version>0.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.powermock</groupId>
+        	<artifactId>powermock-api-mockito</artifactId>
+        	<version>1.5.4</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.powermock</groupId>
+        	<artifactId>powermock-module-junit4</artifactId>
+        	<version>1.5.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.clearcommerce</groupId>
+            <artifactId>clear-commerce</artifactId>
+            <version>5.10.0.3706</version>
         </dependency>
     </dependencies>
 

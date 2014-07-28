@@ -56,7 +56,7 @@ public class NnNetUtil {
     //get http://localhost:8080
     public static String getUrlRoot(HttpServletRequest req) {
         String url = req.getRequestURL().toString();
-        Pattern p = Pattern.compile("(^http://.*?)/(.*)");                
+        Pattern p = Pattern.compile("(^https?://.*?)/(.*)");
         Matcher m = p.matcher(url);
         String host = "";
         if (m.find()) {

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
@@ -194,7 +195,7 @@ public class DepotController {
                                                 HttpServletRequest req) {
         ChannelInfo info = new ChannelInfo();
         List<NnChannel> channels = new ArrayList<NnChannel>();
-        NnChannelManager channelMngr = new NnChannelManager();
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         short srtType = 0;
         if (type== null)
             srtType = 0;//place holder

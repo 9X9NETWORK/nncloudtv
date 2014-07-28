@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import javax.jdo.JDOFatalDataStoreException;
 import javax.jdo.PersistenceManager;
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,16 +23,15 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -44,19 +43,18 @@ import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
 @RequestMapping("hello")
 public class HelloController {
 
-    //protected static final Logger log = Logger.getLogger(HelloController.class.getName());
-    protected static final Logger log = Logger.getLogger(HelloController.class);
+    protected static final Logger log = Logger.getLogger(HelloController.class.getName());
 
     //basic test
     @RequestMapping("world")
     public ModelAndView world(HttpServletRequest req) throws Exception {
-    	Mso mso = new MsoManager().findNNMso();
-    	List<NnUser> users = new NnUserManager().search(null, null, "hello", mso.getId());
+    	
+    	List<NnUser> users = NNF.getUserMngr().search(null, null, "hello", MsoManager.getSystemMsoId());
     	for (NnUser user : users) {
     		log.info("user id:" + user.getId());
     	}
     	/*
-    	SysTagMapDao dao = new SysTagMapDao();
+    	SysTagMapDao dao = NNF.getSysTagMapDao();
     	List<SysTagMap> list = dao.findCategoryMapsByChannelId(1);
     	for (SysTagMap m : list) {
     		System.out.println(m.getId());
@@ -81,8 +79,8 @@ public class HelloController {
             System.out.println("img:" + img);
         }
         log.info("----- hello log -----");
-        log.warn("----- hello warning -----");
-        log.fatal("----- hello severe -----");
+        log.warning("----- hello warning -----");
+        log.severe("----- hello severe -----");
         System.out.println("----- hello console -----");
         return new ModelAndView("hello", "message", "log");
     }    

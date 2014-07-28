@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
@@ -25,7 +26,7 @@ public class NnEpisodeManager {
     
     protected static final Logger log = Logger.getLogger(NnEpisodeManager.class.getName());
     
-    private NnEpisodeDao dao = new NnEpisodeDao();
+    private NnEpisodeDao dao = NNF.getEpisodeDao();
     
     public NnEpisode findById(long id) {
         return dao.findById(id);
@@ -37,7 +38,7 @@ public class NnEpisodeManager {
         
         episode.setUpdateDate(now);
         
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         return dao.save(episode);
         
@@ -56,11 +57,9 @@ public class NnEpisodeManager {
             }
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
         log.info("channel count = " + channelIds.size());
         for (Long channelId : channelIds) {
-            programMngr.resetCache(channelId);
+            NNF.getProgramMngr().resetCache(channelId);
         }
         
         return dao.saveAll(episodes);
@@ -103,67 +102,85 @@ public class NnEpisodeManager {
             return 0;
         }
         
-        NnProgramManager programMngr = new NnProgramManager();
-        
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         
         return programs.size();
     }
     
-    public Comparator<NnEpisode> getEpisodePublicSeqComparator() {
-    
-        class NnEpisodePublicSeqComparator implements Comparator<NnEpisode> {
+    public static Comparator<NnEpisode> getComparator(String sort) {
+        
+        if (sort.equals("publishDate")) {
             
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
+            return new Comparator<NnEpisode>() {
                 
-                if (episode1.isPublic() == episode2.isPublic()) {
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    Date publishDate1 = episode1.getPublishDate();
+                    Date publishDate2 = episode2.getPublishDate();
+                    
+                    if (publishDate1 == null && publishDate2 == null) {
+                        
+                        return 0;
+                        
+                    } else if (publishDate1 == null) {
+                        
+                        return 1;
+                        
+                    } else if (publishDate2 == null) {
+                        
+                        return -1;
+                        
+                    } else {
+                        
+                        return publishDate2.compareTo(publishDate1);
+                    }
+                }
+            };
+        } else if (sort.equals("isPublicFirst")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    if (episode1.isPublic() == episode2.isPublic()) {
+                        
+                        return (episode1.getSeq() - episode2.getSeq());
+                        
+                    } else if (episode1.isPublic() == false) {
+                        
+                        return -1;
+                                
+                    }
+                    
+                    return 1;
+                }
+            };
+        } else if (sort.equals("reverse")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
+                    
+                    return (episode2.getSeq() - episode1.getSeq());
+                }
+            };
+        } else {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode episode1, NnEpisode episode2) {
                     
                     return (episode1.getSeq() - episode2.getSeq());
-                    
-                } else if (episode1.isPublic() == false) {
-                    
-                    return -1;
-                            
                 }
-                
-                return 1;
-            }
+            };
         }
-        
-        return new NnEpisodePublicSeqComparator();
     }
     
-    public Comparator<NnEpisode> getEpisodeSeqComparator() {
-        class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
-            
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
-                
-                return (episode1.getSeq() - episode2.getSeq());
-                
-            }
-        }
-        
-        return new NnEpisodeSeqComparator();
-    }
-    
-    public Comparator<NnEpisode> getEpisodeReverseSeqComparator() {
-        
-        class NnEpisodeSeqComparator implements Comparator<NnEpisode> {
-            
-            public int compare(NnEpisode episode1, NnEpisode episode2) {
-                
-                return (episode2.getSeq() - episode1.getSeq());
-                
-            }
-        }
-        
-        return new NnEpisodeSeqComparator();
-    }
     
     public void reorderChannelEpisodes(long channelId) {
         
         List<NnEpisode> episodes = findByChannelId(channelId);
-        Collections.sort(episodes, getEpisodeSeqComparator());
+        Collections.sort(episodes, getComparator("seq"));
         
         for (int i = 0; i < episodes.size(); i++) {
             
@@ -175,12 +192,11 @@ public class NnEpisodeManager {
     
     public void delete(NnEpisode episode) {
     
-        new NnProgramManager().resetCache(episode.getChannelId());
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         // delete programs
-        NnProgramManager programMngr = new NnProgramManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
-        programMngr.delete(programs);
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
+        NNF.getProgramMngr().delete(programs);
         
         // TODO delete poiPoints at episode level
         
@@ -198,14 +214,14 @@ public class NnEpisodeManager {
     }
 
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {
+        
         return dao.findPlayerLatestEpisode(channelId, sort);
     }
     
     public int calculateEpisodeDuration(NnEpisode episode) {
     
-        NnProgramManager programMngr = new NnProgramManager();
         TitleCardManager titleCardMngr = new TitleCardManager();
-        List<NnProgram> programs = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         List<TitleCard> titleCards = titleCardMngr.findByEpisodeId(episode.getId());
         
         int totalDuration = 0;
@@ -229,24 +245,22 @@ public class NnEpisodeManager {
         fbPost.setLink(url);
         log.info("share link: " + url);
         
-        NnChannelManager channelMngr = new NnChannelManager();
-        NnChannel channel = channelMngr.findById(episode.getChannelId());
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         if (channel == null) {
             return ;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        NnUser user = userMngr.findById(channel.getUserId(), 1);
+        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
         if (user == null) {
             return ;
         }
         
-        NnChannelPrefManager prefMngr = new NnChannelPrefManager();
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
         List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;
-	
-	fbPost.setCaption(" ");
+        
+        fbPost.setCaption(" ");
         
         for (NnChannelPref pref : prefList) {
             parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
@@ -260,8 +274,6 @@ public class NnEpisodeManager {
             
             QueueFactory.add("/fb/postToFacebook", fbPost);
         }
-        log.info("episode.getName():"+episode.getName());
-        log.info("fbPost.getName():"+fbPost.getName());
         log.info(fbPost.toString());
     }
     
@@ -282,4 +294,23 @@ public class NnEpisodeManager {
         }
     }
     
+    public int total() {
+        return dao.total();
+    }
+    
+    public int total(String filter) {
+        return dao.total(filter);
+    }
+    
+    public List<NnEpisode> findByChannels(List<NnChannel> channels) {
+        
+        List<NnEpisode> episodes = new ArrayList<NnEpisode>();
+        
+        for (NnChannel channel : channels) {
+            
+            episodes.addAll(findByChannelId(channel.getId()));
+        }
+        
+        return episodes;
+    }
 }

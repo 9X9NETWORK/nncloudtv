@@ -16,19 +16,19 @@ echo " **    9x9 DevOps Installer  **"
 echo "   **                          *"
 echo "     *****************************"
 echo
-echo -n "Checking your sudo permission ... "
-sudo id
-if test $? -eq 1; then
-    echo "failed."
-    exit
-fi
-echo
+test "$1" != "-n" \
+    && echo -n "Checking your sudo permission ... " \
+    && sudo id \
+    && if test $? -eq 1; then echo "failed."; exit; fi \
+    && echo
 
 cd ..
 mvn clean \
+    install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
     compile \
     datanucleus:enhance \
     install war:war \
+&& test "$1" != "-n" \
 && sudo cp -v target/root.war /usr/share/$jetty/webapps/root.war \
 && (sudo service $jetty restart; sudo service memcached restart)
 

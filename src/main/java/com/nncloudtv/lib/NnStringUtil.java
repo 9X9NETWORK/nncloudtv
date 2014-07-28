@@ -9,32 +9,38 @@ import java.util.logging.Logger;
 
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
     
-    public static final String UTF8 = "UTF-8";
-    public static final String ASCII = "US-ASCII";
+    public static final String UTF8    = "UTF-8";
+    public static final String ASCII   = "US-ASCII";
+    public static final String VARCHAR = "VARCHAR";
+    public static final String DIGITS_REGEX = "^\\d+$";
     
-    protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());    
-    public static final int MAX_JDO_STRING_LENGTH = 255;
+    public static final int VERY_SHORT_STRING_LENGTH =    5;
+    public static final int SHORT_STRING_LENGTH      =   25;
+    public static final int NORMAL_STRING_LENGTH     =  255;
+    public static final int EXTENDED_STRING_LENGTH   =  500;
+    public static final int LONG_STRING_LENGTH       = 1500;
     
-    private static NnChannelPrefManager channelPrefMngr = new NnChannelPrefManager();
-    
-    public static void setChannelPrefMngr(NnChannelPrefManager mngr) {
-        channelPrefMngr = mngr;
-    }
+    protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
     
     public static boolean stringToBool(String s) {
       if (s.equals("1"))
         return true;
       if (s.equals("0"))
         return false;
-      throw new IllegalArgumentException(s +" is not a bool");
+      throw new IllegalArgumentException(s + " is not a bool");
+    }
+    
+    public static boolean isDigits(String digits) {
+        
+        if (digits == null) return false;
+        
+        return digits.matches(DIGITS_REGEX);
     }
     
     public static String urlencode(String text) {
@@ -114,26 +120,32 @@ public class NnStringUtil {
         System.out.println("getUpdateDate() : UDate = " + result);
         return result;
     }
-
+    
     public static String getDelimitedStr(String[] ori) {
         StringBuilder result = new StringBuilder();
         String delimiter = "\t";
         if (ori.length > 0) {
             result.append(ori[0]);
-            for (int i=1; i<ori.length; i++) {
+            for (int i = 1; i < ori.length; i++) {
                result.append(delimiter);
-               result.append(ori[i]);
+               result.append(ori[i] == null ? "" : ori[i].replaceAll("[\\t\\n\\r]"," "));
             }
         }
         return result.toString();
     }
     
+    public static String escapeDoubleQuote(String str) {
+        
+        return "\"" + str.replaceAll("\\", "\\\\")
+                         .replaceAll("\"", "\\\"") + "\"";
+    }
+    
     public static String escapedQuote(String str) {
         
-        return "'" + str.replaceAll("'", "''")
-                         .replaceAll("\"", "\\\"")
-                         .replaceAll("\\?", "")
-                         .replaceAll("\\\\", "\\\\\\\\") + "'";
+        return "'" + str.replaceAll("'",    "''")
+                        .replaceAll("\"",   "\\\"")
+                        .replaceAll("\\?",  "")
+                        .replaceAll("\\\\", "\\\\\\\\") + "'";
     }
     
     public static String bytesToHex(byte[] src){
@@ -161,7 +173,8 @@ public class NnStringUtil {
     }
     
     public static String htmlSafeAndTruncated(String str) {
-        return htmlSafeAndTruncated(str, MAX_JDO_STRING_LENGTH);
+        
+        return htmlSafeAndTruncated(str, NORMAL_STRING_LENGTH);
     }
     
     public static String htmlSafeAndTruncated(String str, int length) {
@@ -194,13 +207,13 @@ public class NnStringUtil {
             return null;
         }
         
-        return str.replaceAll("\n", " ")
-                   .replaceAll("\t", " ")
-                   .replaceAll("&",  "&amp;")
-                   .replaceAll("<",  "&lt;")
-                   .replaceAll(">",  "&gt;")
-                   .replaceAll("\"", "&quot;")
-                   .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
+        return str.replaceAll( "\n", " ")
+                  .replaceAll( "\t", " ")
+                  .replaceAll(  "&", "&amp;")
+                  .replaceAll(  "<", "&lt;")
+                  .replaceAll(  ">", "&gt;")
+                  .replaceAll( "\"", "&quot;")
+                  .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
     }
     
     public static String validateLangCode(String lang) {
@@ -253,8 +266,7 @@ public class NnStringUtil {
         
         if (mso == null) {
             
-            NnChannelPref pref = channelPrefMngr.getBrand(channelId);
-            mso = pref.getValue();
+            mso = NNF.getChPrefMngr().getBrand(channelId).getValue();
         }
         
         String schema = "http";

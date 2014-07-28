@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
@@ -22,7 +21,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         super(NnChannel.class);
     }    
         
-    public List<NnChannel> findByType(short type) {
+    public List<NnChannel> findByContentType(short type) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>(); 
         try {
@@ -49,51 +48,20 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         }
         return channel;
     }
-
+    
     //find good channels, for all needs to be extended
-    public List<NnChannel> findChannelsByTag(String name) {        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        try {
-            /*
-            String sql = "select id from nnchannel " +
-                         " where id in " +
-                          " (select channelId from tag_map " +
-                            " where tagId = (select id from tag where name='" + name + "')) " +
-                         "order by rand() limit 9";
-            */
-            String sql = "select * from nnchannel where id in ( " + 
-                            "select distinct map.channelId " + 
-                               "from ytprogram yt, tag_map map " + 
-                              "where yt.channelId = map.channelId " +
-                                "and map.tagId = (select id from tag where name= '" + name + "')) " +
-                                "order by rand() limit 9;";
-            log.info("Sql=" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> results = (List<NnChannel>) q.execute();
-            detached = (List<NnChannel>)pm.detachCopyAll(results);
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();
-        }
-        return detached;        
+    public List<NnChannel> findChannelsByTag(String name) {
+        
+        String sql = "select * from nnchannel where id in ( " + 
+                "select distinct map.channelId " + 
+                   "from ytprogram yt, tag_map map " + 
+                  "where yt.channelId = map.channelId " +
+                    "and map.tagId = (select id from tag where name= '" + name + "')) " +
+                    "order by rand() limit 9;";
+        
+        return sql(sql);
     }
     
-    public NnChannel findById(long id) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();        
-        NnChannel channel = null;
-        try {
-            channel = pm.getObjectById(NnChannel.class, id);
-            channel = pm.detachCopy(channel);
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();            
-        }
-        return channel;        
-    }    
-
     public static long searchSize(String queryStr, boolean all) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         long size = 0;
@@ -185,20 +153,6 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             pm.close();
         }
         return detached;     
-    }
-    
-    public List<NnChannel> findAll() {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        try {
-            Query query = pm.newQuery(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> results = (List<NnChannel>) query.execute();
-            detached = (List<NnChannel>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        }
-        return detached;
     }
         
     public List<NnChannel> findAllByStatus(short status) {
@@ -320,133 +274,46 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         }
         return channel;                
     }        
-
-    @SuppressWarnings("unchecked")
+    
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
-        List<NnChannel> channels = new ArrayList<NnChannel>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager(); 
-        try {
-            /*
-            select * 
-            from nncloudtv_content.nnchannel c
-           where c.id in 
-             (select channelId from nncloudtv_nnuser1.nnuser_watched
-                where userId = 2170 and msoId = 1 and channelId not in   
-                   (select channelId from nncloudtv_nnuser1.nnuser_subscribe where userId=1 and msoId=1)) 
-                order by updateDate desc
-                limit 10;   
-            */
-            String sql = "select * " +
-                          " from nncloudtv_content.nnchannel c " +  
-                          "where c.id in " +                           
-                             "(select channelId from nncloudtv_nnuser1.nnuser_watched " +
-                              " where userId = " + userId + " and msoId = " + msoId + " and channelId not in " +  
-                                  " (select channelId from nncloudtv_nnuser1.nnuser_subscribe where userId=" + userId + " and msoId=" + msoId + ")) " +                                   
-                         " order by updateDate desc";   
-            
-            log.info("Sql=" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            channels = (List<NnChannel>) q.execute();                                            
-            channels = (List<NnChannel>)pm.detachCopyAll(channels);
-        } finally {
-            pm.close();
-        }
-        return channels;        
+        
+        String query = "select * from nncloudtv_content.nnchannel c "
+                     + "where c.id in "
+                     + "        (select channelId from nncloudtv_nnuser1.nnuser_watched "
+                     + "         where userId = " + userId
+                     + "         and msoId = " + msoId
+                     + "         and channelId not in "
+                     + "                (select channelId from nncloudtv_nnuser1.nnuser_subscribe "
+                     + "                 where userId = " + userId + " and msoId = " + msoId + ")) "
+                     + "order by updateDate desc";
+        
+        return sql(query);
     }
     
-    @SuppressWarnings("unchecked")
-    public List<NnChannel> findByIds(List<Long> ids) {
-        List<NnChannel> channels = new ArrayList<NnChannel>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            Query q = pm.newQuery(NnChannel.class, ":p.contains(id)");
-            //q.setOrdering("updateDate desc");
-            channels = ((List<NnChannel>) q.execute(ids));        
-            channels = (List<NnChannel>) pm.detachCopyAll(channels);
-        } finally {
-            pm.close();
+    public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
+        
+        String filter = "";
+        if (spheres != null && spheres.size() > 0) {
+            filter = " and ( c.sphere = " + NnStringUtil.escapedQuote(LangTable.OTHER);
+            for (String sphere : spheres) {
+                filter = filter + " or c.sphere = " + NnStringUtil.escapedQuote(sphere);
+            }
+            filter = filter + " )";
         }
-        return channels;
+        
+        String query = " select * from nnchannel a1 "
+                     + " inner join ("
+                     + "         select distinct c.id"
+                     + "         from systag_display d, systag_map m, nnchannel c"
+                     + "         where d.systagId = " + categoryId
+                     + "         and d.systagId = m.systagId"
+                     + "         and c.id = m.channelId"
+                     + "         and c.isPublic = true"
+                     + "         and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
+                     + "         and c.status = " + NnChannel.STATUS_SUCCESS + filter
+                     + "         order by c.updateDate desc) a2 "
+                     + " on a1.id = a2.id";
+                    
+        return sql(query);
     }
-    
-    /** get channels from official store's category */
-    public List<NnChannel> getStoreChannelsFromCategory(long categoryId, List<String> spheres) {
-        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        
-        try {
-            String filter = "";
-            if (spheres != null && spheres.size() > 0) {
-                filter = " and ( c.sphere = '" + LangTable.OTHER + "'";
-                for (String sphere : spheres) {
-                    filter = filter + " or c.sphere = '" + sphere + "'";
-                }
-                filter = filter + " )";
-            }
-            
-            String sorting = " order by c.updateDate desc";
-            String sql = "select * from nnchannel a1 " +
-                         " inner join " +
-                       " (select distinct c.id " +
-                          " from systag_display d, systag_map m, nnchannel c " +
-                         " where d.systagId = " + categoryId +
-                           " and d.systagId = m.systagId " +
-                           " and c.id = m.channelId " +
-                           " and c.isPublic = true" +
-                           " and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE +
-                           " and c.status = " + NnChannel.STATUS_SUCCESS +
-                           filter +
-                           sorting +
-                           ") a2 on a1.id=a2.id";
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> results = (List<NnChannel>) q.execute(); 
-            if (results != null && results.size() > 0) {
-                detached = (List<NnChannel>)pm.detachCopyAll(results);
-            }
-        } finally {
-            pm.close();
-        }
-        return detached;                
-    }
-    
-    /** get channels from official store */
-    public List<NnChannel> getStoreChannels(List<String> spheres) {
-        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        
-        try {
-            String filter = "";
-            if (spheres != null && spheres.size() > 0) {
-                filter = " and ( sphere = '" + LangTable.OTHER + "'";
-                for (String sphere : spheres) {
-                    filter = filter + " or sphere = '" + sphere + "'";
-                }
-                filter = filter + " )";
-            }
-            
-            String sql = "select * from nnchannel where isPublic = true" +
-                           " and status = " + NnChannel.STATUS_SUCCESS +
-                           " and contentType != " + NnChannel.CONTENTTYPE_FAVORITE +
-                           filter +
-                           " order by updateDate desc";
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> results = (List<NnChannel>) q.execute(); 
-            if (results != null && results.size() > 0) {
-                detached = (List<NnChannel>)pm.detachCopyAll(results);
-            }
-        } finally {
-            pm.close();
-        }
-        return detached;                
-    }
-    
 }

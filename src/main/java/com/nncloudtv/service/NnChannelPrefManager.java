@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelPrefDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -91,8 +92,7 @@ public class NnChannelPrefManager {
 	}
 	
 	public void deleteAllChannelsFBbyUser(NnUser user) {
-	    NnChannelManager channelMngr = new NnChannelManager();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
         List<NnChannelPref> channelPrefs = new ArrayList<NnChannelPref>();
         List<NnChannelPref> temp;
         for (NnChannel channel : channels) {
@@ -109,8 +109,7 @@ public class NnChannelPrefManager {
 	        return ;
 	    }
 	    
-	    NnChannelManager channelMngr = new NnChannelManager();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
         List<NnChannelPref> channelPrefs = new ArrayList<NnChannelPref>();
         List<NnChannelPref> temp;
         for (NnChannel channel : channels) {
@@ -178,26 +177,6 @@ public class NnChannelPrefManager {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_9X9);
         }
         return channelPrefs.get(0);
-        /*
-        Mso mso = msoMngr.findByName(pref.getValue());
-        if (msoMngr.isValidBrand(channelId, mso) == false) {
-            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, msoMngr.findNNMso().getName());
-        }
-        */
-    }
-    
-    public String getAutoSync(Long channelId) {
-        
-        if (channelId == null) {
-            return null;
-        }
-        
-        List<NnChannelPref> channelPrefs = findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
-        if (channelPrefs == null || channelPrefs.isEmpty()) {
-            return NnChannelPref.OFF;
-        }
-        
-        return channelPrefs.get(0).getValue();
     }
     
     public void setAutoSync(Long channelId, String autoSync) {

@@ -16,15 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.nncloudtv.dao.NnUserSubscribeDao;
 import com.nncloudtv.dao.UserInviteDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.UserInvite;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserSubscribeManager;
 import com.nncloudtv.service.PlayerService;
 
@@ -77,7 +75,7 @@ public class ShareController {
         if (invite == null) {
             model = model.addAttribute("invite", "null");
         } else {
-            NnUser user = new NnUserManager().findById(invite.getUserId(), 1, invite.getShard());
+            NnUser user = NNF.getUserMngr().findById(invite.getUserId(), 1, invite.getShard());
             model = model.addAttribute("userName", user.getProfile().getName());
             model = model.addAttribute("token", token);
         }
@@ -102,22 +100,19 @@ public class ShareController {
             }
             if (q1.equals("y")) {
                 invite.setStatus(UserInvite.STATUS_ACCEPTED);
-                NnUserManager userMngr = new NnUserManager();
                 NnUserSubscribeDao subDao = new NnUserSubscribeDao();
                 NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
-                NnUser user = userMngr.findByEmail(invite.getInviteeEmail(), 1, req);
-                NnChannelManager channelMngr = new NnChannelManager();
-                NnChannel c = channelMngr.findById(invite.getChannelId());
+                NnUser user = NNF.getUserMngr().findByEmail(invite.getInviteeEmail(), 1, req);
+                NnChannel c = NNF.getChannelMngr().findById(invite.getChannelId());
                 if (user == null) {
                     model = model.addAttribute("exist", "n");
-                    Mso mso = new MsoManager().findNNMso();
-                    user = new NnUser(invite.getInviteeEmail(), "123456", NnUser.TYPE_USER, mso.getId());
+                    user = new NnUser(invite.getInviteeEmail(), "123456", NnUser.TYPE_USER, MsoManager.getSystemMsoId());
                     /*
                     user.setSphere("en");
                     user.setLang("en");
                     */        
                     user.setTemp(false);
-                    userMngr.create(user, req, (short)0);
+                    NNF.getUserMngr().create(user, req, (short)0);
                     c.setSeq((short)1);
                     subMngr.subscribeChannel(user, c);
                 } else {

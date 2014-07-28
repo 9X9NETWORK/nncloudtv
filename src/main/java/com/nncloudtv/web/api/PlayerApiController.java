@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
@@ -12,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.spy.memcached.MemcachedClient;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,15 +23,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.json.facebook.FacebookMe;
@@ -140,18 +139,6 @@ public class PlayerApiController {
     protected static final Logger log = Logger.getLogger(PlayerApiController.class.getName());
     
     private Locale locale = Locale.ENGLISH;
-    private MsoManager msoMngr;
-    
-    public PlayerApiController() {
-        
-        this.msoMngr = new MsoManager();
-    }
-    
-    @Autowired
-    public PlayerApiController(MsoManager msoMngr) {
-        
-        this.msoMngr = msoMngr;
-    }
     
     /**
      * To be ignored  
@@ -179,7 +166,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.guestRegister(req, resp);
@@ -246,6 +233,7 @@ public class PlayerApiController {
         String password = req.getParameter("password");
         String mso = req.getParameter("mso");
         String name = req.getParameter("name");
+        String gender = req.getParameter("gender");
         String userToken = req.getParameter("user");
         String captcha = req.getParameter("captcha");
         String text = req.getParameter("text");
@@ -263,10 +251,10 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
-            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, isTemp, req, resp);
+            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, gender, isTemp, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -309,7 +297,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.fbDeviceSignup(me, expire, msoString, req, resp);
@@ -394,6 +382,14 @@ public class PlayerApiController {
      *          preferredLangCode    en<br/>
      *          debug    1<br/>
      *         </p>
+     *         <p>Ff <b>ad=1</b> parameter is carried, AdInfo will be appended as a section block.<br/>
+     *         Format: [id] TAB [type] TAB [name] TAB [url]<br/>
+     *         </p>
+     *         <p>Example: <br/>
+     *          --<br/>
+     *          1   0   ad hello world!!   http://s3.aws.amazon.com/creative_video0.mp4<br/>
+     *          2   1   vastAd hello world!!   http://rec.scupio.com/recweb/vast.aspx?creativeid=9x9test&d=15&video=VAD20140507123513649.mp4&adid=133872&rid=7241<br/>
+     *         </p>
      */    
     @RequestMapping(value="brandInfo")
     public @ResponseBody Object brandInfo(
@@ -402,12 +398,12 @@ public class PlayerApiController {
             @RequestParam(value="version", required=false)String version,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp) {
-        //resp.setContentType(ApiGeneric.PLAIN_TEXT_UTF8); // Louis: this be work as well (return value is not correct to me)
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                    
             output = playerApiService.brandInfo(os, req);
@@ -418,7 +414,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-
+    
     //http://stackoverflow.com/questions/4403643/supporting-multiple-content-types-in-a-spring-mvc-controller/4404881#4404881
     //http://stackoverflow.com/questions/3620323/how-to-change-default-media-type-for-spring-mvc-from-xml-to-json
     //http://www.mkyong.com/spring-mvc/spring-3-mvc-contentnegotiatingviewresolver-example/
@@ -430,26 +426,26 @@ public class PlayerApiController {
     //@RequestMapping(value="detect")    
     @RequestMapping(value="detect")
     public @ResponseBody Object detect(String format, HttpServletResponse resp, HttpServletRequest req) {
-    	System.out.println("content-type:" + req.getContentType());
-    	String contentType = req.getContentType();
-    	if (contentType == null || (contentType != null && !contentType.contains("json"))  ) {
-    		return "hello world\n";
-    		/*
+        System.out.println("content-type:" + req.getContentType());
+        String contentType = req.getContentType();
+        if (contentType == null || (contentType != null && !contentType.contains("json"))  ) {
+            return "hello world\n";
+            /*
             try {
-            	resp.setContentType("text/plain;charset=utf-8");                
+                resp.setContentType("text/plain;charset=utf-8");                
                 resp.getWriter().print("hello world\n");
                 resp.flushBuffer();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-    		return "empty\n";
-    		*/
-    	}
-        NnChannelManager chMngr = new NnChannelManager();
+            return "empty\n";
+            */
+        }
+        NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
         ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
         return json;
-    	//return "player/api";
+        //return "player/api";
     }
     
     /**   
@@ -481,23 +477,10 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                        
             boolean flatten = Boolean.parseBoolean(isFlatten);
-            /*
-            if (playerApiService.getVersion() < 32) {
-                log.info("category:" + category);
-                String msoName = req.getParameter("mso");
-                MsoManager msoMngr = new MsoManager();
-                Mso brand = msoMngr.findByName(msoName);
-                if (brand == null) {
-                   brand = msoMngr.findNNMso();
-                }                
-                return new IosService().category(category, lang, flatten, brand ); 
-            }
-            */
-            
             output = playerApiService.category(category, lang, flatten);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -538,7 +521,7 @@ public class PlayerApiController {
         if (playerApiService.isProductionSite()) {
             pdrServer = "http://v32d.9x9.tv";
         } else {
-        	log.info("at pdr devel server");
+            log.info("at pdr devel server");
         }
         try {
             String urlStr = pdrServer + path;
@@ -561,6 +544,8 @@ public class PlayerApiController {
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("redirection failed");
             }
+        } catch(ConnectException e) {
+            log.warning("connect to pdr server timeout, but not big problem.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -601,10 +586,12 @@ public class PlayerApiController {
      * Retrieves set information. A "set" can be a dayparting, or a set.
      * 
      * @param set set id
-     * @param landing the name used as part of the URL. query with either set or landing 
+     * @param landing the name used as part of the URL. query with either set or landing
+     * @param programInfo set to  
      * @return first block: status <br/>
      *         second block: brand info, returns in key and value pair. <br/>                     
-     *         third block: set info, returns in key and value pair <br/>
+     *         third block: set info, returns in key and value pair. 
+     *         Examples: id, name, imageUrl, bannerImageUrl, bannerImageUrl2, channeltag. "channeltag" format please reference "portal" <br/>
      *         4th block: channel details. reference "channelLineup". <br/>
      *         5th block: first episode of every channel from the 4th block. reference "programInfo". <br/>
      *         <p>
@@ -628,34 +615,29 @@ public class PlayerApiController {
             @RequestParam(value="set", required=false) String id,
             @RequestParam(value="v", required=false) String v,
             @RequestParam(value="landing", required=false) String name,
+            @RequestParam(value="time", required = false) String time,
+            @RequestParam(value="programInfo", required=false) String programInfo,                  
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("setInfo: id =" + id + ";landing=" + name);
+        if (programInfo == null)
+            programInfo = "true";
+        boolean isProgramInfo = Boolean.parseBoolean(programInfo);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            int status = playerApiService.prepService(req, resp, true);        	
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            int status = playerApiService.prepService(req, resp, true);            
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
-            }                    	
-            output = playerApiService.setInfo(id, name);
+            }                        
+            output = playerApiService.setInfo(id, name, time, isProgramInfo);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
         return playerApiService.response(output);      
-        
-        /*
-        String msoName = req.getParameter("mso");
-        MsoManager msoMngr = new MsoManager();
-        Mso mso = msoMngr.findByName(msoName);
-        if (mso == null) {
-           mso = msoMngr.findNNMso();
-        }
-        return new IosService().setInfo(id, beautifulUrl, mso);        
-        */
     }
 
     /** 
@@ -687,7 +669,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.tagInfo(name, start, count);
@@ -737,7 +719,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
@@ -778,7 +760,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.subscribe(userToken, channelId, gridId);
@@ -820,7 +802,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.unsubscribe(userToken, channelId, grid, pos);    
@@ -973,7 +955,8 @@ public class PlayerApiController {
      *                      YOUTUBE_CHANNEL=3; YOUTUBE_PLAYERLIST=4                        
      *                      FACEBOOK_CHANNEL=5; 
      *                      MIX_CHANNEL=6; SLIDE=7;
-     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9    
+     *                      MAPLESTAGE_VARIETY=8; MAPLESTAGE_SOAP=9  
+     *                      DAYPARTING = 14; TRENDING = 15;  
      *         <p>
      *         channel episodes last update time: it does not always accurate on Youtube channels. It will pass channel create date on FB channels.
      *         <p>
@@ -1010,7 +993,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
@@ -1070,7 +1053,8 @@ public class PlayerApiController {
      * @param  sidx [deprecated]the start index for pagination
      * @param  limit [deprecated] the count of records
      * @param  start the start index for pagination. If "start" param is presented, the pagination info will be shown in the return data in the 2nd block.
-     * @param  count the count of records. Currently server always sets it 50. 
+     * @param  count the count of records. Currently server always sets it 50.
+     * @param  time   0-23, required for dayparting channels (channel type 14). 
      * @return <p>If "start" is presented, data returns in two blocks. First block is pagination information. Second block is program information.
      *         <p>First block (if pagination enabled): channelId, number of return records, total number of records. Example:<br/>
      *            25096    50    121 <br/> 
@@ -1113,14 +1097,10 @@ public class PlayerApiController {
             @RequestParam(value="limit", required = false) String limit,
             @RequestParam(value="start", required = false) String start,
             @RequestParam(value="count", required = false) String count,
+            @RequestParam(value="time", required = false) String time,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
-        
-        // workaround: to prevent massiely querying
-        if (start != null && Integer.valueOf(start) > 200) {
-            return null;
-        }
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
@@ -1131,7 +1111,7 @@ public class PlayerApiController {
                 return playerApiService.assembleMsgs(status, null);
             }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count);
+            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1219,7 +1199,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                
             output = playerApiService.login(email, password, req, resp);
@@ -1286,7 +1266,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {            	
+            if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.assembleMsgs(status, null);
             }
             output = playerApiService.setSetInfo(userToken, name, pos);
@@ -1316,7 +1296,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }            
             output = playerApiService.staticContent(key, lang);
@@ -1375,7 +1355,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.listRecommended(lang);
@@ -1404,7 +1384,7 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {            	
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
                 return playerApiService.assembleMsgs(status, null);
             }                                                            
             output = playerApiService.deviceTokenVerify(token, req);
@@ -2548,7 +2528,7 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        ApiContext context = new ApiContext(req, msoMngr);
+        ApiContext context = new ApiContext(req);
         String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("uri:" + referrer);
@@ -2559,7 +2539,7 @@ public class PlayerApiController {
         
         String fbLoginUri = appDomain + "/fb/login";
         String mso = req.getParameter("mso");
-        Mso brand = msoMngr.findOneByName(mso);   
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);   
         String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, brand);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);
@@ -2591,13 +2571,13 @@ public class PlayerApiController {
     @RequestMapping(value="episodeUpdate")
     public @ResponseBody Object episodeUpdate(
             @RequestParam(value="epId", required=false) long epId ) {
-        NnEpisodeManager mngr = new NnEpisodeManager();
-        NnEpisode e = new NnEpisodeManager().findById(epId);
+        
+        NnEpisode e = NNF.getEpisodeMngr().findById(epId);
         if (e != null) {
-            int duration = mngr.calculateEpisodeDuration(e);
+            int duration = NNF.getEpisodeMngr().calculateEpisodeDuration(e);
             log.info("new duration:" + duration);
             e.setDuration(duration);
-            mngr.save(e);
+            NNF.getEpisodeMngr().save(e);
         }
         return "OK";                
     }
@@ -2659,7 +2639,7 @@ public class PlayerApiController {
     }
    
     /**
-     * Used by Android device. Things to list on the front page
+     * Used by Android device. Things to list on the front page. Current main entrance for this API is portal?type=whatson.
      * 
      * @param time hour, 0-23
      * @param stack reserved
@@ -2673,6 +2653,7 @@ public class PlayerApiController {
     public @ResponseBody Object whatson(                      
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="lang", required=false) String lang,
+            @RequestParam(value="minimal", required=false) String minimal,            
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -2683,7 +2664,8 @@ public class PlayerApiController {
             if (status == NnStatusCode.API_FORCE_UPGRADE) {
                 playerApiService.assembleMsgs(status, null);                        
             }
-            output = playerApiService.whatson(lang, time);    
+            boolean isMinimal = Boolean.parseBoolean(minimal);
+            output = playerApiService.whatson(lang, time, isMinimal);    
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -2732,10 +2714,14 @@ public class PlayerApiController {
      * 
      * @param time hour, 0-23, required
      * @param lang en or zh. default is en
-     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned. 
-     * @return <p>Three sections, First is sets. Format please reference listRecommended. <br/> 
+     * @param type "frontpage" or "whatson". If not specified, "frontpage" data will be returned.
+     * @param minimal set minimal to true returns only set information. ie: no channel nor program information
+     * @return <p>Three sections, First is sets. It has set id, set name, set description, set image, set channel count, banner image 1, banner image 2, channel tag. 
+     *            Channel tag format in the note.<br/> 
      *            Second is the list of channels of the first set from the first section. Format please reference chanenlLineup. <br/>
      *            Third is the first episode of every channel from the second section. Format please reference programInfo.
+     *         <p>Note: channel format: tag name separated by ";", channel id separated by ",".
+     *            Example: TAG_NAME1:channelId1,channelId;TAG_NAME2:channelId1,channelId2   
      */    
     @RequestMapping(value="portal")
     public @ResponseBody Object portal(                      
@@ -2982,4 +2968,35 @@ public class PlayerApiController {
         return playerApiService.response(output);
     }
     */
+    /**
+     * To list read/unread push notifications
+     * 
+     * Will list notifications which resently in one week
+     * 
+     * @param device device token
+     * @param clean mark all notifications as read after API call
+     * @return isRead, timestamp, message, content, logo, title. multiple entries will be separated by \n
+     */
+    @RequestMapping(value="notificationList")
+    public @ResponseBody Object notificationList (
+            @RequestParam(value="device", required=true) String token,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
+                return playerApiService.assembleMsgs(status,  null);        
+            }                        
+            output = playerApiService.notificationList(token, req);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+
 }

@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,6 +24,7 @@ import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
@@ -32,9 +32,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FBPost;
 
@@ -43,26 +40,6 @@ import com.nncloudtv.web.json.facebook.FBPost;
 public class ApiMisc extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
-    
-    private NnUserManager userMngr;
-    private NnUserProfileManager profileMngr;
-    private MsoManager msoMngr;
-    
-    public ApiMisc() {
-        
-        userMngr = new NnUserManager();
-        profileMngr = new NnUserProfileManager();
-        msoMngr = new MsoManager();
-    }
-    
-    @Autowired
-    public ApiMisc(NnUserManager userMngr, NnUserProfileManager profileMngr,
-            MsoManager msoMngr) {
-        
-        this.userMngr = userMngr;
-        this.profileMngr = profileMngr;
-        this.msoMngr = msoMngr;
-    }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
 	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
@@ -117,8 +94,7 @@ public class ApiMisc extends ApiGeneric {
 		CookieHelper.deleteCookie(resp, CookieHelper.USER);
 		CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
 		
-		okResponse(resp);
-        return null;
+		return ok(resp);
 	}
 	
 	/** super profile's msoId priv will replace the result one if super profile exist */
@@ -133,13 +109,12 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
         
-        NnUserManager userMngr = new NnUserManager();
         NnUser user = null;
         
-        Mso brand = new MsoManager().findOneByName(mso);
-        user = userMngr.findById(verifiedUserId, brand.getId(), (short) 0);
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        user = NNF.getUserMngr().findById(verifiedUserId, brand.getId(), (short) 0);
         
-        NnUserProfile profile = new NnUserProfileManager().pickSuperProfile(verifiedUserId);
+        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -164,16 +139,16 @@ public class ApiMisc extends ApiGeneric {
 		String mso = req.getParameter("mso");
 		
 		NnUser user = null;
-		Mso brand = msoMngr.findOneByName(mso);
+		Mso brand = NNF.getMsoMngr().findOneByName(mso);
 		if (token != null) {			
 			log.info("token = " + token);			
-			user = userMngr.findByToken(token, brand.getId());
+			user = NNF.getUserMngr().findByToken(token, brand.getId());
 			
 		} else if (email != null && password != null) {
 			
 			log.info("email = " + email + ", password = xxxxxx");
 			
-			user = userMngr.findAuthenticatedUser(email, password, brand.getId(), req);
+			user = NNF.getUserMngr().findAuthenticatedUser(email, password, brand.getId(), req);
 			if (user != null) {
 				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
 			}
@@ -187,7 +162,7 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-		NnUserProfile profile = profileMngr.pickSuperProfile(user.getId());
+		NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
 		if (profile != null) {
 		    user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -199,7 +174,6 @@ public class ApiMisc extends ApiGeneric {
 	@RequestMapping("echo")
 	public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
 		
-		@SuppressWarnings("unchecked")
 		Map<String, String[]> names = req.getParameterMap();
 		Map<String, String> result = new TreeMap<String, String>();
 		
@@ -222,7 +196,7 @@ public class ApiMisc extends ApiGeneric {
 		}
 		
 		if(req.getMethod().equalsIgnoreCase("POST")) {
-			resp.setStatus(201);
+			resp.setStatus(HTTP_201);
 		}
 		
 		return result;
@@ -331,9 +305,8 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        NnUserManager userMngr = new NnUserManager();
-        Mso brand = new MsoManager().findOneByName(mso);
-        NnUser user = userMngr.findById(verifiedUserId, brand.getId());
+        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;
@@ -410,8 +383,7 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        okResponse(resp);
-        return null;
+        return ok(resp);
     }
 
 }

@@ -27,7 +27,6 @@ public class ApiMsoService {
     private SysTagDisplayManager sysTagDisplayMngr;
     private SysTagMapManager sysTagMapMngr;
     private NnChannelManager channelMngr;
-    private StoreService storeService;
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
@@ -36,43 +35,19 @@ public class ApiMsoService {
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
                             SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
-                            NnChannelManager channelMngr, StoreService storeService,
-                            StoreListingManager storeListingMngr, MsoManager msoMngr,
-                            CategoryService categoryService, MsoConfigManager configMngr) {
+                            NnChannelManager channelMngr, StoreListingManager storeListingMngr,
+                            MsoManager msoMngr, CategoryService categoryService,
+                            MsoConfigManager configMngr) {
+        
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
         this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
         this.channelMngr = channelMngr;
-        this.storeService = storeService;
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
         this.configMngr = configMngr;
-    }
-    
-    /** service for ApiMso.msoSets
-     *  get Sets that belong to target Mso
-     *  @param msoId required, Mso's Id
-     *  @param lang optional, filter for Set's lang
-     *  @return list of Sets */
-    public List<Set> msoSets(Long msoId, String lang) {
-        
-        if (msoId == null) {
-            return new ArrayList<Set>();
-        }
-        
-        List<Set> results = null;
-        if (lang != null) {
-            results = setService.findByMsoIdAndLang(msoId, lang);
-        } else {
-            results = setService.findByMsoId(msoId);
-        }
-        
-        if (results == null) {
-            return new ArrayList<Set>();
-        }
-        return results;
     }
     
     public Set msoSetCreate(Long msoId, Short seq, String tag, String name, Short sortingType) {
@@ -173,15 +148,6 @@ public class ApiMsoService {
         return setService.composeSet(set, setMeta);
     }
     
-    public void setDelete(Long setId) {
-        
-        if (setId == null) {
-            return ;
-        }
-        
-        setService.delete(setId);
-    }
-    
     /** service for ApiMso.setChannels
      *  get Channels from Set
      *  @param setId required, SysTag's Id with SysTag's type = Set
@@ -199,58 +165,23 @@ public class ApiMsoService {
         
         List<NnChannel> results = null;
         if (set.getSorting() == SysTag.SORT_SEQ) {
-            results = setService.getChannelsOrderBySeq(set.getId());
+            results = setService.getChannels(set.getId());
         }
         if (set.getSorting() == SysTag.SORT_DATE) {
-            results = setService.getChannelsOrderByUpdateTime(set.getId());
+            results = setService.getChannels(set.getId());
         }
         
         if (results == null) {
             return new ArrayList<NnChannel>();
         }
         
-        results = channelMngr.responseNormalization(results);
+        results = channelMngr.normalize(results);
         /*
         if (results.size() > 0) { // dependence with front end use case
             channelMngr.populateMoreImageUrl(results.get(0));
         }
         */
         return results;
-    }
-    
-    /** service for ApiMso.setChannelAdd
-     *  add Channel to Set
-     *  @param setId required, SysTag's Id with SysTag's type = Set
-     * @param channelId required, Channel's Id
-     * @param timeStart optional, set a period start that Channel appear in the Set
-     * @param timeEnd optional, set a period end that Channel appear in the Set
-     * @param alwaysOnTop optional, put this Channel in the head when Channels sorting by update time get from Set 
-     * @param featured TODO*/
-    public void setChannelAdd(Long setId, Long channelId, Short timeStart, Short timeEnd, Boolean alwaysOnTop, Boolean featured) {
-        
-        if (setId == null || channelId == null) {
-            return ;
-        }
-        
-        setService.addChannelToSet(setId, channelId, timeStart, timeEnd, alwaysOnTop, featured);
-    }
-    
-    /** service for ApiMso.setChannelRemove
-     *  remove Channel from Set
-     *  @param setId required, SysTag's Id with SysTag's type = Set
-     *  @param channelId required, Channel's Id */
-    public void setChannelRemove(Long setId, Long channelId) {
-        
-        if (setId == null || channelId == null) {
-            return ;
-        }
-        
-        SysTagMap sysTagMap = sysTagMapMngr.findBySysTagIdAndChannelId(setId, channelId);
-        if (sysTagMap == null) {
-            // do nothing
-        } else {
-            sysTagMapMngr.delete(sysTagMap);
-        }
     }
     
     /** service for ApiMso.setChannelsSorting
@@ -301,35 +232,7 @@ public class ApiMsoService {
             seq++;
         }
         
-        sysTagMapMngr.saveAll(newSequence);
-    }
-    
-    /** service for ApiMso.storeChannels
-     *  get Channel's IDs from Mso's store
-     *  @param msoId required, the Mso's Id
-     *  @param channelIds optional, check if these Channel IDs are in the Mso's store
-     *  @param categoryId optional, the official Category's ID, get channels from Mso's store's Category
-     *  @return list of Channel's IDs */
-    public List<Long> storeChannels(Long msoId, java.util.Set<Long> channelIds, Long categoryId) {
-        
-        if (msoId == null) {
-            return new ArrayList<Long>();
-        }
-        
-        List<Long> results = null;
-        if (channelIds != null) {
-            List<NnChannel> channels = channelMngr.findByIds(new ArrayList<Long>(channelIds));
-            results = storeService.checkChannelsInMsoStore(channels, msoId);
-        } else if (categoryId != null) {
-            results = storeService.getChannelIdsFromMsoStoreCategory(categoryId, msoId);
-        } else {
-            results = storeService.getChannelIdsFromMsoStore(msoId);
-        }
-        
-        if (results == null) {
-            return new ArrayList<Long>();
-        }
-        return results;
+        sysTagMapMngr.save(newSequence);
     }
     
     /** service for ApiMso.storeChannelRemove
@@ -391,36 +294,6 @@ public class ApiMsoService {
         
         MsoManager.normalize(mso);
         return mso;
-    }
-    
-    /** service for ApiMso.msoUpdate
-     *  update object Mso
-     *  @param msoId required, the Mso's Id
-     *  @param title optional, Mso's title
-     *  @param logoUrl optional, Mso's logoUrl
-     *  @return object Mso or null if not exist */
-    public Mso msoUpdate(Long msoId, String title, String logoUrl) {
-        
-        if (msoId == null) {
-            return null;
-        }
-        
-        Mso mso = msoMngr.findById(msoId);
-        if (mso == null) {
-            return null;
-        }
-        
-        if (title != null) {
-            mso.setTitle(title);
-        }
-        if (logoUrl != null) {
-            mso.setLogoUrl(logoUrl);
-        }
-        
-        Mso savedMso = msoMngr.save(mso);
-        
-        MsoManager.normalize(savedMso);
-        return savedMso;
     }
     
     /**
@@ -526,76 +399,6 @@ public class ApiMsoService {
     }
     
     /**
-     * service for ApiMso.categoryDelete
-     * Delete promotion Category.
-     * @param categoryId required, Category ID
-     */
-    public void categoryDelete(Long categoryId) {
-        
-        if (categoryId == null) {
-            return ;
-        }
-        
-        categoryService.delete(categoryId);
-    }
-    
-    /**
-     * service for ApiMso.categoryChannels
-     * Get Channels from promotion Category.
-     * @param categoryId required, Category ID
-     * @return list of Channels
-     */
-    public List<NnChannel> categoryChannels(Long categoryId) {
-        
-        if (categoryId == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        List<NnChannel> results = categoryService.getChannelsOrderByUpdateTime(categoryId);
-        if (results == null) {
-            return new ArrayList<NnChannel>();
-        }
-        
-        results = channelMngr.responseNormalization(results);
-        
-        return results;
-    }
-    
-    /**
-     * service for ApiMso.categoryChannelAdd
-     * Add Channel to promotion Category.
-     * @param category required, Category ID
-     * @param channelIds optional, list of IDs that Channels to be added to promotion Category
-     * @param channelId optional, ID that Channel to be added to promotion Category
-     * @param seq optional, follow with channelId, indicate specify sequence of Channel in promotion Category
-     * @param alwaysOnTop optional, follow with channelId, indicate Channel is set on top in the list of Channels from promotion Category
-     */
-    public void categoryChannelAdd(Category category, List<Long> channelIds, Long channelId, Short seq, Boolean alwaysOnTop) {
-        
-        if (category == null || category.getId() == 0) {
-            return ;
-        }
-        
-        if (channelIds != null) {
-            
-            if (channelIds.size() < 1) {
-                return ;
-            }
-            
-            List<NnChannel> channels = channelMngr.findByIds(channelIds);
-            List<Long> verifiedChannelIds = msoMngr.getPlayableChannels(channels, category.getMsoId());
-            categoryService.addChannelsToCategory(category.getId(), verifiedChannelIds);
-            
-        } else if (channelId != null) {
-            
-            NnChannel channel = channelMngr.findById(channelId);
-            if (msoMngr.isPlayableChannel(channel, category.getMsoId()) == true) {
-                categoryService.addChannelToCategory(category.getId(), channelId, seq, alwaysOnTop);
-            }
-        }
-    }
-    
-    /**
      * service for ApiMso.categoryChannelRemove
      * Remove Channel from promotion Category.
      * @param categoryId required, Category ID
@@ -607,40 +410,6 @@ public class ApiMsoService {
             return ;
         }
         
-        categoryService.removeChannelsFromCategory(categoryId, channelIds);
+        categoryService.removeChannels(categoryId, channelIds);
     }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocks
-     * Get system Category locks from MSO.
-     * @param msoId required, the Mso's Id
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocks(Long msoId) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.getStoreCategoryLocks(msoId);
-        return results;
-    }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocksUpdate
-     * Update system Category locks from MSO, overwrite previous one.
-     * @param msoId required, the Mso's Id
-     * @param systemCategoryLocks required, the locks indicate system Category should hide or not in MSO's player
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocksUpdate(Long msoId, List<String> systemCategoryLocks) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.setStoreCategoryLocks(msoId, systemCategoryLocks);
-        return results;
-    }
-
 }

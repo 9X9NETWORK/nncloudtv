@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnUserWatchedDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserWatched;
@@ -27,7 +28,7 @@ public class NnUserWatchedManager {
     }
         
     public boolean findInDefaultIpg(NnUser user, long channelId) {
-    	List<NnChannel> channels = new NnChannelManager().findMsoDefaultChannels(user.getMsoId(), false);
+    	List<NnChannel> channels = NNF.getChannelMngr().findMsoDefaultChannels(user.getMsoId(), false);
     	for (NnChannel c : channels) {
     		if (c.getId() == channelId) {
     			return false;
