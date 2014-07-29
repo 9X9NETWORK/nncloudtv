@@ -1,5 +1,7 @@
 package com.nncloudtv.service;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -205,6 +207,45 @@ public class DepotService {
         if (!devel.equals("1")) {
             NnNetUtil.urlPostWithJson(transcodingServer, postUrl);            
         }
+    }
+    
+    public BufferedImage resizeImage(BufferedImage image, int width, int height) {
+        
+        if (image == null || width == 0 || height == 0) { return null; }
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D graph = resizedImage.createGraphics();
+        
+        int oriWidth = image.getWidth();
+        int oriHeight = image.getHeight();
+        float oriRate = (float) oriWidth / oriHeight;
+        float rate = (float) width / height;
+        
+        if (oriWidth == width && oriHeight == height) {
+            
+            log.info("image size exactly the same");
+            
+            return null;
+        }
+        
+        if (rate > oriRate) {
+            
+            log.info("rate > oriRate");
+            int drawHeight = (int) (oriHeight * ((float) width / oriWidth));
+            int offsetY = (oriHeight - drawHeight) / 2;
+            
+            graph.drawImage(image, 0, offsetY, width, drawHeight, null);
+            
+        } else {
+            
+            log.info("oriRate >= rate");
+            int drawWidth = (int) (oriWidth * ((float) height / oriHeight));
+            int offsetX = (oriWidth - drawWidth) / 2;
+            
+            graph.drawImage(image, offsetX, 0, drawWidth, height, null);
+        }
+        graph.dispose();
+        
+        return resizedImage;
     }
     
     public Properties getTranscodingServerPro() {

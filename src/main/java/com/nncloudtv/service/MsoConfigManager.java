@@ -70,11 +70,6 @@ public class MsoConfigManager {
         }
     }
     
-    static public String getS3UploadBucket() {
-        
-        return getProperty("aws.properties", "s3_upload_bucket");
-    }
-    
     static public String getServerDomain() {
         
         if (serverDomain == null) {
@@ -362,6 +357,16 @@ public class MsoConfigManager {
             }
         }
         return result;
+    }
+    
+    static public String getS3UploadBucket() {
+        
+        return getProperty(PROPERTIES_AWS, "s3_upload_bucket");
+    }
+    
+    public static String getS3DepotBucket() {
+        
+        return getProperty(PROPERTIES_AWS, "s3_depot_bucket");
     }
     
     public static String getAWSId() {

@@ -1,6 +1,7 @@
 package com.nncloudtv.lib;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.SignatureException;
 import java.text.SimpleDateFormat;
@@ -11,6 +12,14 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.api.client.util.Base64;
 import com.nncloudtv.service.MsoConfigManager;
 
@@ -146,5 +155,16 @@ public class AmazonLib {
         String formattedExpirationDate = dfm.format(oneHourFromNow);
         return formattedExpirationDate;
     }
-
+    
+    public static String s3PutObject(String bucket, String filename, InputStream in)
+            throws AmazonClientException, AmazonServiceException {
+        
+        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey());
+        AmazonS3 s3 = new AmazonS3Client(credentials);
+        s3.putObject(bucket, filename, in, new ObjectMetadata());
+        
+        s3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
+        
+        return "http://s3.amazonaws.com/" + bucket + "/" + filename;
+    }
 }

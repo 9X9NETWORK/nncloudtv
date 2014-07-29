@@ -307,6 +307,11 @@
             <artifactId>commons-dbcp</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.4</version>
+        </dependency>
         <!-- RabbitMQ -->
         <dependency>
             <groupId>com.rabbitmq</groupId>
@@ -398,19 +403,24 @@
             <version>1.9.5</version>
         </dependency>
         <dependency>
-        	<groupId>org.powermock</groupId>
-        	<artifactId>powermock-api-mockito</artifactId>
-        	<version>1.5.4</version>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.5.4</version>
         </dependency>
         <dependency>
-        	<groupId>org.powermock</groupId>
-        	<artifactId>powermock-module-junit4</artifactId>
-        	<version>1.5.4</version>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.5.4</version>
         </dependency>
         <dependency>
             <groupId>com.clearcommerce</groupId>
             <artifactId>clear-commerce</artifactId>
             <version>5.10.0.3706</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.8.6</version>
         </dependency>
     </dependencies>
 

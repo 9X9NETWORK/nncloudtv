@@ -1,13 +1,19 @@
 package com.nncloudtv.web;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -26,7 +32,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.nncloudtv.dao.ShardedCounter;
+import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
@@ -34,6 +43,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.service.DepotService;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerService;
@@ -180,6 +190,69 @@ public class DepotController {
             NnLogUtil.logException(e);
         }
     }
+    
+    @RequestMapping("processThumbnail")
+    public @ResponseBody String processThumbnail(HttpServletRequest req) {
+        
+        String channelIdStr = req.getParameter("channel");
+        if (channelIdStr == null) {
+            return "missing parameter!";
+        }
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            return "channel not found!";
+        }
+        log.info("resize channel thumbnail - " + channelIdStr);
+        
+        String imageUrl = channel.getImageUrl();
+        if (imageUrl == null) {
+            return "channel has no imageUrl";
+        }
+        
+        String resizedImageUrl = null;
+        
+        try {
+            URL url = new URL(imageUrl);
+            BufferedImage image = ImageIO.read(url);
+            image = NNF.getDepotService().resizeImage(image, NnChannel.DEFAULT_WIDTH, NnChannel.DEFAULT_HEIGHT);
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", baos);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            resizedImageUrl = AmazonLib.s3PutObject(MsoConfigManager.getS3DepotBucket(), "thumb-ch" + channel.getId() + ".png", bais);
+            
+        } catch (AmazonServiceException e) {
+            
+            log.warning("amazon service exception - " + e.getMessage());
+            return "NOT OK";
+            
+        } catch (AmazonClientException e) {
+            
+            log.warning("amazon client exception - " + e.getMessage());
+            return "NOT OK";
+            
+        } catch (MalformedURLException e) {
+            
+            log.warning("channel image url is malformed - " + channel.getId());
+            return "NOT OK";
+            
+        } catch (IOException e) {
+            
+            log.warning("failed to load image - " + channel.getImageUrl());
+            return "NOT OK";
+        }
+        
+        if (resizedImageUrl != null) {
+            
+            log.info("update channel with new imageUrl - " + resizedImageUrl);
+            channel.setImageUrl(resizedImageUrl);
+            NNF.getChannelMngr().save(channel);
+        }
+        
+        return "OK";
+    }
+    
     
     /** 
      * @param page
