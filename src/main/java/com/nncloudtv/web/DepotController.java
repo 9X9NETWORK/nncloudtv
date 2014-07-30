@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
@@ -220,7 +221,11 @@ public class DepotController {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(image, "png", baos);
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            resizedImageUrl = AmazonLib.s3PutObject(MsoConfigManager.getS3DepotBucket(), "thumb-ch" + channel.getId() + ".png", bais);
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("image/png");
+            resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                                    "thumb-ch" + channel.getId() + ".png",
+                                                    bais, metadata);
             
         } catch (AmazonServiceException e) {
             

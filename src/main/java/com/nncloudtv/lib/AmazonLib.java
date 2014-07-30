@@ -156,12 +156,12 @@ public class AmazonLib {
         return formattedExpirationDate;
     }
     
-    public static String s3PutObject(String bucket, String filename, InputStream in)
+    public static String s3Upload(String bucket, String filename, InputStream in, ObjectMetadata metadata)
             throws AmazonClientException, AmazonServiceException {
         
         AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey());
         AmazonS3 s3 = new AmazonS3Client(credentials);
-        s3.putObject(bucket, filename, in, new ObjectMetadata());
+        s3.putObject(bucket, filename, in, metadata);
         
         s3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
         
