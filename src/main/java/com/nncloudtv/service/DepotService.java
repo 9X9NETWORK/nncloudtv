@@ -232,17 +232,16 @@ public class DepotService {
             log.info("rate > oriRate");
             int drawHeight = (int) (oriHeight * ((float) width / oriWidth));
             int offsetY = (oriHeight - drawHeight) / 2;
-            
-            graph.drawImage(image, 0, offsetY, width, drawHeight, null);
+            image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
             
         } else {
             
             log.info("oriRate >= rate");
             int drawWidth = (int) (oriWidth * ((float) height / oriHeight));
             int offsetX = (oriWidth - drawWidth) / 2;
-            
-            graph.drawImage(image, offsetX, 0, drawWidth, height, null);
+            image = image.getSubimage(offsetX, 0, drawWidth, height);
         }
+        graph.drawImage(image, 0, 0, width, height, null);
         graph.dispose();
         
         return resizedImage;
