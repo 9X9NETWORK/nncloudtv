@@ -231,7 +231,7 @@ public class DepotService {
         if (rate > oriRate) {
             
             log.info("rate > oriRate");
-            int drawHeight = (int) (height * ((float) width / oriWidth));
+            int drawHeight = (int) (height * ((float) oriWidth / width));
             int offsetY = (oriHeight - drawHeight) / 2;
             log.info("offsetY = " + offsetY + ", drawHeight = " + drawHeight);
             image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
@@ -239,7 +239,7 @@ public class DepotService {
         } else {
             
             log.info("oriRate >= rate");
-            int drawWidth = (int) (width * ((float) height / oriHeight));
+            int drawWidth = (int) (width * ((float) oriHeight / height));
             int offsetX = (oriWidth - drawWidth) / 2;
             log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
             image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
