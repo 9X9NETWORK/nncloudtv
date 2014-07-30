@@ -268,7 +268,7 @@ public class DepotService {
             }
             
             log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
-            image = image.getSubimage(offsetX, 0, drawWidth, height);
+            image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
         }
         graph.drawImage(image, 0, 0, width, height, null);
         graph.dispose();
