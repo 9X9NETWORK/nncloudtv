@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -248,7 +249,6 @@ public class DepotService {
             
             log.info("offsetY = " + offsetY + ", drawHeight = " + drawHeight);
             image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
-            graph.drawImage(image, 0, 0, oriWidth, drawHeight, null);
             
         } else {
             
@@ -270,8 +270,9 @@ public class DepotService {
             
             log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
             image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
-            graph.drawImage(image, 0, 0, drawWidth, oriHeight, null);
         }
+        graph.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        graph.drawImage(image, 0, 0, width, height, 0, 0, image.getWidth(), image.getHeight(), null);
         graph.dispose();
         
         return resizedImage;
