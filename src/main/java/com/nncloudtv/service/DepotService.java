@@ -225,49 +225,22 @@ public class DepotService {
         if (oriWidth == width && oriHeight == height) {
             
             log.info("image size exactly the same");
-            
             return null;
         }
         
         if (rate > oriRate) {
             
             log.info("rate > oriRate");
-            int drawHeight = height;
-            int offsetY = 0;
-            if (width > oriWidth) {
-                
-                log.info("width > oriWidth");
-                drawHeight = (int) (oriHeight * ((float) oriWidth / width));
-                offsetY = (oriHeight - drawHeight) / 2;
-                
-            } else {
-                
-                log.info("oriWidth >= width");
-                drawHeight = (int) (oriHeight * ((float) width / oriWidth));
-                offsetY = (oriHeight - drawHeight) / 2;
-            }
-            
+            int drawHeight = (int) (height * ((float) width / oriWidth));
+            int offsetY = (oriHeight - drawHeight) / 2;
             log.info("offsetY = " + offsetY + ", drawHeight = " + drawHeight);
             image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
             
         } else {
             
             log.info("oriRate >= rate");
-            int drawWidth = width;
-            int offsetX = 0;
-            if (height > oriHeight) {
-                
-                log.info("height > oriHeight");
-                drawWidth = (int) (oriWidth * ((float) oriHeight / height));
-                offsetX = (oriWidth - drawWidth) / 2;
-                
-            } else {
-                
-                log.info("oriHeight >= height");
-                drawWidth = (int) (oriWidth * ((float) height / oriHeight));
-                offsetX = (oriWidth - drawWidth) / 2;
-            }
-            
+            int drawWidth = (int) (width * ((float) height / oriHeight));
+            int offsetX = (oriWidth - drawWidth) / 2;
             log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
             image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
         }
