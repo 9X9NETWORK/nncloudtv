@@ -248,6 +248,7 @@ public class DepotService {
             
             log.info("offsetY = " + offsetY + ", drawHeight = " + drawHeight);
             image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
+            graph.drawImage(image, 0, 0, oriWidth, drawHeight, null);
             
         } else {
             
@@ -269,8 +270,8 @@ public class DepotService {
             
             log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
             image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
+            graph.drawImage(image, 0, 0, drawWidth, oriHeight, null);
         }
-        graph.drawImage(image, 0, 0, width, height, null);
         graph.dispose();
         
         return resizedImage;
