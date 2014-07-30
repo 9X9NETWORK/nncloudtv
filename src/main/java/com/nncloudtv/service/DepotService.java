@@ -212,7 +212,7 @@ public class DepotService {
     public BufferedImage resizeImage(BufferedImage image, int width, int height) {
         
         if (image == null || width == 0 || height == 0) { return null; }
-        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graph = resizedImage.createGraphics();
         
         int oriWidth = image.getWidth();
