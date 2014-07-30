@@ -223,6 +223,7 @@ public class DepotController {
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/png");
+            metadata.setContentLength(baos.size());
             resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
                                                     "thumb-ch" + channel.getId() + ".png",
                                                     bais, metadata);
