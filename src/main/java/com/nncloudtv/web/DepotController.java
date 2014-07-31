@@ -214,17 +214,18 @@ public class DepotController {
             try {
                 BufferedImage image = NNF.getDepotService()
                                          .resizeImage(imageUrl, NnChannel.DEFAULT_WIDTH, NnChannel.DEFAULT_HEIGHT);
-                
-                resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
-                                                     "thumb-ch" + channel.getId() + ".png", image);
-                
-                if (resizedImageUrl != null) {
-                    
-                    log.info("update channel with new imageUrl - " + resizedImageUrl);
-                    channel.setImageUrl(resizedImageUrl);
-                    NNF.getChannelMngr().save(channel);
-                    result = "OK";
+                if (image != null) {
+                    resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                            "thumb-ch" + channel.getId() + ".png", image);
+                    if (resizedImageUrl != null) {
+                        
+                        log.info("update channel with new imageUrl - " + resizedImageUrl);
+                        channel.setImageUrl(resizedImageUrl);
+                        NNF.getChannelMngr().save(channel);
+                        result = "OK";
+                    }
                 }
+                
             } catch (AmazonServiceException e) {
                 
                 log.warning("amazon service exception - " + e.getMessage());
@@ -245,6 +246,7 @@ public class DepotController {
                 log.warning("failed to load image - " + channel.getImageUrl());
                 return "IOException";
             }
+            
         } else if (setIdStr != null) {
             
             long sysTagId = Long.parseLong(setIdStr);
@@ -263,12 +265,14 @@ public class DepotController {
                     log.info("the origin banner (android) url = " + bannerUrl);
                     BufferedImage image = NNF.getDepotService()
                                              .resizeImage(bannerUrl, SysTagDisplay.DEFAULT_WIDTH, SysTagDisplay.DEFAULT_HEIGHT);
-                    resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
-                                                         "banner-set" + display.getSystagId() + ".png", image);
-                    if (resizedBannerUrl != null) {
-                        log.info("update set with new (android) banner url = " + resizedBannerUrl);
-                        display.setBannerImageUrl(resizedBannerUrl);
-                        dirty = true;
+                    if (image != null) {
+                        resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                "banner-set" + display.getSystagId() + ".png", image);
+                        if (resizedBannerUrl != null) {
+                            log.info("update set with new (android) banner url = " + resizedBannerUrl);
+                            display.setBannerImageUrl(resizedBannerUrl);
+                            dirty = true;
+                        }
                     }
                 }
                 
@@ -280,12 +284,14 @@ public class DepotController {
                     log.info("the origin banner (ios) url = " + bannerUrl);
                     BufferedImage image = NNF.getDepotService()
                                              .resizeImage(bannerUrl, SysTagDisplay.RETINA_WIDTH, SysTagDisplay.RETINA_HEIGHT);
-                    resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
-                                                          "banner-set" + display.getSystagId() + "-retina.png", image);
-                    if (resizedBannerUrl != null) {
-                        log.info("update set with new (ios) banner url = " + resizedBannerUrl);
-                        display.setBannerImageUrl2(resizedBannerUrl);
-                        dirty = true;
+                    if (image != null) {
+                        resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                "banner-set" + display.getSystagId() + "-retina.png", image);
+                        if (resizedBannerUrl != null) {
+                            log.info("update set with new (ios) banner url = " + resizedBannerUrl);
+                            display.setBannerImageUrl2(resizedBannerUrl);
+                            dirty = true;
+                        }
                     }
                 }
             } catch (AmazonServiceException e) {
