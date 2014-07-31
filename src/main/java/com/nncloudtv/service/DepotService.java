@@ -5,11 +5,13 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.context.NoSuchMessageException;
@@ -208,6 +210,11 @@ public class DepotService {
         if (!devel.equals("1")) {
             NnNetUtil.urlPostWithJson(transcodingServer, postUrl);            
         }
+    }
+    
+    public BufferedImage resizeImage(String imageUrl, int width, int height) throws MalformedURLException, IOException {
+        
+        return resizeImage(ImageIO.read(new URL(imageUrl)), width, height);
     }
     
     public BufferedImage resizeImage(BufferedImage image, int width, int height) {

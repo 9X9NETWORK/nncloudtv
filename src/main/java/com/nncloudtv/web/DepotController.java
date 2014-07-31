@@ -1,19 +1,16 @@
 package com.nncloudtv.web;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,7 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
@@ -43,6 +39,7 @@ import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -195,70 +192,129 @@ public class DepotController {
     @RequestMapping("processThumbnail")
     public @ResponseBody String processThumbnail(HttpServletRequest req) {
         
+        String result = "NOTHING";
         String channelIdStr = req.getParameter("channel");
-        if (channelIdStr == null) {
-            return "missing parameter!";
+        String setIdStr = req.getParameter("set");
+        
+        if (channelIdStr != null) {
+            
+            result = "NOT_OK";
+            NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+            if (channel == null) {
+                return "channel not found!";
+            }
+            log.info("resize channel thumbnail - " + channelIdStr);
+            
+            String imageUrl = channel.getImageUrl();
+            if (imageUrl == null) {
+                return "channel has no imageUrl";
+            }
+            
+            String resizedImageUrl = null;
+            try {
+                BufferedImage image = NNF.getDepotService()
+                                         .resizeImage(imageUrl, NnChannel.DEFAULT_WIDTH, NnChannel.DEFAULT_HEIGHT);
+                
+                resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                                     "thumb-ch" + channel.getId() + ".png", image);
+                
+                if (resizedImageUrl != null) {
+                    
+                    log.info("update channel with new imageUrl - " + resizedImageUrl);
+                    channel.setImageUrl(resizedImageUrl);
+                    NNF.getChannelMngr().save(channel);
+                    result = "OK";
+                }
+            } catch (AmazonServiceException e) {
+                
+                log.warning("amazon service exception - " + e.getMessage());
+                return "AmazonServiceException";
+                
+            } catch (AmazonClientException e) {
+                
+                log.warning("amazon client exception - " + e.getMessage());
+                return "AmazonClientException";
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning("channel image url is malformed - " + channel.getId());
+                return "MalformedURLException";
+                
+            } catch (IOException e) {
+                
+                log.warning("failed to load image - " + channel.getImageUrl());
+                return "IOException";
+            }
+        } else if (setIdStr != null) {
+            
+            result = "NOT_OK";
+            long sysTagId = Long.parseLong(setIdStr);
+            SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTagId);
+            if (display == null) {
+                return "SysTagDisplay not found";
+            }
+            boolean dirty = false;
+            
+            try {
+                // branner
+                String bannerUrl = display.getBannerImageUrl();
+                if (bannerUrl == null) {
+                    return "bannerUrl is empty";
+                }
+                String resizedBannerUrl = null;
+                BufferedImage image = NNF.getDepotService()
+                                         .resizeImage(bannerUrl, SysTagDisplay.DEFAULT_WIDTH, SysTagDisplay.DEFAULT_HEIGHT);
+                resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                                     "banner-set" + display.getSystagId() + ".png", image);
+                if (resizedBannerUrl != null) {
+                    log.info("update set with new bannerUrl - " + resizedBannerUrl);
+                    display.setBannerImageUrl(resizedBannerUrl);
+                    dirty = true;
+                }
+                
+                // banner (retina)
+                bannerUrl = display.getBannerImageUrl2();
+                if (bannerUrl == null) {
+                    return "bannerUrl (retina) is empty";
+                }
+                resizedBannerUrl = null;
+                image = NNF.getDepotService()
+                           .resizeImage(bannerUrl, SysTagDisplay.RETINA_WIDTH, SysTagDisplay.RETINA_HEIGHT);
+                resizedBannerUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                                                      "banner-set" + display.getSystagId() + "-retina.png", image);
+                if (resizedBannerUrl != null) {
+                    log.info("update set with new bannerUrl (retina) - " + resizedBannerUrl);
+                    display.setBannerImageUrl2(resizedBannerUrl);
+                    dirty = true;
+                }
+            } catch (AmazonServiceException e) {
+                
+                log.warning("amazon service exception - " + e.getMessage());
+                return "AmazonServiceException";
+                
+            } catch (AmazonClientException e) {
+                
+                log.warning("amazon client exception - " + e.getMessage());
+                return "AmazonClientException";
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning("channel banner url is malformed - " + display.getId());
+                return "MalformedURLException";
+                
+            } catch (IOException e) {
+                
+                log.warning("failed to load image - " + display.getBannerImageUrl2());
+                return "IOException";
+            }
+            
+            if (dirty) {
+                NNF.getDisplayMngr().save(display);
+            }
         }
         
-        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
-        if (channel == null) {
-            return "channel not found!";
-        }
-        log.info("resize channel thumbnail - " + channelIdStr);
-        
-        String imageUrl = channel.getImageUrl();
-        if (imageUrl == null) {
-            return "channel has no imageUrl";
-        }
-        
-        String resizedImageUrl = null;
-        
-        try {
-            URL url = new URL(imageUrl);
-            BufferedImage image = ImageIO.read(url);
-            image = NNF.getDepotService().resizeImage(image, NnChannel.DEFAULT_WIDTH, NnChannel.DEFAULT_HEIGHT);
-            
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", baos);
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/png");
-            metadata.setContentLength(baos.size());
-            resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
-                                                    "thumb-ch" + channel.getId() + ".png",
-                                                    bais, metadata);
-            
-        } catch (AmazonServiceException e) {
-            
-            log.warning("amazon service exception - " + e.getMessage());
-            return "NOT OK";
-            
-        } catch (AmazonClientException e) {
-            
-            log.warning("amazon client exception - " + e.getMessage());
-            return "NOT OK";
-            
-        } catch (MalformedURLException e) {
-            
-            log.warning("channel image url is malformed - " + channel.getId());
-            return "NOT OK";
-            
-        } catch (IOException e) {
-            
-            log.warning("failed to load image - " + channel.getImageUrl());
-            return "NOT OK";
-        }
-        
-        if (resizedImageUrl != null) {
-            
-            log.info("update channel with new imageUrl - " + resizedImageUrl);
-            channel.setImageUrl(resizedImageUrl);
-            NNF.getChannelMngr().save(channel);
-        }
-        
-        return "OK";
+        return result;
     }
-    
     
     /** 
      * @param page

@@ -1,5 +1,8 @@
 package com.nncloudtv.lib;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -11,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.imageio.ImageIO;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -154,6 +158,19 @@ public class AmazonLib {
         dfm.setTimeZone(tz);
         String formattedExpirationDate = dfm.format(oneHourFromNow);
         return formattedExpirationDate;
+    }
+    
+    public static String s3Upload(String bucket, String filename, BufferedImage image) throws IOException {
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        log.info("image size = " + baos.size());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("image/png");
+        metadata.setContentLength(baos.size());
+        
+        return s3Upload(MsoConfigManager.getS3DepotBucket(), filename, bais, metadata);
     }
     
     public static String s3Upload(String bucket, String filename, InputStream in, ObjectMetadata metadata)

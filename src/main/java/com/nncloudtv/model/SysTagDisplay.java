@@ -39,10 +39,14 @@ public class SysTagDisplay {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     String bannerImageUrl; //banner basic resolution
+    public static final int DEFAULT_WIDTH  = 800;
+    public static final int DEFAULT_HEIGHT = 244;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     String bannerImageUrl2; //banner retina resolution
+    public static final int RETINA_WIDTH  = 1536;
+    public static final int RETINA_HEIGHT = 570;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
