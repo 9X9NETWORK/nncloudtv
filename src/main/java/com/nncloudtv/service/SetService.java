@@ -23,7 +23,13 @@ public class SetService {
     
     public Set composeSet(SysTag sysTag, SysTagDisplay display) {
         
-        Set set = (Set) sysTag;
+        Set set = new Set();
+        
+        set.setId(sysTag.getId());
+        set.setFeatured(sysTag.isFeatured());
+        set.setMsoId(sysTag.getMsoId());
+        set.setSeq(sysTag.getSeq());
+        set.setSorting(sysTag.getSorting());
         
         set.setCntChannel(display.getCntChannel());
         set.setLang(display.getLang());
