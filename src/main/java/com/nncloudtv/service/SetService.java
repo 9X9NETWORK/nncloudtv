@@ -26,7 +26,6 @@ public class SetService {
         Set set = new Set();
         
         set.setId(sysTag.getId());
-        set.setFeatured(sysTag.isFeatured());
         set.setMsoId(sysTag.getMsoId());
         set.setSeq(sysTag.getSeq());
         set.setSorting(sysTag.getSorting());
