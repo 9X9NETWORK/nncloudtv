@@ -56,10 +56,11 @@ public class MsoConfig {
     public static String ABOUT_US              = "aboutus";
     public static String SIGNUP_ENFORCE        = "signup-enforce";
     public static String AD_IOS                = "ad-ios";
-    public static String ADMOBKEY_ANDROID = "admobkey-android";
-    public static String ADMOBKEY_IOS = "admobkey-ios";
+    public static String ADMOBKEY_ANDROID      = "admobkey-android";
+    public static String ADMOBKEY_IOS          = "admobkey-ios";
     public static String AD_ANDROID            = "ad-android";
     public static String AUDIO_BACKGROUND      = "audio-background";
+    public static String SOCIAL_FEEDS          = "social-feeds";
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration";
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
