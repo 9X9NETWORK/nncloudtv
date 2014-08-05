@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -580,9 +581,9 @@ public class NnProgramManager {
                             NnEpisode candidate = candidates.get(0);
                             classics.add(candidate);
                             
-                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
+                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 80000000) {
                                 
-                                candidate.setSeq(ch.getCntEpisode() + 1);
+                                candidate.setSeq(ch.getCntEpisode() + PlayerApiService.MAX_EPISODES);
                                 log.info("rotate classics channelId = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
                                 NNF.getEpisodeMngr().save(candidate);
                                 NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
@@ -602,8 +603,9 @@ public class NnProgramManager {
                 if (episodes.size() > (PlayerApiService.PAGING_ROWS)) {
                     episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 }
+                Random rand = new Random(NnDateUtil.now().getTime());
                 for (NnEpisode ep : classics) {
-                    episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
+                    episodes.add(rand.nextInt(episodes.size()) + 1, ep);
                 }
                 log.info("episodes = " + episodes.size());
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
@@ -630,9 +632,9 @@ public class NnProgramManager {
                         if (ch.isAlwaysOnTop()) {
                             
                             classics.add(candidate);
-                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
+                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 80000000) {
                                 
-                                candidate.setSeq(ch.getCntEpisode() + 1);
+                                candidate.setSeq(ch.getCntEpisode() + PlayerApiService.MAX_EPISODES);
                                 log.info("rotate classics channelId = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
                                 NNF.getEpisodeMngr().save(candidate);
                                 NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
@@ -653,8 +655,9 @@ public class NnProgramManager {
                 if (episodes.size() > PlayerApiService.PAGING_ROWS) {
                     episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
                 }
+                Random rand = new Random(NnDateUtil.now().getTime());
                 for (NnEpisode ep : classics) {
-                    episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
+                    episodes.add(rand.nextInt(episodes.size()) + 1, ep);
                 }
                 log.info("episodes = " + episodes.size());
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
