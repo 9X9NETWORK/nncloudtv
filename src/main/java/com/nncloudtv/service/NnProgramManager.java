@@ -583,7 +583,7 @@ public class NnProgramManager {
                             if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
                                 
                                 candidate.setSeq(ch.getCntEpisode() + 1);
-                                log.info("rotate classics channel = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
+                                log.info("rotate classics channelId = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
                                 NNF.getEpisodeMngr().save(candidate);
                                 NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
                             }
@@ -605,7 +605,7 @@ public class NnProgramManager {
                 for (NnEpisode ep : classics) {
                     episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
                 }
-                
+                log.info("episodes = " + episodes.size());
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
             log.info("programs = " + programs.size());
@@ -633,7 +633,7 @@ public class NnProgramManager {
                             if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
                                 
                                 candidate.setSeq(ch.getCntEpisode() + 1);
-                                log.info("rotate classics channel = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
+                                log.info("rotate classics channelId = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
                                 NNF.getEpisodeMngr().save(candidate);
                                 NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
                             }
@@ -656,7 +656,7 @@ public class NnProgramManager {
                 for (NnEpisode ep : classics) {
                     episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
                 }
-                
+                log.info("episodes = " + episodes.size());
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
             }
             log.info("programs = " + programs.size());
