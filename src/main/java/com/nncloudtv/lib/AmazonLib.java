@@ -1,6 +1,10 @@
 package com.nncloudtv.lib;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.SignatureException;
 import java.text.SimpleDateFormat;
@@ -10,17 +14,25 @@ import java.util.logging.Logger;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.imageio.ImageIO;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.api.client.util.Base64;
+import com.nncloudtv.service.MsoConfigManager;
 
 public class AmazonLib {
     
     protected static final Logger log = Logger.getLogger(AmazonLib.class.getName());
     
     private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
-    private static final String AWS_KEY = "fdXkONXak8YC8TylX7fVSte5nvhFJ0RB7KnXGhpl";
     
-    public static final String AWS_ID = "AKIAIUZXV6X5RKSG3QRQ";
     public static final String AWS_TOKEN = "QWJvdXQtTWU=";
     public static final String S3_TOKEN = "YWJvdXR5b3U=";
     public static final String S3_CONTEXT_CODE = "aHR0cDovL2dvby5nbC9lVTNtWg==";
@@ -42,7 +54,7 @@ public class AmazonLib {
         try {
             
             // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(AWS_KEY.getBytes(), HMAC_SHA1_ALGORITHM);
+            SecretKeySpec signingKey = new SecretKeySpec(MsoConfigManager.getAWSKey().getBytes(), HMAC_SHA1_ALGORITHM);
             
             // get an hmac_sha1 Mac instance and initialize with the signing key
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
@@ -147,5 +159,29 @@ public class AmazonLib {
         String formattedExpirationDate = dfm.format(oneHourFromNow);
         return formattedExpirationDate;
     }
-
+    
+    public static String s3Upload(String bucket, String filename, BufferedImage image) throws IOException {
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        log.info("image size = " + baos.size());
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType("image/png");
+        metadata.setContentLength(baos.size());
+        
+        return s3Upload(MsoConfigManager.getS3DepotBucket(), filename, bais, metadata);
+    }
+    
+    public static String s3Upload(String bucket, String filename, InputStream in, ObjectMetadata metadata)
+            throws AmazonClientException, AmazonServiceException {
+        
+        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey());
+        AmazonS3 s3 = new AmazonS3Client(credentials);
+        s3.putObject(bucket, filename, in, metadata);
+        
+        s3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
+        
+        return "http://s3.amazonaws.com/" + bucket + "/" + filename;
+    }
 }

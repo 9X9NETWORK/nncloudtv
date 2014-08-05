@@ -100,10 +100,8 @@ public class SysTagDisplayManager {
     }
     
     /** if multiple display, only pick one, for now using in Set */
-    public SysTagDisplay findBySysTagId(Long sysTagId) {
-        if (sysTagId == null) {
-            return null;
-        }
+    public SysTagDisplay findBySysTagId(long sysTagId) {
+        
         return dao.findBySysTagId(sysTagId);
     }
     

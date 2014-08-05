@@ -1,12 +1,17 @@
 package com.nncloudtv.service;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.context.NoSuchMessageException;
@@ -205,6 +210,52 @@ public class DepotService {
         if (!devel.equals("1")) {
             NnNetUtil.urlPostWithJson(transcodingServer, postUrl);            
         }
+    }
+    
+    public BufferedImage resizeImage(String imageUrl, int width, int height) throws MalformedURLException, IOException {
+        
+        return resizeImage(ImageIO.read(new URL(imageUrl)), width, height);
+    }
+    
+    public BufferedImage resizeImage(BufferedImage image, int width, int height) {
+        
+        if (image == null || width == 0 || height == 0) { return null; }
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graph = resizedImage.createGraphics();
+        
+        int oriWidth = image.getWidth();
+        int oriHeight = image.getHeight();
+        log.info(oriWidth + "x" + oriHeight + " --> " + width + "x" + height);
+        float oriRate = (float) oriWidth / oriHeight;
+        float rate = (float) width / height;
+        
+        if (oriWidth == width && oriHeight == height) {
+            
+            log.info("image size exactly the same");
+            return null;
+        }
+        
+        if (rate > oriRate) {
+            
+            log.info("rate > oriRate");
+            int drawHeight = (int) (height * ((float) oriWidth / width));
+            int offsetY = (oriHeight - drawHeight) / 2;
+            log.info("offsetY = " + offsetY + ", drawHeight = " + drawHeight);
+            image = image.getSubimage(0, offsetY, oriWidth, drawHeight);
+            
+        } else {
+            
+            log.info("oriRate >= rate");
+            int drawWidth = (int) (width * ((float) oriHeight / height));
+            int offsetX = (oriWidth - drawWidth) / 2;
+            log.info("offsetX = " + offsetX + ", drawWidth = " + drawWidth);
+            image = image.getSubimage(offsetX, 0, drawWidth, oriHeight);
+        }
+        graph.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        graph.drawImage(image, 0, 0, width, height, 0, 0, image.getWidth(), image.getHeight(), null);
+        graph.dispose();
+        
+        return resizedImage;
     }
     
     public Properties getTranscodingServerPro() {

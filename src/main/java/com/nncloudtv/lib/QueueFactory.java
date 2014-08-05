@@ -65,7 +65,7 @@ public class QueueFactory {
             obj[3] = data;
             channel.basicPublish( "", QueueFactory.QUEUE_NNCLOUDTV, 
                         MessageProperties.PERSISTENT_TEXT_PLAIN,
-                        QueueFactory.toByteArray(obj));                        
+                        QueueFactory.toByteArray(obj));
             channel.close();
             connection.close();        
             log.info(" [x] Sent '" + msgUrl.toString() + "'");

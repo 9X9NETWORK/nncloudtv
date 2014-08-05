@@ -173,7 +173,10 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.ABOUT_US)) {
                 String aboutus = c.getValue().replaceAll("\t", "").replaceAll("\n", "{BR}");
                 result += PlayerApiService.assembleKeyValue(MsoConfig.ABOUT_US, aboutus);
-            }            
+            }
+            if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS)) {
+                result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS, c.getValue());
+            }
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
