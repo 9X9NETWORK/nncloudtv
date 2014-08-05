@@ -15,6 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.StoreListing;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
@@ -429,5 +430,10 @@ public class CategoryService {
     public List<NnChannel> getSystemCategoryChannels(long categoryId, List<String> spheres) {
         
         return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
+    }
+    
+    public List<NnEpisode> getAllEpisodes(long categoryId) {
+        
+        return NNF.getEpisodeDao().findAllBySysTag(categoryId);
     }
 }

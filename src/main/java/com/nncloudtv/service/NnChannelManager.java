@@ -1027,7 +1027,7 @@ public class NnChannelManager {
         name = split.length > 2 ? split[0] : name;
         String lastEpisodeTitle = name;
         //String lastEpisodeTitle = split.length == 2 ? split[1] : "";
-
+        
         //image url, favorite channel image will be overwritten later
         String imageUrl = channel.getPlayerPrefImageUrl();
         if (version < 32) {
@@ -1047,8 +1047,7 @@ public class NnChannelManager {
                 Long categoryId = Long.parseLong(channel.getSourceUrl());
                 if (categoryId != null) {
                     
-                    List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
-                    List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannels(channels);
+                    List<NnEpisode> episodes = NNF.getCategoryService().getAllEpisodes(categoryId);
                     Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
                     for (int i = 0; i < 3 && i < episodes.size(); i++) {
                         lastEpisodeTitle += "|" + episodes.get(i).getName();

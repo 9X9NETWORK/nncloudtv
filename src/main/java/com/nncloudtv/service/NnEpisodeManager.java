@@ -87,10 +87,6 @@ public class NnEpisodeManager {
         return save(episode);
     }
     
-    public NnEpisode findByAdId(long adId) {
-        return dao.findByAdId(adId);
-    }
-    
     public List<NnEpisode> findByChannelId(long channelId) {
     
         return dao.findByChannelId(channelId);
@@ -175,7 +171,6 @@ public class NnEpisodeManager {
             };
         }
     }
-    
     
     public void reorderChannelEpisodes(long channelId) {
         

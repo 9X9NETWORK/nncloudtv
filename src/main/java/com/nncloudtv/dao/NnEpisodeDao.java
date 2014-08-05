@@ -10,32 +10,13 @@ import javax.jdo.Query;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
+import com.nncloudtv.service.PlayerApiService;
 
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
     public NnEpisodeDao() {
         super(NnEpisode.class);
-    }
-    
-    public NnEpisode findByAdId(long adId) {
-        
-        NnEpisode detached = null;
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        
-        try {
-            Query query = pm.newQuery(NnEpisode.class);
-            query.setFilter("adId == adIdParam");
-            query.declareParameters("long adIdParam");
-            @SuppressWarnings("unchecked")
-            List<NnEpisode> episodes = (List<NnEpisode>)query.execute(adId);
-            if (episodes.size() > 0) {
-                detached = (NnEpisode)pm.detachCopy(episodes.get(0));
-            }
-        } finally {
-            pm.close();
-        }
-        return detached;
     }
     
     public List<NnEpisode> findByChannelId(long channelId) {
@@ -58,7 +39,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         }
         return detached;
     }
-
+    
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -94,6 +75,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             	query.setOrdering("seq desc");
             else 
                 query.setOrdering("seq asc");
+            query.setRange(0, PlayerApiService.PAGING_ROWS);
             @SuppressWarnings("unchecked")
             List<NnEpisode> episodes = (List<NnEpisode>)query.execute(channelId, true);
             if (episodes.size() > 0) {
@@ -103,6 +85,15 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             pm.close();
         }
         return detached;
+    }
+    
+    public List<NnEpisode> findAllBySysTag(long categoryId) {
+        
+        String query = "select * from nnepisode where channelId in ("
+                     + "        select channelId from systag_map where systagId = " + categoryId + ")";
+        
+        
+        return sql(query);
     }    
     
 }

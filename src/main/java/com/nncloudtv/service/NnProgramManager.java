@@ -19,6 +19,7 @@ import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -563,6 +564,7 @@ public class NnProgramManager {
             
         } else if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL1) {
             
+            List<NnEpisode> classics = new ArrayList<NnEpisode>();
             List<NnEpisode> episodes = new ArrayList<NnEpisode>();
             List<NnProgram> programs = new ArrayList<NnProgram>();
             Long categoryId = Long.parseLong(channel.getSourceUrl());
@@ -570,13 +572,38 @@ public class NnProgramManager {
             if (categoryId != null && start < PlayerApiService.PAGING_ROWS) {
                 
                 List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
-                episodes = NNF.getEpisodeMngr().findByChannels(channels);
+                for (NnChannel ch : channels) {
+                    if (ch.isAlwaysOnTop()) { // classic channel
+                        
+                        List<NnEpisode> candidates = NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting());
+                        if (candidates.size() > 0) {
+                            NnEpisode candidate = candidates.get(0);
+                            classics.add(candidate);
+                            
+                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
+                                
+                                candidate.setSeq(ch.getCntEpisode() + 1);
+                                log.info("rotate classics channel = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
+                                NNF.getEpisodeMngr().save(candidate);
+                                NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
+                            }
+                        }
+                    } else {
+                        
+                        episodes.addAll(NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting()));
+                    }
+                }
                 
-                log.info("virtual_channel1 channels = " + channels.size() + ", episodes = " + episodes.size());
+                log.info("virtual_channel1 channels = " + channels.size() +
+                                        ", episodes = " + episodes.size() +
+                                        ", classics = " + classics.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                if (episodes.size() > PlayerApiService.PAGING_ROWS) {
-                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                if (episodes.size() > (PlayerApiService.PAGING_ROWS - classics.size())) {
+                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1 - classics.size());
+                }
+                for (NnEpisode ep : classics) {
+                    episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
                 }
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
@@ -587,6 +614,7 @@ public class NnProgramManager {
             
         } else if (channel.getContentType() == NnChannel.CONTENTTYPE_VIRTUAL_CHANNEL2) {
             
+            List<NnEpisode> classics = new ArrayList<NnEpisode>();
             List<NnEpisode> episodes = new ArrayList<NnEpisode>();
             List<NnProgram> programs = new ArrayList<NnProgram>();
             Long categoryId = Long.parseLong(channel.getSourceUrl());
@@ -595,18 +623,38 @@ public class NnProgramManager {
                 
                 List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
                 for (NnChannel ch : channels) {
+                    
                     List<NnEpisode> candidates = NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting());
                     if (candidates.size() > 0) {
+                        NnEpisode candidate = candidates.get(0);
+                        if (ch.isAlwaysOnTop()) {
+                            
+                            classics.add(candidate);
+                            if (candidate.getUpdateDate().getTime() < NnDateUtil.now().getTime() - 8000) {
+                                
+                                candidate.setSeq(ch.getCntEpisode() + 1);
+                                log.info("rotate classics channel = " + ch.getId() + ", cntEpisode = " + ch.getCntEpisode());
+                                NNF.getEpisodeMngr().save(candidate);
+                                NNF.getEpisodeMngr().reorderChannelEpisodes(ch.getId());
+                            }
+                        } else {
+                            
+                            episodes.add(candidate);
+                        }
                         
-                        episodes.add(candidates.get(0));
                     }
                 }
                 
-                log.info("virtual_channel2 channels = " + channels.size() + ", episodes = " + episodes.size());
+                log.info("virtual_channel2 channels = " + channels.size() +
+                                        ", episodes = " + episodes.size() +
+                                        ", classics = " + classics.size());
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                if (episodes.size() > PlayerApiService.PAGING_ROWS) {
-                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                if (episodes.size() > PlayerApiService.PAGING_ROWS - classics.size()) {
+                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1 - classics.size());
+                }
+                for (NnEpisode ep : classics) {
+                    episodes.add(((int) Math.random() * episodes.size()) + 1, ep);
                 }
                 
                 programs = NNF.getProgramMngr().findByEipsodes(episodes);
