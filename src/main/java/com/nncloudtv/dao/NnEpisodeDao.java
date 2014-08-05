@@ -89,9 +89,9 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
     
     public List<NnEpisode> findAllBySysTag(long categoryId) {
         
-        String query = "select * from nnepisode where channelId in ("
-                     + "        select channelId from systag_map where systagId = " + categoryId + ")";
-        
+        String query = "    select * from nnepisode where channelId in"
+                     + "        (select channelId from systag_map where systagId = " + categoryId + ")"
+                     + "    order by publishDate desc limit 1000";
         
         return sql(query);
     }    
