@@ -2038,30 +2038,30 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoNotification savedNotification = NNF.getMsoNotiMngr().save(notification);
+        notification = NNF.getMsoNotiMngr().save(notification);
         
         if ("NOW".equalsIgnoreCase(scheduleDateStr)) {
             
-            Mso mso = NNF.getMsoMngr().findById(savedNotification.getMsoId());
+            Mso mso = NNF.getMsoMngr().findById(notification.getMsoId());
             MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
             ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
-                QueueFactory.add("/notify/gcm?id=" + savedNotification.getId(), null);
+                QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
             }
             if (p12.exists() == true) {
                 
-                QueueFactory.add("/notify/apns?id=" + savedNotification.getId(), null);
+                QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            savedNotification.setPublishDate(new Date());
-            savedNotification.setScheduleDate(null);
-            savedNotification = NNF.getMsoNotiMngr().save(savedNotification);
+            notification.setPublishDate(new Date());
+            notification.setScheduleDate(null);
+            notification = NNF.getMsoNotiMngr().save(notification);
         }
         
         log.info(printExitState(now, req, "ok"));
-        return savedNotification;
+        return notification;
     }
     
     @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)
