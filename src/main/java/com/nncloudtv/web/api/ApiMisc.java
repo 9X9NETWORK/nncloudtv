@@ -195,6 +195,19 @@ public class ApiMisc extends ApiGeneric {
 			return null;
 		}
 		
+		(new Thread() {
+		    public void run() {
+		        log.info("I am a thread.");
+		        try {
+                    Thread.sleep(5000);
+                    log.info("I am still awake.");
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                }
+                log.info("bye~");
+		    }
+		}).start();
+		
 		if(req.getMethod().equalsIgnoreCase("POST")) {
 			resp.setStatus(HTTP_201);
 		}
