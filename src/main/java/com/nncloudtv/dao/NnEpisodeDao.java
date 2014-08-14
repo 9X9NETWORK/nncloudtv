@@ -91,6 +91,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         
         String query = "    select * from nnepisode where channelId in"
                      + "        (select channelId from systag_map where systagId = " + categoryId + ")"
+                     + "    and isPublic = true"
                      + "    order by publishDate desc limit 1000";
         
         return sql(query);

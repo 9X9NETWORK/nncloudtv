@@ -190,6 +190,12 @@ public class MsoManager {
             result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "DBB1992C");
         if (facebookId == false)
             result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
+        String search = "all";
+        MsoConfig searchConfig = configMngr.findByMsoAndItem(mso, MsoConfig.SEARCH);        
+        if (searchConfig != null)
+        	search = searchConfig.getValue();
+        result += PlayerApiService.assembleKeyValue("search", search);                
+        
         //add ga based on device
         String gaKeyName = configMngr.getKeyNameByOs(os, "google");
         if (gaKeyName != null) {
@@ -215,6 +221,7 @@ public class MsoManager {
         if (ad != null) {
             result += PlayerApiService.assembleKeyValue("ad", ad);
         }
+                
         String admobkeyKeyName = configMngr.getKeyNameByOs(os, "admobkey");
         if (admobkeyKeyName != null) {
             MsoConfig admobKeyConfig = configMngr.findByMsoAndItem(mso, admobkeyKeyName);
