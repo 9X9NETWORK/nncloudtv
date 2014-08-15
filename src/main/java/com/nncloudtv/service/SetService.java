@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
@@ -20,20 +21,23 @@ public class SetService {
     
     protected static final Logger log = Logger.getLogger(SetService.class.getName());
     
-    /** build Set from SysTag and SysTagDisplay */
-    public Set composeSet(SysTag set, SysTagDisplay setMeta) {
+    public Set composeSet(SysTag sysTag, SysTagDisplay display) {
         
-        Set setResp = new Set();
-        setResp.setId(set.getId());
-        setResp.setMsoId(set.getMsoId());
-        setResp.setCntChannel(setMeta.getCntChannel());
-        setResp.setLang(setMeta.getLang());
-        setResp.setSeq(set.getSeq());
-        setResp.setTag(setMeta.getPopularTag());
-        setResp.setName(setMeta.getName());
-        setResp.setSortingType(set.getSorting());
+        Set set = new Set();
         
-        return setResp;
+        set.setId(sysTag.getId());
+        set.setMsoId(sysTag.getMsoId());
+        set.setSeq(sysTag.getSeq());
+        set.setSorting(sysTag.getSorting());
+        
+        set.setCntChannel(display.getCntChannel());
+        set.setLang(display.getLang());
+        set.setTag(display.getPopularTag());
+        set.setName(display.getName());
+        set.setAndroidBannerUrl(display.getBannerImageUrl());
+        set.setIosBannerUrl(display.getBannerImageUrl2());
+        
+        return set;
     }
     
     public static Set normalize(Set set) {
@@ -108,31 +112,36 @@ public class SetService {
         return findByMsoIdAndLang(msoId, null);
     }
     
-    /**
-     * find Set by SysTag's Id
-     * 
-     * @param setId
-     *            required, SysTag's ID with type = Set
-     * @return object Set or null if not exist
-     */
-    public Set findById(Long setId) {
+    public Set findById(String setIdStr) {
         
-        if (setId == null) {
-            return null;
+        SysTag sysTag = NNF.getSysTagDao().findById(setIdStr);
+        
+        if (sysTag != null) {
+            
+            SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
+            if (display != null) {
+                
+                return composeSet(sysTag, display);
+            }
         }
         
-        SysTag set = NNF.getSysTagMngr().findById(setId);
-        if (set == null || set.getType() != SysTag.TYPE_SET) {
-            return null;
+        return null;
+    }
+    
+    public Set findById(long setId) {
+        
+        SysTag sysTag = NNF.getSysTagDao().findById(setId);
+        
+        if (sysTag != null) {
+            
+            SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
+            if (display != null) {
+                
+                return composeSet(sysTag, display);
+            }
         }
         
-        SysTagDisplay setMeta = NNF.getDisplayMngr().findBySysTagId(set.getId());
-        if (setMeta == null) {
-            log.warning("invalid structure : SysTag's Id=" + set.getId() + " exist but not found any of SysTagDisPlay");
-            return null;
-        }
-        
-        return composeSet(set, setMeta);
+        return null;
     }
     
     /**
@@ -205,26 +214,31 @@ public class SetService {
     
     public Set create(Set set) {
         
-        SysTag newSet = new SysTag();
-        newSet.setType(SysTag.TYPE_SET);
-        newSet.setMsoId(set.getMsoId());
-        newSet.setSeq(set.getSeq());
-        newSet.setSorting(set.getSortingType());
-        newSet.setFeatured(true);
+        SysTag sysTag = new SysTag();
+        sysTag.setType(SysTag.TYPE_SET);
+        sysTag.setMsoId(set.getMsoId());
+        sysTag.setSeq(set.getSeq());
+        sysTag.setSorting(set.getSortingType());
+        sysTag.setFeatured(true);
         
-        SysTagDisplay newSetMeta = new SysTagDisplay();
-        newSetMeta.setCntChannel(0);
-        newSetMeta.setLang(set.getLang());
-        newSetMeta.setName(set.getName());
-        newSetMeta.setPopularTag(set.getTag());
+        SysTagDisplay display = new SysTagDisplay();
+        display.setCntChannel(0);
+        display.setLang(set.getLang());
+        display.setName(set.getName());
+        display.setPopularTag(set.getTag());
+        display.setBannerImageUrl(set.getAndroidBannerUrl());
+        display.setBannerImageUrl2(set.getIosBannerUrl());
         
-        SysTag savedSet = NNF.getSysTagMngr().save(newSet);
-        newSetMeta.setSystagId(savedSet.getId());
-        SysTagDisplay savedSetMeta = NNF.getDisplayMngr().save(newSetMeta);
+        sysTag = NNF.getSysTagMngr().save(sysTag);
+        display.setSystagId(sysTag.getId());
+        display = NNF.getDisplayMngr().save(display);
         
-        Set result = composeSet(savedSet, savedSetMeta);
+        // process thumbnail
+        String url = "/podcastAPI/processThumbnail?set=" + sysTag.getId();
+        log.info(url);
+        QueueFactory.add(url, null);
         
-        return result;
+        return composeSet(sysTag, display);
     }
     
     public static boolean isValidSortingType(Short sortingType) {

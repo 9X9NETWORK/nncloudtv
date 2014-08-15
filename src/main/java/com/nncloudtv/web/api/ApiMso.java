@@ -27,12 +27,13 @@ import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
+import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
-import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
 import com.nncloudtv.web.json.cms.Set;
@@ -43,16 +44,14 @@ public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
-    private StoreService storeService;
     private SetService setService;
     private ApiMsoService apiMsoService;
     private CategoryService categoryService;
     
     @Autowired
-    public ApiMso(StoreService storeService, NnUserProfileManager userProfileMngr,
-            SetService setService, ApiMsoService apiMsoService, CategoryService categoryService) {
+    public ApiMso(NnUserProfileManager userProfileMngr, SetService setService,
+            ApiMsoService apiMsoService, CategoryService categoryService) {
         
-        this.storeService = storeService;
         this.setService = setService;
         this.apiMsoService = apiMsoService;
         this.categoryService = categoryService;
@@ -321,8 +320,8 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+            
+        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -373,17 +372,43 @@ public class ApiMso extends ApiGeneric {
             sortingType = SysTag.SORT_SEQ;
         }
         
-        Set result = apiMsoService.msoSetCreate(mso.getId(), seq, tag, name, sortingType);
-        if (result == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
+        Set set = new Set();
+        set.setMsoId(msoId);
+        set.setName(name);
+        if (seq != null) {
+            set.setSeq(seq);
+        }
+        if (sortingType != null) {
+            set.setSortingType(sortingType);
+        }
+        if (tag != null) {
+            set.setTag(tag);
         }
         
-        result = SetService.normalize(result);
+        String lang = LangTable.LANG_EN; // default
+        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        if (supportedRegion != null && supportedRegion.getValue() != null) {
+            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+            if (spheres != null && spheres.isEmpty() == false) {
+                lang = spheres.get(0);
+            }
+        }
+        set.setLang(lang);
+        
+        String iosBannerUrl = req.getParameter("iosBannerUrl");
+        if (iosBannerUrl != null) {
+            set.setIosBannerUrl(iosBannerUrl);
+        }
+        String androidBannerUrl = req.getParameter("androidBannerUrl");
+        if (androidBannerUrl != null) {
+            set.setAndroidBannerUrl(androidBannerUrl);
+        }
+        
+        set = setService.create(set);
+        set = SetService.normalize(set);
         
         log.info(printExitState(now, req, "ok"));
-        return result;
+        return set;
     }
     
     @RequestMapping(value = "sets/{setId}", method = RequestMethod.GET)
@@ -420,7 +445,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set result = apiMsoService.set(set.getId());
+        Set result = NNF.getSetService().findById(set.getId());
         if (result == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -448,8 +473,8 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
-        if (set == null) {
+        SysTag sysTag = NNF.getSysTagMngr().findById(setId);
+        if (sysTag == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
             return null;
@@ -460,8 +485,8 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+            
+        } else if (hasRightAccessPCS(verifiedUserId, sysTag.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -511,14 +536,57 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        Set result = apiMsoService.setUpdate(set.getId(), name, seq, tag, sortingType);
-        if (result == null) {
-            log.warning("Unexcepted result : setServ.setUpdate return null");
-            log.info(printExitState(now, req, "ok"));
-            nullResponse(resp);
+        SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
+        if (display == null) {
+            log.warning("invalid structure : SysTag's Id=" + sysTag.getId() + " exist but not found any of SysTagDisPlay");
+            internalError(resp);
             return null;
         }
         
+        if (name != null) {
+            display.setName(name);
+        }
+        if (seq != null) {
+            sysTag.setSeq(seq);
+        }
+        if (tag != null) {
+            display.setPopularTag(tag);
+        }
+        if (sortingType != null) {
+            sysTag.setSorting(sortingType);
+        }
+        
+        // banners
+        boolean dirty = false;
+        String androidBannerUrl = req.getParameter("androidBannerUrl");
+        if (androidBannerUrl != null) {
+            if (androidBannerUrl.equals(display.getBannerImageUrl()) == false) {
+                dirty = true;
+                display.setBannerImageUrl(androidBannerUrl);
+            }
+        }
+        String iosBannerUrl = req.getParameter("iosBannerUrl");
+        if (iosBannerUrl != null) {
+            
+            if (iosBannerUrl.equals(display.getBannerImageUrl2()) == false) {
+                dirty = true;
+                display.setBannerImageUrl2(iosBannerUrl);
+            }
+        }
+        
+        // automated update cntChannel
+        List<SysTagMap> channels = NNF.getSysTagMapMngr().findBySysTagId(sysTag.getId());
+        display.setCntChannel(channels.size());
+        
+        if (seq != null || sortingType != null) {
+            sysTag = NNF.getSysTagMngr().save(sysTag);
+        }
+        display = NNF.getDisplayMngr().save(display);
+        if (dirty) {
+            QueueFactory.add("/podcastAPI/processThumbnail?set=" + sysTag.getId(), null);
+        }
+        
+        Set result = NNF.getSetService().composeSet(sysTag, display);
         result = SetService.normalize(result);
         
         log.info(printExitState(now, req, "ok"));
@@ -533,7 +601,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long setId = null;
+        long setId = 0;
         try {
             setId = Long.valueOf(setIdStr);
         } catch (NumberFormatException e) {
@@ -850,7 +918,7 @@ public class ApiMso extends ApiGeneric {
                 log.info(printExitState(now, req, "400"));
                 return null;
             }
-            if (storeService.isNnCategory(categoryId) == false) {
+            if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
                 return null;
@@ -880,9 +948,9 @@ public class ApiMso extends ApiGeneric {
         List<Long> results = new ArrayList<Long>();
         if (channelIds != null) {
             List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
-            results = storeService.checkChannelsInMsoStore(channels, msoId);
+            results = NNF.getMsoMngr().getPlayableChannels(channels, msoId);
         } else if (categoryId != null) {
-            results = storeService.getMsoCategoryChannels(categoryId, msoId);
+            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, msoId);
         }        
         log.info(printExitState(now, req, "ok"));
         return results;
@@ -1642,8 +1710,7 @@ public class ApiMso extends ApiGeneric {
                 channelIds.add(channelId);
             }
         }
-        
-        apiMsoService.categoryChannelRemove(category.getId(), channelIds);
+        NNF.getCategoryService().removeChannels(categoryId, channelIds);
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -1683,7 +1750,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<String> results = apiMsoService.msoSystemCategoryLocks(mso.getId());
+        List<String> results = NNF.getConfigMngr().getCategoryMasks(mso.getId());
         log.info(printExitState(now, req, "ok"));
         return results;
     }
@@ -1739,9 +1806,9 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        List<String> results = apiMsoService.msoSystemCategoryLocksUpdate(mso.getId(), categoryIds);
         log.info(printExitState(now, req, "ok"));
-        return results;
+        
+        return NNF.getConfigMngr().setCategoryMasks(mso.getId(), categoryIds);
     }
     
     @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)
@@ -1971,30 +2038,30 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoNotification savedNotification = NNF.getMsoNotiMngr().save(notification);
+        notification = NNF.getMsoNotiMngr().save(notification);
         
         if ("NOW".equalsIgnoreCase(scheduleDateStr)) {
             
-            Mso mso = NNF.getMsoMngr().findById(savedNotification.getMsoId());
+            Mso mso = NNF.getMsoMngr().findById(notification.getMsoId());
             MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
             ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
-                QueueFactory.add("/notify/gcm?id=" + savedNotification.getId(), null);
+                QueueFactory.add("/notify/gcm?id=" + notification.getId(), null);
             }
             if (p12.exists() == true) {
                 
-                QueueFactory.add("/notify/apns?id=" + savedNotification.getId(), null);
+                QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            savedNotification.setPublishDate(new Date());
-            savedNotification.setScheduleDate(null);
-            savedNotification = NNF.getMsoNotiMngr().save(savedNotification);
+            notification.setPublishDate(new Date());
+            notification.setScheduleDate(null);
+            notification = NNF.getMsoNotiMngr().save(notification);
         }
         
         log.info(printExitState(now, req, "ok"));
-        return savedNotification;
+        return notification;
     }
     
     @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)

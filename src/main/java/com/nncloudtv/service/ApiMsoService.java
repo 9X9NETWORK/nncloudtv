@@ -7,15 +7,12 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
-import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Category;
-import com.nncloudtv.web.json.cms.Set;
 
 @Service
 public class ApiMsoService {
@@ -24,10 +21,8 @@ public class ApiMsoService {
     
     private SetService setService;
     private SysTagManager sysTagMngr;
-    private SysTagDisplayManager sysTagDisplayMngr;
     private SysTagMapManager sysTagMapMngr;
     private NnChannelManager channelMngr;
-    private StoreService storeService;
     private StoreListingManager storeListingMngr;
     private MsoManager msoMngr;
     private CategoryService categoryService;
@@ -35,119 +30,18 @@ public class ApiMsoService {
     
     @Autowired
     public ApiMsoService(SetService setService, SysTagManager sysTagMngr,
-                            SysTagDisplayManager sysTagDisplayMngr, SysTagMapManager sysTagMapMngr,
-                            NnChannelManager channelMngr, StoreService storeService,
+                            SysTagMapManager sysTagMapMngr, NnChannelManager channelMngr,
                             StoreListingManager storeListingMngr, MsoManager msoMngr,
                             CategoryService categoryService, MsoConfigManager configMngr) {
         
         this.setService = setService;
         this.sysTagMngr = sysTagMngr;
-        this.sysTagDisplayMngr = sysTagDisplayMngr;
         this.sysTagMapMngr = sysTagMapMngr;
         this.channelMngr = channelMngr;
-        this.storeService = storeService;
         this.storeListingMngr = storeListingMngr;
         this.msoMngr = msoMngr;
         this.categoryService = categoryService;
         this.configMngr = configMngr;
-    }
-    
-    public Set msoSetCreate(Long msoId, Short seq, String tag, String name, Short sortingType) {
-        
-        if (msoId == null) {
-            return null;
-        }
-        Mso mso = msoMngr.findById(msoId);
-        if (mso == null) {
-            return null;
-        }
-        
-        Set newSet = new Set();
-        newSet.setMsoId(msoId);
-        newSet.setName(name);
-        if (seq != null) {
-            newSet.setSeq(seq);
-        }
-        if (sortingType != null) {
-            newSet.setSortingType(sortingType);
-        }
-        if (tag != null) {
-            newSet.setTag(tag);
-        }
-        
-        String lang = LangTable.LANG_EN; // default
-        MsoConfig supportedRegion = configMngr.findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (supportedRegion != null && supportedRegion.getValue() != null) {
-            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
-            if (spheres != null && spheres.isEmpty() == false) {
-                lang = spheres.get(0);
-            }
-        }
-        newSet.setLang(lang);
-        
-        Set savedSet = setService.create(newSet);
-        
-        return savedSet;
-    }
-    
-    /** service for ApiMso.set
-     *  get Set by given Set's ID
-     *  @param setId required, SysTag's Id with SysTag's type = Set
-     *  @return object Set or null if not exist */
-    public Set set(Long setId) {
-        
-        if (setId == null) {
-            return null;
-        }
-        
-        return setService.findById(setId);
-    }
-    
-    /** service for ApiMso.setUpdate
-     *  update object Set
-     *  @param setId required, SysTag's Id with SysTag's type = Set
-     *  @param name optional, Set's name save in SysTagDisplay's name
-     *  @param seq optional, Set's seq save in SysTag's seq
-     *  @param tag optional, Set's tag save in SysTagDisplay's popularTag
-     *  @param sortingType optional, Set's sortingType save in SysTag's sorting
-     *  @return object Set or null if not exist */
-    public Set setUpdate(Long setId, String name, Short seq, String tag, Short sortingType) {
-        
-        if (setId == null) {
-            return null;
-        }
-        SysTag set = sysTagMngr.findById(setId);
-        if (set == null) {
-            return null;
-        }
-        SysTagDisplay setMeta = sysTagDisplayMngr.findBySysTagId(set.getId());
-        if (setMeta == null) {
-            log.warning("invalid structure : SysTag's Id=" + set.getId() + " exist but not found any of SysTagDisPlay");
-            return null;
-        }
-        
-        if (name != null) {
-            setMeta.setName(name);
-        }
-        if (seq != null) {
-            set.setSeq(seq);
-        }
-        if (tag != null) {
-            setMeta.setPopularTag(tag);
-        }
-        if (sortingType != null) {
-            set.setSorting(sortingType);
-        }
-        // automated update cntChannel
-        List<SysTagMap> channels = sysTagMapMngr.findBySysTagId(set.getId());
-        setMeta.setCntChannel(channels.size());
-        
-        if (seq != null || sortingType != null) {
-            set = sysTagMngr.save(set);
-        }
-        setMeta = sysTagDisplayMngr.save(setMeta);
-        
-        return setService.composeSet(set, setMeta);
     }
     
     /** service for ApiMso.setChannels
@@ -399,53 +293,4 @@ public class ApiMsoService {
         
         return savedCategory;
     }
-    
-    /**
-     * service for ApiMso.categoryChannelRemove
-     * Remove Channel from promotion Category.
-     * @param categoryId required, Category ID
-     * @param channelIds required, list of IDs that Channels to be removed from promotion Category
-     */
-    public void categoryChannelRemove(Long categoryId, List<Long> channelIds) {
-        
-        if (categoryId == null || channelIds == null || channelIds.size() < 1) {
-            return ;
-        }
-        
-        categoryService.removeChannels(categoryId, channelIds);
-    }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocks
-     * Get system Category locks from MSO.
-     * @param msoId required, the Mso's Id
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocks(Long msoId) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.getStoreCategoryLocks(msoId);
-        return results;
-    }
-    
-    /**
-     * service for ApiMso.msoSystemCategoryLocksUpdate
-     * Update system Category locks from MSO, overwrite previous one.
-     * @param msoId required, the Mso's Id
-     * @param systemCategoryLocks required, the locks indicate system Category should hide or not in MSO's player
-     * @return the locks indicate system Category should hide or not in MSO's player
-     */
-    public List<String> msoSystemCategoryLocksUpdate(Long msoId, List<String> systemCategoryLocks) {
-        
-        if (msoId == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> results = storeService.setStoreCategoryLocks(msoId, systemCategoryLocks);
-        return results;
-    }
-
 }

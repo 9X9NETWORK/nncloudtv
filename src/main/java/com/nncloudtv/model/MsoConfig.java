@@ -35,7 +35,7 @@ public class MsoConfig {
     public static String FORCE_UPGRADE         = "force-upgrade";
     public static String UPGRADE_MSG           = "upgrade-msg";
     public static String QUEUED                = "queued";
-    public static String SUPPORTED_REGION      = "supported-region";
+    public static String SUPPORTED_REGION      = "supported-region"; //zh, en
     public static String API_MINIMAL           = "api-minimal";
     public static String SYSTEM_CATEGORY_MASK  = "system-category-mask";
     public static String MEMCACHE_SERVER       = "memcache-server";
@@ -51,16 +51,18 @@ public class MsoConfig {
     public static String CHROMECAST_ID         = "chromecast-id";
     public static String GCM_SENDER_ID         = "gcm-sender-id";
     public static String GCM_API_KEY           = "gcm-api-key";
-    public static String SHAKE_DISCOVER        = "shake-discover";
-    public static String HOMEPAGE              = "homepage";
+    public static String SHAKE_DISCOVER        = "shake-discover"; //on, off
+    public static String HOMEPAGE              = "homepage"; //whatson, portal
     public static String ABOUT_US              = "aboutus";
     public static String SIGNUP_ENFORCE        = "signup-enforce";
     public static String AD_IOS                = "ad-ios";
-    public static String ADMOBKEY_ANDROID = "admobkey-android";
-    public static String ADMOBKEY_IOS = "admobkey-ios";
+    public static String ADMOBKEY_ANDROID      = "admobkey-android";
+    public static String ADMOBKEY_IOS          = "admobkey-ios";
     public static String AD_ANDROID            = "ad-android";
     public static String AUDIO_BACKGROUND      = "audio-background";
-    public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration";
+    public static String SOCIAL_FEEDS          = "social-feeds";
+    public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
+    public static String SEARCH = "search"; //all, store
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
@@ -83,9 +85,10 @@ public class MsoConfig {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String value;
-    public static String CDN_AMAZON = "amazon";
-    public static String CDN_AKAMAI = "akamai";
-    public static String DISABLE_ALL_SYSTEM_CATEGORY = "ALL";
+    public static final String CDN_AMAZON = "amazon";
+    public static final String CDN_AKAMAI = "akamai";
+    public static final String DISABLE_ALL_SYSTEM_CATEGORY = "ALL";
+    public static final String AD_DIRECT_VIDEO = "direct-video";
     
     @Persistent
     private Date createDate;

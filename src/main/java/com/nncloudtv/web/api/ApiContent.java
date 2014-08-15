@@ -43,12 +43,12 @@ import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.service.ApiContentService;
+import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.StoreService;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -59,20 +59,16 @@ public class ApiContent extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
     
     private ApiContentService apiContentService;
-    private StoreService storeService;
     
     public ApiContent() {
         
-        this.storeService = new StoreService();
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), storeService, NNF.getChPrefMngr(), NNF.getEpisodeMngr(), NNF.getProgramMngr());
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), NNF.getChPrefMngr(), NNF.getEpisodeMngr(), NNF.getProgramMngr());
     }
     
     @Autowired
-    public ApiContent(ApiContentService apiContentService,
-            StoreService storeService) {
+    public ApiContent(ApiContentService apiContentService) {
         
         this.apiContentService = apiContentService;
-        this.storeService = storeService;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
@@ -393,7 +389,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        List<Mso> msos = NNF.getMsoMngr().getValidBrands(channel);
+        List<Mso> msos = NNF.getMsoMngr().findValidMso(channel);
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         for (Mso mso : msos) {
@@ -848,7 +844,7 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     List<NnChannel> channelsSearch(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false, value = "mso") String mso,
+            @RequestParam(required = false, value = "mso") String msoName,
             @RequestParam(required = false, value = "sphere") String sphereStr,
             @RequestParam(required = false, value = "channels") String channelIdListStr,
             @RequestParam(required = false, value = "keyword") String keyword,
@@ -858,8 +854,7 @@ public class ApiContent extends ApiGeneric {
     
         List<NnChannel> results = new ArrayList<NnChannel>();
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        StoreService storeService = new StoreService();
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
+        Mso mso = NNF.getMsoMngr().findOneByName(msoName);
         boolean storeOnly = false;
         
         if (userIdStr != null) {
@@ -874,7 +869,7 @@ public class ApiContent extends ApiGeneric {
                 return null;
             }
             
-            NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+            NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
             if (user == null) {
                 notFound(resp, "User Not Found");
                 return null;
@@ -911,9 +906,9 @@ public class ApiContent extends ApiGeneric {
             }
             
             log.info("total channels = " + results.size());
-            if (mso != null) {
+            if (msoName != null) {
                 // filter out channels that not in MSO's store
-                Set<Long> verifiedChannelIds = new HashSet<Long>(storeService.checkChannelsInMsoStore(results, brand.getId()));
+                Set<Long> verifiedChannelIds = new HashSet<Long>(NNF.getMsoMngr().getPlayableChannels(results, mso.getId()));
                 List<NnChannel> verifiedChannels = new ArrayList<NnChannel>();
                 for (NnChannel channel : results) {
                     if (verifiedChannelIds.contains(channel.getId()) == true) {
@@ -931,10 +926,10 @@ public class ApiContent extends ApiGeneric {
             log.info("keyword: " + keyword);
             List<String> sphereList = new ArrayList<String>();
             String sphereFilter = null;
-            if (sphereStr == null && mso != null) {
+            if (sphereStr == null && msoName != null) {
                 storeOnly = true;
-                log.info("mso = " + mso);
-                MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(brand, MsoConfig.SUPPORTED_REGION);
+                log.info("mso = " + msoName);
+                MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
                     List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
                     sphereStr = StringUtils.join(spheres, ',');
@@ -990,8 +985,8 @@ public class ApiContent extends ApiGeneric {
             }
             
             log.info("total channels = " + channels.size());
-            if (mso != null) {
-                List<Long> channelIdList = storeService.checkChannelsInMsoStore(channels, brand.getId());
+            if (msoName != null) {
+                List<Long> channelIdList = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
                 results = channelMngr.findByIds(channelIdList);
                 log.info("total channels (filtered) = " + channelIdList.size());
             } else {
@@ -1000,7 +995,7 @@ public class ApiContent extends ApiGeneric {
             
             Collections.sort(results, NnChannelManager.getComparator("updateDate"));
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {
-            results = apiContentService.channelsSearch(brand.getId(), ytPlaylistIdStr, ytUserIdStr);
+            results = apiContentService.channelsSearch(mso.getId(), ytPlaylistIdStr, ytUserIdStr);
         }
         
         results = channelMngr.normalize(results);
@@ -1112,7 +1107,7 @@ public class ApiContent extends ApiGeneric {
         if (categoryIdStr != null) {
             
             categoryId = evaluateLong(categoryIdStr);
-            if (storeService.isNnCategory(categoryId) == false) {
+            if (CategoryService.isSystemCategory(categoryId) == false) {
                 categoryId = null;
             }
         }
@@ -1254,8 +1249,7 @@ public class ApiContent extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        StoreService storeServ = new StoreService();
-        List<Category> categories = storeServ.getStoreCategories(lang);
+        List<Category> categories = NNF.getCategoryService().getSystemCategories(lang);
         if (categories == null) {
             return new ArrayList<Category>();
         }
@@ -1270,8 +1264,6 @@ public class ApiContent extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        StoreService storeService = new StoreService();
-        
         // categoryId
         long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
@@ -1283,7 +1275,7 @@ public class ApiContent extends ApiGeneric {
                 log.info(printExitState(now, req, "400"));
                 return null;
             }
-            if (storeService.isNnCategory(categoryId) == false) {
+            if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
                 return null;
@@ -1310,7 +1302,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         List<Long> channelIds = new ArrayList<Long>();
-        List<NnChannel> channels = storeService.getCategoryChannels(categoryId, spheres);
+        List<NnChannel> channels = NNF.getCategoryService().getSystemCategoryChannels(categoryId, spheres);
         for (NnChannel channel : channels) {
             channelIds.add(channel.getId());
         }

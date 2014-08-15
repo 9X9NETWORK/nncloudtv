@@ -2,6 +2,7 @@ package com.nncloudtv.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnEpisode;
+import com.nncloudtv.model.StoreListing;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -22,6 +26,18 @@ import com.nncloudtv.web.json.cms.Category;
 public class CategoryService {
     
     protected static final Logger log = Logger.getLogger(CategoryService.class.getName());
+    
+    private Category composeCategory(SysTag sysTag, SysTagDisplay display) {
+        
+        Category category = new Category();
+        category.setId(sysTag.getId());
+        category.setLang(display.getLang());
+        category.setMsoId(sysTag.getMsoId());
+        category.setName(display.getName());
+        category.setSeq(sysTag.getSeq());
+        
+        return category;
+    }
     
     /** build promotion Category (MSO owned) from SysTag and SysTagDisplay */
     private Category composeCategory(SysTag category, SysTagDisplay zhDisplay, SysTagDisplay enDisplay) {
@@ -292,5 +308,132 @@ public class CategoryService {
         List<SysTagMap> channels = NNF.getSysTagMapMngr().findBySysTagId(categoryId);
         return channels.size();
     }
-
+    
+    public static Comparator<Category> getComparator() {
+        
+        return new  Comparator<Category>() {
+            
+            public int compare(Category category1, Category category2) {
+                
+                int seq1 = category1.getSeq();
+                if (LangTable.LANG_EN.equalsIgnoreCase(category1.getLang())) {
+                    
+                    seq1 -= 100;
+                }
+                int seq2 = category2.getSeq();
+                if (LangTable.LANG_EN.equalsIgnoreCase(category2.getLang())) {
+                    
+                    seq2 -= 100;
+                }
+                return (seq1 - seq2);
+            }
+        };
+    }
+    
+    public List<Long> findSystemCategoryIdsByChannel(NnChannel channel) {
+        
+        List<Long> ids = new ArrayList<Long>();
+        
+        List<SysTag> sysTags = NNF.getSysTagDao().findCategoriesByChannelId(channel.getId(), MsoManager.getSystemMsoId());
+        
+        for (SysTag sysTag : sysTags) {
+            ids.add(sysTag.getId());
+        }
+        
+        return ids;
+    }
+    
+    public void setupChannelCategory(Long categoryId, Long channelId) {
+        
+        if (categoryId == null || channelId == null) { return ; }
+        
+        SysTagMapManager sysTagMapMngr = NNF.getSysTagMapMngr();
+        List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMaps(channelId, MsoManager.getSystemMsoId());
+        sysTagMapMngr.delete(tagMaps);
+        sysTagMapMngr.save(new SysTagMap(categoryId, channelId));
+    }
+    
+    public List<Category> getSystemCategories(String lang) {
+        
+        if (lang == null) {
+            return new ArrayList<Category>();
+        }
+        
+        List<SysTagDisplay> displays = NNF.getDisplayMngr().findPlayerCategories(lang, MsoManager.getSystemMsoId());
+        
+        List<Category> results = new ArrayList<Category>();
+        for (SysTagDisplay display : displays) {
+            
+            SysTag category = NNF.getSysTagMngr().findById(display.getSystagId());
+            
+            if (category != null) {
+                results.add(composeCategory(category, display));
+            }
+        }
+        
+        Collections.sort(results, CategoryService.getComparator());
+        
+        return results;
+    }
+    
+    public List<Long> getMsoCategoryChannels(long categoryId, long msoId) {
+        
+        Mso mso = NNF.getMsoMngr().findById(msoId, true);
+        if (mso == null) {
+            return new ArrayList<Long>();
+        }
+        List<String> spheres;
+        if (mso.getSupportedRegion() == null) {
+            spheres = null;
+        } else {
+            spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
+        }
+        List<NnChannel> channels = NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
+        
+        List<StoreListing> blackList = NNF.getStoreListingMngr().getBlackListByMsoId(msoId);
+        Map<Long, Long> blackListMap = new TreeMap<Long, Long>();
+        if (blackList != null && blackList.isEmpty() == false) {
+            for (StoreListing item : blackList) {
+                blackListMap.put(item.getChannelId(), item.getChannelId());
+            }
+        }
+        
+        List<Long> results = new ArrayList<Long>();
+        for (NnChannel channel : channels) {
+            if (blackListMap.containsKey(channel.getId())) {
+                // skip
+            } else {
+                results.add(channel.getId());
+            }
+        }
+        
+        return results;
+    }
+    
+    public static boolean isSystemCategory(long categoryId) {
+        
+        SysTag category = NNF.getSysTagMngr().findById(categoryId);
+        if (category == null) {
+            
+            return false;
+        }
+        
+        if (category.getMsoId() == MsoManager.getSystemMsoId() &&
+            category.getType() == SysTag.TYPE_CATEGORY) {
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public List<NnChannel> getSystemCategoryChannels(long categoryId, List<String> spheres) {
+        
+        return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
+    }
+    
+    public List<NnEpisode> getAllEpisodes(long categoryId) {
+        
+        return NNF.getEpisodeDao().findAllBySysTag(categoryId);
+    }
 }

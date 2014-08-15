@@ -25,7 +25,6 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -993,33 +992,13 @@ public class NnChannelManager {
         
     }
     
-    /** get CategoryId that Channel belongs to */
-    public Long getCategoryId(Long channelId) {
-        
-        if (channelId == null) {
-            return null;
-        }
-        
-        Mso nnMso = NNF.getMsoMngr().findNNMso();
-        StoreService storeServ = new StoreService();
-        List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channelId, nnMso.getId());
-        if (categoryIds != null && categoryIds.size() > 0) {
-            return categoryIds.get(0);
-        } else {
-            return null;
-        }
-    }
-    
     public void populateCategoryId(NnChannel channel) {
         
-        if (channel == null)
-            return;
+        if (channel == null) { return; }
         
-        Mso nnMso = NNF.getMsoMngr().findNNMso();
-        StoreService storeServ = new StoreService();
+        List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
         
-        List<Long> categoryIds = storeServ.findCategoryIdsByChannelId(channel.getId(), nnMso.getId());
-        if (categoryIds != null && categoryIds.size() > 0) {
+        if (categoryIds.size() > 0) {
             channel.setCategoryId(categoryIds.get(0));
         }
     }
@@ -1048,7 +1027,7 @@ public class NnChannelManager {
         name = split.length > 2 ? split[0] : name;
         String lastEpisodeTitle = name;
         //String lastEpisodeTitle = split.length == 2 ? split[1] : "";
-
+        
         //image url, favorite channel image will be overwritten later
         String imageUrl = channel.getPlayerPrefImageUrl();
         if (version < 32) {
@@ -1068,8 +1047,7 @@ public class NnChannelManager {
                 Long categoryId = Long.parseLong(channel.getSourceUrl());
                 if (categoryId != null) {
                     
-                    List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
-                    List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannels(channels);
+                    List<NnEpisode> episodes = NNF.getCategoryService().getAllEpisodes(categoryId);
                     Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
                     for (int i = 0; i < 3 && i < episodes.size(); i++) {
                         lastEpisodeTitle += "|" + episodes.get(i).getName();

@@ -56,6 +56,9 @@ public class NnChannel implements Serializable {
     public static String IMAGE_DEFAULT_URL    = "http://s3.amazonaws.com/9x9ui/war/v0/images/9x9-watermark.jpg";
     public static String IMAGE_EPISODE_URL    = "http://s3.amazonaws.com/9x9ui/war/v0/images/episode-default.png";
     
+    public static final int DEFAULT_WIDTH = 640;
+    public static final int DEFAULT_HEIGHT = 480;
+    
     @Persistent
     private boolean isPublic;
     
