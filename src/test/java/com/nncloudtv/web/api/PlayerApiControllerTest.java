@@ -40,6 +40,7 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.support.NnTestUtil;
+import com.nncloudtv.web.json.player.ApiStatus;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
@@ -329,6 +330,82 @@ public class PlayerApiControllerTest {
         actual2 = (String) captureActual.getValue();
         expected = "locale" + "\t" + "en" + "\n";
         assertTrue("ip not locate in tw should set locale=en in response.", actual2.contains(expected));
+    }
+    
+    @Test
+    public void testBrandInfoWithFormatParameter() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        String version = "40";
+        req.setParameter("v", version);
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        MsoDao msoDao = Mockito.mock(MsoDao.class);
+        NNFWrapper.setMsoDao(msoDao);
+        MsoConfigDao configDao = Mockito.mock(MsoConfigDao.class); // can't inject
+        MsoConfigManager configMngr = Mockito.mock(MsoConfigManager.class); // so mock MsoConfigManager
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        PlayerApiService playerApiService = PowerMockito.spy(new PlayerApiService());
+        
+        // stubs
+        // only mso=9x9 available from cache and database
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        when(msoDao.findByName(Mso.NAME_9X9)).thenReturn(mso);
+        
+        // inject playerApiService in local new
+        try {
+            PowerMockito.whenNew(PlayerApiService.class).withNoArguments().thenReturn(playerApiService);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // execute & verify
+        // format=text
+        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        Object actual2 = captureActual.getValue();
+        assertTrue("parameter format=text should return text format response.", actual2 instanceof String);
+        
+        // format=xyz, not exist format
+        req.setParameter("format", "xyz");
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = captureActual.getValue();
+        assertTrue("parameter format with not exist format should return text format response as default.",
+                actual2 instanceof String);
+        
+        // not provide format
+        req.removeParameter("format");
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = captureActual.getValue();
+        assertTrue("parameter format not provide should return text format response as default.",
+                actual2 instanceof String);
+        
+        // format=json
+        req.setParameter("format", "json");
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = captureActual.getValue();
+        assertTrue("parameter format=json should return json format response.", actual2 instanceof ApiStatus);
     }
     
     @Test
