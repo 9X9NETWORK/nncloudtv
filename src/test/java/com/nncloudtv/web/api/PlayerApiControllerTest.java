@@ -113,7 +113,7 @@ public class PlayerApiControllerTest {
     }
     
     @Test
-    public void testBrandInfoNotExistMso() {
+    public void testBrandInfoWithMsoParameter() {
         
         // input
         String brandName = "notExist";
@@ -160,15 +160,23 @@ public class PlayerApiControllerTest {
         cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
         recordMemoryCacheGet(cache, cacheKey, brandInfo);
         
-        // execute
+        // execute & verify
+        // not exist mso name
         Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
-        // verify
         // actual always return null, need another way to verify result.
         ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
-        verify(playerApiService).response(captureActual.capture());
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
         String actual2 = (String) captureActual.getValue();
         assertTrue("Not exist mso should return as mso=9x9 brand info.", actual2.contains(brandInfo));
+        
+        // not provide mso name
+        req.removeParameter("mso");
+        actual = playerAPI.brandInfo(null, os, version, null, req, resp);
+        
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = (String) captureActual.getValue();
+        assertTrue("Not provide mso name should return as mso=9x9 brand info.", actual2.contains(brandInfo));
     }
     
     @Test
@@ -260,6 +268,67 @@ public class PlayerApiControllerTest {
         
         assertTrue("when 'v' set to v=40, with database hold v=32 then " +
                 "should return as success operation.", actual2.startsWith(expected));
+    }
+    
+    @Test
+    public void testBrandInfoWithLocaleResponse() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        String version = "40";
+        req.setParameter("v", version);
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        MsoDao msoDao = Mockito.mock(MsoDao.class);
+        NNFWrapper.setMsoDao(msoDao);
+        MsoConfigDao configDao = Mockito.mock(MsoConfigDao.class); // can't inject
+        MsoConfigManager configMngr = Mockito.mock(MsoConfigManager.class); // so mock MsoConfigManager
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        PlayerApiService playerApiService = PowerMockito.spy(new PlayerApiService());
+        
+        // stubs
+        // only mso=9x9 available from cache and database
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        when(msoDao.findByName(Mso.NAME_9X9)).thenReturn(mso);
+        
+        // inject playerApiService in local new
+        try {
+            PowerMockito.whenNew(PlayerApiService.class).withNoArguments().thenReturn(playerApiService);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // execute & verify
+        // ip in tw
+        req.setRemoteAddr("114.32.175.163"); // this ip locate in tw
+        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        String actual2 = (String) captureActual.getValue();
+        String expected = "locale" + "\t" + "zh" + "\n";
+        assertTrue("ip locate in tw should set locale=zh in response.", actual2.contains(expected));
+        
+        // ip in us
+        req.setRemoteAddr("136.18.5.120"); // this ip locate in us
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = (String) captureActual.getValue();
+        expected = "locale" + "\t" + "en" + "\n";
+        assertTrue("ip not locate in tw should set locale=en in response.", actual2.contains(expected));
     }
     
     @Test
