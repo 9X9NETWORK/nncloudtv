@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,9 +34,12 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
@@ -132,19 +136,7 @@ public class PlayerApiControllerTest {
         PlayerApiService playerApiService = PowerMockito.spy(new PlayerApiService());
         
         // mock data
-        int id = 1;
-        String name = Mso.NAME_9X9;
-        String title = "title";
-        String logoUrl = "logoUrl";
-        String jingleUrl = "jingleUrl";
-        String preferredLangCode = "preferredLangCode";
-        
-        Mso mso = new Mso(name, "intro", "email", Mso.TYPE_NN);
-        mso.setId(id);
-        mso.setTitle(title);
-        mso.setLogoUrl(logoUrl);
-        mso.setJingleUrl(jingleUrl);
-        mso.setLang(preferredLangCode);
+        Mso mso = NnTestUtil.getNnMso();
         
         String brandInfo = "";
         brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
@@ -177,6 +169,97 @@ public class PlayerApiControllerTest {
         verify(playerApiService).response(captureActual.capture());
         String actual2 = (String) captureActual.getValue();
         assertTrue("Not exist mso should return as mso=9x9 brand info.", actual2.contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoWithVersionParameter() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        //String version = "40";
+        //req.setParameter("v", version);
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        MsoDao msoDao = Mockito.mock(MsoDao.class);
+        NNFWrapper.setMsoDao(msoDao);
+        MsoConfigDao configDao = Mockito.mock(MsoConfigDao.class); // can't inject
+        MsoConfigManager configMngr = Mockito.mock(MsoConfigManager.class); // so mock MsoConfigManager
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        PlayerApiService playerApiService = PowerMockito.spy(new PlayerApiService());
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        MsoConfig minVersion = new MsoConfig();
+        minVersion.setMsoId(mso.getId());
+        minVersion.setItem(MsoConfig.API_MINIMAL);
+        minVersion.setValue("40");
+        
+        // stubs
+        // only mso=9x9 available from cache and database
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        when(msoDao.findByName(Mso.NAME_9X9)).thenReturn(mso);
+        
+        when(configMngr.findByItem(MsoConfig.API_MINIMAL)).thenReturn(minVersion);
+        
+        // inject playerApiService in local new
+        try {
+            PowerMockito.whenNew(PlayerApiService.class).withNoArguments().thenReturn(playerApiService);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // execute & verify
+        // missing 'v' in request parameter but has 'v' setting in database with v=40
+        Object actual = playerAPI.brandInfo(brandName, os, null, null, req, resp);
+        String expected = NnStatusCode.API_FORCE_UPGRADE + "\t" +
+                NnStatusMsg.getPlayerMsgText(NnStatusCode.API_FORCE_UPGRADE, null) + "\n";
+        assertEquals("missing 'v' setting will evalute to v=31, with database hold v=40 then " +
+                "should response for 'api force upgrade'.", expected, actual);
+        
+        // with v=32 set in request parameter and has 'v' setting in database with v=40
+        String version = "32";
+        req.setParameter("v", version);
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        assertEquals("when 'v' set to v=32, with database hold v=40 then " +
+                "should response for 'api force upgrade'.", expected, actual);
+        
+        // missing 'v' in request parameter and has not 'v' setting in database
+        when(configMngr.findByItem(MsoConfig.API_MINIMAL)).thenReturn(null);
+        req.removeParameter("v");
+        actual = playerAPI.brandInfo(brandName, os, null, null, req, resp);
+        
+        ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        String actual2 = (String) captureActual.getValue();
+        
+        expected = NnStatusCode.SUCCESS + "\t" +
+                NnStatusMsg.getPlayerMsgText(NnStatusCode.SUCCESS, null) + "\n";
+        assertTrue("missing 'v' in request parameter and without 'v' setting in database " +
+                "should always see as success operation.", actual2.startsWith(expected));
+        
+        // with v=40 set in request parameter and has 'v' setting in database with v=32
+        minVersion.setValue("32");
+        when(configMngr.findByItem(MsoConfig.API_MINIMAL)).thenReturn(minVersion);
+        version = "40";
+        req.setParameter("v", version);
+        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        
+        captureActual = ArgumentCaptor.forClass(Object.class);
+        verify(playerApiService, atLeastOnce()).response(captureActual.capture());
+        actual2 = (String) captureActual.getValue();
+        
+        assertTrue("when 'v' set to v=40, with database hold v=32 then " +
+                "should return as success operation.", actual2.startsWith(expected));
     }
     
     @Test
