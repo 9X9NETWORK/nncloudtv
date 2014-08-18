@@ -409,6 +409,53 @@ public class PlayerApiControllerTest {
     }
     
     @Test
+    public void testBrandInfoWithOsParameter() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        //String os = "web";
+        String version = "40";
+        req.setParameter("v", version);
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        //req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        MsoDao msoDao = Mockito.mock(MsoDao.class);
+        NNFWrapper.setMsoDao(msoDao);
+        MsoConfigDao configDao = Mockito.mock(MsoConfigDao.class); // can't inject
+        MsoConfigManager configMngr = Mockito.mock(MsoConfigManager.class); // so mock MsoConfigManager
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        PlayerApiService playerApiService = PowerMockito.spy(new PlayerApiService());
+        
+        // stubs
+        // only mso=9x9 available from cache and database
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        when(msoDao.findByName(Mso.NAME_9X9)).thenReturn(mso);
+        
+        // inject playerApiService in local new
+        try {
+            PowerMockito.whenNew(PlayerApiService.class).withNoArguments().thenReturn(playerApiService);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // execute & verify
+        // not provide 'os' parameter and without userAgent set
+        //Object actual = playerAPI.brandInfo(brandName, null, version, null, req, resp);
+        
+        // provide unknown 'os' 
+    }
+    
+    @Test
     public void testFbLogin() {
         
         CacheFactory.isEnabled = false;

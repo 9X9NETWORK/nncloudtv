@@ -2,6 +2,10 @@ package com.nncloudtv.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
@@ -11,10 +15,12 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,31 +30,38 @@ import javax.servlet.http.HttpSession;
 //import junit.framework.Assert; The old method (of Junit 3),
 // see http://stackoverflow.com/questions/291003/differences-between-2-junit-assert-classes
 
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.internal.GetFuture;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.validation.BasicValidator;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({BasicValidator.class})
+@PrepareForTest({BasicValidator.class,CacheFactory.class})
 public class PlayerApiServiceTest {
 
     protected static final Logger log = Logger.getLogger(PlayerApiServiceTest.class.getName());
@@ -69,14 +82,14 @@ public class PlayerApiServiceTest {
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();
         
-        req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
-        HttpSession session = req.getSession();
-        session.setMaxInactiveInterval(60);
-        service = spy(new PlayerApiService());
+        //req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
+        //HttpSession session = req.getSession();
+        //session.setMaxInactiveInterval(60);
+        service = Mockito.spy(new PlayerApiService());
         
-        NNFWrapper.setUserMngr(mockUserMngr);
-        NNFWrapper.setMsoMngr(mockMsoMngr);
-        NNFWrapper.setProfileMngr(mockProfileMngr);
+        //NNFWrapper.setUserMngr(mockUserMngr);
+        //NNFWrapper.setMsoMngr(mockMsoMngr);
+        //NNFWrapper.setProfileMngr(mockProfileMngr);
         
         System.out.println("@Before - setUp");
     }
@@ -92,8 +105,52 @@ public class PlayerApiServiceTest {
         service = null;
     }
     
+    private void setUpMemCacheMock(MemcachedClient cache) {
+        
+        CacheFactory.isEnabled = true;
+        CacheFactory.isRunning = true;
+        
+        PowerMockito.spy(CacheFactory.class);
+        try {
+            PowerMockito.doReturn(cache).when(CacheFactory.class, "getSharedClient");
+            PowerMockito.doReturn(cache).when(CacheFactory.class, "getClient");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // default return null for any kind of key
+        GetFuture<Object> future = Mockito.mock(GetFuture.class);
+        when(cache.asyncGet(anyString())).thenReturn(future);
+        try {
+            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(null);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void recordMemoryCacheGet(MemcachedClient cache, String key, Object returnObj) {
+        
+        GetFuture<Object> future = Mockito.mock(GetFuture.class);
+        when(cache.asyncGet(key)).thenReturn(future);
+        try {
+            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(returnObj);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
+    
     @Test
     public void testBrandInfo() {
+        
+        NNFWrapper.setMsoMngr(mockMsoMngr);
         
         // input arguments
         String os = null;
@@ -103,8 +160,12 @@ public class PlayerApiServiceTest {
         Object brandInfo = "brandInfo";
         Object result = "result";
         
+        // mock object
+        
+        
         // stubs
-        when(service.findLocaleByHttpRequest((MockHttpServletRequest) anyObject())).thenReturn(locale);
+        //when(service.findLocaleByHttpRequest((MockHttpServletRequest) anyObject())).thenReturn(locale);
+        doReturn(locale).when(service).findLocaleByHttpRequest((MockHttpServletRequest) anyObject());
         when(mockMsoMngr.getBrandInfo((MockHttpServletRequest) anyObject(), (Mso) anyObject(),
                 anyString(), anyShort(), anyString(), anyLong(), anyString(), anyString())).thenReturn(brandInfo);
         when(service.assembleMsgs(anyInt(), anyObject())).thenReturn(result);
@@ -121,7 +182,90 @@ public class PlayerApiServiceTest {
     }
     
     @Test
+    public void testBrandInfoNotExistMso() {
+        
+        // input
+        String brandName = "notExist";
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        //MsoDao msoDao = Mockito.mock(MsoDao.class);
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        //NNFWrapper.setMsoDao(msoDao);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=9x9 available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        //cacheKey = "mso(" + brandName + ")";
+        //recordMemoryCacheGet(cache, cacheKey, null); // unnecessary stub, default any key in return null already
+        //when(msoDao.findByName(brandName)).thenReturn(null); //TODO must stub
+        //doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); //TODO must stub
+        //doReturn(null).when(configMngr).findByItem(MsoConfig.RO); //TODO must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        //int status = service.prepService(req, resp, true);
+        //Object actual = service.brandInfo(os, req);
+        
+        // verify
+        //assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        //assertTrue("Not exist mso should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoNotProvideMso() {
+        
+        // input
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        
+    }
+    
+    @Test
+    public void testBrandInfoExistMso() {
+        
+        // input
+        String brandName = "cts";
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        
+    }
+    
+    @Test
     public void testSetProfile() {
+        
+        NNFWrapper.setUserMngr(mockUserMngr);
+        NNFWrapper.setMsoMngr(mockMsoMngr);
+        NNFWrapper.setProfileMngr(mockProfileMngr);
         
         // input arguments
         final String userToken = "mock-user-token-xxoo";
@@ -173,6 +317,13 @@ public class PlayerApiServiceTest {
     
     @Test
     public void testLogin() {
+        
+        NNFWrapper.setUserMngr(mockUserMngr);
+        NNFWrapper.setMsoMngr(mockMsoMngr);
+        
+        req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
+        HttpSession session = req.getSession();
+        session.setMaxInactiveInterval(60);
         
         // input arguments
         final String email = "a@a.com";
