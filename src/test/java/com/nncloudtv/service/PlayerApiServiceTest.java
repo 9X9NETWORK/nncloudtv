@@ -58,6 +58,8 @@ import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.validation.BasicValidator;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
+import com.nncloudtv.web.json.player.ApiStatus;
+import com.nncloudtv.web.json.player.BrandInfo;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
@@ -391,6 +393,213 @@ public class PlayerApiServiceTest {
         assertTrue("parameter format=text should return text format response.", actual instanceof String);
         assertTrue("Provide exist mso from root domain should return as its brand info.",
                 ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoProvideTextFormat() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=9x9 available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoProvideJsonFormat() {
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "json");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        BrandInfo brandInfo = new BrandInfo();
+        brandInfo.setKey(mso.getId());
+        brandInfo.setName(mso.getName());
+        
+        // stubs
+        // only mso=9x9 available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
+        assertTrue("parameter format=json should return json format response.",
+                ((ApiStatus) actual).getData() instanceof BrandInfo);
+        BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
+        assertEquals("Should return as mso=9x9 brand info.", brandInfo.getKey(), actualBrandInfo.getKey());
+        assertEquals("Should return as mso=9x9 brand info.", brandInfo.getName(), actualBrandInfo.getName());
+    }
+    
+    @Test
+    public void testBrandInfoProvideUnknownFormat() {
+        
+        // TODO discuz, provide unknown format parameter test case apply for all player api, need each api write one ?
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("format", "xyz");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=9x9 available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=xyz(unknown format) should return text format response.", actual instanceof String);
+        assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoNotProvideFormat() {
+        
+        // TODO discuz, not provide format parameter test case apply for all player api, need each api write one ?
+        
+        // input
+        String brandName = Mso.NAME_9X9;
+        String os = "web";
+        req.setParameter("v", "40");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=9x9 available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format not provide should return text format response.", actual instanceof String);
+        assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
     }
     
     @Test
