@@ -603,6 +603,453 @@ public class PlayerApiServiceTest {
     }
     
     @Test
+    public void testBrandInfoOsAndroid() {
+        
+        // input
+        String brandName = "cts";
+        String os = PlayerService.OS_ANDROID;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        MsoConfig adConfig = new MsoConfig();
+        adConfig.setMsoId(mso.getId());
+        String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
+        adConfig.setItem(adKeyName);
+        adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+        
+        String adInfo = "";
+        String tab = "\t";
+        String br = "\n";
+        adInfo += "1" + tab + "0" + tab + "ad hello world!!" + tab + "http://s3.aws.amazon.com/creative_video0.mp4" + br;
+        adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+        
+        // adInfo from cache
+        cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, adInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+        assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsAndroidFromUserAgent() {
+        
+        // input
+        String brandName = "cts";
+        String os = null;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        req.addHeader(ApiContext.HEADER_USER_AGENT, "Android");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        MsoConfig adConfig = new MsoConfig();
+        adConfig.setMsoId(mso.getId());
+        String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
+        adConfig.setItem(adKeyName);
+        adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+        
+        String adInfo = "";
+        String tab = "\t";
+        String br = "\n";
+        adInfo += "1" + tab + "0" + tab + "ad hello world!!" + tab + "http://s3.aws.amazon.com/creative_video0.mp4" + br;
+        adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+        
+        // adInfo from cache
+        cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, adInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+        assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsIos() {
+        
+        // input
+        String brandName = "cts";
+        String os = PlayerService.OS_IOS;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        MsoConfig adConfig = new MsoConfig();
+        adConfig.setMsoId(mso.getId());
+        String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
+        adConfig.setItem(adKeyName);
+        adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+        
+        String adInfo = "";
+        String tab = "\t";
+        String br = "\n";
+        adInfo += "1" + tab + "0" + tab + "ad hello world!!" + tab + "http://s3.aws.amazon.com/creative_video0.mp4" + br;
+        adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+        
+        // adInfo from cache
+        cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, adInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+        assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsIosFromUserAgent() {
+        
+        // input
+        String brandName = "cts";
+        String os = null;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        req.addHeader(ApiContext.HEADER_USER_AGENT, "iPhone");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        MsoConfig adConfig = new MsoConfig();
+        adConfig.setMsoId(mso.getId());
+        String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
+        adConfig.setItem(adKeyName);
+        adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+        
+        String adInfo = "";
+        String tab = "\t";
+        String br = "\n";
+        adInfo += "1" + tab + "0" + tab + "ad hello world!!" + tab + "http://s3.aws.amazon.com/creative_video0.mp4" + br;
+        adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+        
+        // adInfo from cache
+        cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, adInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+        assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsWeb() {
+        
+        // input
+        String brandName = "cts";
+        String os = PlayerService.OS_WEB;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsNotProvide() {
+        
+        // input
+        String brandName = "cts";
+        String os = null;
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        req.addHeader(ApiContext.HEADER_USER_AGENT, "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:31.0)");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
+    public void testBrandInfoOsNotSupport() {
+        
+        // input
+        String brandName = "cts";
+        String os = "xyz";
+        req.setParameter("v", "40");
+        req.setParameter("format", "text");
+        req.setParameter("lang", "zh");
+        req.setParameter("os", os);
+        req.setParameter("mso", brandName);
+        req.setServerName("localhost:8080");
+        req.setRequestURI("/playerAPI/brandInfo");
+        
+        // mock object
+        MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        NnUserManager userMngr = Mockito.spy(new NnUserManager());
+        MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
+        
+        NNFWrapper.setUserMngr(userMngr);
+        NNFWrapper.setConfigMngr(configMngr);
+        
+        // mock data
+        Mso mso = NnTestUtil.getNnMso();
+        mso.setId(3);
+        mso.setName(brandName);
+        mso.setType(Mso.TYPE_MSO);
+        
+        String brandInfo = "";
+        brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
+        brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+        
+        // stubs
+        // only mso=cts available from cache
+        setUpMemCacheMock(cache);
+        String cacheKey = "mso(" + brandName + ")";
+        recordMemoryCacheGet(cache, cacheKey, mso);
+        doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+        doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+        doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+        // brandInfo from cache
+        cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        recordMemoryCacheGet(cache, cacheKey, brandInfo);
+        
+        // execute
+        int status = service.prepService(req, resp, true);
+        Object actual = service.brandInfo(os, req);
+        
+        // verify
+        assertTrue("parameter format=text should return text format response.", actual instanceof String);
+        assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+    }
+    
+    @Test
     public void testSetProfile() {
         
         NNFWrapper.setUserMngr(mockUserMngr);
