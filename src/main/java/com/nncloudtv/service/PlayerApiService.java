@@ -1792,12 +1792,11 @@ public class PlayerApiService {
                 return this.assembleMsgs(status, null);
             guestMngr.delete(guest);
         }
-        EmailService service = new EmailService();
         NnEmail mail = new NnEmail(toEmail, toName, NnEmail.SEND_EMAIL_SHARE, user.getProfile().getName(), user.getUserEmail(), subject, content);        
-        service.sendEmail(mail, null, null);
+        NNF.getEmailService().sendEmail(mail, null, null);
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
     }
-
+    
     public Object setUserPref(String token, String item, String value) {
         //verify input
         if (token == null || token.length() == 0 || token.equals("undefined") ||
