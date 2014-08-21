@@ -38,6 +38,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
+import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.service.DepotService;
@@ -195,6 +196,7 @@ public class DepotController {
         String result = "NOTHING";
         String channelIdStr = req.getParameter("channel");
         String setIdStr = req.getParameter("set");
+        String promotionIdStr = req.getParameter("promotion");
         
         if (channelIdStr != null) {
             
@@ -319,8 +321,57 @@ public class DepotController {
                 NNF.getDisplayMngr().save(display);
                 result = "OK";
             }
+        } else if (promotionIdStr != null) {
+            
+            result = "NOT_OK";
+            MsoPromotion promotion = NNF.getMsoPromotionMngr().findById(promotionIdStr);
+            if (promotion == null) {
+                return "promotion not found!";
+            }
+            log.info("resize promotion logo - " + promotionIdStr);
+            
+            String imageUrl = promotion.getLogoUrl();
+            if (imageUrl == null) {
+                return "promotion has no logo";
+            }
+            
+            String resizedImageUrl = null;
+            try {
+                BufferedImage image = NNF.getDepotService()
+                                         .resizeImage(imageUrl, MsoPromotion.DEFAULT_WIDTH, MsoPromotion.DEFAULT_HEIGHT);
+                if (image != null) {
+                    resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                            "logo-promot" + promotion.getId() + ".png", image);
+                    if (resizedImageUrl != null) {
+                        
+                        log.info("update promotion with new logo - " + resizedImageUrl);
+                        promotion.setLogoUrl(resizedImageUrl);
+                        NNF.getMsoPromotionMngr().save(promotion);
+                        result = "OK";
+                    }
+                }
+                
+            } catch (AmazonServiceException e) {
+                
+                log.warning("amazon service exception - " + e.getMessage());
+                return "AmazonServiceException";
+                
+            } catch (AmazonClientException e) {
+                
+                log.warning("amazon client exception - " + e.getMessage());
+                return "AmazonClientException";
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning("promotion logo url is malformed - " + promotion.getId());
+                return "MalformedURLException";
+                
+            } catch (IOException e) {
+                
+                log.warning("failed to load logo - " + promotion.getLogoUrl());
+                return "IOException";
+            }
         }
-        
         return result;
     }
     
