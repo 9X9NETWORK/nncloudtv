@@ -22,6 +22,12 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -3303,6 +3309,53 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);        
     }
     */
+
+	//url = "http://vimeo.com/" + videoId;
+    public Object getVimeoDirectUrl(String url) {
+    	if (url == null)
+    		return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+		String dataConfigUrl = null;
+        String hd = null;
+        String all = null;
+        //step 1, get <div.player data-config-url>
+		try {
+	        Document doc = Jsoup.connect(url).get();
+			Element element = doc.select("div.player").first();
+			if (element != null) {
+				dataConfigUrl = element.attr("data-config-url");
+				log.info("vimeo data-config-url=" + dataConfigUrl);
+			}
+        } catch (IOException e) {        
+        	log.info("vimeo div.player data-config-url not exisiting");
+            NnLogUtil.logException(e);
+        	return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+        }    		
+		if (dataConfigUrl == null)
+			return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+		
+		//step 2, get json data
+        String jsonStr = NnNetUtil.urlGet(dataConfigUrl);
+        JSONObject json = new JSONObject(jsonStr);
+        try {
+            hd = json.getJSONObject("request").getJSONObject("files").getJSONObject("hls").get("hd").toString();
+        } catch (JSONException e){
+        	log.info("vimeo hd failed");
+            NnLogUtil.logException(e);
+        }
+        try {
+            all = json.getJSONObject("request").getJSONObject("files").getJSONObject("hls").get("all").toString();            	
+        } catch (JSONException e){
+        	log.info("vimeo all failed");
+            NnLogUtil.logException(e);
+        }
+        if (hd == null && all == null)
+           this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+        log.info("vimeo hd:" + hd + ";vimeo all:" + all);
+        String data = PlayerApiService.assembleKeyValue("hd", hd);        
+        data += PlayerApiService.assembleKeyValue("all", all);
+        String[] result = {data};
+	    return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
     
     public Object notificationList(String token, HttpServletRequest req) {
         

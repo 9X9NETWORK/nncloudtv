@@ -2966,8 +2966,41 @@ public class PlayerApiController {
             NnLogUtil.logThrowable(t);
         }
         return playerApiService.response(output);
-    }
+    }        
     */
+
+    /**
+     *  Get vimeo video url. Server backup solution.
+     *  
+     *  @param url vimeo video url
+     *  @return list of video files. current there are two entries: hd and all. <br/>
+     *          example: <br/>
+     *          hd	http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
+     *          all	http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
+     *  
+     */
+    @RequestMapping(value="getVimeoDirectUrl")
+    public @ResponseBody Object getVimeoDirectUrl (
+            @RequestParam(value="url", required=true) String url,    		
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status == NnStatusCode.API_FORCE_UPGRADE) {
+                return playerApiService.assembleMsgs(status,  null);        
+            }                        
+            output = playerApiService.getVimeoDirectUrl(url);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+    
+    
     /**
      * To list read/unread push notifications
      * 
@@ -3000,3 +3033,4 @@ public class PlayerApiController {
     }
 
 }
+
