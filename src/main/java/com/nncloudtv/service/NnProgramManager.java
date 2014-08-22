@@ -997,7 +997,13 @@ public class NnProgramManager {
                     }
                     iAmHere++;
                 }
-                episode.setChannelId(channel.getId()); // workaround
+                
+                long real = episode.getChannelId();
+                if (real != 0 && real != channel.getId()) {
+                    
+                    episode.setStorageId(real);
+                    episode.setChannelId(channel.getId());
+                }
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     poiStr = poiStr.replaceAll("\\|$", "");
                     result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
@@ -1041,15 +1047,24 @@ public class NnProgramManager {
         if (episode.getPublishDate() == null) {
             episode.setPublishDate(new Date()); //should not happen, just in case
         }
-        long   channelId   = (episode.getChannelId() == 0) ? episode.getStorageId() : episode.getChannelId(); // orphan episode
-        String eId         = "e" + String.valueOf(episode.getId());
-        long   publishTime = episode.getPublishDate().getTime();
+        
+        String cId = String.valueOf(episode.getChannelId());
+        if (episode.getChannelId() == 0) { // orphan episode
+            
+            cId = String.valueOf(episode.getStorageId());
+            
+        } else if (episode.getStorageId() != 0) { // virtual channel
+            
+            cId += ":" + String.valueOf(episode.getStorageId());
+        }
+        String eId = "e" + String.valueOf(episode.getId());
+        long publishTime = episode.getPublishDate().getTime();
         
         if (format == PlayerApiService.FORMAT_PLAIN) {
             
             String[] ori = {
                     
-                    String.valueOf(channelId), 
+                    cId, 
                     eId, 
                     name, 
                     intro,
@@ -1074,7 +1089,7 @@ public class NnProgramManager {
         } else {
             
             ProgramInfo info = new ProgramInfo();
-            info.setChannelId(String.valueOf(channelId));
+            info.setChannelId(cId);
             info.setId(eId);
             info.setName(name);
             info.setDescription(intro);
