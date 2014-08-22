@@ -997,9 +997,13 @@ public class NnProgramManager {
                     }
                     iAmHere++;
                 }
+                
                 long real = episode.getChannelId();
-                episode.setStorageId(real);
-                episode.setChannelId(channel.getId()); // workaround
+                if (real != 0 && real != channel.getId()) {
+                    
+                    episode.setStorageId(real);
+                    episode.setChannelId(channel.getId());
+                }
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     poiStr = poiStr.replaceAll("\\|$", "");
                     result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
