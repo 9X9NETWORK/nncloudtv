@@ -116,16 +116,19 @@ public class PlayerApiServiceTest2 {
         private NnUserManager userMngr;
         private MsoConfigManager configMngr;
         
+        private String brandInfo9x9;
+        private Mso mso9x9;
+        private String defaultOS;
+        
         @Before
         public void setUp2() {
             log.info("------------------------------------------------inner setUp");
             
             cache = Mockito.mock(MemcachedClient.class);
-            setUpMemCacheMock(cache);
-            
             userMngr = Mockito.spy(new NnUserManager());
             configMngr = Mockito.spy(new MsoConfigManager());
             
+            setUpMemCacheMock(cache);
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setConfigMngr(configMngr);
             
@@ -133,11 +136,24 @@ public class PlayerApiServiceTest2 {
             doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
             
+            // default cache for mso=9x9
+            mso9x9 = NnTestUtil.getNnMso();
+            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
+            recordMemoryCacheGet(cache, cacheKey, mso9x9);
+            
+            // default cache for brandInfo=9x9, at os="web" format="text"
+            brandInfo9x9 = "";
+            brandInfo9x9 += PlayerApiService.assembleKeyValue("key", String.valueOf(mso9x9.getId()));
+            brandInfo9x9 += PlayerApiService.assembleKeyValue("name", mso9x9.getName());
+            defaultOS = PlayerService.OS_WEB;
+            cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_PLAIN);
+            recordMemoryCacheGet(cache, cacheKey, brandInfo9x9);
+            
             // default input
             req.setParameter("v", "40");
             req.setParameter("format", "text");
             req.setParameter("lang", "zh");
-            req.setParameter("os", "web");
+            req.setParameter("os", defaultOS);
             req.setParameter("mso", Mso.NAME_9X9);
             req.setServerName("localhost:8080");
             req.setRequestURI("/playerAPI/brandInfo");
@@ -150,6 +166,10 @@ public class PlayerApiServiceTest2 {
             cache = null;
             userMngr = null;
             configMngr = null;
+            
+            brandInfo9x9 = null;
+            mso9x9 = null;
+            defaultOS = null;
         }
         
         @Test
@@ -157,69 +177,43 @@ public class PlayerApiServiceTest2 {
             
             // input
             String brandName = "notExist";
-            String os = "web";
             req.setParameter("mso", brandName);
             
             // mock object
             MsoDao msoDao = Mockito.spy(new MsoDao());
             NNFWrapper.setMsoDao(msoDao);
             
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
             // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            cacheKey = "mso(" + brandName + ")";
+            // mso=notExist unavailable from cache
+            String cacheKey = "mso(" + brandName + ")";
             recordMemoryCacheGet(cache, cacheKey, null);
+            // mso=notExist unavailable from database
             doReturn(null).when(msoDao).findByName(brandName); // must stub
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not exist mso should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Not exist mso should return as default(mso=9x9) brand info.",
+                    ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
         public void notProvideMso() {
             
             // input
-            String os = "web";
             req.removeParameter("mso");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not provide mso should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Not provide mso should return as default(mso=9x9) brand info.",
+                    ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -227,7 +221,6 @@ public class PlayerApiServiceTest2 {
             
             // input
             String brandName = "cts";
-            String os = "web";
             req.setParameter("mso", brandName);
             
             // mock data
@@ -241,16 +234,16 @@ public class PlayerApiServiceTest2 {
             brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
             
             // stubs
-            // only mso=cts available from cache
+            // mso=cts available from cache
             String cacheKey = "mso(" + brandName + ")";
             recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+            // brandInfo=cts from cache
+            cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
@@ -262,7 +255,6 @@ public class PlayerApiServiceTest2 {
             
             // input
             String brandName = "cts";
-            String os = "web";
             req.removeParameter("mso");
             req.setServerName(brandName + ".flipr.tv");
             req.setRequestURI("/playerAPI/brandInfo");
@@ -282,15 +274,15 @@ public class PlayerApiServiceTest2 {
             brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
             
             // stubs
-            // only mso=cts available from database
+            // mso=cts available from database
             doReturn(mso).when(msoDao).findByName(brandName); // must stub
-            // brandInfo from cache
-            String cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
+            // brandInfo=cts from cache
+            String cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
@@ -302,66 +294,44 @@ public class PlayerApiServiceTest2 {
         public void provideTextFormat() {
             
             // input
-            String os = "web";
             req.setParameter("format", "text");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return wanted(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
         public void provideJsonFormat() {
             
             // input
-            String os = "web";
             req.setParameter("format", "json");
             
             // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
             BrandInfo brandInfo = new BrandInfo();
-            brandInfo.setKey(mso.getId());
-            brandInfo.setName(mso.getName());
+            brandInfo.setKey(mso9x9.getId());
+            brandInfo.setName(mso9x9.getName());
             
             // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON);
+            // brandInfo(format=json) from cache
+            String cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_JSON);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
             assertTrue("parameter format=json should return json format response.",
                     ((ApiStatus) actual).getData() instanceof BrandInfo);
             BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
-            assertEquals("Should return as mso=9x9 brand info.", brandInfo.getKey(), actualBrandInfo.getKey());
-            assertEquals("Should return as mso=9x9 brand info.", brandInfo.getName(), actualBrandInfo.getName());
+            assertEquals("Should return wanted(format=json) brand info.", brandInfo.getKey(), actualBrandInfo.getKey());
+            assertEquals("Should return wanted(format=json) brand info.", brandInfo.getName(), actualBrandInfo.getName());
         }
         
         @Test
@@ -370,31 +340,15 @@ public class PlayerApiServiceTest2 {
             // TODO discuz, provide unknown format parameter test case apply for all player api, need each api write one ?
             
             // input
-            String os = "web";
             req.setParameter("format", "xyz");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format=xyz(unknown format) should return text format response.", actual instanceof String);
-            assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -403,31 +357,15 @@ public class PlayerApiServiceTest2 {
             // TODO discuz, not provide format parameter test case apply for all player api, need each api write one ?
             
             // input
-            String os = "web";
             req.removeParameter("format");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
             // execute
             int status = service.prepService(req, resp, true);
-            Object actual = service.brandInfo(os, req);
+            Object actual = service.brandInfo(defaultOS, req);
             
             // verify
             assertTrue("parameter format not provide should return text format response.", actual instanceof String);
-            assertTrue("Should return as mso=9x9 brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -442,7 +380,7 @@ public class PlayerApiServiceTest2 {
             
             String brandInfo = "";
             brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+            brandInfo += PlayerApiService.assembleKeyValue("title", mso.getTitle());
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
@@ -457,14 +395,14 @@ public class PlayerApiServiceTest2 {
             adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
             
             // stubs
-            // only mso=9x9 available from cache
+            // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             recordMemoryCacheGet(cache, cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
             
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
@@ -476,7 +414,7 @@ public class PlayerApiServiceTest2 {
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return wanted(os=android) brand info.", ((String) actual).contains(brandInfo));
             assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
         }
         
@@ -493,7 +431,7 @@ public class PlayerApiServiceTest2 {
             
             String brandInfo = "";
             brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+            brandInfo += PlayerApiService.assembleKeyValue("title", mso.getTitle());
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
@@ -508,14 +446,14 @@ public class PlayerApiServiceTest2 {
             adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
             
             // stubs
-            // only mso=9x9 available from cache
+            // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             recordMemoryCacheGet(cache, cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
             
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
@@ -527,7 +465,7 @@ public class PlayerApiServiceTest2 {
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return wanted(os=android) brand info.", ((String) actual).contains(brandInfo));
             assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
         }
         
@@ -543,7 +481,7 @@ public class PlayerApiServiceTest2 {
             
             String brandInfo = "";
             brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+            brandInfo += PlayerApiService.assembleKeyValue("title", mso.getTitle());
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
@@ -558,14 +496,14 @@ public class PlayerApiServiceTest2 {
             adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
             
             // stubs
-            // only mso=9x9 available from cache
+            // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             recordMemoryCacheGet(cache, cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
             
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
@@ -577,7 +515,7 @@ public class PlayerApiServiceTest2 {
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return wanted(os=ios) brand info.", ((String) actual).contains(brandInfo));
             assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
         }
         
@@ -594,7 +532,7 @@ public class PlayerApiServiceTest2 {
             
             String brandInfo = "";
             brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
+            brandInfo += PlayerApiService.assembleKeyValue("title", mso.getTitle());
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
@@ -609,14 +547,14 @@ public class PlayerApiServiceTest2 {
             adInfo += "2" + tab + "1" + tab + "vastAd hello world!!" + tab + "http://rec.scupio.com/recweb/vast.aspx?" + br;
             
             // stubs
-            // only mso=9x9 available from cache
+            // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             recordMemoryCacheGet(cache, cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
             
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub
+            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
             
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
@@ -628,7 +566,7 @@ public class PlayerApiServiceTest2 {
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return wanted(os=ios) brand info.", ((String) actual).contains(brandInfo));
             assertTrue("Should contain adInfo.", ((String) actual).contains(adInfo));
         }
         
@@ -639,28 +577,13 @@ public class PlayerApiServiceTest2 {
             String os = PlayerService.OS_WEB;
             req.setParameter("os", os);
             
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
             // execute
             int status = service.prepService(req, resp, true);
             Object actual = service.brandInfo(os, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return as wanted(os=web) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -671,28 +594,13 @@ public class PlayerApiServiceTest2 {
             req.removeParameter("os");
             req.addHeader(ApiContext.HEADER_USER_AGENT, "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:31.0)");
             
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
             // execute
             int status = service.prepService(req, resp, true);
             Object actual = service.brandInfo(os, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return as default(os=web) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -702,28 +610,13 @@ public class PlayerApiServiceTest2 {
             String os = "xyz";
             req.setParameter("os", os);
             
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // only mso=9x9 available from cache
-            String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
-            // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
             // execute
             int status = service.prepService(req, resp, true);
             Object actual = service.brandInfo(os, req);
             
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Should return as provide mso's brand info.", ((String) actual).contains(brandInfo));
+            assertTrue("Should return as default(os=web) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
     }
