@@ -359,6 +359,11 @@ public class MsoConfigManager {
         return result;
     }
     
+    static public String getCFKeyPairId() {
+        
+        return getProperty(PROPERTIES_AWS, "cf_key_pair_id");
+    }
+    
     static public String getS3UploadBucket() {
         
         return getProperty(PROPERTIES_AWS, "s3_upload_bucket");
