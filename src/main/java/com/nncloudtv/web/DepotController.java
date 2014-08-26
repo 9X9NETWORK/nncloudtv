@@ -35,6 +35,7 @@ import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
@@ -272,7 +273,7 @@ public class DepotController {
                                 "banner-set" + display.getSystagId() + ".png", image);
                         if (resizedBannerUrl != null) {
                             log.info("update set with new (android) banner url = " + resizedBannerUrl);
-                            display.setBannerImageUrl(resizedBannerUrl);
+                            display.setBannerImageUrl(resizedBannerUrl + "?_=" + NnDateUtil.now().getTime());
                             dirty = true;
                         }
                     }
@@ -291,7 +292,7 @@ public class DepotController {
                                 "banner-set" + display.getSystagId() + "-retina.png", image);
                         if (resizedBannerUrl != null) {
                             log.info("update set with new (ios) banner url = " + resizedBannerUrl);
-                            display.setBannerImageUrl2(resizedBannerUrl);
+                            display.setBannerImageUrl2(resizedBannerUrl + "?_=" + NnDateUtil.now().getTime());
                             dirty = true;
                         }
                     }
