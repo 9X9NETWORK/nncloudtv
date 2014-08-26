@@ -15,6 +15,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -131,6 +132,10 @@ public class PlayerApiServiceTest {
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
+    }
+    
+    private static String pair(String key, String value) {
+        return PlayerApiService.assembleKeyValue(key, value);
     }
     
     @RunWith(PowerMockRunner.class)
@@ -641,6 +646,157 @@ public class PlayerApiServiceTest {
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
             assertTrue("Should return as default(os=web) brand info.", ((String) actual).contains(brandInfo9x9));
         }
+    }
+    
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({CacheFactory.class})
+    public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
+        
+        private MsoConfigManager configMngr;
+        
+        private Mso defaultMso;
+        private String defaultOS;
+        
+        @Before
+        public void setUp2() {
+            
+            CacheFactory.isEnabled = false;
+            CacheFactory.isRunning = false;
+            
+            NnUserManager userMngr = Mockito.spy(new NnUserManager());
+            configMngr = Mockito.spy(new MsoConfigManager());
+            MsoDao msoDao = Mockito.spy(new MsoDao());
+            
+            NNFWrapper.setUserMngr(userMngr);
+            NNFWrapper.setConfigMngr(configMngr);
+            NNFWrapper.setMsoDao(msoDao);
+            
+            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
+            doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
+            doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+            
+            String brandName = "cts";
+            defaultMso = NnTestUtil.getNnMso();
+            defaultMso.setId(3);
+            defaultMso.setName(brandName);
+            defaultMso.setType(Mso.TYPE_MSO);
+            
+            doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
+            
+            defaultOS = PlayerService.OS_WEB;
+            // default input
+            req.setParameter("v", "40");
+            req.setParameter("format", "text");
+            req.setParameter("lang", "zh");
+            req.setParameter("os", defaultOS);
+            req.setParameter("mso", brandName);
+            req.setServerName("localhost:8080");
+            req.setRequestURI("/playerAPI/brandInfo");
+        }
+        
+        @After
+        public void tearDown2() {
+            configMngr = null;
+            
+            defaultMso = null;
+            defaultOS = null;
+        }
+        
+        @Test
+        public void mainKeyValue() { // main pair, include mso part and others not from database
+            
+            // check list
+            String locale = "en";
+            String piwik = "http://piwik.9x9.tv/";
+            String counter = "0";
+            String acceptLang = "JAVA";
+            
+            String key = String.valueOf(defaultMso.getId());
+            String name = defaultMso.getName();
+            String title = defaultMso.getTitle();
+            String logoUrl = defaultMso.getLogoUrl();
+            String jingleUrl = defaultMso.getJingleUrl();
+            String preferredLangCode = defaultMso.getLang();
+            
+            // stubs
+            req.addHeader("Accept-Language", acceptLang);
+            
+            NnUserManager userMngr = Mockito.spy(new NnUserManager());
+            doReturn(locale).when(userMngr).findLocaleByHttpRequest(req);
+            NNFWrapper.setUserMngr(userMngr); // overwrite
+            
+            // make all unavoid interactions with configMngr return as null, in os=web situation
+            doReturn(new ArrayList<MsoConfig>()).when(configMngr).findByMso(defaultMso);
+            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.SEARCH);
+            String item = configMngr.getKeyNameByOs(defaultOS, "google");
+            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, item);
+            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.AUDIO_BACKGROUND);
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(defaultOS, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            assertTrue("missing 'locale' pair", respText.contains(pair("locale", locale)));
+            assertTrue("missing 'brandInfoCounter' pair", respText.contains(pair("brandInfoCounter", counter)));
+            assertTrue("missing 'piwik' pair", respText.contains(pair("piwik", piwik)));
+            assertTrue("missing 'acceptLang' pair", respText.contains(pair("acceptLang", acceptLang)));
+            
+            assertTrue("missing 'key' pair", respText.contains(pair("key", key)));
+            assertTrue("missing 'name' pair", respText.contains(pair("name", name)));
+            assertTrue("missing 'title' pair", respText.contains(pair("title", title)));
+            assertTrue("missing 'logoUrl' pair", respText.contains(pair("logoUrl", logoUrl)));
+            assertTrue("missing 'jingleUrl' pair", respText.contains(pair("jingleUrl", jingleUrl)));
+            assertTrue("missing 'preferredLangCode' pair", respText.contains(pair("preferredLangCode", preferredLangCode)));
+        }
+        
+        @Test
+        public void configKeyValue() { // common pair (OS independent)
+            
+        }
+        
+        @Test
+        public void configKeyValueDefault() { // common pair (OS independent) and has default value
+            
+        }
+        
+        @Test
+        public void configKeyValueWithWeb() { // unique pair (web owned)
+            
+        }
+        
+        @Test
+        public void configKeyValueDefaultWithWeb() { // unique pair (web owned) and has default value
+            
+        }
+        
+        @Test
+        public void configKeyValueWithIos() { // unique pair (ios owned)
+            
+        }
+        
+        @Test
+        public void configKeyValueDefaultWithIos() { // unique pair (ios owned) and has default value
+            
+        }
+        
+        @Test
+        public void configKeyValueWithAndroid() { // unique pair (android owned)
+            
+        }
+        
+        @Test
+        public void configKeyValueDefaultWithAndroid() { // unique pair (android owned) and has default value
+            
+        }
+        
+        // TODO special case for ga pair, set value to null in database force delete pair,
+        // where original behavior is give default value when no record in database
+        
+        // TODO third part 'ad' section test case
     }
     
     @RunWith(MockitoJUnitRunner.class)
