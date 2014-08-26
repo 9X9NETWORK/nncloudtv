@@ -67,52 +67,81 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
-	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
-		
-	    Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+    public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            
             unauthorized(resp);
             return null;
         }
-		
-		String prefix = req.getParameter("prefix");
-		String type = req.getParameter("type");
-		String acl = req.getParameter("acl");
-		long size = 0;
-		
-		try {
-			String sizeStr = req.getParameter("size");
-			Long sizeL = Long.valueOf(sizeStr);
-			size = sizeL.longValue();
-		} catch (NumberFormatException e) {
-		}
-		
-		Map<String, String> result = new TreeMap<String, String>();
-		
-		if (size == 0 || prefix == null || type == null || acl == null ||
-		    (!type.equals("audio") && !type.equals("image")) ||
-		    (!acl.equals("public-read"))) {
-			
-			badRequest(resp, INVALID_PARAMETER);
-			return result;
-		} 
-		
-		String bucket = MsoConfigManager.getS3UploadBucket();
-		String policy = AmazonLib.buildS3Policy(bucket, acl, type, size);
-		String signature = "";
-		try {
-			signature = AmazonLib.calculateRFC2104HMAC(policy);
-		} catch (SignatureException e) {
-		}
-		
-		result.put("bucket", bucket);
-		result.put("policy", policy);
-		result.put("signature", signature);
-		result.put("id", MsoConfigManager.getAWSId());
-		
-		return result;
-	}
-	
+        
+        Mso mso = null;
+        String msoIdStr = req.getParameter("mso");
+        if (msoIdStr != null) {
+            
+            mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+            if (mso == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+                
+                forbidden(resp);
+                return null;
+            }
+        }
+        
+        String prefix = req.getParameter("prefix");
+        String type = req.getParameter("type");
+        String acl = req.getParameter("acl");
+        long size = 0;
+        
+        try {
+            String sizeStr = req.getParameter("size");
+            Long sizeL = Long.valueOf(sizeStr);
+            size = sizeL.longValue();
+        } catch (NumberFormatException e) {
+        }
+        
+        Map<String, String> result = new TreeMap<String, String>();
+        
+        if (size == 0 || prefix == null || type == null || acl == null ||
+                (!type.equals("audio") && !type.equals("image") && !type.equals("video")) ||
+                (!acl.equals("public-read") && !acl.equals("private"))) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return result;
+        }
+        
+        String bucket = MsoConfigManager.getS3UploadBucket();
+        if (mso != null) {
+            String alt = null;
+            if (type.equals("video")) {
+                alt = NNF.getConfigMngr().getS3VideoBucket(mso);
+            } else {
+                alt = NNF.getConfigMngr().getS3UploadBucket(mso);
+            }
+            if (alt != null) {
+                bucket = alt;
+            }
+        }
+        
+        String policy = AmazonLib.buildS3Policy(bucket, acl, type, size);
+        String signature = "";
+        try {
+            signature = AmazonLib.calculateRFC2104HMAC(policy, MsoConfigManager.getAWSKey(mso));
+        } catch (SignatureException e) {
+        }
+        
+        result.put("bucket", bucket);
+        result.put("policy", policy);
+        result.put("signature", signature);
+        result.put("id", MsoConfigManager.getAWSId());
+        
+        return result;
+    }
+    
 	@RequestMapping(value = "login", method = RequestMethod.DELETE)
 	public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
 		

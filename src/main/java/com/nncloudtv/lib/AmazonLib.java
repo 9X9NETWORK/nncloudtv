@@ -47,14 +47,14 @@ public class AmazonLib {
     * @throws
     * java.security.SignatureException when signature generation fails
     */
-    public static String calculateRFC2104HMAC(String data) throws java.security.SignatureException {
+    public static String calculateRFC2104HMAC(String data, String key) throws java.security.SignatureException {
         
         String result = null;
         
         try {
             
             // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(MsoConfigManager.getAWSKey().getBytes(), HMAC_SHA1_ALGORITHM);
+            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
             
             // get an hmac_sha1 Mac instance and initialize with the signing key
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
@@ -176,7 +176,7 @@ public class AmazonLib {
     public static String s3Upload(String bucket, String filename, InputStream in, ObjectMetadata metadata)
             throws AmazonClientException, AmazonServiceException {
         
-        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey());
+        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey(null));
         AmazonS3 s3 = new AmazonS3Client(credentials);
         s3.putObject(bucket, filename, in, metadata);
         

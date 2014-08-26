@@ -369,6 +369,24 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_AWS, "s3_upload_bucket");
     }
     
+    public String getS3UploadBucket(Mso mso) {
+        
+        MsoConfig config = findByMsoAndItem(mso, "s3-upload-bucket");
+        if (config != null) {
+            return config.getValue();
+        }
+        return null;
+    }
+    
+    public String getS3VideoBucket(Mso mso) {
+        
+        MsoConfig config = findByMsoAndItem(mso, "s3-video-bucket");
+        if (config != null) {
+            return config.getValue();
+        }
+        return null;
+    }
+    
     public static String getS3DepotBucket() {
         
         return getProperty(PROPERTIES_AWS, "s3_depot_bucket");
@@ -379,7 +397,16 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_AWS, "aws_id");
     }
     
-    public static String getAWSKey() {
+    public static String getAWSKey(Mso mso) {
+        
+        if (mso == null) {
+            return getProperty(PROPERTIES_AWS, "aws_key");
+        }
+        
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, "aws-key");
+        if (config != null) {
+            return config.getValue();
+        }
         
         return getProperty(PROPERTIES_AWS, "aws_key");
     }
