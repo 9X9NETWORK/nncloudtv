@@ -43,6 +43,7 @@ public class NnProgram implements Serializable {
     public static final short CONTENTTYPE_SCRIPT     = 2;
     public static final short CONTENTTYPE_RADIO      = 3;
     public static final short CONTENTTYPE_REFERENCE  = 4;
+    public static final short CONTENTTYPE_PROTECTED  = 5;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
