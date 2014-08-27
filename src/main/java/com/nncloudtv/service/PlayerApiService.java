@@ -143,15 +143,15 @@ public class PlayerApiService {
         MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_EXPIRE);
         if (brandExpireConfig != null) {
             try {
-            	//"January 2, 2019";
-	            Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
-		        Date now = new Date();
-		        if (now.after(date)) {
-		        	log.info("mso " + mso.getName() + " expires!");
-		        	return NnStatusCode.APP_EXPIRE;
-		        }
+                //"January 2, 2019";
+	        Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
+	        Date now = new Date();
+	        if (now.after(date)) {
+	            log.info("mso " + mso.getName() + " expires!");
+		    return NnStatusCode.APP_EXPIRE;
+		}
             } catch (ParseException e) {
-	            NnLogUtil.logException(e);
+	        NnLogUtil.logException(e);
             }
         }
         MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_VERSION_EXPIRE);
@@ -164,7 +164,6 @@ public class PlayerApiService {
                }
             }
         }
-        
         if (this.version < checkApiMinimal())
             return NnStatusCode.API_FORCE_UPGRADE;
         else
@@ -2139,11 +2138,20 @@ public class PlayerApiService {
             searchContent = searchContent + ",youtube";
         }
         
-        @SuppressWarnings("rawtypes")
-        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
-        List<NnChannel> channels = (List<NnChannel>) st.pop();
-        System.out.println("solr search channel size:" + channels.size());
-        long numOfChannelTotal = (Long) st.pop();        
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        long numOfChannelTotal = 0;
+        if (text.startsWith("@")) {
+            String cid = text.substring(1);
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(cid));
+            numOfChannelTotal = 1;
+            channels.add(c);
+        } else {
+	    @SuppressWarnings("rawtypes")
+	    Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
+	    channels = (List<NnChannel>) st.pop();
+	    System.out.println("solr search channel size:" + channels.size());	        
+	    numOfChannelTotal = (Long) st.pop();
+        }
         
         List<NnUser> users = NNF.getUserMngr().search(null, null, text, mso.getId());
         int endIndex = (users.size() > 9) ? 9: users.size();
