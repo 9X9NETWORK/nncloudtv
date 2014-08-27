@@ -161,9 +161,14 @@ public class PlayerApiServiceTest {
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setConfigMngr(configMngr);
             
-            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
-            doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
-            doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+            // must stub, prepService call database where these are not point in test case care about
+            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
+            doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
+            
+            // must stub, call network access
+            doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
             
             // default cache for mso=9x9
             mso9x9 = NnTestUtil.getNnMso();
@@ -671,9 +676,14 @@ public class PlayerApiServiceTest {
             NNFWrapper.setConfigMngr(configMngr);
             NNFWrapper.setMsoDao(msoDao);
             
-            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL); // must stub
-            doReturn(null).when(configMngr).findByItem(MsoConfig.RO); // must stub
-            doReturn("zh").when(userMngr).findLocaleByHttpRequest(req); // must stub
+            // must stub, prepService call database where these are not point in test case care about
+            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
+            doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
+            
+            // must stub, call network access
+            doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
             
             String brandName = "cts";
             defaultMso = NnTestUtil.getNnMso();
@@ -810,9 +820,11 @@ public class PlayerApiServiceTest {
             MsoManager msoMngr = Mockito.mock(MsoManager.class);
             NnUserManager userMngr = Mockito.mock(NnUserManager.class);
             NnUserProfileManager profileMngr = Mockito.mock(NnUserProfileManager.class);
+            MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setMsoMngr(msoMngr);
             NNFWrapper.setProfileMngr(profileMngr);
+            NNFWrapper.setConfigMngr(configMngr);
             
             // input arguments
             final String userToken = "mock-user-token-xxoo";
@@ -834,6 +846,8 @@ public class PlayerApiServiceTest {
             when(msoMngr.getByNameFromCache(anyString())).thenReturn(mso);
             doReturn(0).when(service).checkApiMinimal();
             doReturn(NnStatusCode.SUCCESS).when(service).checkRO();
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
             
             when(userMngr.findByToken(anyString(), anyLong())).thenReturn(user);
             when(profileMngr.findByUser((NnUser) anyObject())).thenReturn(null);
@@ -874,8 +888,10 @@ public class PlayerApiServiceTest {
             
             MsoManager msoMngr = Mockito.mock(MsoManager.class);
             NnUserManager userMngr = Mockito.mock(NnUserManager.class);
+            MsoConfigManager configMngr = Mockito.spy(new MsoConfigManager());
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setMsoMngr(msoMngr);
+            NNFWrapper.setConfigMngr(configMngr);
             
             req.addHeader(ApiContext.HEADER_USER_AGENT, MockHttpServletRequest.class.getName());
             HttpSession session = req.getSession();
@@ -903,6 +919,8 @@ public class PlayerApiServiceTest {
             when(msoMngr.getByNameFromCache(anyString())).thenReturn(mso);
             doReturn(0).when(service).checkApiMinimal();
             doReturn(NnStatusCode.SUCCESS).when(service).checkRO();
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
+            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
             
             PowerMockito.mockStatic(BasicValidator.class);
             when(BasicValidator.validateRequired((String[]) anyObject())).thenReturn(true);
