@@ -65,7 +65,8 @@ public class MsoConfig implements Serializable  {
     public static String ADMOBKEY_IOS          = "admobkey-ios";
     public static String AD_ANDROID            = "ad-android";
     public static String AUDIO_BACKGROUND      = "audio-background";
-    public static String SOCIAL_FEEDS          = "social-feeds";
+    public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
+    public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
     public static String SEARCH                = "search"; //all, store
     

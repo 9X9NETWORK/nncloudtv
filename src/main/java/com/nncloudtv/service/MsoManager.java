@@ -181,6 +181,9 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS_SERVER)) {
+            	result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS_SERVER, c.getValue());
+            }
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -198,8 +201,7 @@ public class MsoManager {
         MsoConfig searchConfig = configMngr.findByMsoAndItem(mso, MsoConfig.SEARCH);        
         if (searchConfig != null)
         	search = searchConfig.getValue();
-        result += PlayerApiService.assembleKeyValue("search", search);                
-        
+        result += PlayerApiService.assembleKeyValue("search", search);
         //add ga based on device
         String gaKeyName = configMngr.getKeyNameByOs(os, "google");
         if (gaKeyName != null) {
