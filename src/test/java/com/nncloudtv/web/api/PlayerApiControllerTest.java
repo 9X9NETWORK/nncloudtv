@@ -166,8 +166,8 @@ public class PlayerApiControllerTest {
         // execute & verify
         // missing 'v' in request parameter but has 'v' setting in database with v=40
         Object actual = playerAPI.brandInfo(brandName, os, null, null, req, resp);
-        String expected = NnStatusCode.API_FORCE_UPGRADE + "\t" +
-                NnStatusMsg.getPlayerMsgText(NnStatusCode.API_FORCE_UPGRADE, null) + "\n";
+        String expected = (String)playerApiService.response(playerApiService.assembleMsgs(NnStatusCode.API_FORCE_UPGRADE, null));
+
         assertEquals("missing 'v' setting will evalute to v=31, with database hold v=40 then " +
                 "should response for 'api force upgrade'.", expected, actual);
         
