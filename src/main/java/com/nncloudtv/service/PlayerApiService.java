@@ -3,6 +3,8 @@ package com.nncloudtv.service;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -104,6 +106,7 @@ public class PlayerApiService {
     
     private Mso    mso;
     private int    version = 32;
+    private String appVersion = null;
     private Locale locale  = Locale.ENGLISH;
     private short  format  = FORMAT_PLAIN;
     private ApiContext context = null;
@@ -134,7 +137,33 @@ public class PlayerApiService {
         this.locale  = context.getLocale();
         this.mso     = context.getMso();
         this.version = context.getVersion();
+        this.appVersion = context.getAppVersion();
         log.info("mso entrance: " + mso.getId());
+        
+        MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_EXPIRE);
+        if (brandExpireConfig != null) {
+            try {
+            	//"January 2, 2019";
+	            Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
+		        Date now = new Date();
+		        if (now.after(date)) {
+		        	log.info("mso " + mso.getName() + " expires!");
+		        	return NnStatusCode.APP_EXPIRE;
+		        }
+            } catch (ParseException e) {
+	            NnLogUtil.logException(e);
+            }
+        }
+        MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_VERSION_EXPIRE);
+        if (appExpireConfig != null) {
+            String[] str = appExpireConfig.getValue().split(";");            
+            for (String s : str) {
+               if (this.appVersion != null && this.appVersion.equals(s)) {
+            	   log.info("expire version:" + this.appVersion);
+            	   return NnStatusCode.APP_VERSION_EXPIRE;
+               }
+            }
+        }
         
         if (this.version < checkApiMinimal())
             return NnStatusCode.API_FORCE_UPGRADE;
@@ -570,7 +599,6 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
         String acceptLang = req.getHeader("Accept-Language");
@@ -3315,8 +3343,7 @@ public class PlayerApiService {
     	if (url == null)
     		return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
 		String dataConfigUrl = null;
-        String hd = null;
-        String all = null;
+        String videoUrl = null;
         //step 1, get <div.player data-config-url>
 		try {
 	        Document doc = Jsoup.connect(url).get();
@@ -3337,22 +3364,15 @@ public class PlayerApiService {
         String jsonStr = NnNetUtil.urlGet(dataConfigUrl);
         JSONObject json = new JSONObject(jsonStr);
         try {
-            hd = json.getJSONObject("request").getJSONObject("files").getJSONObject("hls").get("hd").toString();
+            videoUrl = json.getJSONObject("request").getJSONObject("files").getJSONObject("h264").getJSONObject("hd").get("url").toString();
         } catch (JSONException e){
         	log.info("vimeo hd failed");
             NnLogUtil.logException(e);
         }
-        try {
-            all = json.getJSONObject("request").getJSONObject("files").getJSONObject("hls").get("all").toString();            	
-        } catch (JSONException e){
-        	log.info("vimeo all failed");
-            NnLogUtil.logException(e);
-        }
-        if (hd == null && all == null)
+        if (videoUrl == null)
            this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
-        log.info("vimeo hd:" + hd + ";vimeo all:" + all);
-        String data = PlayerApiService.assembleKeyValue("hd", hd);        
-        data += PlayerApiService.assembleKeyValue("all", all);
+        log.info("vimeo url:" + videoUrl);
+        String data = PlayerApiService.assembleKeyValue("url", videoUrl);        
         String[] result = {data};
 	    return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }

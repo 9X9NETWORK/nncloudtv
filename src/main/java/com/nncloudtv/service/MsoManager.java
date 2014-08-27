@@ -86,7 +86,9 @@ public class MsoManager {
         String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
         String keyWebJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
         String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
-        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        String appConfig= configMngr.getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_EXPIRE);
+        String appVersionConfig= configMngr.getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         CacheFactory.delete(keyAdInfoPlain);
         CacheFactory.delete(keyAdInfoJson);
         CacheFactory.delete(keyAndroidJson);
@@ -95,6 +97,8 @@ public class MsoManager {
         CacheFactory.delete(keyIosPlain);
         CacheFactory.delete(keyWebJson);
         CacheFactory.delete(keyWebPlain);
+        CacheFactory.delete(appConfig);        
+        CacheFactory.delete(appVersionConfig);        
     }
     
     public static Mso getSystemMso() {
