@@ -496,7 +496,7 @@ public class NnUserManager {
         
         return user;
     }
-
+    
     public List<NnUser> findAllByIds(Set<Long> userIdSet) {    
         return dao.findAllByIds(userIdSet);
     }

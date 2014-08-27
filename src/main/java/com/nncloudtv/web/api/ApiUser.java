@@ -3,6 +3,7 @@ package com.nncloudtv.web.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -22,13 +23,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserLibrary;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
@@ -37,7 +36,6 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
-import com.nncloudtv.web.json.cms.UserFavorite;
 import com.nncloudtv.web.json.facebook.FacebookError;
 import com.nncloudtv.web.json.facebook.FacebookPage;
 import com.nncloudtv.web.json.facebook.FacebookResponse;
@@ -54,51 +52,6 @@ public class ApiUser extends ApiGeneric {
     public ApiUser(ApiUserService apiUserService) {
         
         this.apiUserService = apiUserService;
-    }
-    
-    /** 
-     * this port is closed for security issue
-     * @Deprecated */
-    //@RequestMapping(value = "users/{userId}", method = RequestMethod.GET)
-    public @ResponseBody
-    NnUser userInfo(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable("userId") String userIdStr, 
-            @RequestParam(required = false) String mso,
-            @RequestParam(required = false) Short shard) {
-        
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnUser user = null;
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        if (shard == null) {
-            user = NNF.getUserMngr().findById(userId, brand.getId());
-        } else {
-            user = NNF.getUserMngr().findById(userId, brand.getId(), (short) shard);
-        }
-        
-        if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        return NNF.getUserMngr().purify(user);
     }
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
@@ -128,11 +81,11 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        Long verified = userIdentify(req);
+        if (verified == null) {
             unauthorized(resp);
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (verified != user.getId()) {
             forbidden(resp);
             return null;
         }
@@ -199,85 +152,6 @@ public class ApiUser extends ApiGeneric {
         return userResponse(user);
     }
     
-    @RequestMapping(value = "users/{userId}/my_favorites", method = RequestMethod.GET)
-    public @ResponseBody
-    List<UserFavorite> userFavorites(HttpServletRequest req,
-            HttpServletResponse resp, 
-            @PathVariable("userId") String userIdStr,
-            @RequestParam(required = false) String mso) {
-        
-        List<UserFavorite> results = new ArrayList<UserFavorite>();
-        
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
-        if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        List<NnProgram> favorites = NNF.getProgramMngr().getUserFavorites(user);
-        
-        log.info("my favorites count = " + favorites.size());
-        
-        for (NnProgram program : favorites) {
-            
-            UserFavorite favorite = new UserFavorite();
-            
-            if (program.getContentType() == NnProgram.CONTENTTYPE_REFERENCE) {
-                
-                NnEpisode episode = NNF.getEpisodeMngr().findById(program.getStorageIdInt());
-                if (episode == null) {
-                    continue;
-                }
-                
-                favorite.setImageUrl(episode.getImageUrl());
-                favorite.setName(episode.getName());
-                favorite.setDuration(episode.getDuration());
-                favorite.setPublishDate(episode.getPublishDate());
-                favorite.setCntView(episode.getCntView());
-                favorite.setPublic(episode.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
-                
-            } else {
-                
-                favorite.setImageUrl(program.getImageUrl());
-                favorite.setName(program.getName());
-                favorite.setDuration(program.getDurationInt());
-                favorite.setPublishDate(program.getPublishDate());
-                favorite.setCntView(program.getCntView());
-                favorite.setPublic(program.isPublic());
-                favorite.setPlaybackUrl(NnStringUtil.getSharingUrl(
-                        false,
-                        null,
-                        program.getStorageId(), YouTubeLib.getYouTubeVideoIdStr(program.getFileUrl())));
-                
-            }
-            
-            results.add(favorite);
-        }
-        
-        return results;
-    }
-    
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> userChannels(HttpServletRequest req,
@@ -305,10 +179,11 @@ public class ApiUser extends ApiGeneric {
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         results = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : results) {
+        Iterator<NnChannel> it = results.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                results.remove(channel);
-                break;
+                it.remove();
             }
         }
         
@@ -317,7 +192,6 @@ public class ApiUser extends ApiGeneric {
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
             channelMngr.populateAutoSync(channel);
-            
         }
         
         Collections.sort(results, NnChannelManager.getComparator("seq"));
@@ -402,11 +276,11 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        Long verified = userIdentify(req);
+        if (verified == null) {
             unauthorized(resp);
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (verified != user.getId()) {
             forbidden(resp);
             return null;
         }
@@ -899,5 +773,212 @@ public class ApiUser extends ApiGeneric {
         }
         
         return result;
+    }
+    
+    @RequestMapping(value = "users/{userId}/library/{libraryId}", method = RequestMethod.PUT)
+    public @ResponseBody void userLibraryDelete(
+            HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(required = false, value = "mso") String msoIdStr,
+            @PathVariable("userId") String userIdStr,
+            @PathVariable("libraryId") String libraryIdStr) {
+        
+        Long userId = null;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        Mso mso = NNF.getMsoMngr().findOneByName(msoIdStr);
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            return;
+        }
+        
+        Long verified = userIdentify(req);
+        if (verified == null) {
+            unauthorized(resp);
+            return;
+        } else if (verified != user.getId() || hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            forbidden(resp);
+            return;
+        }
+        
+        NnUserLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        if (library != null) {
+            NNF.getLibraryDao().delete(library);
+        }
+        
+        ok(resp);
+    }
+    
+    @RequestMapping(value = "users/{userId}/library/{libraryId}", method = RequestMethod.PUT)
+    public @ResponseBody NnUserLibrary userLibraryUpdate(
+            HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(required = false, value = "mso") String msoIdStr,
+            @PathVariable("userId") String userIdStr,
+            @PathVariable("libraryId") String libraryIdStr) {
+        
+        Long userId = null;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findOneByName(msoIdStr);
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            return null;
+        }
+        
+        Long verified = userIdentify(req);
+        if (verified == null) {
+            unauthorized(resp);
+            return null;
+        } else if (verified != user.getId() || hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            forbidden(resp);
+            return null;
+        }
+        
+        NnUserLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        if (library == null) {
+            notFound(resp, "Library Not Found");
+            return null;
+        }
+        
+        // name
+        String name = req.getParameter("name");
+        if (name != null) {
+            library.setName(name);
+        }
+        
+        // contentType
+        Short contentType = evaluateShort(req.getParameter("contentType"));
+        if (contentType != null) {
+            library.setContentType(contentType);
+        }
+        
+        // intro
+        String intro = req.getParameter("intro");
+        if (intro != null) {
+            library.setIntro(intro);
+        }
+        
+        // imageUrl
+        String imageUrl = req.getParameter("imageUrl");
+        if (imageUrl != null) {
+            library.setImageUrl(imageUrl);
+        }
+        
+        // fileUrl
+        String fileUrl = req.getParameter("fileUrl");
+        if (fileUrl != null) {
+            library.setFileUrl(fileUrl);
+        }
+        
+        // seq
+        Short seq = evaluateShort(req.getParameter("seq"));
+        if (seq != null) {
+            library.setSeq(seq);
+        }
+        
+        // duration
+        Integer duration = evaluateInt(req.getParameter("duration"));
+        if (duration != null) {
+            library.setDuration(duration);
+        }
+        
+        return NNF.getLibraryMngr().save(library);
+    }
+    
+    @RequestMapping(value = "users/{userId}/library", method = RequestMethod.POST)
+    public @ResponseBody NnUserLibrary userLibraryCreate(
+            HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(required = false, value = "mso") String msoIdStr,
+            @PathVariable("userId") String userIdStr) {
+        
+        Long userId = null;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findOneByName(msoIdStr);
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            return null;
+        }
+        
+        Long verified = userIdentify(req);
+        if (verified == null) {
+            unauthorized(resp);
+            return null;
+        } else if (verified != user.getId() || hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            forbidden(resp);
+            return null;
+        }
+        
+        String name = req.getParameter("name");
+        String fileUrl = req.getParameter("fileUrl");
+        Short contentType = evaluateShort(req.getParameter("contentType"));
+        if (contentType == null) {
+            contentType = NnUserLibrary.CONTENTTYPE_DIRECTLINK;
+        }
+        if (name == null || fileUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        NnUserLibrary library = new NnUserLibrary(name, contentType, fileUrl);
+        library.setIntro(req.getParameter("intro"));
+        library.setSeq(evaluateShort(req.getParameter("seq")));
+        library.setDuration(evaluateInt(req.getParameter("duration")));
+        library.setImageUrl(req.getParameter("imageUrl"));
+        
+        return NNF.getLibraryMngr().save(library);
+    }
+    
+    @RequestMapping(value = "users/{userId}/library", method = RequestMethod.GET)
+    public @ResponseBody List<NnUserLibrary> userLibrary(
+            HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(required = false, value = "mso") String msoIdStr,
+            @PathVariable("userId") String userIdStr) {
+        
+        Long userId = null;
+        try {
+            userId = Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (userId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findOneByName(msoIdStr);
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            notFound(resp, "User Not Found");
+            return null;
+        }
+        
+        Long verified = userIdentify(req);
+        if (verified == null) {
+            unauthorized(resp);
+            return null;
+        } else if (verified != user.getId() || hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            forbidden(resp);
+            return null;
+        }
+        
+        return NNF.getLibraryMngr().findByUser(user);
     }
 }

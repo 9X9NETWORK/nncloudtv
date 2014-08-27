@@ -198,7 +198,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     
     @SuppressWarnings("unchecked")
     public List<NnChannel> findByUser(String userIdStr, int limit, boolean isAll) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         List<NnChannel> channels = new ArrayList<NnChannel>(); 
         try {
             if (isAll) {
