@@ -775,7 +775,7 @@ public class ApiUser extends ApiGeneric {
         return result;
     }
     
-    @RequestMapping(value = "users/{userId}/library/{libraryId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "users/{userId}/library/{libraryId}", method = RequestMethod.DELETE)
     public @ResponseBody void userLibraryDelete(
             HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoIdStr,
