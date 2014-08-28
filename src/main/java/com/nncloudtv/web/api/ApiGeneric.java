@@ -389,10 +389,14 @@ public class ApiGeneric {
         if (profile.getPriv() == null) {
             profile.setPriv("000111");
         }
+        String priv = profile.getPriv();
+        int privLen = priv.length();
         
         for (int i = 0; i < requirePriv.length(); i++) {
             
-            if (requirePriv.charAt(i) == '1' && profile.getPriv().charAt(i) != '1') {
+            if (requirePriv.charAt(i) == '1' &&
+                    (privLen <= i || priv.charAt(i) != '1')) {
+                
                 return false;
             }
         }
