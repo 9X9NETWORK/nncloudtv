@@ -809,7 +809,7 @@ public class ApiUser extends ApiGeneric {
         
         NnUserLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
         if (library != null) {
-            NNF.getLibraryDao().delete(library);
+            NNF.getLibraryMngr().delete(library);
         }
         
         ok(resp);
@@ -944,6 +944,7 @@ public class ApiUser extends ApiGeneric {
         library.setSeq(evaluateShort(req.getParameter("seq")));
         library.setDuration(evaluateInt(req.getParameter("duration")));
         library.setImageUrl(req.getParameter("imageUrl"));
+        library.setMsoId(mso.getId());
         
         return NNF.getLibraryMngr().save(library);
     }

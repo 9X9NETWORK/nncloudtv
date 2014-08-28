@@ -18,6 +18,9 @@ public class NnUserLibrary {
     private long id;
     
     @Persistent
+    private long msoId;
+    
+    @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String userIdStr; //format: shard-userId, example: 1-1
     
@@ -184,5 +187,13 @@ public class NnUserLibrary {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public long getMsoId() {
+        return msoId;
+    }
+
+    public void setMsoId(long msoId) {
+        this.msoId = msoId;
     }
 }
