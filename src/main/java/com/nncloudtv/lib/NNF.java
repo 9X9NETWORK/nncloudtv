@@ -84,7 +84,7 @@ public class NNF {
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
-    protected static MyLibraryManager   libraryMngr         = null;
+    protected static MyLibraryManager       libraryMngr         = null;
     
     protected static SetService      setService      = null;
     protected static CategoryService categoryService = null;
@@ -112,7 +112,7 @@ public class NNF {
     protected static SysTagDisplayDao  displayDao        = null;
     protected static SysTagMapDao      sysTagMapDao      = null;
     protected static AdPlacementDao    adDao             = null;
-    protected static MyLibraryDao  libraryDao        = null;
+    protected static MyLibraryDao      libraryDao        = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         

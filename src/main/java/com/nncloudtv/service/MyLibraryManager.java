@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.MyLibrary;
 
@@ -31,6 +32,11 @@ public class MyLibraryManager {
         library.setUpdateDate(now);
         
         return dao.save(library);
+    }
+    
+    public List<MyLibrary> findByMso(Mso mso) {
+        
+        return dao.findByMsoId(mso.getId());
     }
     
     public List<MyLibrary> findByUser(NnUser user) {

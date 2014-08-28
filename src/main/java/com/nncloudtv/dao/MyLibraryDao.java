@@ -44,4 +44,30 @@ public class MyLibraryDao extends GenericDao<MyLibrary> {
         return results;
     }
     
+    @SuppressWarnings("unchecked")
+    public List<MyLibrary> findByMsoId(long msoId) {
+        
+        List<MyLibrary> results = new ArrayList<MyLibrary>();
+        PersistenceManager pm = getPersistenceManager();
+        
+        try {
+            Query query = pm.newQuery(MyLibrary.class);
+            
+            query.setOrdering("seq asc");
+            query.setFilter("msoId == msoIdParam");
+            query.declareParameters("long msoIdParam");
+            
+            results = (List<MyLibrary>) query.execute(msoId);
+            results = (List<MyLibrary>) pm.detachCopyAll(results);
+            
+            query.closeAll();
+            
+        } finally {
+            
+            pm.close();
+        }
+        
+        return results;
+    }
+    
 }
