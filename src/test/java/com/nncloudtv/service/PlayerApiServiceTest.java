@@ -16,6 +16,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -662,6 +667,96 @@ public class PlayerApiServiceTest {
         private Mso defaultMso;
         private String defaultOS;
         
+        // common pair means OS independent Key-Value pair store in MsoConfig
+        private static final Set<String> commonPair;
+        // pair that in OS=iOS can exist but not mean only exist in OS=iOS
+        private static final Set<String> iosPair;
+        // pair that in OS=Android can exist but not mean only exist in OS=Android
+        private static final Set<String> androidPair;
+        static {
+            Set<String> commonSet = new HashSet<String>();
+            Set<String> iosSet = new HashSet<String>();
+            Set<String> androidSet = new HashSet<String>();
+            
+            commonSet.add(MsoConfig.DEBUG);
+            commonSet.add(MsoConfig.FBTOKEN);
+            commonSet.add(MsoConfig.RO);
+            commonSet.add(MsoConfig.FORCE_UPGRADE);
+            commonSet.add(MsoConfig.UPGRADE_MSG);
+            commonSet.add(MsoConfig.VIDEO);
+            commonSet.add(MsoConfig.ABOUT_US);
+            commonSet.add(MsoConfig.SOCIAL_FEEDS);
+            commonSet.add(MsoConfig.SUPPORTED_REGION);
+            commonSet.add(MsoConfig.FACEBOOK_CLIENTID);
+            commonSet.add(MsoConfig.CHROMECAST_ID);
+            commonSet.add(MsoConfig.SOCIAL_FEEDS_SERVER);
+            commonSet.add(MsoConfig.SEARCH);
+            commonSet.add("ga");
+            
+            iosSet.add(MsoConfig.SHAKE_DISCOVER); // c.getValue().equals("on")
+            iosSet.add("flurry");
+            iosSet.add("ad");
+            iosSet.add("admob-key");
+            iosSet.add(MsoConfig.AUDIO_BACKGROUND);
+            iosSet.add("homepage");
+            iosSet.add(MsoConfig.NOTIFICATION_SOUND_VIBRATION);
+            iosSet.add(MsoConfig.SIGNUP_ENFORCE);
+            
+            androidSet.add(MsoConfig.GCM_SENDER_ID);
+            androidSet.add(MsoConfig.SHAKE_DISCOVER); // c.getValue().equals("on")
+            androidSet.add("flurry");
+            androidSet.add("ad");
+            androidSet.add("admob-key");
+            androidSet.add(MsoConfig.AUDIO_BACKGROUND);
+            androidSet.add("youtube");
+            androidSet.add("homepage");
+            androidSet.add(MsoConfig.NOTIFICATION_SOUND_VIBRATION);
+            androidSet.add(MsoConfig.SIGNUP_ENFORCE);
+            
+            commonPair = Collections.unmodifiableSet(commonSet);
+            iosPair = Collections.unmodifiableSet(iosSet);
+            androidPair = Collections.unmodifiableSet(androidSet);
+        }
+        private static final Map<String, String> commonPairDefault;
+        private static final Map<String, String> webPairDefault;
+        private static final Map<String, String> iosPairDefault;
+        private static final Map<String, String> androidPairDefault;
+        static {
+            Map<String, String> commonMap = new HashMap<String, String>();
+            Map<String, String> webMap = new HashMap<String, String>();
+            Map<String, String> iosMap = new HashMap<String, String>();
+            Map<String, String> androidMap = new HashMap<String, String>();
+            
+            commonMap.put(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
+            commonMap.put(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
+            commonMap.put(MsoConfig.CHROMECAST_ID, "DBB1992C");
+            commonMap.put(MsoConfig.SEARCH, "all");
+            
+            webMap.put("ga", "UA-47454448-1");
+            
+            iosMap.put("ga", "UA-47454448-3");
+            iosMap.put("flurry", "J6GPGNMBR7GRDJVSCCN8");
+            iosMap.put("ad", "off");
+            iosMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
+            iosMap.put("homepage", "portal");
+            iosMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
+            iosMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
+            
+            androidMap.put("ga", "UA-47454448-2");
+            androidMap.put("ad", "off");
+            androidMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
+            androidMap.put("youtube",
+                    "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA");
+            androidMap.put("homepage", "portal");
+            androidMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
+            androidMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
+            
+            commonPairDefault = Collections.unmodifiableMap(commonMap);
+            webPairDefault = Collections.unmodifiableMap(commonMap);
+            iosPairDefault = Collections.unmodifiableMap(commonMap);
+            androidPairDefault = Collections.unmodifiableMap(commonMap);
+        }
+        
         @Before
         public void setUp2() {
             
@@ -710,6 +805,14 @@ public class PlayerApiServiceTest {
             
             defaultMso = null;
             defaultOS = null;
+        }
+        
+        private void makeAllConfigAvailable() {
+            
+        }
+        
+        private void makeAllConfigUnavailable() {
+            
         }
         
         @Test
@@ -764,47 +867,93 @@ public class PlayerApiServiceTest {
         }
         
         @Test
-        public void configKeyValue() { // common pair (OS independent)
+        public void configKeyValueWithWeb() { // os=web & all config exist in database
             
+            // exist list
+            HashSet<String> exist = new HashSet<String>();
+            exist.addAll(commonPair);
+            
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(iosPair);
+            notExist.addAll(androidPair);
         }
         
         @Test
-        public void configKeyValueDefault() { // common pair (OS independent) and has default value
+        public void configKeyValueDefaultWithWeb() { // os=web & nothing config exist in database
             
+            // exist list (has default)
+            HashMap<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPairDefault);
+            exist.putAll(webPairDefault);
+            
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair);
+            notExist.addAll(iosPair);
+            notExist.addAll(androidPair);
+            notExist.removeAll(exist.keySet());
         }
         
         @Test
-        public void configKeyValueWithWeb() { // unique pair (web owned)
+        public void configKeyValueWithIos() { // os=ios & all config exist in database
             
+            // exist list
+            HashSet<String> exist = new HashSet<String>();
+            exist.addAll(commonPair);
+            exist.addAll(iosPair);
+            
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(androidPair);
+            notExist.removeAll(iosPair);
         }
         
         @Test
-        public void configKeyValueDefaultWithWeb() { // unique pair (web owned) and has default value
+        public void configKeyValueDefaultWithIos() { // os=ios & nothing config exist in database
             
+            // exist list (has default)
+            HashMap<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPairDefault);
+            exist.putAll(iosPairDefault);
+            
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair);
+            notExist.addAll(iosPair);
+            notExist.addAll(androidPair);
+            notExist.removeAll(exist.keySet());
         }
         
         @Test
-        public void configKeyValueWithIos() { // unique pair (ios owned)
+        public void configKeyValueWithAndroid() { // os=android & all config exist in database
             
+            // exist list
+            HashSet<String> exist = new HashSet<String>();
+            exist.addAll(commonPair);
+            exist.addAll(androidPair);
+            
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(iosPair);
+            notExist.removeAll(androidPair);
         }
         
         @Test
-        public void configKeyValueDefaultWithIos() { // unique pair (ios owned) and has default value
+        public void configKeyValueDefaultWithAndroid() { // os=android & nothing config exist in database
             
-        }
-        
-        @Test
-        public void configKeyValueWithAndroid() { // unique pair (android owned)
+            // exist list (has default)
+            HashMap<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPairDefault);
+            exist.putAll(androidPairDefault);
             
+            // can't exist list
+            HashSet<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair);
+            notExist.addAll(iosPair);
+            notExist.addAll(androidPair);
+            notExist.removeAll(exist.keySet());
         }
-        
-        @Test
-        public void configKeyValueDefaultWithAndroid() { // unique pair (android owned) and has default value
-            
-        }
-        
-        // TODO special case for ga pair, set value to null in database force delete pair,
-        // where original behavior is give default value when no record in database
         
         // TODO third part 'ad' section test case
     }
