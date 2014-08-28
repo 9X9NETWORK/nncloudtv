@@ -16,6 +16,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.Mso;
 
 public class NnTestUtil {
     
@@ -78,6 +79,25 @@ public class NnTestUtil {
         
         String prifix = "http://nntest.com/test?";
         assertEqualURL(prifix + expectedParameters, prifix + actualParameters);
+    }
+    
+    public static Mso getNnMso() {
+        
+        int id = 1;
+        String name = Mso.NAME_9X9;
+        String title = "title";
+        String logoUrl = "logoUrl";
+        String jingleUrl = "jingleUrl";
+        String preferredLangCode = "preferredLangCode";
+        
+        Mso mso = new Mso(name, "intro", "email", Mso.TYPE_NN);
+        mso.setId(id);
+        mso.setTitle(title);
+        mso.setLogoUrl(logoUrl);
+        mso.setJingleUrl(jingleUrl);
+        mso.setLang(preferredLangCode);
+        
+        return mso;
     }
 
 }

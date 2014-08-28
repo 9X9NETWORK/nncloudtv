@@ -26,6 +26,7 @@ public class ApiContext {
     public final static String HEADER_USER_AGENT = "user-agent";
     public final static String HEADER_REFERRER = "referer";
     
+    public final static String PARAM_APP_VERSION = "appver"; 
     public final static String PARAM_MSO = "mso";
     public final static String PARAM_LANG = "lang";
     public final static String PARAM_SPHERE = "shpere";
@@ -34,6 +35,7 @@ public class ApiContext {
     HttpServletRequest httpReq;
     Locale locale;
     Integer version;
+    String appVersion;
     String root;
     Mso mso;
     Boolean productionSite = null;
@@ -41,6 +43,10 @@ public class ApiContext {
     public Integer getVersion() {
         
         return version;
+    }
+    
+    public String getAppVersion() {
+    	return appVersion;
     }
     
     public Locale getLocale() {
@@ -82,6 +88,8 @@ public class ApiContext {
             } catch (NumberFormatException e) {
             }
         }
+                
+        appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         
         root = NnNetUtil.getUrlRoot(httpReq);
         if (root == "") {

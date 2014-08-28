@@ -241,7 +241,28 @@ public class MsoConfigManager {
     public List<MsoConfig> findByMso(Mso mso) {
         return configDao.findByMso(mso);
     }
-            
+        
+    //find: access db directly; get: through cache
+    public MsoConfig getByMsoAndItem(Mso mso, String item) {
+        String cacheKey = this.getCacheKeyByMsoAndKey(mso.getId(), item);
+        try {        
+            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);        
+            if (result != null){
+                log.info("value from cache: key=" + cacheKey + "value=" + result.getValue());
+                return result;
+            }    
+        } catch (Exception e) {
+            log.info("memcache error");
+        }
+        MsoConfig config = this.findByMsoAndItem(mso, item);
+        if (config != null) {
+            log.info("set value to cache: key=" + cacheKey + "value=" + config.getValue());
+        	CacheFactory.set(cacheKey, config);
+        }
+        return config;
+    	
+    }
+    
     public MsoConfig findByMsoAndItem(Mso mso, String item) {
         return configDao.findByMsoAndItem(mso.getId(), item);
     }
@@ -357,6 +378,11 @@ public class MsoConfigManager {
             }
         }
         return result;
+    }
+    
+    static public String getCFKeyPairId() {
+        
+        return getProperty(PROPERTIES_AWS, "cf_key_pair_id");
     }
     
     static public String getS3UploadBucket() {

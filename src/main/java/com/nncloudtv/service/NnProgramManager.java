@@ -530,7 +530,7 @@ public class NnProgramManager {
     //based on channel type, assemble programInfo string
     public Object assembleProgramInfo(NnChannel channel, short format, int start, int end, short time, Mso mso) {
         
-        if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
+        if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED || channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_LIVE ) {
             
             List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(channel.getId());

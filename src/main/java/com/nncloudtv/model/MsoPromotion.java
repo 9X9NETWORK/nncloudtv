@@ -40,6 +40,8 @@ public class MsoPromotion {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     String logoUrl;
+    public static final short DEFAULT_WIDTH = 200;
+    public static final short DEFAULT_HEIGHT = 200;
     
     @Persistent
     Date createDate;

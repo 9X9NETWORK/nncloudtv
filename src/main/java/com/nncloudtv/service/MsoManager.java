@@ -86,7 +86,9 @@ public class MsoManager {
         String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
         String keyWebJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
         String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
-        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        String appConfig= configMngr.getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_EXPIRE);
+        String appVersionConfig= configMngr.getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         CacheFactory.delete(keyAdInfoPlain);
         CacheFactory.delete(keyAdInfoJson);
         CacheFactory.delete(keyAndroidJson);
@@ -95,6 +97,8 @@ public class MsoManager {
         CacheFactory.delete(keyIosPlain);
         CacheFactory.delete(keyWebJson);
         CacheFactory.delete(keyWebPlain);
+        CacheFactory.delete(appConfig);        
+        CacheFactory.delete(appVersionConfig);        
     }
     
     public static Mso getSystemMso() {
@@ -177,6 +181,9 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS_SERVER)) {
+            	result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS_SERVER, c.getValue());
+            }
         }
         if (regionSet == false) {
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
@@ -194,8 +201,7 @@ public class MsoManager {
         MsoConfig searchConfig = configMngr.findByMsoAndItem(mso, MsoConfig.SEARCH);        
         if (searchConfig != null)
         	search = searchConfig.getValue();
-        result += PlayerApiService.assembleKeyValue("search", search);                
-        
+        result += PlayerApiService.assembleKeyValue("search", search);
         //add ga based on device
         String gaKeyName = configMngr.getKeyNameByOs(os, "google");
         if (gaKeyName != null) {

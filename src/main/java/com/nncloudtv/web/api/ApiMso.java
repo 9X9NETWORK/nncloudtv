@@ -40,6 +40,7 @@ import com.nncloudtv.web.json.cms.Set;
 
 @Controller
 @RequestMapping("api")
+
 public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
@@ -61,6 +62,7 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoPromotion msoPromotionUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("id") String promotionIdStr) {
         
+        boolean dirty = false;
         MsoPromotion promotion = NNF.getMsoPromotionMngr().findById(promotionIdStr);
         if (promotion == null) {
             nullResponse(resp);
@@ -89,7 +91,15 @@ public class ApiMso extends ApiGeneric {
         }
         String logoUrl = req.getParameter("logoUrl");
         if (logoUrl != null) {
-            promotion.setLogoUrl(logoUrl);
+            
+            if (!logoUrl.equals(promotion.getLogoUrl())) {
+                
+                promotion.setLogoUrl(logoUrl);
+                if (promotion.getType() == MsoPromotion.PROGRAM) {
+                    
+                    dirty = true;
+                }
+            }
         }
         Short type = evaluateShort(req.getParameter("type"));
         if (type != null) {
@@ -100,7 +110,13 @@ public class ApiMso extends ApiGeneric {
             promotion.setSeq(seq);
         }
         
-        return NNF.getMsoPromotionMngr().save(promotion);
+        promotion = NNF.getMsoPromotionMngr().save(promotion);
+        if (dirty) {
+            
+            QueueFactory.add("/podcastAPI/processThumbnail?promotion=" + promotion.getId(), null);
+        }
+        
+        return promotion;
     }
     
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.GET)

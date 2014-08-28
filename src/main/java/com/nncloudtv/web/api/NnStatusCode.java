@@ -11,7 +11,10 @@ public class NnStatusCode {
     
     public static final int API_DEPRECATED = 50;
     public static final int API_UNDER_CONSTRUCTION = 51;
+    //reserved from 52 to 61, any reason that app needs to exit
     public static final int API_FORCE_UPGRADE = 52;
+    public static final int APP_VERSION_EXPIRE = 60;
+    public static final int APP_EXPIRE = 61;    
     
     //100 input error
     public static final int INPUT_ERROR = 100;

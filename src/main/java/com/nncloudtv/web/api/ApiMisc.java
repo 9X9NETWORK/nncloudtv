@@ -29,6 +29,7 @@ import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
@@ -40,6 +41,30 @@ import com.nncloudtv.web.json.facebook.FBPost;
 public class ApiMisc extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
+    
+    @RequestMapping(value = "feedback", method = RequestMethod.POST)
+    public @ResponseBody String feedback(HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(required = false) Boolean isHtml) {
+        
+        String subject = req.getParameter("subject");
+        String content = req.getParameter("content");
+        String replyTo = req.getParameter("replyTo");
+        
+        log.info("subject = " + subject);
+        log.info("content = " + content);
+        log.info("replyTo = " + replyTo);
+        
+        if (subject != null && content != null) {
+            
+            NnEmail mail = new NnEmail(NnEmail.TO_EMAIL_FEEDBACK, NnEmail.TO_NAME_FEEDBACK,
+                                       NnEmail.SEND_EMAIL_SYSTEM, NnEmail.SEND_NAME_SYSTEM,
+                                       replyTo, subject, content);
+            
+            NNF.getEmailService().sendEmail(mail, null, null);
+        }
+        
+        return ok(resp);
+    }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
 	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
