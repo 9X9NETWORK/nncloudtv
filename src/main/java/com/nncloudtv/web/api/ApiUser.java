@@ -27,7 +27,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserLibrary;
+import com.nncloudtv.model.MyLibrary;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
@@ -807,7 +807,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUserLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
         if (library != null) {
             NNF.getLibraryMngr().delete(library);
         }
@@ -816,7 +816,7 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/library/{libraryId}", method = RequestMethod.PUT)
-    public @ResponseBody NnUserLibrary userLibraryUpdate(
+    public @ResponseBody MyLibrary userLibraryUpdate(
             HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoIdStr,
             @PathVariable("userId") String userIdStr,
@@ -847,7 +847,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUserLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
         if (library == null) {
             notFound(resp, "Library Not Found");
             return null;
@@ -899,7 +899,7 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/library", method = RequestMethod.POST)
-    public @ResponseBody NnUserLibrary userLibraryCreate(
+    public @ResponseBody MyLibrary userLibraryCreate(
             HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoIdStr,
             @PathVariable("userId") String userIdStr) {
@@ -933,13 +933,13 @@ public class ApiUser extends ApiGeneric {
         String fileUrl = req.getParameter("fileUrl");
         Short contentType = evaluateShort(req.getParameter("contentType"));
         if (contentType == null) {
-            contentType = NnUserLibrary.CONTENTTYPE_DIRECTLINK;
+            contentType = MyLibrary.CONTENTTYPE_DIRECTLINK;
         }
         if (name == null || fileUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
-        NnUserLibrary library = new NnUserLibrary(name, contentType, fileUrl);
+        MyLibrary library = new MyLibrary(name, contentType, fileUrl);
         library.setIntro(req.getParameter("intro"));
         library.setSeq(evaluateShort(req.getParameter("seq")));
         library.setDuration(evaluateInt(req.getParameter("duration")));
@@ -950,7 +950,7 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/library", method = RequestMethod.GET)
-    public @ResponseBody List<NnUserLibrary> userLibrary(
+    public @ResponseBody List<MyLibrary> userLibrary(
             HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoIdStr,
             @PathVariable("userId") String userIdStr) {

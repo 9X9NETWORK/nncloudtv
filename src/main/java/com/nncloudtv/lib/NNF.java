@@ -13,7 +13,7 @@ import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.NnUserDao;
-import com.nncloudtv.dao.NnUserLibraryDao;
+import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.dao.NnUserPrefDao;
 import com.nncloudtv.dao.NnUserProfileDao;
 import com.nncloudtv.dao.PoiCampaignDao;
@@ -41,7 +41,7 @@ import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.NnUserLibraryManager;
+import com.nncloudtv.service.MyLibraryManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
@@ -84,7 +84,7 @@ public class NNF {
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
-    protected static NnUserLibraryManager   libraryMngr         = null;
+    protected static MyLibraryManager   libraryMngr         = null;
     
     protected static SetService      setService      = null;
     protected static CategoryService categoryService = null;
@@ -112,7 +112,7 @@ public class NNF {
     protected static SysTagDisplayDao  displayDao        = null;
     protected static SysTagMapDao      sysTagMapDao      = null;
     protected static AdPlacementDao    adDao             = null;
-    protected static NnUserLibraryDao  libraryDao        = null;
+    protected static MyLibraryDao  libraryDao        = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -345,12 +345,12 @@ public class NNF {
         return adDao;
     }
     
-    public static NnUserLibraryDao getLibraryDao() {
+    public static MyLibraryDao getLibraryDao() {
         
         if (libraryDao == null) {
             
             log.info("create libraryDao");
-            libraryDao = new NnUserLibraryDao();
+            libraryDao = new MyLibraryDao();
         }
         
         return libraryDao;
@@ -674,12 +674,12 @@ public class NNF {
         return msoPromotionMngr;
     }
     
-    public static NnUserLibraryManager getLibraryMngr() {
+    public static MyLibraryManager getLibraryMngr() {
         
         if (libraryMngr == null) {
             
             log.info("create libraryMngr");
-            libraryMngr = new NnUserLibraryManager();
+            libraryMngr = new MyLibraryManager();
         }
         
         return libraryMngr;

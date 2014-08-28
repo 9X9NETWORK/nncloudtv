@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "my_library", detachable = "true")
-public class NnUserLibrary {
+public class MyLibrary {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -78,7 +78,7 @@ public class NnUserLibrary {
     @Persistent
     private Date updateDate;
     
-    public NnUserLibrary(String name, short contentType, String fileUrl) {
+    public MyLibrary(String name, short contentType, String fileUrl) {
         
         this.name = name;
         this.contentType = contentType;

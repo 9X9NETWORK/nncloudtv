@@ -7,32 +7,32 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
-import com.nncloudtv.model.NnUserLibrary;
+import com.nncloudtv.model.MyLibrary;
 
-public class NnUserLibraryDao extends GenericDao<NnUserLibrary> {
+public class MyLibraryDao extends GenericDao<MyLibrary> {
     
-    protected static final Logger log = Logger.getLogger(NnUserLibraryDao.class.getName());
+    protected static final Logger log = Logger.getLogger(MyLibraryDao.class.getName());
     
-    public NnUserLibraryDao() {
+    public MyLibraryDao() {
         
-        super(NnUserLibrary.class);
+        super(MyLibrary.class);
     }
     
     @SuppressWarnings("unchecked")
-    public List<NnUserLibrary> findByUserIdStr(String userIdStr) {
+    public List<MyLibrary> findByUserIdStr(String userIdStr) {
         
-        List<NnUserLibrary> results = new ArrayList<NnUserLibrary>();
+        List<MyLibrary> results = new ArrayList<MyLibrary>();
         PersistenceManager pm = getPersistenceManager();
         
         try {
-            Query query = pm.newQuery(NnUserLibrary.class);
+            Query query = pm.newQuery(MyLibrary.class);
             
             query.setOrdering("seq asc");
             query.setFilter("userIdStr == userIdStrParam");
             query.declareParameters("String userIdStrParam");
             
-            results = (List<NnUserLibrary>) query.execute(userIdStr);
-            results = (List<NnUserLibrary>) pm.detachCopyAll(results);
+            results = (List<MyLibrary>) query.execute(userIdStr);
+            results = (List<MyLibrary>) pm.detachCopyAll(results);
             
             query.closeAll();
             

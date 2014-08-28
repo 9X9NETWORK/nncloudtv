@@ -6,19 +6,19 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.dao.NnUserLibraryDao;
+import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserLibrary;
+import com.nncloudtv.model.MyLibrary;
 
 @Service
-public class NnUserLibraryManager {
+public class MyLibraryManager {
     
-    protected static final Logger log = Logger.getLogger(NnUserLibraryManager.class.getName());
+    protected static final Logger log = Logger.getLogger(MyLibraryManager.class.getName());
     
-    protected NnUserLibraryDao dao = NNF.getLibraryDao();
+    protected MyLibraryDao dao = NNF.getLibraryDao();
     
-    public NnUserLibrary save(NnUserLibrary library) {
+    public MyLibrary save(MyLibrary library) {
         
         if (library == null) return null;
         
@@ -33,17 +33,17 @@ public class NnUserLibraryManager {
         return dao.save(library);
     }
     
-    public List<NnUserLibrary> findByUser(NnUser user) {
+    public List<MyLibrary> findByUser(NnUser user) {
         
         return dao.findByUserIdStr(user.getIdStr());
     }
     
-    public NnUserLibrary findById(String idStr) {
+    public MyLibrary findById(String idStr) {
         
         return dao.findById(idStr);
     }
     
-    public void delete(NnUserLibrary library) {
+    public void delete(MyLibrary library) {
         
         dao.delete(library);
     }
