@@ -2276,12 +2276,18 @@ public class ApiMso extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
+        Short seq = evaluateShort(req.getParameter("seq"));
+        Integer duration = evaluateInt(req.getParameter("duration"));
         MyLibrary library = new MyLibrary(name, contentType, fileUrl);
         library.setIntro(req.getParameter("intro"));
-        library.setSeq(evaluateShort(req.getParameter("seq")));
-        library.setDuration(evaluateInt(req.getParameter("duration")));
         library.setImageUrl(req.getParameter("imageUrl"));
         library.setMsoId(mso.getId());
+        if (seq != null) {
+            library.setSeq(seq);
+        }
+        if (duration != null) {
+            library.setDuration(duration);
+        }
         
         return NNF.getLibraryMngr().save(library);
     }
