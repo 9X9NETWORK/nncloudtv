@@ -200,6 +200,7 @@ public class ApiUser extends ApiGeneric {
                 return empty;
             }
             int end = ((start + rows) >= results.size()) ? start + rows : results.size() - 1;
+            log.info("subList " + start + " - " + end);
             results = results.subList(start, end);
         }
         
@@ -479,6 +480,7 @@ public class ApiUser extends ApiGeneric {
             if (contentType != null &&
                     contentType != NnChannel.CONTENTTYPE_MIXED &&
                     contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {
+                
                 contentType = null; // invalid value to see as skip
             }
         }
