@@ -144,6 +144,7 @@ public class ApiMisc extends ApiGeneric {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
             int cntChannel = NNF.getChannelMngr().total("contentType != 11 and userIdStr == " + user.getIdStr());
+            log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
         
@@ -194,6 +195,7 @@ public class ApiMisc extends ApiGeneric {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
             int cntChannel = NNF.getChannelMngr().total("contentType != 11 and userIdStr == " + user.getIdStr());
+            log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
 		
