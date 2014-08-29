@@ -371,20 +371,20 @@ public class MsoConfigManager {
     
     public String getS3UploadBucket(Mso mso) {
         
-        MsoConfig config = findByMsoAndItem(mso, "s3-upload-bucket");
+        MsoConfig config = findByMsoAndItem(mso, MsoConfig.S3_UPLOAD_BUCKET);
         if (config != null) {
             return config.getValue();
         }
-        return null;
+        return getS3UploadBucket();
     }
     
     public String getS3VideoBucket(Mso mso) {
         
-        MsoConfig config = findByMsoAndItem(mso, "s3-video-bucket");
+        MsoConfig config = findByMsoAndItem(mso, MsoConfig.S3_VIDEO_BUCKET);
         if (config != null) {
             return config.getValue();
         }
-        return null;
+        return getS3UploadBucket();
     }
     
     public static String getS3DepotBucket() {
@@ -397,18 +397,33 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_AWS, "aws_id");
     }
     
-    public static String getAWSKey(Mso mso) {
+    public static String getAWSId(Mso mso) {
         
-        if (mso == null) {
-            return getProperty(PROPERTIES_AWS, "aws_key");
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.AWS_ID);
+            if (config != null) {
+                return config.getValue();
+            }
         }
         
-        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, "aws-key");
-        if (config != null) {
-            return config.getValue();
-        }
+        return getAWSId();
+    }
+    
+    public static String getAWSKey() {
         
         return getProperty(PROPERTIES_AWS, "aws_key");
+    }
+    
+    public static String getAWSKey(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.AWS_KEY);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getAWSKey();
     }
     
     public static String getCCClientId() {

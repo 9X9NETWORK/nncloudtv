@@ -176,7 +176,7 @@ public class AmazonLib {
     public static String s3Upload(String bucket, String filename, InputStream in, ObjectMetadata metadata)
             throws AmazonClientException, AmazonServiceException {
         
-        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey(null));
+        AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(), MsoConfigManager.getAWSKey());
         AmazonS3 s3 = new AmazonS3Client(credentials);
         s3.putObject(bucket, filename, in, metadata);
         
