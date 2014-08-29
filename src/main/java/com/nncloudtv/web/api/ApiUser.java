@@ -311,6 +311,24 @@ public class ApiUser extends ApiGeneric {
                 break;
             }
         }
+        //Collections.sort(results, NnChannelManager.getComparator("seq"));
+        int rows = 20;
+        Integer rowsI = evaluateInt(req.getParameter("rows"));
+        if (rowsI != null && rowsI > 0) {
+            rows = rowsI;
+        }
+        Integer page = evaluateInt(req.getParameter("page"));
+        if (page != null && page > 0) {
+            
+            List<NnChannel> empty   = new ArrayList<NnChannel>();
+            int start = (page - 1) * rows;
+            if (start >= results.size()) {
+                return empty;
+            }
+            int end = ((start + rows) < results.size()) ? start + rows : results.size() - 1;
+            log.info("subList " + start + " - " + end);
+            results = results.subList(start, end);
+        }
         
         for (NnChannel channel : results) {
             
@@ -319,8 +337,6 @@ public class ApiUser extends ApiGeneric {
             channelMngr.populateAutoSync(channel);
             
         }
-        
-        Collections.sort(results, NnChannelManager.getComparator("seq"));
         
         return results;
     }
@@ -591,6 +607,7 @@ public class ApiUser extends ApiGeneric {
             if (contentType != null &&
                     contentType != NnChannel.CONTENTTYPE_MIXED &&
                     contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {
+                
                 contentType = null; // invalid value to see as skip
             }
         }

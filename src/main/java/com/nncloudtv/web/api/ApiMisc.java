@@ -143,6 +143,9 @@ public class ApiMisc extends ApiGeneric {
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
+            int cntChannel = NNF.getChannelMngr().total("contentType != 11 && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+            log.info("cntChannel = " + cntChannel);
+            user.getProfile().setCntChannel(cntChannel);
         }
         
         if (user == null) {
@@ -187,11 +190,14 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-		NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
-		if (profile != null) {
-		    user.getProfile().setMsoId(profile.getMsoId());
+        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
+        if (profile != null) {
+            user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
-		}
+            int cntChannel = NNF.getChannelMngr().total("contentType != 11 && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+            log.info("cntChannel = " + cntChannel);
+            user.getProfile().setCntChannel(cntChannel);
+        }
 		
 		return userResponse(user);
 	}
