@@ -58,6 +58,9 @@ public class MyLibrary {
     private String errorCode;
     
     @Persistent
+    private boolean isPublic;
+    
+    @Persistent
     private short status;
     //general
     public static short STATUS_OK             = 0;
@@ -83,6 +86,7 @@ public class MyLibrary {
         this.name = name;
         this.contentType = contentType;
         this.fileUrl = fileUrl;
+        this.isPublic = true;
     }
 
     public long getId() {
@@ -195,5 +199,13 @@ public class MyLibrary {
 
     public void setMsoId(long msoId) {
         this.msoId = msoId;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
     }
 }

@@ -2121,7 +2121,7 @@ public class ApiMso extends ApiGeneric {
         return ok(resp);
     }
     
-    @RequestMapping(value = "library/{libraryId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.DELETE)
     public @ResponseBody void myLibraryDelete(
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
@@ -2161,7 +2161,7 @@ public class ApiMso extends ApiGeneric {
         ok(resp);
     }
     
-    @RequestMapping(value = "library/{libraryId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.PUT)
     public @ResponseBody MyLibrary myLibraryUpdate(
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
@@ -2239,7 +2239,7 @@ public class ApiMso extends ApiGeneric {
         return NNF.getLibraryMngr().save(library);
     }
     
-    @RequestMapping(value = "mso/{msoId}/library", method = RequestMethod.POST)
+    @RequestMapping(value = "mso/{msoId}/my_library", method = RequestMethod.POST)
     public @ResponseBody MyLibrary myLibraryCreate(
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
@@ -2292,7 +2292,7 @@ public class ApiMso extends ApiGeneric {
         return NNF.getLibraryMngr().save(library);
     }
     
-    @RequestMapping(value = "mso/{msoId}/library", method = RequestMethod.GET)
+    @RequestMapping(value = "mso/{msoId}/my_library", method = RequestMethod.GET)
     public @ResponseBody List<MyLibrary> myLibrary(
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
