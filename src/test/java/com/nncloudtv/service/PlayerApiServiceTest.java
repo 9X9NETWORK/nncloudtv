@@ -2,6 +2,7 @@ package com.nncloudtv.service;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -667,94 +669,135 @@ public class PlayerApiServiceTest {
         private Mso defaultMso;
         private String defaultOS;
         
-        // common pair means OS independent Key-Value pair store in MsoConfig
-        private static final Set<String> commonPair;
+        // common pair means OS independent Key-Value pair exist in response format=text
+        private static final Map<String, String> commonPair;
         // pair that in OS=iOS can exist but not mean only exist in OS=iOS
-        private static final Set<String> iosPair;
+        private static final Map<String, String> iosPair;
         // pair that in OS=Android can exist but not mean only exist in OS=Android
-        private static final Set<String> androidPair;
+        private static final Map<String, String> androidPair;
+        // pair that in OS=web can exist but not mean only exist in OS=web
+        private static final Map<String, String> webPair;
+        // the key store config's item name, the value store mock value to be verify
+        private static final Map<String, String> items;
         static {
-            Set<String> commonSet = new HashSet<String>();
-            Set<String> iosSet = new HashSet<String>();
-            Set<String> androidSet = new HashSet<String>();
+            Map<String, String> commonMap = new HashMap<String, String>();
+            Map<String, String> iosMap = new HashMap<String, String>();
+            Map<String, String> androidMap = new HashMap<String, String>();
+            Map<String, String> webMap = new HashMap<String, String>();
             
-            commonSet.add(MsoConfig.DEBUG);
-            commonSet.add(MsoConfig.FBTOKEN);
-            commonSet.add(MsoConfig.RO);
-            commonSet.add(MsoConfig.FORCE_UPGRADE);
-            commonSet.add(MsoConfig.UPGRADE_MSG);
-            commonSet.add(MsoConfig.VIDEO);
-            commonSet.add(MsoConfig.ABOUT_US);
-            commonSet.add(MsoConfig.SOCIAL_FEEDS);
-            commonSet.add(MsoConfig.SUPPORTED_REGION);
-            commonSet.add(MsoConfig.FACEBOOK_CLIENTID);
-            commonSet.add(MsoConfig.CHROMECAST_ID);
-            commonSet.add(MsoConfig.SOCIAL_FEEDS_SERVER);
-            commonSet.add(MsoConfig.SEARCH);
-            commonSet.add("ga");
+            commonMap.put(MsoConfig.DEBUG,                  "c" + MsoConfig.DEBUG);
+            commonMap.put(MsoConfig.FBTOKEN,                "c" + MsoConfig.FBTOKEN);
+            commonMap.put(MsoConfig.RO,                     "c" + MsoConfig.RO);
+            commonMap.put(MsoConfig.FORCE_UPGRADE,          "c" + MsoConfig.FORCE_UPGRADE);
+            commonMap.put(MsoConfig.UPGRADE_MSG,            "c" + MsoConfig.UPGRADE_MSG);
+            commonMap.put(MsoConfig.VIDEO,                  "c" + MsoConfig.VIDEO);
+            commonMap.put(MsoConfig.ABOUT_US,               "c" + MsoConfig.ABOUT_US);
+            commonMap.put(MsoConfig.SOCIAL_FEEDS,           "c" + MsoConfig.SOCIAL_FEEDS);
+            commonMap.put(MsoConfig.SUPPORTED_REGION,       "c" + MsoConfig.SUPPORTED_REGION);
+            commonMap.put(MsoConfig.FACEBOOK_CLIENTID,      "c" + MsoConfig.FACEBOOK_CLIENTID);
+            commonMap.put(MsoConfig.CHROMECAST_ID,          "c" + MsoConfig.CHROMECAST_ID);
+            commonMap.put(MsoConfig.SOCIAL_FEEDS_SERVER,    "c" + MsoConfig.SOCIAL_FEEDS_SERVER);
+            commonMap.put(MsoConfig.SEARCH,                 "c" + MsoConfig.SEARCH);
             
-            iosSet.add(MsoConfig.SHAKE_DISCOVER); // c.getValue().equals("on")
-            iosSet.add("flurry");
-            iosSet.add("ad");
-            iosSet.add("admob-key");
-            iosSet.add(MsoConfig.AUDIO_BACKGROUND);
-            iosSet.add("homepage");
-            iosSet.add(MsoConfig.NOTIFICATION_SOUND_VIBRATION);
-            iosSet.add(MsoConfig.SIGNUP_ENFORCE);
+            // these mock value are shared setting in different OS
+            String mockShackDiscover = "on"; // "on" is only valid value
+            String mockHomePage = "myhome.com";
+            String mockNotificationSound = "bling";
+            String mockSignupEnforce = "enforce";
+            String mockAudioBackground = "on";
             
-            androidSet.add(MsoConfig.GCM_SENDER_ID);
-            androidSet.add(MsoConfig.SHAKE_DISCOVER); // c.getValue().equals("on")
-            androidSet.add("flurry");
-            androidSet.add("ad");
-            androidSet.add("admob-key");
-            androidSet.add(MsoConfig.AUDIO_BACKGROUND);
-            androidSet.add("youtube");
-            androidSet.add("homepage");
-            androidSet.add(MsoConfig.NOTIFICATION_SOUND_VIBRATION);
-            androidSet.add(MsoConfig.SIGNUP_ENFORCE);
+            iosMap.put(MsoConfig.SHAKE_DISCOVER,                mockShackDiscover);
+            iosMap.put("flurry",                                "i" + "flurry");
+            iosMap.put("ad",                                    "i" + "on");
+            iosMap.put("admob-key",                             "i" + "admob-key");
+            iosMap.put(MsoConfig.AUDIO_BACKGROUND,              mockAudioBackground);
+            iosMap.put(MsoConfig.HOMEPAGE,                      mockHomePage);
+            iosMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION,  mockNotificationSound);
+            iosMap.put(MsoConfig.SIGNUP_ENFORCE,                mockSignupEnforce);
+            iosMap.put("ga",                                    "i" + "ga");
             
-            commonPair = Collections.unmodifiableSet(commonSet);
-            iosPair = Collections.unmodifiableSet(iosSet);
-            androidPair = Collections.unmodifiableSet(androidSet);
+            androidMap.put(MsoConfig.GCM_SENDER_ID,                 "a" + MsoConfig.GCM_SENDER_ID);
+            androidMap.put(MsoConfig.SHAKE_DISCOVER,                mockShackDiscover);
+            androidMap.put("flurry",                                "a" + "flurry");
+            androidMap.put("ad",                                    "a" + "on");
+            androidMap.put("admob-key",                             "a" + "admob-key");
+            androidMap.put(MsoConfig.AUDIO_BACKGROUND,              mockAudioBackground);
+            androidMap.put("youtube",                               "a" + "youtube");
+            androidMap.put(MsoConfig.HOMEPAGE,                      mockHomePage);
+            androidMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION,  mockNotificationSound);
+            androidMap.put(MsoConfig.SIGNUP_ENFORCE,                mockSignupEnforce);
+            androidMap.put("ga",                                    "a" + "ga");
+            
+            webMap.put("ga", "w" + "ga");
+            
+            commonPair = Collections.unmodifiableMap(commonMap);
+            iosPair = Collections.unmodifiableMap(iosMap);
+            androidPair = Collections.unmodifiableMap(androidMap);
+            webPair = Collections.unmodifiableMap(webMap);
+            
+            Map<String, String> itemMap = new HashMap<String, String>();
+            
+            itemMap.putAll(commonPair);
+            itemMap.put(MsoConfig.SHAKE_DISCOVER,   mockShackDiscover);
+            itemMap.put(MsoConfig.AUDIO_BACKGROUND, mockAudioBackground);
+            itemMap.put(MsoConfig.HOMEPAGE,         mockHomePage);
+            itemMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, mockNotificationSound);
+            itemMap.put(MsoConfig.SIGNUP_ENFORCE,   mockSignupEnforce);
+            
+            itemMap.put(MsoConfig.GOOGLE_ANALYTICS_IOS, iosPair.get("ga"));
+            itemMap.put(MsoConfig.FLURRY_ANALYTICS_IOS, iosPair.get("flurry"));
+            itemMap.put(MsoConfig.AD_IOS,               iosPair.get("ad"));
+            itemMap.put(MsoConfig.ADMOBKEY_IOS,         iosPair.get("admob-key"));
+            
+            itemMap.put(MsoConfig.GOOGLE_ANALYTICS_ANDROID, androidPair.get("ga"));
+            itemMap.put(MsoConfig.FLURRY_ANALYTICS_ANDROID, androidPair.get("flurry"));
+            itemMap.put(MsoConfig.AD_ANDROID,               androidPair.get("ad"));
+            itemMap.put(MsoConfig.ADMOBKEY_ANDROID,         androidPair.get("admob-key"));
+            itemMap.put(MsoConfig.YOUTUBE_ID_ANDROID,       androidPair.get("youtube"));
+            itemMap.put(MsoConfig.GCM_SENDER_ID,            androidPair.get(MsoConfig.GCM_SENDER_ID));
+            
+            itemMap.put(MsoConfig.GOOGLE_ANALYTICS_WEB, webPair.get("ga"));
+            
+            items = Collections.unmodifiableMap(itemMap);
         }
         private static final Map<String, String> commonPairDefault;
         private static final Map<String, String> webPairDefault;
         private static final Map<String, String> iosPairDefault;
         private static final Map<String, String> androidPairDefault;
         static {
-            Map<String, String> commonMap = new HashMap<String, String>();
-            Map<String, String> webMap = new HashMap<String, String>();
-            Map<String, String> iosMap = new HashMap<String, String>();
-            Map<String, String> androidMap = new HashMap<String, String>();
+            Map<String, String> commonDefaultMap = new HashMap<String, String>();
+            Map<String, String> webDefaultMap = new HashMap<String, String>();
+            Map<String, String> iosDefaultMap = new HashMap<String, String>();
+            Map<String, String> androidDefaultMap = new HashMap<String, String>();
             
-            commonMap.put(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
-            commonMap.put(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
-            commonMap.put(MsoConfig.CHROMECAST_ID, "DBB1992C");
-            commonMap.put(MsoConfig.SEARCH, "all");
+            commonDefaultMap.put(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
+            commonDefaultMap.put(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
+            commonDefaultMap.put(MsoConfig.CHROMECAST_ID, "DBB1992C");
+            commonDefaultMap.put(MsoConfig.SEARCH, "all");
             
-            webMap.put("ga", "UA-47454448-1");
+            webDefaultMap.put("ga", "UA-47454448-1");
             
-            iosMap.put("ga", "UA-47454448-3");
-            iosMap.put("flurry", "J6GPGNMBR7GRDJVSCCN8");
-            iosMap.put("ad", "off");
-            iosMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
-            iosMap.put("homepage", "portal");
-            iosMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
-            iosMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
+            iosDefaultMap.put("ga", "UA-47454448-3");
+            iosDefaultMap.put("flurry", "J6GPGNMBR7GRDJVSCCN8");
+            iosDefaultMap.put("ad", "off");
+            iosDefaultMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
+            iosDefaultMap.put("homepage", "portal");
+            iosDefaultMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
+            iosDefaultMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
             
-            androidMap.put("ga", "UA-47454448-2");
-            androidMap.put("ad", "off");
-            androidMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
-            androidMap.put("youtube",
+            androidDefaultMap.put("ga", "UA-47454448-2");
+            androidDefaultMap.put("ad", "off");
+            androidDefaultMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
+            androidDefaultMap.put("youtube",
                     "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA");
-            androidMap.put("homepage", "portal");
-            androidMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
-            androidMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
+            androidDefaultMap.put("homepage", "portal");
+            androidDefaultMap.put(MsoConfig.NOTIFICATION_SOUND_VIBRATION, "sound off;vibration off");
+            androidDefaultMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
             
-            commonPairDefault = Collections.unmodifiableMap(commonMap);
-            webPairDefault = Collections.unmodifiableMap(commonMap);
-            iosPairDefault = Collections.unmodifiableMap(commonMap);
-            androidPairDefault = Collections.unmodifiableMap(commonMap);
+            commonPairDefault = Collections.unmodifiableMap(commonDefaultMap);
+            webPairDefault = Collections.unmodifiableMap(webDefaultMap);
+            iosPairDefault = Collections.unmodifiableMap(iosDefaultMap);
+            androidPairDefault = Collections.unmodifiableMap(androidDefaultMap);
         }
         
         @Before
@@ -807,12 +850,35 @@ public class PlayerApiServiceTest {
             defaultOS = null;
         }
         
+        // turn on config interaction with database in MsoManager.composeBrandInfoStr
         private void makeAllConfigAvailable() {
             
+            List<MsoConfig> configs = new ArrayList<MsoConfig>();
+            for (String itemName : items.keySet()) {
+                
+                MsoConfig config = new MsoConfig();
+                config.setMsoId(defaultMso.getId());
+                config.setItem(itemName);
+                config.setValue(items.get(itemName));
+                
+                doReturn(config).when(configMngr).findByMsoAndItem(defaultMso, itemName);
+                
+                configs.add(config);
+            }
+            
+            doReturn(configs).when(configMngr).findByMso(defaultMso);
         }
         
+        // turn off config interaction with database in MsoManager.composeBrandInfoStr
         private void makeAllConfigUnavailable() {
             
+            List<MsoConfig> configs = new ArrayList<MsoConfig>();
+            for (String itemName : items.keySet()) {
+                
+                doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, itemName);
+            }
+            
+            doReturn(configs).when(configMngr).findByMso(defaultMso);
         }
         
         @Test
@@ -870,89 +936,162 @@ public class PlayerApiServiceTest {
         public void configKeyValueWithWeb() { // os=web & all config exist in database
             
             // exist list
-            HashSet<String> exist = new HashSet<String>();
-            exist.addAll(commonPair);
+            Map<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPair);
+            exist.putAll(webPair);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(iosPair);
-            notExist.addAll(androidPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
+            notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_WEB;
+            req.setParameter("os", os);
+            
+            // stubs
+            makeAllConfigAvailable();
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         @Test
         public void configKeyValueDefaultWithWeb() { // os=web & nothing config exist in database
             
             // exist list (has default)
-            HashMap<String, String> exist = new HashMap<String, String>();
+            Map<String, String> exist = new HashMap<String, String>();
             exist.putAll(commonPairDefault);
             exist.putAll(webPairDefault);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(commonPair);
-            notExist.addAll(iosPair);
-            notExist.addAll(androidPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
             notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_WEB;
+            req.setParameter("os", os);
+            
+            // stubs
+            makeAllConfigUnavailable();
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         @Test
         public void configKeyValueWithIos() { // os=ios & all config exist in database
             
             // exist list
-            HashSet<String> exist = new HashSet<String>();
-            exist.addAll(commonPair);
-            exist.addAll(iosPair);
+            Map<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPair);
+            exist.putAll(iosPair);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(androidPair);
-            notExist.removeAll(iosPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
+            notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_IOS;
+            req.setParameter("os", os);
         }
         
         @Test
         public void configKeyValueDefaultWithIos() { // os=ios & nothing config exist in database
             
             // exist list (has default)
-            HashMap<String, String> exist = new HashMap<String, String>();
+            Map<String, String> exist = new HashMap<String, String>();
             exist.putAll(commonPairDefault);
             exist.putAll(iosPairDefault);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(commonPair);
-            notExist.addAll(iosPair);
-            notExist.addAll(androidPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
             notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_IOS;
+            req.setParameter("os", os);
         }
         
         @Test
         public void configKeyValueWithAndroid() { // os=android & all config exist in database
             
             // exist list
-            HashSet<String> exist = new HashSet<String>();
-            exist.addAll(commonPair);
-            exist.addAll(androidPair);
+            Map<String, String> exist = new HashMap<String, String>();
+            exist.putAll(commonPair);
+            exist.putAll(androidPair);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(iosPair);
-            notExist.removeAll(androidPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
+            notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_ANDROID;
+            req.setParameter("os", os);
         }
         
         @Test
         public void configKeyValueDefaultWithAndroid() { // os=android & nothing config exist in database
             
             // exist list (has default)
-            HashMap<String, String> exist = new HashMap<String, String>();
+            Map<String, String> exist = new HashMap<String, String>();
             exist.putAll(commonPairDefault);
             exist.putAll(androidPairDefault);
             
             // can't exist list
-            HashSet<String> notExist = new HashSet<String>();
-            notExist.addAll(commonPair);
-            notExist.addAll(iosPair);
-            notExist.addAll(androidPair);
+            Set<String> notExist = new HashSet<String>();
+            notExist.addAll(commonPair.keySet());
+            notExist.addAll(webPair.keySet());
+            notExist.addAll(iosPair.keySet());
+            notExist.addAll(androidPair.keySet());
             notExist.removeAll(exist.keySet());
+            
+            // input
+            String os = PlayerService.OS_ANDROID;
+            req.setParameter("os", os);
         }
         
         // TODO third part 'ad' section test case
