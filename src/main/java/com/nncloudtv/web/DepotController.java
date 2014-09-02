@@ -225,10 +225,11 @@ public class DepotController {
             try {
                 URL url = new URL(videoUrl);
                 InputStream in = url.openStream();
-                
-                Process process = Runtime.getRuntime().exec("/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout");
+                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+                log.info("exec: " + cmd);
+                Process process = Runtime.getRuntime().exec(cmd);
                 OutputStream out = process.getOutputStream();
-                
+                log.info("copy stream");
                 IOUtils.copy(in, out);
                 
                 ObjectMetadata metadata = new ObjectMetadata();
