@@ -225,12 +225,17 @@ public class DepotController {
             try {
                 URL url = new URL(videoUrl);
                 InputStream in = url.openStream();
-                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 15 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
                 log.info("exec: " + cmd);
                 Process process = Runtime.getRuntime().exec(cmd);
                 OutputStream out = process.getOutputStream();
-                log.info("copy stream");
-                IOUtils.copy(in, out);
+                log.info("copying stream");
+                
+                try {
+                    IOUtils.copy(in, out);
+                } catch (IOException e) {
+                    // pipe broken is safe
+                }
                 
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType("image/png");
