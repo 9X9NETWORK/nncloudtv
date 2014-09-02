@@ -3,13 +3,19 @@ package com.nncloudtv.web;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationTimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
@@ -46,6 +54,7 @@ import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
@@ -189,6 +198,67 @@ public class DepotController {
         } catch (Exception e) {
             NnLogUtil.logException(e);
         }
+    }
+    @RequestMapping("generateThumbnail")
+    public @ResponseBody Object generateThubnail(HttpServletRequest req) {
+      
+        PlayerApiService service = new PlayerApiService();
+        String thumbnailUrl = null;
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            return service.assembleMsgs(NnStatusCode.INPUT_MISSING,  null);
+        }
+        
+        String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
+        Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
+        if (matcher.find()) {
+            
+            
+            
+            // private s3 url
+            
+            
+            
+        } else {
+            
+            try {
+                URL url = new URL(videoUrl);
+                InputStream in = url.openStream();
+                
+                Process process = Runtime.getRuntime().exec("/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout");
+                OutputStream out = process.getOutputStream();
+                
+                PipedOutputStream pipeOut = new PipedOutputStream();
+                PipedInputStream pipeIn = new PipedInputStream();
+                pipeOut.connect(pipeIn);
+                IOUtils.copy(in, pipeOut);
+                IOUtils.copy(pipeIn, out);
+                
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType("image/png");
+                
+                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
+                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  process.getInputStream(), metadata);
+                log.info("thumbnailUrl = " + thumbnailUrl);
+                
+            } catch (MalformedURLException e) {
+                return service.assembleMsgs(NnStatusCode.INPUT_BAD,  null);
+            } catch (IOException e) {
+                return service.assembleMsgs(NnStatusCode.ERROR,  null);
+            }
+        }
+        
+        if (thumbnailUrl == null) {
+            return service.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+        }
+        log.info("thumbnailUel = " + thumbnailUrl);
+        
+        String data = PlayerApiService.assembleKeyValue("url", thumbnailUrl);
+        String[] result = { data };
+        
+        return service.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
     @RequestMapping("processThumbnail")
