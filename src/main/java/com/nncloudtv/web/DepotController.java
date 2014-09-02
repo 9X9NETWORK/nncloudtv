@@ -240,8 +240,10 @@ public class DepotController {
                 log.info("thumbnailUrl = " + thumbnailUrl);
                 
             } catch (MalformedURLException e) {
+                log.info(e.getMessage());
                 return service.assembleMsgs(NnStatusCode.INPUT_BAD,  null);
             } catch (IOException e) {
+                log.info(e.getMessage());
                 return service.assembleMsgs(NnStatusCode.ERROR,  null);
             }
         }
