@@ -232,14 +232,16 @@ public class DepotController {
                 log.info("copying stream");
                 
                 try {
-                    IOUtils.copy(in, out);
+                    
+                    int len = IOUtils.copy(in, out);
+                    log.info(len + " bytes copied");
                 } catch (IOException e) {
                     // pipe broken is safe
                 }
                 
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType("image/png");
-                
+                log.info("saving thumbnail");
                 thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
                                                   "thumb-xx" + NnDateUtil.now().getTime() + ".png",
                                                   process.getInputStream(), metadata);
