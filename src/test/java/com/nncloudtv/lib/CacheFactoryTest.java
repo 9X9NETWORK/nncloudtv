@@ -100,6 +100,7 @@ public class CacheFactoryTest {
         
         // mock object
         MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         
         // stubs

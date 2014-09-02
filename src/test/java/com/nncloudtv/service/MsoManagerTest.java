@@ -135,11 +135,12 @@ public class MsoManagerTest {
         
         // mock data
         String mockOs = PlayerService.OS_ANDROID;
-        String cacheKey = "cacheKey";
+        //String cacheKey = "cacheKey";
         Object cached = new BrandInfo();
         
         // mock object
         MemcachedClient cache = Mockito.mock(MemcachedClient.class);
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         
         // stubs

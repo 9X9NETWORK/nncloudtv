@@ -31,8 +31,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import com.nncloudtv.dao.MsoConfigDao;
-import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.model.Mso;
@@ -44,7 +42,6 @@ import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.support.NnTestUtil;
-import com.nncloudtv.web.json.player.ApiStatus;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
@@ -90,6 +87,7 @@ public class PlayerApiControllerTest {
         }
         
         // default return null for any kind of key
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         when(cache.asyncGet(anyString())).thenReturn(future);
         try {
@@ -105,6 +103,7 @@ public class PlayerApiControllerTest {
     
     private void recordMemoryCacheGet(MemcachedClient cache, String key, Object returnObj) {
         
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         when(cache.asyncGet(key)).thenReturn(future);
         try {
@@ -250,7 +249,7 @@ public class PlayerApiControllerTest {
         // execute & verify
         // ip in tw
         req.setRemoteAddr("114.32.175.163"); // this ip locate in tw
-        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
@@ -260,7 +259,7 @@ public class PlayerApiControllerTest {
         
         // ip in us
         req.setRemoteAddr("136.18.5.120"); // this ip locate in us
-        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
         actual2 = (String) captureActual.getValue();
@@ -312,7 +311,7 @@ public class PlayerApiControllerTest {
         // execute & verify
         // format=xyz, not exist format
         req.setParameter("format", "xyz");
-        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
@@ -322,7 +321,7 @@ public class PlayerApiControllerTest {
         
         // not provide format
         req.removeParameter("format");
-        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
         actual2 = captureActual.getValue();

@@ -160,8 +160,8 @@ public class NnUtilStringTest {
     @Test
     public void testEscapeDoubleQuote() {
         
-        String respMsg = "'\"' and '\\'";
-        String expected = "\"'\\\"' and '\\\\'\"";
+        //String respMsg = "'\"' and '\\'";
+        //String expected = "\"'\\\"' and '\\\\'\"";
         //assertEquals(respMsg + " should properly handled in JSON resp.", expected, NnStringUtil.escapeDoubleQuote(respMsg));
         
         // should be return "\"" + str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"") + "\"";

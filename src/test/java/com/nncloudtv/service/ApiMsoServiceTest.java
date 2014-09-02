@@ -90,7 +90,7 @@ public class ApiMsoServiceTest {
         systag.setId(setId);
         systag.setType(SysTag.TYPE_SET);
         systag.setSorting(SysTag.SORT_SEQ);
-        List<NnChannel> channels = new ArrayList<NnChannel>();
+        //List<NnChannel> channels = new ArrayList<NnChannel>();
         
         // stubs
         
@@ -115,7 +115,7 @@ public class ApiMsoServiceTest {
         systag.setId(setId);
         systag.setType(SysTag.TYPE_SET);
         systag.setSorting(SysTag.SORT_DATE);
-        List<NnChannel> channels = new ArrayList<NnChannel>();
+        //List<NnChannel> channels = new ArrayList<NnChannel>();
         
         // stubs
         
