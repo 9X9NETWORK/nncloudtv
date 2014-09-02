@@ -208,7 +208,7 @@ public class DepotController {
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
         if (videoUrl == null) {
-            return service.assembleMsgs(NnStatusCode.INPUT_MISSING,  null);
+            return service.response(service.assembleMsgs(NnStatusCode.INPUT_MISSING,  null));
         }
         
         String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
@@ -255,22 +255,22 @@ public class DepotController {
                 
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
-                return service.assembleMsgs(NnStatusCode.INPUT_BAD,  null);
+                return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD,  null));
             } catch (IOException e) {
                 log.info(e.getMessage());
-                return service.assembleMsgs(NnStatusCode.ERROR,  null);
+                return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
             }
         }
         
         if (thumbnailUrl == null) {
-            return service.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+            return service.response(service.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null));
         }
         log.info("thumbnailUrl = " + thumbnailUrl);
         
         String data = PlayerApiService.assembleKeyValue("url", thumbnailUrl);
         String[] result = { data };
         
-        return service.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return service.response(service.assembleMsgs(NnStatusCode.SUCCESS, result));
     }
     
     @RequestMapping("processThumbnail")

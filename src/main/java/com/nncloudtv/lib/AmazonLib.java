@@ -182,6 +182,6 @@ public class AmazonLib {
         
         s3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
         
-        return "http://s3.amazonaws.com/" + bucket + "/" + filename;
+        return "http://" + bucket + ".s3.amazonaws.com/" + filename;
     }
 }
