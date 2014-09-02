@@ -229,11 +229,7 @@ public class DepotController {
                 Process process = Runtime.getRuntime().exec("/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout");
                 OutputStream out = process.getOutputStream();
                 
-                PipedOutputStream pipeOut = new PipedOutputStream();
-                PipedInputStream pipeIn = new PipedInputStream();
-                pipeOut.connect(pipeIn);
-                IOUtils.copy(in, pipeOut);
-                IOUtils.copy(pipeIn, out);
+                IOUtils.copy(in, out);
                 
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType("image/png");
