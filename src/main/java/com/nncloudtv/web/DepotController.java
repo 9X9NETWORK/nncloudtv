@@ -1,6 +1,7 @@
 package com.nncloudtv.web;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -232,20 +233,25 @@ public class DepotController {
                 log.info("copying stream");
                 
                 try {
-                    
                     int len = IOUtils.copy(in, out);
                     log.info(len + " bytes copied");
                 } catch (IOException e) {
                     // pipe broken is safe
                 }
                 
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentType("image/png");
-                log.info("saving thumbnail");
-                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
-                                                  process.getInputStream(), metadata);
-                log.info("thumbnailUrl = " + thumbnailUrl);
+                byte[] bytes = IOUtils.toByteArray(process.getInputStream());
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                
+                log.info("thumbnail size = " + bytes.length);
+                if (bytes.length > 0) {
+                    
+                    ObjectMetadata metadata = new ObjectMetadata();
+                    metadata.setContentType("image/png");
+                    metadata.setContentLength(bytes.length);
+                    thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
+                            "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                            bais, metadata);
+                }
                 
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
@@ -259,7 +265,7 @@ public class DepotController {
         if (thumbnailUrl == null) {
             return service.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
         }
-        log.info("thumbnailUel = " + thumbnailUrl);
+        log.info("thumbnailUrl = " + thumbnailUrl);
         
         String data = PlayerApiService.assembleKeyValue("url", thumbnailUrl);
         String[] result = { data };
