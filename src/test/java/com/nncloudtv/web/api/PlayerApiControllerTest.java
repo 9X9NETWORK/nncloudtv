@@ -21,6 +21,7 @@ import net.spy.memcached.internal.GetFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -41,12 +42,14 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.web.json.player.ApiStatus;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({MsoManager.class,FacebookLib.class,CacheFactory.class,PlayerApiController.class})
+@Category(NnTestAll.class)
 public class PlayerApiControllerTest {
     
     protected static final Logger log = Logger.getLogger(PlayerApiControllerTest.class.getName());

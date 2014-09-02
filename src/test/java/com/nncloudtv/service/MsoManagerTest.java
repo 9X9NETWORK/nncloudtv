@@ -22,6 +22,7 @@ import net.spy.memcached.internal.GetFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,11 +36,13 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.web.json.player.BrandInfo;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({MsoConfigManager.class, CacheFactory.class, MsoManager.class})
+@Category(NnTestAll.class)
 public class MsoManagerTest {
     
     MsoManager msoMngr;

@@ -11,12 +11,14 @@ import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.support.NnTestAll;
 
-
+@Category(NnTestAll.class)
 public class NnUtilStringTest {
     
     protected static final Logger log = Logger.getLogger(NnUtilStringTest.class.getName());

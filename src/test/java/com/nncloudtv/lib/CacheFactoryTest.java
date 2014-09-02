@@ -20,14 +20,18 @@ import net.spy.memcached.internal.GetFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.nncloudtv.support.NnTestAll;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({CacheFactory.class})
+@Category(NnTestAll.class)
 public class CacheFactoryTest {
     
     protected static final Logger log = Logger.getLogger(CacheFactoryTest.class.getName());

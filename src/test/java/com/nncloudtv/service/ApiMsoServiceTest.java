@@ -29,6 +29,7 @@ import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagMap;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.web.json.cms.Category;
 
 /**
@@ -37,6 +38,7 @@ import com.nncloudtv.web.json.cms.Category;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({MsoConfigManager.class, MsoManager.class})
+@org.junit.experimental.categories.Category(NnTestAll.class)
 public class ApiMsoServiceTest {
     
     protected static final Logger log = Logger.getLogger(ApiMsoServiceTest.class.getName());

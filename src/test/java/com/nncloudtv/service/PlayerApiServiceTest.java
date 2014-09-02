@@ -38,6 +38,7 @@ import net.spy.memcached.internal.GetFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +58,8 @@ import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.support.NnTestAll;
+import com.nncloudtv.support.NnTestImportant;
 import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.validation.BasicValidator;
 import com.nncloudtv.web.api.ApiContext;
@@ -147,6 +150,7 @@ public class PlayerApiServiceTest {
     
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({CacheFactory.class})
+    @Category(NnTestImportant.class)
     public static class testBrandInfo extends PlayerApiServiceTest {
         
         private MemcachedClient cache;
@@ -662,6 +666,7 @@ public class PlayerApiServiceTest {
     
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({CacheFactory.class})
+    @Category(NnTestImportant.class)
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
         
         private MsoConfigManager configMngr;
@@ -1098,6 +1103,7 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(MockitoJUnitRunner.class)
+    @Category(NnTestAll.class)
     public static class testSetProfile extends PlayerApiServiceTest {
         
         @Test
@@ -1167,6 +1173,7 @@ public class PlayerApiServiceTest {
     
     @RunWith(PowerMockRunner.class)
     @PrepareForTest({BasicValidator.class})
+    @Category(NnTestAll.class)
     public static class testLogin extends PlayerApiServiceTest {
         
         @Test
