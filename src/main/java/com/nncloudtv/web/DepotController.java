@@ -225,7 +225,7 @@ public class DepotController {
             try {
                 URL url = new URL(videoUrl);
                 InputStream in = url.openStream();
-                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 15 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
                 log.info("exec: " + cmd);
                 Process process = Runtime.getRuntime().exec(cmd);
                 OutputStream out = process.getOutputStream();
