@@ -25,6 +25,7 @@ test "$1" != "-n" \
 cd ..
 mvn clean \
     install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
+    install:install-file -Dfile=./lib/jcodec-0.1.8.jar -DgroupId=org.jcodec -DartifactId=jcodec -Dversion=0.1.8 -Dpackaging=jar \
     compile \
     datanucleus:enhance \
     install war:war \

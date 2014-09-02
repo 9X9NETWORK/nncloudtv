@@ -427,6 +427,11 @@
             <artifactId>aws-java-sdk</artifactId>
             <version>1.8.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.jcodec</groupId>
+            <artifactId>jcodec</artifactId>
+            <version>0.1.8</version>
+        </dependency>
     </dependencies>
 
     <!-- ====================================================================== -->
