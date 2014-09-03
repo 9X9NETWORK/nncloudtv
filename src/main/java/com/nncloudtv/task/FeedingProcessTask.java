@@ -49,9 +49,8 @@ public class FeedingProcessTask extends Thread {
         try {
             long len = 0, total = 0;
             do {
-                String line = null;
-                while ((line = err.readLine()) != null) {
-                    
+                while (err.ready()) {
+                    String line = err.readLine();
                     if (line != null) {
                         log.info("avconv: " + line);
                     }
