@@ -235,11 +235,13 @@ public class DepotController {
                 
                 Process process = Runtime.getRuntime().exec(cmd);
                 
+                InputStream thumbIn = process.getInputStream();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
+                
                 log.info("I am here.");
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                InputStream thumbIn = process.getInputStream();
+                
                 byte[] buf = new byte[4096];
                 while (true) {
                     
