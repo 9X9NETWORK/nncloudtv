@@ -36,7 +36,7 @@ public class FeedingProcessTask extends Thread {
     public void run() {
         
         log.info("start copy stream ...");
-        byte[] bytes = new byte[1024];
+        byte[] buf = new byte[1024];
         
         if (in == null) {
             log.warning("null input stream, abort.");
@@ -55,14 +55,14 @@ public class FeedingProcessTask extends Thread {
                     }
                 }
                 
-                len = in.read(bytes);
+                len = in.read(buf);
                 if (len < 0) {
                     
                     break;
                 }
                 total += len;
                 log.info(total + " feeded");
-                out.write(bytes, 0, len);
+                out.write(buf, 0, len);
                 
                 if (in.available() == 0) {
                     log.info("sleep a while");

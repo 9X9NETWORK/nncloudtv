@@ -237,13 +237,14 @@ public class DepotController {
                 
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
-                
+                log.info("I am here.");
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 InputStream thumbIn = process.getInputStream();
                 byte[] buf = new byte[4096];
                 while (true) {
                     
                     int len = thumbIn.read(buf);
+                    log.info("gogogo");
                     if (len < 0) {
                         
                         break;
