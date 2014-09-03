@@ -234,20 +234,8 @@ public class DepotController {
                 
                 Process process = Runtime.getRuntime().exec(cmd);
                 
-                try {
-                    streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
-                    streamCopyTask.start();
-                    process.wait();
-                    
-                } catch (InterruptedException e) {
-                    log.info("command interrupted, but it's ok");
-                } catch(Exception e) {
-                    log.warning(e.getMessage());
-                } finally {
-                    if (streamCopyTask != null) {
-                        streamCopyTask.stopCopying();
-                    }
-                }
+                streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
+                streamCopyTask.start();
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 
@@ -267,6 +255,10 @@ public class DepotController {
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+            }finally {
+                if (streamCopyTask != null) {
+                    streamCopyTask.stopCopying();
+                }
             }
         }
         
