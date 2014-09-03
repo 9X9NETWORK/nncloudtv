@@ -35,6 +35,13 @@ public class StreamCopyTask extends Thread {
         
         log.info("start copy stream ...");
         
+        if (in == null) {
+            log.warning("null input stream, abort.");
+        }
+        if (out == null) {
+            log.warning("null output stream, abort.");
+        }
+        
         try {
             byte[] buf = new byte[BUFSIZE];
             int len = 0, total = 0;

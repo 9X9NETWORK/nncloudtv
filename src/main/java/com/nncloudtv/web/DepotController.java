@@ -233,7 +233,7 @@ public class DepotController {
                 log.info("exec: " + cmd);
                 
                 Process process = Runtime.getRuntime().exec(cmd);
-
+                
                 try {
                     streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
                     streamCopyTask.start();
@@ -241,6 +241,8 @@ public class DepotController {
                     
                 } catch (InterruptedException e) {
                     log.info("command interrupted, but it's ok");
+                } catch(Exception e) {
+                    log.warning(e.getMessage());
                 } finally {
                     if (streamCopyTask != null) {
                         streamCopyTask.stopCopying();
