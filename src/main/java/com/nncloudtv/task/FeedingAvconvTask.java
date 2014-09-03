@@ -9,15 +9,15 @@ import java.util.logging.Logger;
 
 import com.nncloudtv.lib.NnDateUtil;
 
-public class FeedingProcessTask extends PipingTask {
+public class FeedingAvconvTask extends PipingTask {
     
-    protected static Logger log = Logger.getLogger(FeedingProcessTask.class.getName());
+    protected static Logger log = Logger.getLogger(FeedingAvconvTask.class.getName());
     
     Process    process = null;
     BufferedReader err = null;
     Date     startTime = null;
     
-    public FeedingProcessTask(InputStream in, Process process) {
+    public FeedingAvconvTask(InputStream in, Process process) {
         
         super(in, process.getOutputStream());
         this.process = process;
@@ -77,6 +77,6 @@ public class FeedingProcessTask extends PipingTask {
         }
         
         log.info("total feeded size = " + total);
-        log.info("copy finished - " + keepGoing);
+        log.info("copy finished with keepGoing = " + keepGoing);
     }
 }

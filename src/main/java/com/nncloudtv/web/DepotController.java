@@ -55,7 +55,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
-import com.nncloudtv.task.FeedingProcessTask;
+import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
@@ -211,6 +211,7 @@ public class DepotController {
         if (videoUrl == null) {
             return service.response(service.assembleMsgs(NnStatusCode.INPUT_MISSING,  null));
         }
+        InputStream videoIn = null;
         
         String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
         Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
@@ -226,52 +227,62 @@ public class DepotController {
             
         } else {
             
-            FeedingProcessTask feedingProcessTask = null;
-            
             try {
                 URL url = new URL(videoUrl);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setInstanceFollowRedirects(true);
-                String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
-                log.info("exec: " + cmd);
-                
-                Process process = Runtime.getRuntime().exec(cmd);
-                
-                InputStream thumbIn = process.getInputStream();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                
-                PipingTask pipingTask = new PipingTask(thumbIn, baos);
-                pipingTask.start();
-                
-                feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
-                feedingProcessTask.start();
-                
-                pipingTask.join();
-                feedingProcessTask.stopCopying();
-                log.info("thumbnail size = " + baos.size());
-                if (baos.size() > 0) {
-                    
-                    ObjectMetadata metadata = new ObjectMetadata();
-                    metadata.setContentType("image/png");
-                    metadata.setContentLength(baos.size());
-                    thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                                                      "thumb-xx" + NnDateUtil.now().getTime() + ".png",
-                                                      new ByteArrayInputStream(baos.toByteArray()),
-                                                      metadata);
-                }
+                videoIn = conn.getInputStream();
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD, null));
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
-            } catch (InterruptedException e) {
-                log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR, null));
-            }finally {
-                if (feedingProcessTask != null) {
-                    feedingProcessTask.stopCopying();
-                }
+            }
+        }
+        
+        if (videoIn == null) {
+            return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
+        }
+        
+        FeedingAvconvTask feedingAvconvTask = null;
+        try {
+            String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+            log.info("[exec] " + cmd);
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            
+            InputStream thumbIn = process.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            
+            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            pipingTask.start();
+            
+            feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+            feedingAvconvTask.start();
+            
+            pipingTask.join();
+            feedingAvconvTask.stopCopying();
+            log.info("thumbnail size = " + baos.size());
+            if (baos.size() > 0) {
+                
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType("image/png");
+                metadata.setContentLength(baos.size());
+                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
+                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  new ByteArrayInputStream(baos.toByteArray()),
+                                                  metadata);
+            }
+        } catch (InterruptedException e) {
+            log.info(e.getMessage());
+            return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR, null));
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
+        } finally {
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
             }
         }
         

@@ -5,6 +5,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
+/**
+ * Piping from one input stream to another without blocking
+ * 
+ * @author louis
+ *
+ */
 public class PipingTask extends Thread {
     
     protected static Logger log = Logger.getLogger(PipingTask.class.getName());
@@ -40,8 +46,8 @@ public class PipingTask extends Thread {
             log.warning("null output stream, abort.");
         }
         
+        int len = 0, total = 0;
         try {
-            int len = 0, total = 0;
             do {
                 len = in.read(buf);
                 if (len < 0) {
@@ -59,7 +65,6 @@ public class PipingTask extends Thread {
                 }
             } while(keepGoing);
             
-            log.info("total piped size = " + total);
             
         } catch (IOException e) {
             log.info(e.getMessage());
@@ -67,6 +72,7 @@ public class PipingTask extends Thread {
             log.info(e.getMessage());
         }
         
-        log.info("piping finished - " + keepGoing);
+        log.info("total piped size = " + total);
+        log.info("piping finished with keepGoing = " + keepGoing);
     }
 }
