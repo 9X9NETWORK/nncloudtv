@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -515,14 +516,13 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             String[] cmd = {
-                    "/usr/bin/avconv",
-                    "-i",
-                    (videoIn == null) ? videoUrl : "/dev/stdin",
+                    "/usr/bin/avconv -i",
+                    (videoIn == null) ? NnStringUtil.escapeDoubleQuote(videoUrl) : "/dev/stdin",
                     "-ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout"};
             
-            log.info("[exec] " + cmd);
+            log.info("[exec] " + StringUtils.join(cmd, ' '));
             
-            Process process = Runtime.getRuntime().exec(cmd);
+            Process process = Runtime.getRuntime().exec(StringUtils.join(cmd, ' '));
             
             InputStream thumbIn = process.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
