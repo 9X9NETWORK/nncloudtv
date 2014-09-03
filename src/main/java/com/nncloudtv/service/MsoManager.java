@@ -138,7 +138,9 @@ public class MsoManager {
         boolean regionSet = false;
         boolean chromecastId = false;
         boolean facebookId = false;
-        
+        boolean searchSet = false;
+        boolean audioSet = false;
+        String adIosType = null;
         for (MsoConfig c : list) {
             if (c.getItem().equals(MsoConfig.DEBUG))
                 result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
@@ -184,24 +186,33 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.SOCIAL_FEEDS_SERVER)) {
             	result += PlayerApiService.assembleKeyValue(MsoConfig.SOCIAL_FEEDS_SERVER, c.getValue());
             }
-        }
-        if (regionSet == false) {
-        	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
+            if (c.getItem().equals(MsoConfig.AD_IOS_TYPE)) {
+            	adIosType = c.getValue();
+            }
+            if (c.getItem().equals(MsoConfig.SEARCH)) {
+            	searchSet = true;
+                result += PlayerApiService.assembleKeyValue(MsoConfig.SEARCH, c.getValue());            	
+            }
+            if (c.getItem().equals(MsoConfig.AUDIO_BACKGROUND) && !os.equals(PlayerService.OS_WEB)) {
+            	audioSet = true;
+            	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, c.getValue());
+            }
         }
         /*
         if (videoSet == false) {
         	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, "en w-YkGyubqcA;zh w-YkGyubqcA");
         }
         */
+        if (regionSet == false)
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
         if (chromecastId == false)
             result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, "DBB1992C");
         if (facebookId == false)
             result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
-        String search = "all";
-        MsoConfig searchConfig = configMngr.findByMsoAndItem(mso, MsoConfig.SEARCH);        
-        if (searchConfig != null)
-        	search = searchConfig.getValue();
-        result += PlayerApiService.assembleKeyValue("search", search);
+        if (searchSet == false)
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.SEARCH, "all");
+        if (audioSet == false && !os.equals(PlayerService.OS_WEB))
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, "off");
         //add ga based on device
         String gaKeyName = configMngr.getKeyNameByOs(os, "google");
         if (gaKeyName != null) {
@@ -226,6 +237,8 @@ public class MsoManager {
         String ad = configMngr.getAdConfig(mso, os);
         if (ad != null) {
             result += PlayerApiService.assembleKeyValue("ad", ad);
+            if (os.equals(PlayerService.OS_IOS) && adIosType != null)
+            	result += PlayerApiService.assembleKeyValue("ad-type", adIosType);          	
         }
                 
         String admobkeyKeyName = configMngr.getKeyNameByOs(os, "admobkey");
@@ -235,16 +248,7 @@ public class MsoManager {
                 result += PlayerApiService.assembleKeyValue("admob-key", admobKeyConfig.getValue());
             }
         }
-        
-        MsoConfig audioConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AUDIO_BACKGROUND);
-        String audio = "off";
-        if (audioConfig != null) {
-        	audio = audioConfig.getValue();
-        }
-        if (!os.equals(PlayerService.OS_WEB)) {
-        	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, audio);
-        }
-        
+                
         String youtubeKeyName = configMngr.getKeyNameByOs(os, "youtube");        
         if (youtubeKeyName != null) {
             MsoConfig youtubeConfig = configMngr.findByMsoAndItem(mso, youtubeKeyName);

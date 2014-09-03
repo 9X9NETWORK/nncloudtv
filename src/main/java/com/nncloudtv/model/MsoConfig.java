@@ -60,10 +60,11 @@ public class MsoConfig implements Serializable  {
     public static String HOMEPAGE              = "homepage"; //whatson, portal
     public static String ABOUT_US              = "aboutus";
     public static String SIGNUP_ENFORCE        = "signup-enforce";
-    public static String AD_IOS                = "ad-ios";
+    public static String AD_IOS                = "ad-ios"; //"iad" or "direct-video" 
     public static String ADMOBKEY_ANDROID      = "admobkey-android";
     public static String ADMOBKEY_IOS          = "admobkey-ios";
-    public static String AD_ANDROID            = "ad-android";
+    public static String AD_IOS_TYPE           = "ad-ios-type"; //interstitials, banner, video 
+    public static String AD_ANDROID            = "ad-android"; //"admob" or "direct-video"
     public static String AUDIO_BACKGROUND      = "audio-background";
     public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
     public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
