@@ -7,22 +7,26 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
-public class StreamCopyTask extends Thread {
+import org.apache.commons.io.IOUtils;
+
+public class FeedingProcessTask extends Thread {
     
-    protected static Logger log = Logger.getLogger(StreamCopyTask.class.getName());
+    protected static Logger log = Logger.getLogger(FeedingProcessTask.class.getName());
     
-    InputStream  in = null;
-    OutputStream out = null;
+    Process    process = null;
+    InputStream     in = null;
+    OutputStream   out = null;
     BufferedReader err = null;
-    boolean keepGoing = true;
-    final int BUFSIZE = 1024;//76147;
+    boolean  keepGoing = true;
+    final int  BUFSIZE = 1024;//76147;
     
-    public StreamCopyTask(InputStream in, OutputStream out, InputStream err) {
+    public FeedingProcessTask(InputStream in, Process process) {
         
         super();
+        this.process = process;
         this.in = in;
-        this.out = out;
-        this.err = new BufferedReader(new InputStreamReader(err));
+        this.out = process.getOutputStream();
+        this.err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         this.keepGoing = true;
     }
     
@@ -43,8 +47,7 @@ public class StreamCopyTask extends Thread {
         }
         
         try {
-            byte[] buf = new byte[BUFSIZE];
-            int len = 0, total = 0;
+            long len = 0, total = 0;
             do {
                 String line = null;
                 while ((line = err.readLine()) != null) {
@@ -54,14 +57,14 @@ public class StreamCopyTask extends Thread {
                     }
                 }
                 
-                len = in.read(buf, 0, BUFSIZE);
+                len = IOUtils.copy(in, out, BUFSIZE);
+                
                 if (len < 0) {
                     
                     break;
                 }
                 total += len;
-                log.info(total  + " copied");
-                out.write(buf, 0, len);
+                log.info(total  + " feeded");
                 
             } while(keepGoing);
             

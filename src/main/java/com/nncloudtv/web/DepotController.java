@@ -55,7 +55,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
-import com.nncloudtv.task.StreamCopyTask;
+import com.nncloudtv.task.FeedingProcessTask;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
 import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
@@ -223,7 +223,7 @@ public class DepotController {
             
         } else {
             
-            StreamCopyTask streamCopyTask = null;
+            FeedingProcessTask feedingProcessTask = null;
             
             try {
                 URL url = new URL(videoUrl);
@@ -234,8 +234,9 @@ public class DepotController {
                 
                 Process process = Runtime.getRuntime().exec(cmd);
                 
-                streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
-                streamCopyTask.start();
+                feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
+                feedingProcessTask.start();
+                
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 
@@ -256,9 +257,10 @@ public class DepotController {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
             }finally {
-                if (streamCopyTask != null) {
-                    streamCopyTask.stopCopying();
+                if (feedingProcessTask != null) {
+                    feedingProcessTask.stopCopying();
                 }
+                // TODO: close connection
             }
         }
         

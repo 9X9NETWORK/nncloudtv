@@ -25,7 +25,7 @@ test "$1" != "-n" \
 cd ..
 mvn -Dmaven.test.skip=true clean\
     install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
-    install:install-file -Dfile=./lib/jcodec-0.1.8.jar -DgroupId=org.jcodec -DartifactId=jcodec -Dversion=0.1.8 -Dpackaging=jar \
+    install:install-file -Dfile=./lib/commons-io-2.5-SNAPSHOT.jar -DgroupId=commons-io -DartifactId=commons-io -Dversion=2.5-SNAPSHOT -Dpackaging=jar \
     compile \
     datanucleus:enhance \
     install war:war \
