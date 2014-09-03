@@ -216,8 +216,8 @@ public class DepotController {
         Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
         if (matcher.find()) {
             
-            String bucket = matcher.group(1);
-            String filename = matcher.group(2);
+            //String bucket = matcher.group(1);
+            //String filename = matcher.group(2);
             
             
             // private s3 url
@@ -272,7 +272,6 @@ public class DepotController {
                 if (feedingProcessTask != null) {
                     feedingProcessTask.stopCopying();
                 }
-                // TODO: close connection
             }
         }
         

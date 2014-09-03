@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 import java.util.logging.Logger;
+
+import com.nncloudtv.lib.NnDateUtil;
 
 public class FeedingProcessTask extends PipingTask {
     
@@ -12,12 +15,14 @@ public class FeedingProcessTask extends PipingTask {
     
     Process    process = null;
     BufferedReader err = null;
+    Date     startTime = null;
     
     public FeedingProcessTask(InputStream in, Process process) {
         
         super(in, process.getOutputStream());
         this.process = process;
         this.err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        this.startTime = NnDateUtil.now();
     }
     
     public void run() {
@@ -31,8 +36,8 @@ public class FeedingProcessTask extends PipingTask {
             log.warning("null output stream, abort.");
         }
         
+        int total = 0, len = 0;
         try {
-            int len = 0, total = 0;
             do {
                 while (err.ready()) {
                     String line = err.readLine();
@@ -47,13 +52,19 @@ public class FeedingProcessTask extends PipingTask {
                     break;
                 }
                 total += len;
-                log.info(total + " feeded");
+                log.fine(total + " feeded");
                 out.write(buf, 0, len);
                 
                 yield();
                 if (in.available() == 0) {
-                    log.info("sleep a while");
+                    log.fine("sleep a while");
                     sleep(100);
+                }
+                
+                if (NnDateUtil.now().getTime() - startTime.getTime() > 20000) { // 20 seconds
+                    
+                    log.warning("streaming is too long, give up.");
+                    keepGoing = false;
                 }
                 
             } while(keepGoing);
@@ -63,6 +74,8 @@ public class FeedingProcessTask extends PipingTask {
         } catch (InterruptedException e) {
             log.info(e.getMessage());
         }
+        
+        log.info("total feeded size = " + total);
         log.info("copy finished - " + keepGoing);
     }
 }

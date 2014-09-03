@@ -49,15 +49,17 @@ public class PipingTask extends Thread {
                     break;
                 }
                 total += len;
-                log.info(total + " piped");
+                log.fine(total + " piped");
                 out.write(buf, 0, len);
                 
                 yield();
                 if (in.available() == 0) {
-                    log.info("sleep a while");
+                    log.fine("sleep a while");
                     sleep(100);
                 }
             } while(keepGoing);
+            
+            log.info("total piped size = " + total);
             
         } catch (IOException e) {
             log.info(e.getMessage());
