@@ -68,13 +68,13 @@ public class FeedingAvconvTask extends PipingTask {
                 }
                 
             } while(keepGoing);
+
+            out.close();
             
         } catch (IOException e) {
             log.info(e.getMessage());
         } catch (InterruptedException e) {
             log.info(e.getMessage());
-        } finally {
-            out.close();
         }
         
         log.info("total feeded size = " + total);
