@@ -7,8 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
-
 public class FeedingProcessTask extends Thread {
     
     protected static Logger log = Logger.getLogger(FeedingProcessTask.class.getName());
@@ -18,7 +16,7 @@ public class FeedingProcessTask extends Thread {
     OutputStream   out = null;
     BufferedReader err = null;
     boolean  keepGoing = true;
-    final int  BUFSIZE = 1024;//76147;
+    final int  BUFSIZE = 76147;
     
     public FeedingProcessTask(InputStream in, Process process) {
         
@@ -67,8 +65,8 @@ public class FeedingProcessTask extends Thread {
                 out.write(bytes, 0, len);
                 
                 if (in.available() == 0) {
-                    log.info("input stream is not available, sleep a while.");
-                    sleep(1000);
+                    log.info("sleep a while");
+                    sleep(100);
                 }
             } while(keepGoing);
             

@@ -237,6 +237,7 @@ public class DepotController {
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
                 
+                process.waitFor();
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 
@@ -256,6 +257,9 @@ public class DepotController {
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+            } catch (InterruptedException e) {
+                log.info(e.getMessage());
+                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR,  null));
             }finally {
                 if (feedingProcessTask != null) {
                     feedingProcessTask.stopCopying();
