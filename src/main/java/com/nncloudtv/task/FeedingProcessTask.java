@@ -53,15 +53,12 @@ public class FeedingProcessTask extends PipingTask {
                 
                 if (in.available() == 0) {
                     log.info("sleep a while");
-                    sleep(100);
+                    yield();
                 }
-                notifyAll();
                 
             } while(keepGoing);
             
         } catch (IOException e) {
-            log.info(e.getMessage());
-        } catch (InterruptedException e) {
             log.info(e.getMessage());
         } finally {
             

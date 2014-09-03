@@ -247,7 +247,7 @@ public class DepotController {
                 
                 log.info("I am here.");
                 
-                pipingTask.wait();
+                pipingTask.join();
                 log.info("thumbnail size = " + baos.size());
                 if (baos.size() > 0) {
                     
