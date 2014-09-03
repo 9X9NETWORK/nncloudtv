@@ -15,7 +15,7 @@ public class StreamCopyTask extends Thread {
     OutputStream out = null;
     BufferedReader err = null;
     boolean keepGoing = true;
-    final int BUFSIZE = 76147;
+    final int BUFSIZE = 1024;//76147;
     
     public StreamCopyTask(InputStream in, OutputStream out, InputStream err) {
         
@@ -54,7 +54,7 @@ public class StreamCopyTask extends Thread {
                     }
                 }
                 
-                len = in.read(buf);
+                len = in.read(buf, 0, BUFSIZE);
                 if (len < 0) {
                     
                     break;
