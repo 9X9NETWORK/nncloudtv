@@ -42,7 +42,6 @@ public class PipingTask extends Thread {
         try {
             int len = 0, total = 0;
             do {
-                
                 len = in.read(buf);
                 if (len < 0) {
                     
@@ -63,6 +62,5 @@ public class PipingTask extends Thread {
         }
         
         log.info("piping finished - " + keepGoing);
-        notifyAll();
     }
 }

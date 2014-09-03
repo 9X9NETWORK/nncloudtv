@@ -23,7 +23,7 @@ public class FeedingProcessTask extends PipingTask {
     public void run() {
         
         log.info("start copy stream ...");
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[BUFSIZE];
         
         if (in == null) {
             log.warning("null input stream, abort.");
