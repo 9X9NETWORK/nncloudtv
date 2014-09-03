@@ -64,7 +64,6 @@ public class FeedingAvconvTask extends PipingTask {
                 if (NnDateUtil.now().getTime() - startTime.getTime() > 20000) { // 20 seconds
                     
                     log.warning("streaming is too long, give up.");
-                    out.close();
                     keepGoing = false;
                 }
                 
@@ -74,6 +73,8 @@ public class FeedingAvconvTask extends PipingTask {
             log.info(e.getMessage());
         } catch (InterruptedException e) {
             log.info(e.getMessage());
+        } finally {
+            out.close();
         }
         
         log.info("total feeded size = " + total);
