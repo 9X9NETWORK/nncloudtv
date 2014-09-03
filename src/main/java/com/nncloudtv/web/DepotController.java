@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -200,7 +201,7 @@ public class DepotController {
         }
     }
     @RequestMapping("generateThumbnail")
-    public @ResponseBody Object generateThubnail(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody Object generateThumbnail(HttpServletRequest req, HttpServletResponse resp) {
       
         final PlayerApiService service = new PlayerApiService();
         service.prepService(req, resp);
@@ -227,16 +228,15 @@ public class DepotController {
             
             try {
                 URL url = new URL(videoUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
+                //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                //conn.setInstanceFollowRedirects(true);
                 String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
                 log.info("exec: " + cmd);
                 
                 Process process = Runtime.getRuntime().exec(cmd);
                 
-                feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
+                feedingProcessTask = new FeedingProcessTask(url.openStream(), process);
                 feedingProcessTask.start();
-                conn.notifyAll();
                 
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
