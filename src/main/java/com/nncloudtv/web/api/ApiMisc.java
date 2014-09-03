@@ -1,14 +1,25 @@
 package com.nncloudtv.web.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,12 +30,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
@@ -33,6 +52,8 @@ import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.task.FeedingAvconvTask;
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FBPost;
 
@@ -458,5 +479,107 @@ public class ApiMisc extends ApiGeneric {
         
         return ok(resp);
     }
-
+    
+    @RequestMapping(value = "thumbnails", method = RequestMethod.POST)
+    public @ResponseBody List<Map<String, String>> generateThumbnail(
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        InputStream videoIn = null;
+        String thumbnailUrl = null;
+        
+        String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
+        Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
+        
+        if (matcher.find()) {
+            
+            String bucket = matcher.group(1);
+            String filename = matcher.group(2);
+            Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
+            AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
+                                                                 MsoConfigManager.getAWSKey(mso));
+            AmazonS3 s3 = new AmazonS3Client(credentials);
+            S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
+            videoIn = s3Object.getObjectContent();
+            
+        } else {
+            
+            try {
+                URL url = new URL(videoUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
+                videoIn = conn.getInputStream();
+            } catch (MalformedURLException e) {
+                log.info(e.getMessage());
+                badRequest(resp, INVALID_PARAMETER);
+                return null;
+            } catch (IOException e) {
+                log.info(e.getMessage());
+                return empty;
+            }
+        }
+        
+        if (videoIn == null) {
+            return empty;
+        }
+        
+        FeedingAvconvTask feedingAvconvTask = null;
+        try {
+            String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+            log.info("[exec] " + cmd);
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            
+            InputStream thumbIn = process.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            
+            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            pipingTask.start();
+            
+            feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+            feedingAvconvTask.start();
+            
+            pipingTask.join();
+            feedingAvconvTask.stopCopying();
+            log.info("thumbnail size = " + baos.size());
+            if (baos.size() > 0) {
+                
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType("image/png");
+                metadata.setContentLength(baos.size());
+                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
+                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  new ByteArrayInputStream(baos.toByteArray()),
+                                                  metadata);
+            }
+        } catch (InterruptedException e) {
+            log.info(e.getMessage());
+            return empty;
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            return empty;
+        } finally {
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
+        }
+        
+        log.info("thumbnailUrl = " + thumbnailUrl);
+        if (thumbnailUrl == null) {
+            return empty;
+        }
+        
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("url", thumbnailUrl);
+        List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+        result.add(map);
+        
+        return result;
+    }
 }

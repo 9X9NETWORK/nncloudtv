@@ -27,7 +27,7 @@ public class FeedingAvconvTask extends PipingTask {
     
     public void run() {
         
-        log.info("start feeding process ...");
+        log.info("start feeding avconv ...");
         
         if (in == null) {
             log.warning("null input stream, abort.");

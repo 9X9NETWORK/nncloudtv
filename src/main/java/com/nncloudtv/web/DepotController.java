@@ -1,22 +1,15 @@
 package com.nncloudtv.web;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,7 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
@@ -53,10 +45,7 @@ import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
-import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
-import com.nncloudtv.task.FeedingAvconvTask;
-import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
 import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
@@ -199,102 +188,6 @@ public class DepotController {
         } catch (Exception e) {
             NnLogUtil.logException(e);
         }
-    }
-    @RequestMapping("generateThumbnail")
-    public @ResponseBody Object generateThumbnail(HttpServletRequest req, HttpServletResponse resp) {
-      
-        final PlayerApiService service = new PlayerApiService();
-        service.prepService(req, resp);
-        String thumbnailUrl = null;
-        String videoUrl = req.getParameter("url");
-        log.info("videoUrl = " + videoUrl);
-        if (videoUrl == null) {
-            return service.response(service.assembleMsgs(NnStatusCode.INPUT_MISSING,  null));
-        }
-        InputStream videoIn = null;
-        
-        String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
-        Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
-        if (matcher.find()) {
-            
-            //String bucket = matcher.group(1);
-            //String filename = matcher.group(2);
-            
-            
-            // private s3 url
-            
-            
-            
-        } else {
-            
-            try {
-                URL url = new URL(videoUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                videoIn = conn.getInputStream();
-            } catch (MalformedURLException e) {
-                log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD, null));
-            } catch (IOException e) {
-                log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
-            }
-        }
-        
-        if (videoIn == null) {
-            return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
-        }
-        
-        FeedingAvconvTask feedingAvconvTask = null;
-        try {
-            String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
-            log.info("[exec] " + cmd);
-            
-            Process process = Runtime.getRuntime().exec(cmd);
-            
-            InputStream thumbIn = process.getInputStream();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            
-            PipingTask pipingTask = new PipingTask(thumbIn, baos);
-            pipingTask.start();
-            
-            feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
-            feedingAvconvTask.start();
-            
-            pipingTask.join();
-            feedingAvconvTask.stopCopying();
-            log.info("thumbnail size = " + baos.size());
-            if (baos.size() > 0) {
-                
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentType("image/png");
-                metadata.setContentLength(baos.size());
-                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
-                                                  new ByteArrayInputStream(baos.toByteArray()),
-                                                  metadata);
-            }
-        } catch (InterruptedException e) {
-            log.info(e.getMessage());
-            return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR, null));
-        } catch (IOException e) {
-            log.info(e.getMessage());
-            return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
-        } finally {
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
-            }
-        }
-        
-        if (thumbnailUrl == null) {
-            return service.response(service.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null));
-        }
-        log.info("thumbnailUrl = " + thumbnailUrl);
-        
-        String data = PlayerApiService.assembleKeyValue("url", thumbnailUrl);
-        String[] result = { data };
-        
-        return service.response(service.assembleMsgs(NnStatusCode.SUCCESS, result));
     }
     
     @RequestMapping("processThumbnail")

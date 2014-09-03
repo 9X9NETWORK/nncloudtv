@@ -517,5 +517,16 @@ public class MsoConfigManager {
         }
         return null;
     }
+    
+    public Mso findMsoByVideoBucket(String bucket) {
+        
+        MsoConfig config = configDao.findByItemAndValue(MsoConfig.S3_VIDEO_BUCKET, bucket);
+        if (config != null) {
+            
+            return NNF.getMsoMngr().findById(config.getMsoId());
+        }
+        
+        return null;
+    }
 }
 
