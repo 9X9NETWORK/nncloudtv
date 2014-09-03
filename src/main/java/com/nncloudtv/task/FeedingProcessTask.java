@@ -56,19 +56,24 @@ public class FeedingProcessTask extends Thread {
                         log.info("avconv: " + line);
                     }
                 }
-                
-                len = IOUtils.copy(in, out, BUFSIZE);
-                
-                if (len < 0) {
+                if (in.available() > 0) {
+                    len = IOUtils.copy(in, out, BUFSIZE);
                     
-                    break;
+                    if (len < 0) {
+                        
+                        break;
+                    }
+                    total += len;
+                    log.info(total  + " feeded");
+                } else {
+                    sleep(500);
                 }
-                total += len;
-                log.info(total  + " feeded");
                 
             } while(keepGoing);
             
         } catch (IOException e) {
+            log.info(e.getMessage());
+        } catch (InterruptedException e) {
             log.info(e.getMessage());
         }
         log.info("copy finished - " + keepGoing);

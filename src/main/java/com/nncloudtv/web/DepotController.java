@@ -9,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -228,14 +227,14 @@ public class DepotController {
             
             try {
                 URL url = new URL(videoUrl);
-                //HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                //conn.setInstanceFollowRedirects(true);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
                 String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
                 log.info("exec: " + cmd);
                 
                 Process process = Runtime.getRuntime().exec(cmd);
                 
-                feedingProcessTask = new FeedingProcessTask(url.openStream(), process);
+                feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
                 
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
