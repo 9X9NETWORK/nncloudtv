@@ -481,7 +481,7 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
-    public @ResponseBody List<Map<String, String>> generateThumbnail(
+    public @ResponseBody List<Map<String, String>> thumbnails(
             HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
