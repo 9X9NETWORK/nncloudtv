@@ -525,7 +525,6 @@ public class MsoConfigManager {
             
             return NNF.getMsoMngr().findById(config.getMsoId());
         }
-        
         return null;
     }
 }

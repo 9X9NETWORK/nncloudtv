@@ -57,7 +57,7 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
         try {
             Query query = pm.newQuery(MsoConfig.class);
             query.setFilter("item == itemParam && value == valueParam");
-            query.declareParameters("long itemParam" + ", String valueParam");
+            query.declareParameters("String itemParam, String valueParam");
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(item, value);
             if (results.size() > 0) {
