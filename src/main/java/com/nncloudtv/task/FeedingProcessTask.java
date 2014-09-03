@@ -55,20 +55,21 @@ public class FeedingProcessTask extends Thread {
                         log.info("avconv: " + line);
                     }
                 }
-                if (in.available() > 0) {
-                    log.info("input stream available " + in.available());
-                    len = IOUtils.copy(in, out, BUFSIZE);
-                    
-                    if (len < 0) {
-                        
-                        break;
-                    }
-                    total += len;
-                    log.info(total  + " feeded");
-                } else {
+                
+                log.info("input stream available " + in.available());
+                if (in.available() == 0) {
                     log.info("input stream is not available, sleep a while.");
-                    sleep(500);
+                    in.wait(10000);
                 }
+                
+                len = IOUtils.copy(in, out, BUFSIZE);
+                
+                if (len < 0) {
+                    
+                    break;
+                }
+                total += len;
+                log.info(total + " feeded");
                 
             } while(keepGoing);
             
