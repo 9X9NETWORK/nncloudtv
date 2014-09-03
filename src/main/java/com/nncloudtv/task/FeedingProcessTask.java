@@ -64,6 +64,7 @@ public class FeedingProcessTask extends PipingTask {
                 if (NnDateUtil.now().getTime() - startTime.getTime() > 20000) { // 20 seconds
                     
                     log.warning("streaming is too long, give up.");
+                    out.close();
                     keepGoing = false;
                 }
                 
