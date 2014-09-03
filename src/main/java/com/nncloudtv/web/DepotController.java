@@ -57,6 +57,7 @@ import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
 import com.nncloudtv.task.FeedingProcessTask;
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
 import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
@@ -237,23 +238,16 @@ public class DepotController {
                 
                 InputStream thumbIn = process.getInputStream();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                
+                PipingTask pipingTask = new PipingTask(thumbIn, baos);
+                pipingTask.start();
+                
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
                 
                 log.info("I am here.");
                 
-                byte[] buf = new byte[4096];
-                while (true) {
-                    
-                    int len = thumbIn.read(buf);
-                    log.info("gogogo");
-                    if (len < 0) {
-                        
-                        break;
-                    }
-                    baos.write(buf, 0, len);
-                }
-                
+                pipingTask.wait();
                 log.info("thumbnail size = " + baos.size());
                 if (baos.size() > 0) {
                     
@@ -271,6 +265,9 @@ public class DepotController {
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+            } catch (InterruptedException e) {
+                log.info(e.getMessage());
+                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR,  null));
             }finally {
                 if (feedingProcessTask != null) {
                     feedingProcessTask.stopCopying();

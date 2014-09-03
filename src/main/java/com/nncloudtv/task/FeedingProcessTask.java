@@ -4,33 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.logging.Logger;
 
-public class FeedingProcessTask extends Thread {
+public class FeedingProcessTask extends PipingTask {
     
     protected static Logger log = Logger.getLogger(FeedingProcessTask.class.getName());
     
     Process    process = null;
-    InputStream     in = null;
-    OutputStream   out = null;
     BufferedReader err = null;
-    boolean  keepGoing = true;
-    final int  BUFSIZE = 76147;
     
     public FeedingProcessTask(InputStream in, Process process) {
         
-        super();
+        super(in, process.getOutputStream());
         this.process = process;
-        this.in = in;
-        this.out = process.getOutputStream();
         this.err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        this.keepGoing = true;
-    }
-    
-    public void stopCopying() {
-        
-        this.keepGoing = false;
     }
     
     public void run() {
@@ -68,6 +55,8 @@ public class FeedingProcessTask extends Thread {
                     log.info("sleep a while");
                     sleep(100);
                 }
+                notifyAll();
+                
             } while(keepGoing);
             
         } catch (IOException e) {
