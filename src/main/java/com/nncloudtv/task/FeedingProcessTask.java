@@ -22,8 +22,7 @@ public class FeedingProcessTask extends PipingTask {
     
     public void run() {
         
-        log.info("start copy stream ...");
-        byte[] buf = new byte[BUFSIZE];
+        log.info("start feeding process ...");
         
         if (in == null) {
             log.warning("null input stream, abort.");
@@ -38,7 +37,7 @@ public class FeedingProcessTask extends PipingTask {
                 while (err.ready()) {
                     String line = err.readLine();
                     if (line != null) {
-                        log.info("avconv: " + line);
+                        log.info("[avconv] " + line);
                     }
                 }
                 
@@ -60,14 +59,6 @@ public class FeedingProcessTask extends PipingTask {
             
         } catch (IOException e) {
             log.info(e.getMessage());
-        } finally {
-            
-            
-            
-            
-            
-            
-            
         }
         log.info("copy finished - " + keepGoing);
     }

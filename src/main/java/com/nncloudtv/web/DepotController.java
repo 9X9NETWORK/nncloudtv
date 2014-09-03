@@ -216,6 +216,8 @@ public class DepotController {
         Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
         if (matcher.find()) {
             
+            String bucket = matcher.group(1);
+            String filename = matcher.group(2);
             
             
             // private s3 url
@@ -244,8 +246,6 @@ public class DepotController {
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
                 
-                log.info("I am here.");
-                
                 pipingTask.join();
                 log.info("thumbnail size = " + baos.size());
                 if (baos.size() > 0) {
@@ -260,13 +260,13 @@ public class DepotController {
                 }
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD,  null));
+                return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD, null));
             } catch (IOException e) {
                 log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+                return service.response(service.assembleMsgs(NnStatusCode.ERROR, null));
             } catch (InterruptedException e) {
                 log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR,  null));
+                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR, null));
             }finally {
                 if (feedingProcessTask != null) {
                     feedingProcessTask.stopCopying();

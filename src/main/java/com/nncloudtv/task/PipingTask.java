@@ -12,7 +12,8 @@ public class PipingTask extends Thread {
     protected InputStream     in = null;
     protected OutputStream   out = null;
     protected boolean  keepGoing = true;
-    protected final int  BUFSIZE = 76147;
+    protected final int  BUFSIZE = 147457;
+    protected byte[]         buf = null;
     
     public PipingTask(InputStream in, OutputStream out) {
         
@@ -20,6 +21,7 @@ public class PipingTask extends Thread {
         this.in = in;
         this.out = out;
         this.keepGoing = true;
+        this.buf = new byte[BUFSIZE];
     }
     
     public void stopCopying() {
@@ -30,7 +32,6 @@ public class PipingTask extends Thread {
     public void run() {
         
         log.info("start piping ...");
-        byte[] buf = new byte[BUFSIZE];
         
         if (in == null) {
             log.warning("null input stream, abort.");
