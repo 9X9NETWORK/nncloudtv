@@ -136,8 +136,8 @@ public class NnStringUtil {
     
     public static String escapeDoubleQuote(String str) {
         
-        return "\"" + str.replaceAll("/\\/", "\\\\")
-                         .replaceAll("/\"/", "\\\"") + "\"";
+        return "\"" + str.replaceAll("\\\\", "\\\\\\\\")
+                         .replaceAll("\"", "\\\"") + "\"";
     }
     
     public static String escapedQuote(String str) {
