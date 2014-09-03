@@ -74,6 +74,14 @@ public class FeedingProcessTask extends Thread {
             log.info(e.getMessage());
         } catch (InterruptedException e) {
             log.info(e.getMessage());
+        } finally {
+            
+            
+            
+            
+            
+            
+            
         }
         log.info("copy finished - " + keepGoing);
     }

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -237,19 +238,29 @@ public class DepotController {
                 feedingProcessTask = new FeedingProcessTask(conn.getInputStream(), process);
                 feedingProcessTask.start();
                 
-                process.waitFor();
-                byte[] bytes = IOUtils.toByteArray(process.getInputStream());
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                InputStream thumbIn = process.getInputStream();
+                byte[] buf = new byte[4096];
+                while (true) {
+                    
+                    int len = thumbIn.read(buf);
+                    if (len < 0) {
+                        
+                        break;
+                    }
+                    baos.write(buf, 0, len);
+                }
                 
-                log.info("thumbnail size = " + bytes.length);
-                if (bytes.length > 0) {
+                log.info("thumbnail size = " + baos.size());
+                if (baos.size() > 0) {
                     
                     ObjectMetadata metadata = new ObjectMetadata();
                     metadata.setContentType("image/png");
-                    metadata.setContentLength(bytes.length);
+                    metadata.setContentLength(baos.size());
                     thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
                                                       "thumb-xx" + NnDateUtil.now().getTime() + ".png",
-                                                      bais, metadata);
+                                                      new ByteArrayInputStream(baos.toByteArray()),
+                                                      metadata);
                 }
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
@@ -257,9 +268,6 @@ public class DepotController {
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
-            } catch (InterruptedException e) {
-                log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.SERVER_ERROR,  null));
             }finally {
                 if (feedingProcessTask != null) {
                     feedingProcessTask.stopCopying();
