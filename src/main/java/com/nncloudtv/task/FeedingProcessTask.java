@@ -56,12 +56,6 @@ public class FeedingProcessTask extends Thread {
                     }
                 }
                 
-                log.info("input stream available " + in.available());
-                if (in.available() == 0) {
-                    log.info("input stream is not available, sleep a while.");
-                    in.wait(10000);
-                }
-                
                 len = IOUtils.copy(in, out, BUFSIZE);
                 
                 if (len < 0) {
@@ -71,6 +65,10 @@ public class FeedingProcessTask extends Thread {
                 total += len;
                 log.info(total + " feeded");
                 
+                if (in.available() == 0) {
+                    log.info("input stream is not available, sleep a while.");
+                    sleep(2000);
+                }
             } while(keepGoing);
             
         } catch (IOException e) {
