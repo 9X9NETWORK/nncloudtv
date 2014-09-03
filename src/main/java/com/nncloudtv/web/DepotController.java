@@ -1,20 +1,14 @@
 package com.nncloudtv.web;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -51,7 +45,6 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
@@ -240,11 +233,19 @@ public class DepotController {
                 log.info("exec: " + cmd);
                 
                 Process process = Runtime.getRuntime().exec(cmd);
-                
-                streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
-                streamCopyTask.start();
-                
-                process.wait();
+
+                try {
+                    streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
+                    streamCopyTask.start();
+                    process.wait();
+                    
+                } catch (InterruptedException e) {
+                    log.info("command interrupted, but it's ok");
+                } finally {
+                    if (streamCopyTask != null) {
+                        streamCopyTask.stopCopying();
+                    }
+                }
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 
@@ -264,13 +265,6 @@ public class DepotController {
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
-            } catch (InterruptedException e) {
-                log.info(e.getMessage());
-                return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
-            } finally {
-                if (streamCopyTask != null) {
-                    streamCopyTask.stopCopying();
-                }
             }
         }
         

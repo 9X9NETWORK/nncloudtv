@@ -38,8 +38,7 @@ public class StreamCopyTask extends Thread {
         try {
             byte[] buf = new byte[BUFSIZE];
             int len = 0, total = 0;
-            while (keepGoing) {
-                
+            do {
                 String line = null;
                 while ((line = err.readLine()) != null) {
                     
@@ -56,15 +55,12 @@ public class StreamCopyTask extends Thread {
                 total += len;
                 log.info(total  + " copied");
                 out.write(buf, 0, len);
-            }
+                
+            } while(keepGoing);
+            
         } catch (IOException e) {
             log.info(e.getMessage());
         }
         log.info("copy finished - " + keepGoing);
     }
-    
-    
-    
-    
-    
 }
