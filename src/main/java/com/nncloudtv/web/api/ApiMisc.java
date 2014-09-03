@@ -509,30 +509,17 @@ public class ApiMisc extends ApiGeneric {
             S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
             videoIn = s3Object.getObjectContent();
             
-        } else {
-            
-            try {
-                URL url = new URL(videoUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                videoIn = conn.getInputStream();
-            } catch (MalformedURLException e) {
-                log.info(e.getMessage());
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            } catch (IOException e) {
-                log.info(e.getMessage());
-                return empty;
-            }
-        }
-        
-        if (videoIn == null) {
-            return empty;
         }
         
         FeedingAvconvTask feedingAvconvTask = null;
+        
         try {
-            String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+            String[] cmd = {
+                    "/usr/bin/avconv",
+                    "-i",
+                    (videoIn == null) ? videoUrl : "/dev/stdin",
+                    "-ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout"};
+            
             log.info("[exec] " + cmd);
             
             Process process = Runtime.getRuntime().exec(cmd);
@@ -543,11 +530,15 @@ public class ApiMisc extends ApiGeneric {
             PipingTask pipingTask = new PipingTask(thumbIn, baos);
             pipingTask.start();
             
-            feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
-            feedingAvconvTask.start();
+            if (videoIn != null) {
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask.start();
+            }
             
             pipingTask.join();
-            feedingAvconvTask.stopCopying();
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
             log.info("thumbnail size = " + baos.size());
             if (baos.size() > 0) {
                 
