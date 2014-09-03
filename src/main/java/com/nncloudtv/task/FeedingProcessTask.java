@@ -57,6 +57,7 @@ public class FeedingProcessTask extends Thread {
                     }
                 }
                 if (in.available() > 0) {
+                    log.info("input stream available " + in.available());
                     len = IOUtils.copy(in, out, BUFSIZE);
                     
                     if (len < 0) {
@@ -66,6 +67,7 @@ public class FeedingProcessTask extends Thread {
                     total += len;
                     log.info(total  + " feeded");
                 } else {
+                    log.info("input stream is not available, sleep a while.");
                     sleep(500);
                 }
                 
