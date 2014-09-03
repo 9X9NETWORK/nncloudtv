@@ -38,6 +38,7 @@ public class FeedingProcessTask extends Thread {
     public void run() {
         
         log.info("start copy stream ...");
+        byte[] bytes = new byte[1024];
         
         if (in == null) {
             log.warning("null input stream, abort.");
@@ -47,7 +48,7 @@ public class FeedingProcessTask extends Thread {
         }
         
         try {
-            long len = 0, total = 0;
+            int len = 0, total = 0;
             do {
                 while (err.ready()) {
                     String line = err.readLine();
@@ -56,18 +57,18 @@ public class FeedingProcessTask extends Thread {
                     }
                 }
                 
-                len = IOUtils.copy(in, out, BUFSIZE);
-                
+                len = in.read(bytes);
                 if (len < 0) {
                     
                     break;
                 }
                 total += len;
                 log.info(total + " feeded");
+                out.write(bytes, 0, len);
                 
                 if (in.available() == 0) {
                     log.info("input stream is not available, sleep a while.");
-                    sleep(2000);
+                    sleep(1000);
                 }
             } while(keepGoing);
             
