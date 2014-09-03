@@ -1,16 +1,20 @@
 package com.nncloudtv.web;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +51,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
@@ -57,6 +62,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PlayerService;
+import com.nncloudtv.task.StreamCopyTask;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
 import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
@@ -201,9 +207,10 @@ public class DepotController {
         }
     }
     @RequestMapping("generateThumbnail")
-    public @ResponseBody Object generateThubnail(HttpServletRequest req) {
+    public @ResponseBody Object generateThubnail(HttpServletRequest req, HttpServletResponse resp) {
       
-        PlayerApiService service = new PlayerApiService();
+        final PlayerApiService service = new PlayerApiService();
+        service.prepService(req, resp);
         String thumbnailUrl = null;
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
@@ -223,22 +230,21 @@ public class DepotController {
             
         } else {
             
+            StreamCopyTask streamCopyTask = null;
+            
             try {
                 URL url = new URL(videoUrl);
-                InputStream in = url.openStream();
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
                 String cmd = "/usr/bin/avconv -i /dev/stdin -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
                 log.info("exec: " + cmd);
+                
                 Process process = Runtime.getRuntime().exec(cmd);
-                OutputStream out = process.getOutputStream();
-                log.info("copying stream");
                 
-                try {
-                    int len = IOUtils.copy(in, out);
-                    log.info(len + " bytes copied");
-                } catch (IOException e) {
-                    // pipe broken is safe
-                }
+                streamCopyTask = new StreamCopyTask(conn.getInputStream(), process.getOutputStream(), process.getErrorStream());
+                streamCopyTask.start();
                 
+                process.wait();
                 byte[] bytes = IOUtils.toByteArray(process.getInputStream());
                 ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 
@@ -249,16 +255,22 @@ public class DepotController {
                     metadata.setContentType("image/png");
                     metadata.setContentLength(bytes.length);
                     thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                            "thumb-xx" + NnDateUtil.now().getTime() + ".png",
-                            bais, metadata);
+                                                      "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                      bais, metadata);
                 }
-                
             } catch (MalformedURLException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.INPUT_BAD,  null));
             } catch (IOException e) {
                 log.info(e.getMessage());
                 return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+            } catch (InterruptedException e) {
+                log.info(e.getMessage());
+                return service.response(service.assembleMsgs(NnStatusCode.ERROR,  null));
+            } finally {
+                if (streamCopyTask != null) {
+                    streamCopyTask.stopCopying();
+                }
             }
         }
         
