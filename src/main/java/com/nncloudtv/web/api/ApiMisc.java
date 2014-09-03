@@ -499,6 +499,7 @@ public class ApiMisc extends ApiGeneric {
         
         if (matcher.find()) {
             
+            log.info("S3 url format");
             String bucket = matcher.group(1);
             String filename = matcher.group(2);
             Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
