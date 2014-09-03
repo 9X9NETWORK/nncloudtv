@@ -247,6 +247,7 @@ public class DepotController {
                 feedingProcessTask.start();
                 
                 pipingTask.join();
+                feedingProcessTask.stopCopying();
                 log.info("thumbnail size = " + baos.size());
                 if (baos.size() > 0) {
                     

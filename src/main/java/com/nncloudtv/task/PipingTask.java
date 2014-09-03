@@ -52,13 +52,16 @@ public class PipingTask extends Thread {
                 log.info(total + " piped");
                 out.write(buf, 0, len);
                 
+                yield();
                 if (in.available() == 0) {
                     log.info("sleep a while");
-                    yield();
+                    sleep(100);
                 }
             } while(keepGoing);
             
         } catch (IOException e) {
+            log.info(e.getMessage());
+        } catch (InterruptedException e) {
             log.info(e.getMessage());
         }
         
