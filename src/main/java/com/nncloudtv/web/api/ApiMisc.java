@@ -564,7 +564,7 @@ public class ApiMisc extends ApiGeneric {
         try {
             String cmd = "/usr/bin/avconv -i "
                        + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
-                       + " -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+                       + " -ss " + offset + " -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
             
             log.info("[exec] " + cmd);
             
