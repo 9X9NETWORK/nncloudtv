@@ -515,11 +515,14 @@ public class ApiMisc extends ApiGeneric {
         FeedingAvconvTask feedingAvconvTask = null;
         
         try {
-            String cmd = "/usr/bin/avconv -i "
-                       + ((videoIn == null) ? videoUrl : "/dev/stdin")
-                       + " -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+            String[] cmd = {
+                    "/usr/bin/avconv -i ", "-i",
+                    ((videoIn == null) ? videoUrl : "/dev/stdin"),
+                    "-ss", "5", "-vframes", "1", "-vcidec", "png",
+                    "-y", "-f", "image2pipe", "/dev/stdout"
+            };
             
-            log.info("[exec] " + cmd);
+            log.info("[exec] " + StringUtils.join(cmd, ' '));
             
             Process process = Runtime.getRuntime().exec(cmd);
             
