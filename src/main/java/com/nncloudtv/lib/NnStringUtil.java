@@ -145,8 +145,8 @@ public class NnStringUtil {
                   .replaceAll("\\{", "%7b")
                   .replaceAll("\\}", "%7d")
                   .replaceAll( "\"", "%22")
-                  .replaceAll(  "^", "%5e")
-                  .replaceAll(  "$", "%24")
+                  .replaceAll("\\^", "%5e")
+                  .replaceAll("\\$", "%24")
                   .replaceAll(  "`", "%60")
                   .replaceAll(  "'", "%27");
     }
