@@ -522,7 +522,7 @@ public class ApiMisc extends ApiGeneric {
             
         } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
             
-            String cmd = "/usr/bin/youtube-dl -f flv -o /dev/stdout "
+            String cmd = "/usr/bin/youtube-dl -f flv -o - "
                        + NnStringUtil.escapeURLInShellArg(videoUrl);
             log.info("[exec] " + cmd);
             
