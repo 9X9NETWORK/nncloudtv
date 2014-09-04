@@ -26,9 +26,9 @@ public class ScheduledTask {
         long free  = Runtime.getRuntime().freeMemory();
         
         System.gc(); // trigger garbage collection
-        log.info("memory: max = " + max
-                   + ", total = " + total
-                   +  ", free = " + free);
+        log.info("[memory] max = " + max
+                   +  ", total = " + total
+                   +   ", free = " + free);
         if (max == total && free < total / 100) {
             log.warning("available memory is less than 1%");
         }
