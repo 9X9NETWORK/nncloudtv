@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SignatureException;
@@ -485,6 +486,13 @@ public class ApiMisc extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        URL url = null;
+        HttpURLConnection conn = null;
+        
+        Short offset = evaluateShort(req.getParameter("t"));
+        if (offset == null) {
+            offset = 5;
+        }
         
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
@@ -493,8 +501,10 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         try {
-            URL url = new URL(videoUrl);
-            url.openConnection();
+            url = new URL(videoUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
         } catch (MalformedURLException e) {
             log.info("bad url format");
             return empty;
@@ -522,6 +532,7 @@ public class ApiMisc extends ApiGeneric {
             
         } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
             
+            log.info("youtube url format");
             String cmd = "/usr/bin/youtube-dl --no-cache-dir -o - "
                        + NnStringUtil.escapeURLInShellArg(videoUrl);
             log.info("[exec] " + cmd);
@@ -535,7 +546,16 @@ public class ApiMisc extends ApiGeneric {
                 
             } catch (IOException e) {
                 log.warning(e.getMessage());
-                return null;
+                return empty;
+            }
+        } else if (url.getProtocol().equals("https")) {
+            
+            log.info("https url format");
+            try {
+                videoIn = conn.getInputStream();
+            } catch (IOException e) {
+                log.info(e.getMessage());
+                return empty;
             }
         }
         
