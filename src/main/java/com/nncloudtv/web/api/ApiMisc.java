@@ -45,6 +45,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
@@ -519,6 +520,23 @@ public class ApiMisc extends ApiGeneric {
             S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
             videoIn = s3Object.getObjectContent();
             
+        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+            
+            String cmd = "/usr/bin/youtube-dl -o /dev/stdout "
+                       + NnStringUtil.escapeURLInShellArg(videoUrl);
+            log.info("[exec] " + cmd);
+            
+            try {
+                Process process = Runtime.getRuntime().exec(cmd);
+                videoIn = process.getInputStream();
+                // piping error message to stdout
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                pipingTask.start();
+                
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+                return null;
+            }
         }
         
         FeedingAvconvTask feedingAvconvTask = null;
