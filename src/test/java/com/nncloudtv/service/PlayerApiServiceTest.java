@@ -714,6 +714,7 @@ public class PlayerApiServiceTest {
             iosMap.put(MsoConfig.SHAKE_DISCOVER,                mockShackDiscover);
             iosMap.put("flurry",                                "i" + "flurry");
             iosMap.put("ad",                                    "i" + "on");
+            iosMap.put("ad-type",                               "i" + "ad-type"); // depend on "ad" exist or not
             iosMap.put("admob-key",                             "i" + "admob-key");
             iosMap.put(MsoConfig.AUDIO_BACKGROUND,              mockAudioBackground);
             iosMap.put(MsoConfig.HOMEPAGE,                      mockHomePage);
@@ -752,6 +753,7 @@ public class PlayerApiServiceTest {
             itemMap.put(MsoConfig.GOOGLE_ANALYTICS_IOS, iosPair.get("ga"));
             itemMap.put(MsoConfig.FLURRY_ANALYTICS_IOS, iosPair.get("flurry"));
             itemMap.put(MsoConfig.AD_IOS,               iosPair.get("ad"));
+            itemMap.put(MsoConfig.AD_IOS_TYPE,          iosPair.get("ad-type"));
             itemMap.put(MsoConfig.ADMOBKEY_IOS,         iosPair.get("admob-key"));
             
             itemMap.put(MsoConfig.GOOGLE_ANALYTICS_ANDROID, androidPair.get("ga"));
