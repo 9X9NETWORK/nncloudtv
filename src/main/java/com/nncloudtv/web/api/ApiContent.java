@@ -1702,6 +1702,15 @@ public class ApiContent extends ApiGeneric {
             rerun = true;
         }
         
+        // contentType
+        String contentTypeStr = req.getParameter("contentType");
+        if (contentTypeStr != null) {
+            Short contentType = evaluateShort(contentTypeStr);
+            if (contentType != null) {
+                episode.setContentType(contentType);
+            }
+        }
+        
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {

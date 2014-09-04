@@ -48,6 +48,11 @@ public class NnEpisode implements Serializable {
     private boolean isPublic; 
     
     @Persistent
+    public short contentType;
+    public static final short CONTENTTYPE_GENERAL = 0;
+    public static final short CONTENTTYPE_UPLOAD  = 1; // this episdoe contains only uploaded video (for CMS)
+    
+    @Persistent
     private Date scheduleDate;
     
     @Persistent
@@ -210,6 +215,14 @@ public class NnEpisode implements Serializable {
 
     public void setStorageId(long storageId) {
         this.storageId = storageId;
+    }
+
+    public short getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(short contentType) {
+        this.contentType = contentType;
     }
      
 }

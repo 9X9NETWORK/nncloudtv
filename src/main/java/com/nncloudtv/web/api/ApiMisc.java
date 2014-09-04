@@ -533,7 +533,7 @@ public class ApiMisc extends ApiGeneric {
         } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
             
             log.info("youtube url format");
-            String cmd = "/usr/bin/youtube-dl --no-cache-dir -o - "
+            String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
                        + NnStringUtil.escapeURLInShellArg(videoUrl);
             log.info("[exec] " + cmd);
             
@@ -562,7 +562,7 @@ public class ApiMisc extends ApiGeneric {
         FeedingAvconvTask feedingAvconvTask = null;
         
         try {
-            String cmd = "/usr/bin/avconv -i "
+            String cmd = "/usr/bin/avconv -v debug -i "
                        + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
                        + " -ss " + offset + " -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
             
