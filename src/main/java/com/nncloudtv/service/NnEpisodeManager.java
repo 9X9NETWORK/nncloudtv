@@ -182,7 +182,7 @@ public class NnEpisodeManager {
             episodes.get(i).setSeq(i + 1);
         }
         
-        save(episodes);
+        dao.saveAll(episodes);
     }
     
     public void delete(NnEpisode episode) {

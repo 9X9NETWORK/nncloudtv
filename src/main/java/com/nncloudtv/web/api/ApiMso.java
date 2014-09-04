@@ -2288,8 +2288,10 @@ public class ApiMso extends ApiGeneric {
         if (duration != null) {
             library.setDuration(duration);
         }
+        library = NNF.getLibraryMngr().save(library);
+        NNF.getLibraryMngr().reorderMsoLibrary(mso.getId());
         
-        return NNF.getLibraryMngr().save(library);
+        return library;
     }
     
     @RequestMapping(value = "mso/{msoId}/my_library", method = RequestMethod.GET)

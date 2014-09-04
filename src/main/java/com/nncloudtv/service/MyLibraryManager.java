@@ -53,4 +53,16 @@ public class MyLibraryManager {
         
         dao.delete(library);
     }
+    
+    public void reorderMsoLibrary(long msoId) {
+        
+        List<MyLibrary> library = dao.findByMsoId(msoId);
+        
+        for (int i = 0; i < library.size(); i++) {
+            
+            library.get(i).setSeq((short) (i + 1));
+        }
+        
+        dao.saveAll(library);
+    }
 }
