@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SignatureException;
@@ -486,15 +485,26 @@ public class ApiMisc extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
         if (videoUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
+        try {
+            URL url = new URL(videoUrl);
+            url.openConnection();
+        } catch (MalformedURLException e) {
+            log.info("bad url format");
+            return empty;
+        } catch (IOException e) {
+            log.info("failed to open url");
+            return empty;
+        }
+        
         InputStream videoIn = null;
         String thumbnailUrl = null;
-        
         String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
         Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
         
@@ -515,14 +525,11 @@ public class ApiMisc extends ApiGeneric {
         FeedingAvconvTask feedingAvconvTask = null;
         
         try {
-            String[] cmd = {
-                    "/usr/bin/avconv", "-i",
-                    ((videoIn == null) ? videoUrl : "/dev/stdin"),
-                    "-ss", "5", "-vframes", "1", "-vcidec", "png",
-                    "-y", "-f", "image2pipe", "/dev/stdout"
-            };
+            String cmd = "/usr/bin/avconv -i "
+                       + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
+                       + " -ss 5 -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
             
-            log.info("[exec] " + StringUtils.join(cmd, ' '));
+            log.info("[exec] " + cmd);
             
             Process process = Runtime.getRuntime().exec(cmd);
             
