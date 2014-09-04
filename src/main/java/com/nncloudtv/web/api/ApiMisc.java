@@ -516,7 +516,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             String[] cmd = {
-                    "/usr/bin/avconv -i ", "-i",
+                    "/usr/bin/avconv", "-i",
                     ((videoIn == null) ? videoUrl : "/dev/stdin"),
                     "-ss", "5", "-vframes", "1", "-vcidec", "png",
                     "-y", "-f", "image2pipe", "/dev/stdout"
