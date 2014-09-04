@@ -29,7 +29,7 @@ public class YouTubeLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     
-    public static final String regexNormalizedVideoUrl = "^http:\\/\\/www\\.youtube\\.com\\/watch\\?v=[^&]+$";
+    public static final String regexNormalizedVideoUrl = "^https?:\\/\\/www\\.youtube\\.com\\/watch\\?v=[^&]+$";
     public static final String regexVideoIdStr = "v=([^&]+)";
     public static final String youtubeChannelPrefix = "http://www.youtube.com/user/";
     public static final String youtubePlaylistPrefix = "http://www.youtube.com/view_play_list?p=";
