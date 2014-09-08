@@ -36,6 +36,7 @@ import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
@@ -144,14 +145,14 @@ public class PlayerApiService {
         if (brandExpireConfig != null) {
             try {
                 //"January 2, 2019";
-	        Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
-	        Date now = new Date();
-	        if (now.after(date)) {
-	            log.info("mso " + mso.getName() + " expires!");
-		    return NnStatusCode.APP_EXPIRE;
-		}
+            Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
+            Date now = new Date();
+            if (now.after(date)) {
+                log.info("mso " + mso.getName() + " expires!");
+            return NnStatusCode.APP_EXPIRE;
+        }
             } catch (ParseException e) {
-	        NnLogUtil.logException(e);
+            NnLogUtil.logException(e);
             }
         }
         MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_VERSION_EXPIRE);
@@ -159,8 +160,8 @@ public class PlayerApiService {
             String[] str = appExpireConfig.getValue().split(";");            
             for (String s : str) {
                if (this.appVersion != null && this.appVersion.equals(s)) {
-            	   log.info("expire version:" + this.appVersion);
-            	   return NnStatusCode.APP_VERSION_EXPIRE;
+                   log.info("expire version:" + this.appVersion);
+                   return NnStatusCode.APP_VERSION_EXPIRE;
                }
             }
         }
@@ -2146,11 +2147,11 @@ public class PlayerApiService {
             numOfChannelTotal = 1;
             channels.add(c);
         } else {
-	    @SuppressWarnings("rawtypes")
-	    Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
-	    channels = (List<NnChannel>) st.pop();
-	    System.out.println("solr search channel size:" + channels.size());	        
-	    numOfChannelTotal = (Long) st.pop();
+        @SuppressWarnings("rawtypes")
+        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
+        channels = (List<NnChannel>) st.pop();
+        System.out.println("solr search channel size:" + channels.size());            
+        numOfChannelTotal = (Long) st.pop();
         }
         
         List<NnUser> users = NNF.getUserMngr().search(null, null, text, mso.getId());
@@ -3347,25 +3348,25 @@ public class PlayerApiService {
 
     //url = "http://vimeo.com/" + videoId;
     public Object getVimeoDirectUrl(String url) {
-    	if (url == null)
-    	    return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+        if (url == null)
+            return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         String dataConfigUrl = null;
         String videoUrl = null;
         //step 1, get <div.player data-config-url>
-	try {
-	   Document doc = Jsoup.connect(url).get();
+        try {
+           Document doc = Jsoup.connect(url).get();
            Element element = doc.select("div.player").first();
-	   if (element != null) {
-               dataConfigUrl = element.attr("data-config-url");
-               log.info("vimeo data-config-url=" + dataConfigUrl);
+           if (element != null) {
+              dataConfigUrl = element.attr("data-config-url");
+              log.info("vimeo data-config-url=" + dataConfigUrl);
            }
         } catch (IOException e) {        
             log.info("vimeo div.player data-config-url not exisiting");
             NnLogUtil.logException(e);
             return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
-        }    		
+        }            
         if (dataConfigUrl == null)
-	    return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);		
+           return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);        
         //step 2, get json data
         String jsonStr = NnNetUtil.urlGet(dataConfigUrl);
         JSONObject json = new JSONObject(jsonStr);
@@ -3380,7 +3381,30 @@ public class PlayerApiService {
         log.info("vimeo url:" + videoUrl);
         String data = PlayerApiService.assembleKeyValue("url", videoUrl);        
         String[] result = {data};
-	return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+    
+    public Object generateSignedUrls(String url) {
+        if (url == null || url.length() == 0)
+            return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+        String[] urls = url.split(",");
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        MsoConfig cfDomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AMAZON_CF_DOMAIN);
+        if (cfDomainConfig == null)
+        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+        MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AMAZON_CF_KEYPAIR);
+        if (cfKeypairConfig == null)
+        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+        String keypair = cfKeypairConfig.getValue();	
+        String cfDomainStr = cfDomainConfig.getValue();
+        String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
+        log.info("private key path:" + privateKeyPath);
+        String signedUrls = "";
+        for (String u : urls) {
+            signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, u) + "\n";            
+        }
+        String[] result = {signedUrls};
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
     public Object notificationList(String token, HttpServletRequest req) {

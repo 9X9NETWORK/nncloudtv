@@ -3006,6 +3006,28 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
+
+    
+    @RequestMapping(value="generateSignedUrls")
+    public @ResponseBody Object generateSignedUrls (
+            @RequestParam(value="url", required=false) String url,    		
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
+            output = playerApiService.generateSignedUrls(url);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
     
     
     /**
