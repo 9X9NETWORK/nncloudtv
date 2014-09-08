@@ -198,7 +198,7 @@ public class AmazonLib {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         String distributionDomain = domain; //d31cfzp2gk0td6.cloudfront.net
         String privateKeyFilePath = filePath; ///var/opt/cf/rsa-private-key.der
-        String s3ObjectKey = s3Obj;
+        String s3ObjectKey = s3Obj; //"_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
         String signedUrlCanned = null;
         //expire in one day
         DateTime now = new DateTime(DateTimeZone.UTC);
