@@ -153,10 +153,10 @@ public class ApiContext {
     public boolean isAndroid() {
         
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
-        if (userAgent.contains("Android")) {
+        if (userAgent != null && userAgent.contains("Android")) {
             log.info("request from Android");
-            return true;            
-        }        
+            return true;
+        }
         return false;
     }
     
