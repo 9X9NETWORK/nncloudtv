@@ -3,10 +3,13 @@ package com.nncloudtv.lib;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.Security;
 import java.security.SignatureException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -15,6 +18,12 @@ import java.util.logging.Logger;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.imageio.ImageIO;
+
+import org.jets3t.service.CloudFrontService;
+import org.jets3t.service.CloudFrontServiceException;
+import org.jets3t.service.utils.ServiceUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -184,4 +193,40 @@ public class AmazonLib {
         
         return "http://" + bucket + ".s3.amazonaws.com/" + filename;
     }
+
+    public static String cfUrlSignature(String domain, String filePath, String keyPair, String s3Obj) {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        String distributionDomain = domain; //d31cfzp2gk0td6.cloudfront.net
+        String privateKeyFilePath = filePath; ///var/opt/cf/rsa-private-key.der
+        String s3ObjectKey = s3Obj; //"_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
+        String signedUrlCanned = null;
+        //expire in one day
+        DateTime now = new DateTime(DateTimeZone.UTC);
+        DateTime expires = new DateTime(now).plusDays(1);        
+        
+        // Convert your DER file into a byte array.
+        try {
+            byte[] derPrivateKey = ServiceUtils.readInputStreamToBytes(new
+                FileInputStream(privateKeyFilePath));    
+            String keyPairId = keyPair; //APKAJAMGXWAZ24S62ZSA;
+            // Generate a "canned" signed URL to allow access to a 
+            // specific distribution and object
+            signedUrlCanned = CloudFrontService.signUrlCanned(
+                "http://" + distributionDomain + "/" + s3ObjectKey, // Resource URL or Path
+                keyPairId ,    // Certificate identifier, 
+                               // an active trusted signer for the distribution
+                derPrivateKey, // DER Private key data
+                ServiceUtils.parseIso8601Date(expires.toString()) // DateLessThan
+                );
+            log.info("signed canned:" + signedUrlCanned);    
+        } catch (IOException e) {
+            System.out.println(e);
+        } catch (CloudFrontServiceException e) {
+            System.out.println(e);
+        } catch (ParseException e) {
+            System.out.println(e);
+        }
+        return signedUrlCanned;
+    }
+
 }

@@ -34,6 +34,7 @@ import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
@@ -3347,6 +3348,29 @@ public class PlayerApiService {
 	return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
+    public Object generateSignedUrls(String url) {
+        if (url == null || url.length() == 0)
+            return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+        String[] urls = url.split(",");
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        MsoConfig cfDomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
+        if (cfDomainConfig == null)
+        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+        MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_KEY_PAIR_ID);
+        if (cfKeypairConfig == null)
+        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+        String keypair = cfKeypairConfig.getValue();	
+        String cfDomainStr = cfDomainConfig.getValue();
+        String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
+        log.info("private key path:" + privateKeyPath);
+        String signedUrls = "";
+        for (String u : urls) {
+            signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, u) + "\n";            
+        }
+        String[] result = {signedUrls};
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+
     public Object notificationList(String token, HttpServletRequest req) {
         
         if (token == null)

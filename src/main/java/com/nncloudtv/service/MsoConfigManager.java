@@ -69,7 +69,12 @@ public class MsoConfigManager {
             return path + mso.getName() + "_apns_dev.p12";
         }
     }
-    
+   
+    static public String getCfPrivateKeyPath(Mso mso) {        
+        String path = "/var/opt/cf/";
+        return path + "rsa-key-" + mso.getName() + ".der";
+    }
+ 
     static public String getServerDomain() {
         
         if (serverDomain == null) {
