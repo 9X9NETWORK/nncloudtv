@@ -50,7 +50,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             query.declareParameters("long channelIdParam, boolean isPublicParam");
             if (sort == NnChannel.SORT_SCHEDULED_FIRST) {
                 
-                query.setFilter("channelId == channelIdParam && (publishDate is not null || scheduleDate is not null)");
+                query.setFilter("channelId == channelIdParam && (publishDate != null || scheduleDate != null)");
                 query.setOrdering("scheduleDate desc, publishDate desc");
                 
             } else {
