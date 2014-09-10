@@ -60,10 +60,11 @@ public class MsoConfig implements Serializable  {
     public static String HOMEPAGE              = "homepage"; //whatson, portal
     public static String ABOUT_US              = "aboutus";
     public static String SIGNUP_ENFORCE        = "signup-enforce";
-    public static String AD_IOS                = "ad-ios";
+    public static String AD_IOS                = "ad-ios"; //"iad" or "direct-video" 
     public static String ADMOBKEY_ANDROID      = "admobkey-android";
     public static String ADMOBKEY_IOS          = "admobkey-ios";
-    public static String AD_ANDROID            = "ad-android";
+    public static String AD_IOS_TYPE           = "ad-ios-type"; //interstitials, banner, video 
+    public static String AD_ANDROID            = "ad-android"; //"admob" or "direct-video"
     public static String AUDIO_BACKGROUND      = "audio-background";
     public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
     public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
@@ -84,6 +85,9 @@ public class MsoConfig implements Serializable  {
     public static String IOS_URL_ORIGIN                = "ios-url-origin";
     public static String IOS_URL_LANDING_DIRECT        = "ios-url-landing-direct";
     public static String IOS_URL_LANDING_SUGGESTED     = "ios-url-landing-suggested";
+    
+    public static String AMAZON_CF_DOMAIN = "amazon-cf-domain"; //test data: d31cfzp2gk0td6.cloudfront.net
+    public static String AMAZON_CF_KEYPAIR = "amazon-cf-keypair"; //test data: APKAJAMGXWAZ24S62ZSA
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

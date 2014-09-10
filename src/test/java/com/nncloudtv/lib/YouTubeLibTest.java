@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -32,10 +33,12 @@ import com.nncloudtv.lib.YouTubeLib.Thumbnail;
 import com.nncloudtv.lib.YouTubeLib.Video;
 import com.nncloudtv.lib.YouTubeLib.VideoFeed;
 import com.nncloudtv.lib.YouTubeLib.YouTubeUrl;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.web.api.NnStatusCode;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({YouTubeLib.class, URL.class, HttpRequestFactory.class, HttpRequest.class, HttpResponse.class})
+@Category(NnTestAll.class)
 public class YouTubeLibTest {
     
     protected static final Logger log = Logger.getLogger(YouTubeLibTest.class.getName());

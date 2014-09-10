@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -22,9 +23,11 @@ import org.springframework.ui.Model;
 
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(MockitoJUnitRunner.class)
+@Category(NnTestAll.class)
 public class PlayerServiceTest {
     
     protected static final Logger log = Logger.getLogger(PlayerServiceTest.class.getName());
