@@ -1044,8 +1044,13 @@ public class NnProgramManager {
         name = this.removePlayerUnwanted(name);
         intro = this.removePlayerUnwanted(intro);
         String output = "";
-        if (episode.getPublishDate() == null) {
-            episode.setPublishDate(new Date()); //should not happen, just in case
+        
+        // publishDate --> scheduleDate --> now()
+        long publishTime = NnDateUtil.now().getTime();
+        if (episode.getPublishDate() != null) {
+            publishTime = episode.getPublishDate().getTime();
+        } else if (episode.getScheduleDate() != null) {
+            publishTime = episode.getScheduleDate().getTime();
         }
         
         String cId = String.valueOf(episode.getChannelId());
@@ -1058,7 +1063,6 @@ public class NnProgramManager {
             cId += ":" + String.valueOf(episode.getStorageId());
         }
         String eId = "e" + String.valueOf(episode.getId());
-        long publishTime = episode.getPublishDate().getTime();
         
         if (format == PlayerApiService.FORMAT_PLAIN) {
             
@@ -1076,8 +1080,8 @@ public class NnProgramManager {
                     "",     //url2
                     "",     //url3
                     "",     //audio file
-                    String.valueOf(publishTime),
-                    "",     //comment
+                    String.valueOf(publishTime), // or scheduleTime
+                    String.valueOf(episode.isPublic()),
                     card,
                     poiStr
             };
