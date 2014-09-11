@@ -48,7 +48,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             Query query = pm.newQuery(NnEpisode.class);
             
             query.declareParameters("long channelIdParam, boolean isPublicParam");
-            if (sort == NnChannel.SORT_SCHEDULED_FIRST) {
+            if (sort == NnChannel.SORT_TIMED_LINEAR) {
                 
                 query.setFilter("channelId == channelIdParam && (publishDate != null || scheduleDate != null)");
                 query.setOrdering("scheduleDate desc, publishDate desc");
