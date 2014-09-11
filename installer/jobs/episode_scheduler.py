@@ -61,7 +61,7 @@ for r in rows:
    # update its property     
    cursor.execute("""                     
       update nnepisode                                                     
-         set isPublic = true, publishDate = now(), scheduleDate = null    
+         set isPublic = true, publishDate = scheduleDate, scheduleDate = null    
        where id = %s                                    
       """, (eid))       
    if isPublic == True:  #rerun    

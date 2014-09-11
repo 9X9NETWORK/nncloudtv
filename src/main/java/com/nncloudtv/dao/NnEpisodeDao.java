@@ -34,6 +34,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             if (episodes.size() > 0) {
                 detached = (List<NnEpisode>) pm.detachCopyAll(episodes);
             }
+            query.closeAll();
         } finally {
             pm.close();
         }
@@ -42,27 +43,38 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnEpisode.class);
-            query.setFilter("channelId == channelIdParam && isPublic == isPublicParam");
+            
             query.declareParameters("long channelIdParam, boolean isPublicParam");
-            if (sort == NnChannel.SORT_POSITION_REVERSE)
-            	query.setOrdering("seq desc");
-            else 
-                query.setOrdering("seq asc");
+            if (sort == NnChannel.SORT_TIMED_LINEAR) {
+                
+                query.setFilter("channelId == channelIdParam && (publishDate != null || scheduleDate != null)");
+                query.setOrdering("scheduleDate desc, publishDate desc");
+                
+            } else {
+                
+                query.setFilter("channelId == channelIdParam && isPublic == isPublicParam");
+                if (sort == NnChannel.SORT_POSITION_REVERSE) {
+                    query.setOrdering("seq desc");
+                } else {
+                    query.setOrdering("seq asc");
+                }
+            }
             query.setRange(start, end);
             @SuppressWarnings("unchecked")
-            List<NnEpisode> episodes = (List<NnEpisode>)query.execute(channelId, true);
+            List<NnEpisode> episodes = (List<NnEpisode>) query.execute(channelId, true);
             if (episodes.size() > 0) {
                 detached = (List<NnEpisode>) pm.detachCopyAll(episodes);
             }
+            query.closeAll();
         } finally {
             pm.close();
         }
         return detached;
     }    
-
+    
     public List<NnEpisode> findPlayerLatestEpisode(long channelId, short sort) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
         PersistenceManager pm = getPersistenceManager();
