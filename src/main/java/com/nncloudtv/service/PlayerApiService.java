@@ -3360,7 +3360,7 @@ public class PlayerApiService {
         if (cfKeypairConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
         String keypair = cfKeypairConfig.getValue();	
-        String cfDomainStr = cfDomainConfig.getValue();
+        String cfDomainStr = cfDomainConfig.getValue() + ".cloudfront.net";
         String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
         String signedUrls = "";
