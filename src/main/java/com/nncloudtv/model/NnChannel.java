@@ -140,7 +140,7 @@ public class NnChannel implements Serializable {
     public static final short SORT_DESIGNATED       = 3;
     public static final short SORT_POSITION_FORWARD = 4;
     public static final short SORT_POSITION_REVERSE = 5;
-    public static final short SORT_SCHEDULED_FIRST  = 6;
+    public static final short SORT_TIMED_LINEAR     = 6;
     
     //define channel type. anything > 10 is fdm pool. anything > 20 is browse pool
     @Persistent
