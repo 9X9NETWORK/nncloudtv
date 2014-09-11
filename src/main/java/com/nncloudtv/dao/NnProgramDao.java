@@ -255,10 +255,8 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         			      "select p.id " + 
         			       " from nnprogram p, nnepisode e, nnchannel c " + 
         			      " where c.id = " + channelId + 
-        			        " and c.isPublic = true " +  
         			        " and p.channelId = c.id " +    
         			        " and e.id = p.episodeId " + 
-        			        " and e.isPublic = true " + 
         			        " and p.status !=  " + NnProgram.STATUS_ERROR +  
         			        " order by e.seq, p.seq, p.subSeq " +
         			        ") a2 on a1.id=a2.id";
