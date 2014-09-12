@@ -1682,6 +1682,11 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
+        Long storageId = evaluateLong(req.getParameter("storageId"));
+        if (storageId != null) {
+            episode.setStorageId(storageId);
+        }
+        
         boolean autoShare = false;
         // isPublic
         String isPublicStr = req.getParameter("isPublic");
@@ -1886,6 +1891,11 @@ public class ApiContent extends ApiGeneric {
                 }
                 episode.setPublic(isPublic);
             }
+        }
+        
+        Long storageId = evaluateLong(req.getParameter("storageId"));
+        if (storageId != null) {
+            episode.setStorageId(storageId);
         }
         
         // seq, default : at first position, trigger reorder 
