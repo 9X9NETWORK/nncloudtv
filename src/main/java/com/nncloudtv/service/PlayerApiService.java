@@ -3354,14 +3354,14 @@ public class PlayerApiService {
         String[] urls = url.split(",");
         MsoConfigManager configMngr = NNF.getConfigMngr();
         // NOTE: maybe the mso can be determined by bucket name
-        MsoConfig cfDomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
-        if (cfDomainConfig == null)
+        MsoConfig cfSubomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
+        if (cfSubomainConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
         MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_KEY_PAIR_ID);
         if (cfKeypairConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
         String keypair = cfKeypairConfig.getValue();	
-        String cfDomainStr = cfDomainConfig.getValue() + ".cloudfront.net";
+        String cfDomainStr = cfSubomainConfig.getValue() + ".cloudfront.net";
         String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
         String signedUrls = "";
