@@ -3353,6 +3353,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         String[] urls = url.split(",");
         MsoConfigManager configMngr = NNF.getConfigMngr();
+        // NOTE: maybe the mso can be determined by bucket name
         MsoConfig cfDomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
         if (cfDomainConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
@@ -3365,12 +3366,20 @@ public class PlayerApiService {
         log.info("private key path:" + privateKeyPath);
         String signedUrls = "";
         for (String u : urls) {
-            signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, u) + "\n";            
+            
+            String regex = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws\\.com\\/(.*)$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(u);
+            if (matcher.find()) {
+                signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
+            } else {
+                signedUrls += u + "\n";
+            }
         }
         String[] result = {signedUrls};
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
-
+    
     public Object notificationList(String token, HttpServletRequest req) {
         
         if (token == null)
