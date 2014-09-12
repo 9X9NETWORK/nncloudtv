@@ -29,6 +29,13 @@ public class NnEpisode implements Serializable {
     @Persistent
     private long channelId;
     
+    /**
+     * The usage of episode `storageId`
+     * 
+     * 1. orphan episode:     store channelId
+     * 2. referenced episode: store referenced episodeId
+     * 3. virtual channel:    store real channelId (temporarily)
+     */
     @Persistent
     private long storageId;
     
@@ -45,7 +52,7 @@ public class NnEpisode implements Serializable {
     private String intro;
     
     @Persistent
-    private boolean isPublic; 
+    private boolean isPublic;
     
     @Persistent
     private Date scheduleDate;
