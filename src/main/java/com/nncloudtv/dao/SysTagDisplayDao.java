@@ -54,7 +54,7 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
         
         String query = " select * from systag_display a1 "
                      + " inner join "
-                     + "(select d.id, s.seq " 
+                     + "(select d.id, s.seq, s.timeStart, s.timeEnd"
                      + "  from systag s, systag_display d "
                      + " where s.msoId = " + msoId + ""
                      + "   and s.type = " + type
