@@ -92,7 +92,7 @@ public class MsoConfig implements Serializable  {
     public static String CF_KEY_PAIR_ID   = "cf-key-pair-id";
     public static String CF_SUBDOMAIN     = "cf-subdomain";
     public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
-    public static String S3_VIDEO_BUCKET  = "s3video-bucket";
+    public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

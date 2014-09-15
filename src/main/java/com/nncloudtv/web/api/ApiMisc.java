@@ -34,6 +34,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
@@ -539,9 +540,12 @@ public class ApiMisc extends ApiGeneric {
             AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
                                                                  MsoConfigManager.getAWSKey(mso));
             AmazonS3 s3 = new AmazonS3Client(credentials);
-            S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
-            videoIn = s3Object.getObjectContent();
-            
+            try {
+                S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
+                videoIn = s3Object.getObjectContent();
+            } catch(AmazonS3Exception e) {
+                log.info(e.getMessage());
+            }
         } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
             
             log.info("youtube url format");
