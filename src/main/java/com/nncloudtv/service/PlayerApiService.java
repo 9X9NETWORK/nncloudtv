@@ -3367,9 +3367,7 @@ public class PlayerApiService {
         String signedUrls = "";
         for (String u : urls) {
             
-            String regex = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws\\.com\\/(.*)$";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(u);
+            Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(u);
             if (matcher.find()) {
                 signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
             } else {

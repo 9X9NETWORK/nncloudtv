@@ -46,6 +46,7 @@ public class AmazonLib {
     public static final String S3_TOKEN = "YWJvdXR5b3U=";
     public static final String S3_CONTEXT_CODE = "aHR0cDovL2dvby5nbC9lVTNtWg==";
     public static final String S3_EXT = "WW91IEFyZSBOb3QgQWxvbmU=";
+    public static final String REGEX_S3_URL = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws\\.com\\/(.+)$";
     
     /**
     * Computes RFC 2104-compliant HMAC signature.

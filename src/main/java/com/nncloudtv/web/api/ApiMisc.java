@@ -515,8 +515,7 @@ public class ApiMisc extends ApiGeneric {
         
         InputStream videoIn = null;
         String thumbnailUrl = null;
-        String regexAmazonS3Url = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws.com\\/(.+)";
-        Matcher matcher = Pattern.compile(regexAmazonS3Url).matcher(videoUrl);
+        Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
         
         if (matcher.find()) {
             
