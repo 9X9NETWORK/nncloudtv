@@ -46,6 +46,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.VimeoLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -515,13 +516,22 @@ public class ApiMisc extends ApiGeneric {
         
         InputStream videoIn = null;
         String thumbnailUrl = null;
-        Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
-        
-        if (matcher.find()) {
+        Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
+        Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
+        if (vimeoMatcher.find()) {
+            
+            log.info("vimeo url format");
+            
+            videoUrl = VimeoLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing vimeo url failed");
+                return empty;
+            }
+        } else if (s3Matcher.find()) {
             
             log.info("S3 url format");
-            String bucket = matcher.group(1);
-            String filename = matcher.group(2);
+            String bucket = s3Matcher.group(1);
+            String filename = s3Matcher.group(2);
             Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
             AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
                                                                  MsoConfigManager.getAWSKey(mso));
