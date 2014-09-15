@@ -490,9 +490,12 @@ public class ApiMisc extends ApiGeneric {
         URL url = null;
         HttpURLConnection conn = null;
         
-        Short offset = evaluateShort(req.getParameter("t"));
-        if (offset == null) {
-            offset = 5;
+        Double offset = 5.0;
+        if (req.getParameter("t") != null) {
+            try {
+                offset = Double.valueOf(req.getParameter("t"));
+            } catch (NumberFormatException e) {
+            }
         }
         
         String videoUrl = req.getParameter("url");
