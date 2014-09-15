@@ -23,9 +23,12 @@ public class ApiContext {
     
     public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/(www\\.)?(9x9|flipr)\\.tv$";
     public final static String DEFAULT_VERSION = "31";
+    public final static String DEFAULT_OS = "web";
     public final static String HEADER_USER_AGENT = "user-agent";
     public final static String HEADER_REFERRER = "referer";
     
+    public final static String PARAM_APP_VERSION = "appver";
+    public final static String PARAM_OS = "os";
     public final static String PARAM_MSO = "mso";
     public final static String PARAM_LANG = "lang";
     public final static String PARAM_SPHERE = "shpere";
@@ -34,6 +37,8 @@ public class ApiContext {
     HttpServletRequest httpReq;
     Locale locale;
     Integer version;
+    String appVersion;
+    String os;
     String root;
     Mso mso;
     Boolean productionSite = null;
@@ -41,6 +46,14 @@ public class ApiContext {
     public Integer getVersion() {
         
         return version;
+    }
+    
+    public String getAppVersion() {
+    	return appVersion;
+    }
+    
+    public String getOs() {
+    	return os;
     }
     
     public Locale getLocale() {
@@ -82,6 +95,14 @@ public class ApiContext {
             } catch (NumberFormatException e) {
             }
         }
+                
+        os = httpReq.getParameter(PARAM_OS);
+        if (os == null || os.length() == 0)
+            os = ApiContext.DEFAULT_OS;        	
+
+        appVersion = httpReq.getParameter(PARAM_APP_VERSION);
+        if (appVersion != null)
+            appVersion = os + " " + appVersion;
         
         root = NnNetUtil.getUrlRoot(httpReq);
         if (root == "") {

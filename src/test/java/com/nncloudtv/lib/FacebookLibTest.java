@@ -31,6 +31,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -42,12 +43,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.support.NnTestUtil;
 import com.nncloudtv.web.json.facebook.FacebookResponse;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FacebookLib.class, URL.class})
+@Category(NnTestAll.class)
 public class FacebookLibTest {
     
     protected static final Logger log = Logger.getLogger(FacebookLibTest.class.getName());

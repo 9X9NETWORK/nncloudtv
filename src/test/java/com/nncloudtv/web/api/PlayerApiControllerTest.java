@@ -21,6 +21,7 @@ import net.spy.memcached.internal.GetFuture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -30,8 +31,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import com.nncloudtv.dao.MsoConfigDao;
-import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.model.Mso;
@@ -41,12 +40,13 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.support.NnTestUtil;
-import com.nncloudtv.web.json.player.ApiStatus;
 import com.nncloudtv.wrapper.NNFWrapper;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({MsoManager.class,FacebookLib.class,CacheFactory.class,PlayerApiController.class})
+@Category(NnTestAll.class)
 public class PlayerApiControllerTest {
     
     protected static final Logger log = Logger.getLogger(PlayerApiControllerTest.class.getName());
@@ -87,6 +87,7 @@ public class PlayerApiControllerTest {
         }
         
         // default return null for any kind of key
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         when(cache.asyncGet(anyString())).thenReturn(future);
         try {
@@ -102,6 +103,7 @@ public class PlayerApiControllerTest {
     
     private void recordMemoryCacheGet(MemcachedClient cache, String key, Object returnObj) {
         
+        @SuppressWarnings("unchecked")
         GetFuture<Object> future = Mockito.mock(GetFuture.class);
         when(cache.asyncGet(key)).thenReturn(future);
         try {
@@ -166,8 +168,8 @@ public class PlayerApiControllerTest {
         // execute & verify
         // missing 'v' in request parameter but has 'v' setting in database with v=40
         Object actual = playerAPI.brandInfo(brandName, os, null, null, req, resp);
-        String expected = NnStatusCode.API_FORCE_UPGRADE + "\t" +
-                NnStatusMsg.getPlayerMsgText(NnStatusCode.API_FORCE_UPGRADE, null) + "\n";
+        String expected = (String)playerApiService.response(playerApiService.assembleMsgs(NnStatusCode.API_FORCE_UPGRADE, null));
+
         assertEquals("missing 'v' setting will evalute to v=31, with database hold v=40 then " +
                 "should response for 'api force upgrade'.", expected, actual);
         
@@ -247,7 +249,7 @@ public class PlayerApiControllerTest {
         // execute & verify
         // ip in tw
         req.setRemoteAddr("114.32.175.163"); // this ip locate in tw
-        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
@@ -257,7 +259,7 @@ public class PlayerApiControllerTest {
         
         // ip in us
         req.setRemoteAddr("136.18.5.120"); // this ip locate in us
-        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
         actual2 = (String) captureActual.getValue();
@@ -309,7 +311,7 @@ public class PlayerApiControllerTest {
         // execute & verify
         // format=xyz, not exist format
         req.setParameter("format", "xyz");
-        Object actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         ArgumentCaptor<Object> captureActual = ArgumentCaptor.forClass(Object.class);
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
@@ -319,7 +321,7 @@ public class PlayerApiControllerTest {
         
         // not provide format
         req.removeParameter("format");
-        actual = playerAPI.brandInfo(brandName, os, version, null, req, resp);
+        playerAPI.brandInfo(brandName, os, version, null, req, resp);
         
         verify(playerApiService, atLeastOnce()).response(captureActual.capture());
         actual2 = captureActual.getValue();

@@ -1,5 +1,6 @@
 package com.nncloudtv.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
@@ -14,9 +15,11 @@ import com.nncloudtv.lib.NnStringUtil;
  * Mso's configurations
  */
 @PersistenceCapable(table = "mso_config", detachable = "true")
-public class MsoConfig {
+public class MsoConfig implements Serializable  {
     
-    @PrimaryKey
+    private static final long serialVersionUID = -5535237161784792007L;
+
+	@PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
     
@@ -33,6 +36,8 @@ public class MsoConfig {
     public static String REALFBTOKEN           = "realfbtoken";
     public static String RO                    = "read-only";
     public static String FORCE_UPGRADE         = "force-upgrade";
+    public static String APP_EXPIRE            = "app-expire";               //format: "January 2, 2014" [note, with ","]
+    public static String APP_VERSION_EXPIRE    = "app-version-expire";       //format: "ios 3.0.2;ios 3.0.7;android 4.0" 
     public static String UPGRADE_MSG           = "upgrade-msg";
     public static String QUEUED                = "queued";
     public static String SUPPORTED_REGION      = "supported-region"; //zh, en
@@ -55,14 +60,16 @@ public class MsoConfig {
     public static String HOMEPAGE              = "homepage"; //whatson, portal
     public static String ABOUT_US              = "aboutus";
     public static String SIGNUP_ENFORCE        = "signup-enforce";
-    public static String AD_IOS                = "ad-ios";
+    public static String AD_IOS                = "ad-ios"; //"iad" or "direct-video" 
     public static String ADMOBKEY_ANDROID      = "admobkey-android";
     public static String ADMOBKEY_IOS          = "admobkey-ios";
-    public static String AD_ANDROID            = "ad-android";
+    public static String AD_IOS_TYPE           = "ad-ios-type"; //interstitials, banner, video 
+    public static String AD_ANDROID            = "ad-android"; //"admob" or "direct-video"
     public static String AUDIO_BACKGROUND      = "audio-background";
-    public static String SOCIAL_FEEDS          = "social-feeds";
+    public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
+    public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
-    public static String SEARCH = "search"; //all, store
+    public static String SEARCH                = "search"; //all, store
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";

@@ -33,7 +33,9 @@ public class NnStatusMsg {
     
                 case NnStatusCode.API_DEPRECATED: return "THIS FEATURE IS TEMPORARILY DISABLED";
                 case NnStatusCode.API_UNDER_CONSTRUCTION: return "API_UNDER_CONSTRUCTION";
-                case NnStatusCode.API_FORCE_UPGRADE: return MsoConfig.FORCE_UPGRADE;                                                 
+                case NnStatusCode.API_FORCE_UPGRADE: return MsoConfig.FORCE_UPGRADE;
+                case NnStatusCode.APP_EXPIRE: return "APP_EXPIRE";
+                case NnStatusCode.APP_VERSION_EXPIRE: return "APP_VERSION_EXPIRE";
                 case NnStatusCode.INPUT_ERROR: return "INPUT_ERROR";
                 case NnStatusCode.INPUT_MISSING: return "INPUT_MISSING";
                 case NnStatusCode.INPUT_BAD: return "INPUT_BAD";
@@ -103,7 +105,7 @@ public class NnStatusMsg {
                 case NnStatusCode.DATABASE_ERROR: return "DATABASE_ERROR";
                 case NnStatusCode.DATABASE_TIMEOUT: return "DATABASE_TIMEOUT";
                 case NnStatusCode.DATABASE_NEED_INDEX: return "DATABASE_NEED_INDEX";
-                case NnStatusCode.DATABASE_READONLY: return "DATABASE_READONLY:";
+                case NnStatusCode.DATABASE_READONLY: return "DATABASE_READONLY";
                 default: return "MESSAGE_UNDEFINED";
             }
         } catch (NoSuchMessageException e) {

@@ -194,7 +194,7 @@ public class AmazonLib {
         
         return "http://" + bucket + ".s3.amazonaws.com/" + filename;
     }
-
+    
     public static String cfUrlSignature(String domain, String filePath, String keyPair, String s3Obj) {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         String distributionDomain = domain; //d31cfzp2gk0td6.cloudfront.net
@@ -229,5 +229,4 @@ public class AmazonLib {
         }
         return signedUrlCanned;
     }
-
 }

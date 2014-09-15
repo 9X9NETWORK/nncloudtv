@@ -167,8 +167,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
-            }            
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.guestRegister(req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -199,9 +199,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {             
-                return playerApiService.assembleMsgs(status, null);
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.relatedApps(mso, os, stack, sphere, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -252,8 +252,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
-            }            
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, gender, isTemp, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -298,8 +298,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
-            }            
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.fbDeviceSignup(me, expire, msoString, req, resp);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -328,7 +328,10 @@ public class PlayerApiController {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                                        
             output = playerApiService.userTokenVerify(token, req, resp);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -351,7 +354,10 @@ public class PlayerApiController {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
-            playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             CookieHelper.deleteCookie(resp, CookieHelper.USER);
             CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
             output = NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS, locale);
@@ -403,8 +409,8 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                    
             output = playerApiService.brandInfo(os, req);
         } catch (Exception e) {
@@ -477,9 +483,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
-            }                        
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             boolean flatten = Boolean.parseBoolean(isFlatten);
             output = playerApiService.category(category, lang, flatten);
         } catch (Exception e) {
@@ -628,9 +634,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);            
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
-            }                        
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             output = playerApiService.setInfo(id, name, time, isProgramInfo);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -669,9 +675,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
-            }                                                
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             output = playerApiService.tagInfo(name, start, count);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -719,9 +725,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
-            }
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
             output = playerApiService.categoryInfo(id, tag, start, count, sort, isProgramInfo);
         } catch (Exception e) {
@@ -761,7 +767,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                
             output = playerApiService.subscribe(userToken, channelId, gridId);
         } catch (Exception e) {
@@ -803,7 +809,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                            
             output = playerApiService.unsubscribe(userToken, channelId, grid, pos);    
         } catch (Exception e) {
@@ -839,9 +845,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             boolean isReduced= Boolean.parseBoolean(reduced);            
             output = playerApiService.channelStack(stack, lang, userToken, channel, isReduced);    
         } catch (Exception e) {
@@ -874,10 +880,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {             
-                return playerApiService.assembleMsgs(status, null);
-            }                                 
-            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                                        
             if (channelIdStr == null)
                 playerApiService.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
             
@@ -993,8 +998,8 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                            
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             boolean isSetInfo = Boolean.parseBoolean(setInfo);
@@ -1107,9 +1112,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.assembleMsgs(status, null);
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (Exception e){
@@ -1155,9 +1160,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.channelSubmit(categoryIds, userToken, url, grid, name, image, tags, lang, req);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -1200,8 +1205,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
-            }                                                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.login(email, password, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1233,9 +1238,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.setUserPref(user, key, value);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1267,8 +1272,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.assembleMsgs(status, null);
-            }
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.setSetInfo(userToken, name, pos);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1296,9 +1301,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.staticContent(key, lang);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1326,9 +1331,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.deviceRegister(userToken, type, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1355,8 +1360,8 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                            
             output = playerApiService.listRecommended(lang);
         } catch (Exception e) {
@@ -1384,8 +1389,8 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {                
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                            
             output = playerApiService.deviceTokenVerify(token, req);
         } catch (Exception e) {
@@ -1638,9 +1643,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.getUserProfile(user);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1679,9 +1684,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.shareByEmail(userToken, toEmail, toName, subject, content, captcha, text);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1842,9 +1847,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.personalHistory(userToken);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -1913,8 +1918,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS)
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.copyChannel(userToken, channelId, grid);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -1946,8 +1952,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS)
-                return playerApiService.assembleMsgs(status, null);
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.moveChannel(userToken, grid1, grid2);
         } catch (Exception e){
             output = playerApiService.handleException(e);
@@ -1995,9 +2002,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);        
-            }            
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.search(text, stack, type, start, count, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2029,7 +2036,7 @@ public class PlayerApiController {
         try {
             int systemStatus = playerApiService.prepService(req, resp, true);
             if (systemStatus != NnStatusCode.SUCCESS)
-                return playerApiService.assembleMsgs(systemStatus, null);
+                return playerApiService.response(playerApiService.assembleMsgs(systemStatus, null));            
             output = playerApiService.programRemove(programId, ytVideoId, userToken, secret, status);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2360,7 +2367,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.assembleMsgs(status,  null);        
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));                
             }            
             output = playerApiService.inviteStatus(token);
         } catch (Exception e) {
@@ -2391,8 +2398,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);        
             if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             output = playerApiService.disconnect(userToken, toEmail, channel, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2420,8 +2427,8 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             output = playerApiService.notifySubscriber(userToken, channel, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2463,9 +2470,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                                        
             output = playerApiService.curator(profile, user, stack, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2511,8 +2518,8 @@ public class PlayerApiController {
             boolean del = Boolean.parseBoolean(delete);
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                    
             output = playerApiService.favorite(user, channel, program, fileUrl, name, imageUrl, duration, del);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2604,9 +2611,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.virtualChannel(stack, lang, userToken, channel, true);    
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2626,9 +2633,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.latestEpisode(channel);    
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2661,9 +2668,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             boolean isMinimal = Boolean.parseBoolean(minimal);
             output = playerApiService.whatson(lang, time, isMinimal);    
         } catch (Exception e) {
@@ -2697,9 +2704,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.frontpage(time, stack, user);    
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -2736,9 +2743,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             boolean isMinimal = Boolean.parseBoolean(minimal);
             output = playerApiService.portal(lang, time, isMinimal, type);        
         } catch (Exception e) {
@@ -2760,9 +2767,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             ytUsers = req.getParameter("channelNames");
             output = playerApiService.bulkIdentifier(ytUsers);    
         } catch (Exception e) {
@@ -2785,9 +2792,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             ytUsers = req.getParameter("channelNames");
             userToken = req.getParameter("user");
             output = playerApiService.bulkSubscribe(userToken, ytUsers);    
@@ -2812,9 +2819,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                playerApiService.assembleMsgs(status, null);                        
-            }
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
             log.info("in queue?" + isQueued);  
@@ -2975,22 +2982,22 @@ public class PlayerApiController {
      *  @param url vimeo video url
      *  @return list of video files. current there are two entries: hd and all. <br/>
      *          example: <br/>
-     *          hd	http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
-     *          all	http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
+     *          hd    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
+     *          all    http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
      *  
      */
     @RequestMapping(value="getVimeoDirectUrl")
     public @ResponseBody Object getVimeoDirectUrl (
-            @RequestParam(value="url", required=true) String url,    		
+            @RequestParam(value="url", required=true) String url,            
             HttpServletRequest req,
             HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.getVimeoDirectUrl(url);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -3045,9 +3052,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status == NnStatusCode.API_FORCE_UPGRADE) {
-                return playerApiService.assembleMsgs(status,  null);        
-            }                        
+            if (status != NnStatusCode.SUCCESS) {                
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }                                                            
             output = playerApiService.notificationList(token, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);

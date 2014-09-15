@@ -48,15 +48,15 @@ public class MsoConfigManager {
     }
     
     static public String getSearchNnChannelServer() {
-    	return getProperty("services.properties", "search_nncloudtv");
+        return getProperty("services.properties", "search_nncloudtv");
     }
     
     static public String getSearchPoolServer() {
-    	return getProperty("services.properties", "search_pool");
+        return getProperty("services.properties", "search_pool");
     }
    
     static public String getValue(String key) {
-    	return getProperty("services.properties", key);
+        return getProperty("services.properties", key);
     }
     
     static public String getP12FilePath(Mso mso, boolean isProduction) {
@@ -69,12 +69,12 @@ public class MsoConfigManager {
             return path + mso.getName() + "_apns_dev.p12";
         }
     }
-   
+    
     static public String getCfPrivateKeyPath(Mso mso) {        
         String path = "/var/opt/cf/";
         return path + "rsa-key-" + mso.getName() + ".der";
     }
- 
+    
     static public String getServerDomain() {
         
         if (serverDomain == null) {
@@ -92,20 +92,20 @@ public class MsoConfigManager {
     }
     
     public String getFacebookInfo(String type, Mso mso) {
-    	if (mso == null || type == null) {
-    		return null;
-    	}
-    	MsoConfig config = this.findByMsoAndItem(mso, type);
-    	if (config != null) {
-    		return config.getValue(); 
-    	}
-    	if (type == MsoConfig.FACEBOOK_CLIENTID)
-    		return getProperty("facebook.properties", "facebook_clientid");
-    	if (type == MsoConfig.FACEBOOK_APPTOKEN)
-    		return getProperty("facebook.properties", "facebook_apptoken");
-    	if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
-    		return getProperty("facebook.properties", "facebook_client_secret");
-    	return null;
+        if (mso == null || type == null) {
+            return null;
+        }
+        MsoConfig config = this.findByMsoAndItem(mso, type);
+        if (config != null) {
+            return config.getValue(); 
+        }
+        if (type == MsoConfig.FACEBOOK_CLIENTID)
+            return getProperty("facebook.properties", "facebook_clientid");
+        if (type == MsoConfig.FACEBOOK_APPTOKEN)
+            return getProperty("facebook.properties", "facebook_apptoken");
+        if (type == MsoConfig.FACEBOOK_CLIENTSECRET)
+            return getProperty("facebook.properties", "facebook_client_secret");
+        return null;
     }
     
     static public String getFacebookClientId() {        
@@ -166,7 +166,7 @@ public class MsoConfigManager {
         }
         if (function.contains("notify")) {
             if (os.equals(PlayerService.OS_ANDROID))
-            	return "758834427689";
+                return "758834427689";
         }
         return null;        
     }
@@ -198,13 +198,13 @@ public class MsoConfigManager {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.AD_ANDROID;
             if (os.equals(PlayerService.OS_IOS))
-            	return MsoConfig.AD_IOS;
+                return MsoConfig.AD_IOS;
         }
         if (function.contains("admobkey")) {
             if (os.equals(PlayerService.OS_ANDROID))
                 return MsoConfig.ADMOBKEY_ANDROID;
             if (os.equals(PlayerService.OS_IOS))
-            	return MsoConfig.ADMOBKEY_IOS;        	
+                return MsoConfig.ADMOBKEY_IOS;            
         }
         return null;
     }
@@ -246,7 +246,28 @@ public class MsoConfigManager {
     public List<MsoConfig> findByMso(Mso mso) {
         return configDao.findByMso(mso);
     }
-            
+        
+    //find: access db directly; get: through cache
+    public MsoConfig getByMsoAndItem(Mso mso, String item) {
+        String cacheKey = this.getCacheKeyByMsoAndKey(mso.getId(), item);
+        try {        
+            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);        
+            if (result != null){
+                log.info("value from cache: key=" + cacheKey + "value=" + result.getValue());
+                return result;
+            }    
+        } catch (Exception e) {
+            log.info("memcache error");
+        }
+        MsoConfig config = this.findByMsoAndItem(mso, item);
+        if (config != null) {
+            log.info("set value to cache: key=" + cacheKey + "value=" + config.getValue());
+            CacheFactory.set(cacheKey, config);
+        }
+        return config;
+        
+    }
+    
     public MsoConfig findByMsoAndItem(Mso mso, String item) {
         return configDao.findByMsoAndItem(mso.getId(), item);
     }

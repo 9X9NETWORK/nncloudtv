@@ -3,6 +3,8 @@ package com.nncloudtv.service;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -101,6 +103,7 @@ public class PlayerApiService {
     
     private Mso    mso;
     private int    version = 32;
+    private String appVersion = null;
     private Locale locale  = Locale.ENGLISH;
     private short  format  = FORMAT_PLAIN;
     private ApiContext context = null;
@@ -131,8 +134,33 @@ public class PlayerApiService {
         this.locale  = context.getLocale();
         this.mso     = context.getMso();
         this.version = context.getVersion();
+        this.appVersion = context.getAppVersion();
         log.info("mso entrance: " + mso.getId());
         
+        MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_EXPIRE);
+        if (brandExpireConfig != null) {
+            try {
+                //"January 2, 2019";
+            Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
+            Date now = new Date();
+            if (now.after(date)) {
+                log.info("mso " + mso.getName() + " expires!");
+            return NnStatusCode.APP_EXPIRE;
+        }
+            } catch (ParseException e) {
+            NnLogUtil.logException(e);
+            }
+        }
+        MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_VERSION_EXPIRE);
+        if (appExpireConfig != null) {
+            String[] str = appExpireConfig.getValue().split(";");            
+            for (String s : str) {
+               if (this.appVersion != null && this.appVersion.equals(s)) {
+                   log.info("expire version:" + this.appVersion);
+                   return NnStatusCode.APP_VERSION_EXPIRE;
+               }
+            }
+        }
         if (this.version < checkApiMinimal())
             return NnStatusCode.API_FORCE_UPGRADE;
         else
@@ -567,7 +595,6 @@ public class PlayerApiService {
     }
      
     public Object brandInfo(String os, HttpServletRequest req) {
-        //locale
         String locale = this.findLocaleByHttpRequest(req);
         long counter = 0;
         String acceptLang = req.getHeader("Accept-Language");
@@ -2108,11 +2135,20 @@ public class PlayerApiService {
             searchContent = searchContent + ",youtube";
         }
         
+        List<NnChannel> channels = new ArrayList<NnChannel>();
+        long numOfChannelTotal = 0;
+        if (text.startsWith("@")) {
+            String cid = text.substring(1);
+            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(cid));
+            numOfChannelTotal = 1;
+            channels.add(c);
+        } else {
         @SuppressWarnings("rawtypes")
         Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);        
-        List<NnChannel> channels = (List<NnChannel>) st.pop();
-        System.out.println("solr search channel size:" + channels.size());
-        long numOfChannelTotal = (Long) st.pop();        
+        channels = (List<NnChannel>) st.pop();
+        System.out.println("solr search channel size:" + channels.size());            
+        numOfChannelTotal = (Long) st.pop();
+        }
         
         List<NnUser> users = NNF.getUserMngr().search(null, null, text, mso.getId());
         int endIndex = (users.size() > 9) ? 9: users.size();
