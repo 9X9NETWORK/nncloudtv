@@ -74,7 +74,6 @@ public class AmazonLib {
             byte[] rawHmac = mac.doFinal(data.getBytes());
             
             // base64-encode the hmac            
-            log.info(result);
             byte[] policy;
             try {
                 policy = Base64.encode(rawHmac);
@@ -82,6 +81,7 @@ public class AmazonLib {
             } catch (UnsupportedEncodingException e) {
                 log.info("unsupported encoding:" + e.getMessage());        
             }                                        
+            log.info(result);
             
         } catch (Exception e) {
             throw new SignatureException("Failed to generate HMAC : " + e.getMessage());
