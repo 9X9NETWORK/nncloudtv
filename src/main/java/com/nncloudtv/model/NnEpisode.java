@@ -46,6 +46,8 @@ public class NnEpisode implements Serializable {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
+    public static final short DEFAULT_WIDTH = 720;
+    public static final short DEFAULT_HEIGHT = 405;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)

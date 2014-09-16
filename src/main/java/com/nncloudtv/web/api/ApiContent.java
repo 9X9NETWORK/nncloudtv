@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
@@ -1579,6 +1580,7 @@ public class ApiContent extends ApiGeneric {
     NnEpisode episodeUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
         
+        boolean dirty = false;
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -1621,10 +1623,25 @@ public class ApiContent extends ApiGeneric {
             episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
         }
         
+        // contentType
+        String contentTypeStr = req.getParameter("contentType");
+        if (contentTypeStr != null) {
+            Short contentType = evaluateShort(contentTypeStr);
+            if (contentType != null) {
+                episode.setContentType(contentType);
+            }
+        }
+        
         // imageUrl
         String imageUrl = req.getParameter("imageUrl");
         if (imageUrl != null) {
-            episode.setImageUrl(imageUrl);
+            if (imageUrl.equals(episode.getImageUrl()) == false) {
+                
+                if (episode.getContentType() == NnEpisode.CONTENTTYPE_UPLOADED) {
+                    dirty = true;
+                }
+                episode.setImageUrl(imageUrl);
+            }
         }
         
         // scheduleDate
@@ -1707,15 +1724,6 @@ public class ApiContent extends ApiGeneric {
             rerun = true;
         }
         
-        // contentType
-        String contentTypeStr = req.getParameter("contentType");
-        if (contentTypeStr != null) {
-            Short contentType = evaluateShort(contentTypeStr);
-            if (contentType != null) {
-                episode.setContentType(contentType);
-            }
-        }
-        
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
@@ -1755,12 +1763,17 @@ public class ApiContent extends ApiGeneric {
             channelMngr.renewChannelUpdateDate(episode.getChannelId());
         }
         
+        if (dirty) {
+            QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
+        }
+        
         return episode;
     }
     
     @RequestMapping(value = "channels/{channelId}/episodes", method = RequestMethod.POST)
     public @ResponseBody NnEpisode episodeCreate(HttpServletRequest req, HttpServletResponse resp, @PathVariable("channelId") String channelIdStr) {
         
+        boolean dirty = false;
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
@@ -1803,10 +1816,18 @@ public class ApiContent extends ApiGeneric {
             intro = NnStringUtil.htmlSafeAndTruncated(intro);
         }
         
+        // contentType
+        Short contentType = evaluateShort(req.getParameter("contentType"));
+        if (contentType == null) {
+            contentType = NnEpisode.CONTENTTYPE_GENERAL;
+        }
+        
         // imageUrl
         String imageUrl = req.getParameter("imageUrl");
         if (imageUrl == null) {
             imageUrl = NnChannel.IMAGE_WATERMARK_URL;
+        } else if (contentType == NnEpisode.CONTENTTYPE_UPLOADED) {
+            dirty = true;
         }
         
         NnEpisode episode = new NnEpisode(channelId);
@@ -1814,6 +1835,7 @@ public class ApiContent extends ApiGeneric {
         episode.setIntro(intro);
         episode.setImageUrl(imageUrl);
         episode.setChannelId(channel.getId());
+        episode.setContentType(contentType);
         
         // scheduleDate
         String scheduleDateStr = req.getParameter("scheduleDate");
@@ -1836,15 +1858,6 @@ public class ApiContent extends ApiGeneric {
                 }
                 
                 episode.setScheduleDate(new Date(scheduleDateLong));
-            }
-        }
-        
-        // contentType
-        String contentTypeStr = req.getParameter("contentType");
-        if (contentTypeStr != null) {
-            Short contentType = evaluateShort(contentTypeStr);
-            if (contentType != null) {
-                episode.setContentType(contentType);
             }
         }
         
@@ -1932,6 +1945,10 @@ public class ApiContent extends ApiGeneric {
         if (autoShare == true) {
             episodeMngr.autoShareToFacebook(episode);
             channelMngr.renewChannelUpdateDate(channelId);
+        }
+        
+        if (dirty) {
+            QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
         }
         
         return episode;

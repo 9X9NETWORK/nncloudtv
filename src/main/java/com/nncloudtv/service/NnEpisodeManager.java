@@ -28,6 +28,11 @@ public class NnEpisodeManager {
     
     private NnEpisodeDao dao = NNF.getEpisodeDao();
     
+    public NnEpisode findById(String episodeIdStr) {
+        
+        return dao.findById(episodeIdStr);
+    }
+    
     public NnEpisode findById(long id) {
         return dao.findById(id);
     }
