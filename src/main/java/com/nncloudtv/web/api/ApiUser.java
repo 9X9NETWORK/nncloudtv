@@ -185,7 +185,6 @@ public class ApiUser extends ApiGeneric {
                 it.remove();
             }
         }
-        //Collections.sort(results, NnChannelManager.getComparator("seq"));
         int rows = 20;
         Integer rowsI = evaluateInt(req.getParameter("rows"));
         if (rowsI != null && rowsI > 0) {
