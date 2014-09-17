@@ -1131,10 +1131,11 @@ public class ApiContent extends ApiGeneric {
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            NnUserProfile superProfile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
-            if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+            // TODO: rewrite
+            //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
+            //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
                 status = evaluateShort(statusStr);
-            }
+            //}
         }
         
         NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,

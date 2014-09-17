@@ -158,7 +158,7 @@ public class ApiGeneric {
 		}
 	}
 	
-	/** used for identify the client who is, return userId if exist. */
+    // TODO: rewrite
 	public Long userIdentify(HttpServletRequest req) {
 	    
 	    String token = CookieHelper.getCookie(req, "user");

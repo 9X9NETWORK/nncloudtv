@@ -319,7 +319,7 @@ public class NnUserManager {
         return user;
     }
     
-    /** retrieve userId only, use this function to reduce query to userProfile. */
+    // TODO: rewrite
     public Long findUserIdByToken(String token) {
         NnUser user = dao.findByToken(token);
         if (user != null) {

@@ -200,21 +200,21 @@ public class NnUserDao extends GenericDao<NnUser> {
     public NnUser findByToken(String token) {
         NnUser user = null;
         log.info("token = " + token);
-        PersistenceManager pm = NnUserDao.getPersistenceManager((short)0, token);
+        PersistenceManager pm = NnUserDao.getPersistenceManager((short) 0, token);
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("token == tokenParam");
-            query.declareParameters("String tokenParam");        
+            query.declareParameters("String tokenParam");
             @SuppressWarnings("unchecked")
             List<NnUser> results = (List<NnUser>) query.execute(token);
             if (results.size() > 0) {
-                user = results.get(0);            
+                user = results.get(0);
             }
             user = pm.detachCopy(user);
         } finally {
             pm.close();
         }
-        return user;                
+        return user;
     }
     
     public NnUser findByEmail(String email, short shard) {

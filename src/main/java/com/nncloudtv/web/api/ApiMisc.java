@@ -55,6 +55,7 @@ import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
@@ -179,20 +180,15 @@ public class ApiMisc extends ApiGeneric {
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
 	    
-	    String mso = req.getParameter("mso");
-		
 		Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
 		    nullResponse(resp);
 		    return null;
 		}
         
-        NnUser user = null;
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId(), (short) 0 /* TODO: rewrite */);
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        user = NNF.getUserMngr().findById(verifiedUserId, brand.getId(), (short) 0);
-        
-        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
+        NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -203,7 +199,6 @@ public class ApiMisc extends ApiGeneric {
         
         if (user == null) {
             nullResponse(resp);
-            log.warning("undefined exception happend");
             return null;
         }
 		
@@ -217,19 +212,17 @@ public class ApiMisc extends ApiGeneric {
 		String token = req.getParameter("token");
 		String email = req.getParameter("email");
 		String password = req.getParameter("password");
-		String mso = req.getParameter("mso");
 		
 		NnUser user = null;
-		Mso brand = NNF.getMsoMngr().findOneByName(mso);
-		if (token != null) {			
-			log.info("token = " + token);			
-			user = NNF.getUserMngr().findByToken(token, brand.getId());
+		if (token != null) {
+			log.info("token = " + token);
+			user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
 			
 		} else if (email != null && password != null) {
 			
 			log.info("email = " + email + ", password = xxxxxx");
 			
-			user = NNF.getUserMngr().findAuthenticatedUser(email, password, brand.getId(), req);
+			user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
 			if (user != null) {
 				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
 			}
@@ -243,7 +236,7 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
+        NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
