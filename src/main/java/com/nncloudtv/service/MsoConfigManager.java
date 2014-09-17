@@ -71,7 +71,7 @@ public class MsoConfigManager {
     }
     
     static public String getCfPrivateKeyPath(Mso mso) {        
-        String path = "/var/opt/cf/";
+        String path = "/var/opt/p12files/";
         return path + "rsa-key-" + mso.getName() + ".der";
     }
     
