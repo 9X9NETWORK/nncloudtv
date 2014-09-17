@@ -7,6 +7,7 @@ mso
 mso_config
 mso_notification
 mso_promotion
+my_library
 nnchannel
 nnchannel_pref
 nndevice
