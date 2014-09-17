@@ -198,6 +198,7 @@ public class ApiContentService {
             } else {
                 Collections.sort(results, NnEpisodeManager.getComparator("seq"));
             }
+            // TODO: SORT_TIMED_LINEAR
         }
         
         episodeMngr.normalize(results);
