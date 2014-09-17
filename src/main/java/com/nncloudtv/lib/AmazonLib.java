@@ -46,6 +46,7 @@ public class AmazonLib {
     public static final String S3_TOKEN = "YWJvdXR5b3U=";
     public static final String S3_CONTEXT_CODE = "aHR0cDovL2dvby5nbC9lVTNtWg==";
     public static final String S3_EXT = "WW91IEFyZSBOb3QgQWxvbmU=";
+    public static final String REGEX_S3_URL = "^https?:\\/\\/([^.]+)\\.s3\\.amazonaws\\.com\\/(.+)$";
     
     /**
     * Computes RFC 2104-compliant HMAC signature.
@@ -56,14 +57,14 @@ public class AmazonLib {
     * @throws
     * java.security.SignatureException when signature generation fails
     */
-    public static String calculateRFC2104HMAC(String data) throws java.security.SignatureException {
+    public static String calculateRFC2104HMAC(String data, String key) throws java.security.SignatureException {
         
         String result = null;
         
         try {
             
             // get an hmac_sha1 key from the raw key bytes
-            SecretKeySpec signingKey = new SecretKeySpec(MsoConfigManager.getAWSKey().getBytes(), HMAC_SHA1_ALGORITHM);
+            SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(), HMAC_SHA1_ALGORITHM);
             
             // get an hmac_sha1 Mac instance and initialize with the signing key
             Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
@@ -73,7 +74,6 @@ public class AmazonLib {
             byte[] rawHmac = mac.doFinal(data.getBytes());
             
             // base64-encode the hmac            
-            log.info(result);
             byte[] policy;
             try {
                 policy = Base64.encode(rawHmac);
@@ -81,6 +81,7 @@ public class AmazonLib {
             } catch (UnsupportedEncodingException e) {
                 log.info("unsupported encoding:" + e.getMessage());        
             }                                        
+            log.info(result);
             
         } catch (Exception e) {
             throw new SignatureException("Failed to generate HMAC : " + e.getMessage());
@@ -191,7 +192,7 @@ public class AmazonLib {
         
         s3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
         
-        return "http://s3.amazonaws.com/" + bucket + "/" + filename;
+        return "http://" + bucket + ".s3.amazonaws.com/" + filename;
     }
     
     public static String cfUrlSignature(String domain, String filePath, String keyPair, String s3Obj) {

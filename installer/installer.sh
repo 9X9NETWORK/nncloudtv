@@ -23,7 +23,7 @@ test "$1" != "-n" \
     && echo
 
 cd ..
-mvn clean \
+mvn -Dmaven.test.skip=true clean\
     install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
     compile \
     datanucleus:enhance \

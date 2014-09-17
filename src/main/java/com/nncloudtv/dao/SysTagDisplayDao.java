@@ -54,15 +54,15 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
         
         String query = " select * from systag_display a1 "
                      + " inner join "
-                     + "(select d.id, s.seq " 
+                     + "(select d.id, s.seq, s.timeStart, s.timeEnd"
                      + "  from systag s, systag_display d "
                      + " where s.msoId = " + msoId + ""
                      + "   and s.type = " + type
                      + "   and s.id = d.systagId "
                      + "   and featured = true "
-                     + "   and d.lang=" + NnStringUtil.escapedQuote(lang) + ") a2"
-                     + "   on a1.id=a2.id"
-                     + "   order by a2.seq asc";
+                     + "   and d.lang = " + NnStringUtil.escapedQuote(lang) + ") a2"
+                     + "   on a1.id = a2.id"
+                     + "   order by a2.timeStart asc, a2.seq asc";
         
         return sql(query);
     }

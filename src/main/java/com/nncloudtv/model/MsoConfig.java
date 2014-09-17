@@ -86,8 +86,13 @@ public class MsoConfig implements Serializable  {
     public static String IOS_URL_LANDING_DIRECT        = "ios-url-landing-direct";
     public static String IOS_URL_LANDING_SUGGESTED     = "ios-url-landing-suggested";
     
-    public static String AMAZON_CF_DOMAIN = "amazon-cf-domain"; //test data: d31cfzp2gk0td6.cloudfront.net
-    public static String AMAZON_CF_KEYPAIR = "amazon-cf-keypair"; //test data: APKAJAMGXWAZ24S62ZSA
+    // S3 related configurations
+    public static String AWS_KEY          = "aws-key";
+    public static String AWS_ID           = "aws-id";
+    public static String CF_KEY_PAIR_ID   = "cf-key-pair-id";
+    public static String CF_SUBDOMAIN     = "cf-subdomain";
+    public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
+    public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

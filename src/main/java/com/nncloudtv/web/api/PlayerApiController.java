@@ -3006,7 +3006,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-
+    
     /**
      * Get list of signed urls.
      * @param url. not final. for now it's object name not complete path. example: "_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
@@ -3032,7 +3032,6 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-    
     
     /**
      * To list read/unread push notifications

@@ -147,14 +147,6 @@ public class NnUser implements Serializable {
         this.email = email;
     }
 
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public void setName(String name) {
-//        this.name = name;
-//    }
-
     public Date getCreateDate() {
         return createDate;
     }
@@ -203,24 +195,6 @@ public class NnUser implements Serializable {
         this.salt = salt;
     }
 
-//    public String getIntro() {
-//        return intro;
-//    }
-//
-//    public void setIntro(String intro) {
-//        this.intro = intro;
-//    }
-
-//    public String getImageUrl() {
-//        if (imageUrl == null)
-//            return NnUser.IMAGE_URL_DEFAULT;
-//        return imageUrl;
-//    }
-//
-//    public void setImageUrl(String imageUrl) {
-//        this.imageUrl = imageUrl;
-//    }
-
     public long getMsoId() {
         return msoId;
     }
@@ -246,72 +220,18 @@ public class NnUser implements Serializable {
     }
 
     public short getShard() {
+        
+        if (shard == 0) {
+            
+            return SHARD_DEFAULT;
+        }
+        
         return shard;
     }
 
     public void setShard(short shard) {
         this.shard = shard;
     }
-
-//    public String getDob() {
-//        return dob;
-//    }
-//
-//    public void setDob(String dob) {
-//        this.dob = dob;
-//    }
-//
-//    public String getSphere() {
-//        return sphere;
-//    }
-
-//    public void setSphere(String sphere) {
-//        if (sphere != null && sphere.contains("_"))
-//            sphere = sphere.substring(0, 2);
-//        this.sphere = sphere;
-//    }
-
-//    public short getGender() {
-//        return gender;
-//    }
-//
-//    public void setGender(short gender) {
-//        this.gender = gender;
-//    }
-
-//    public void setGender(String gender) {
-//        if (gender == null || gender.length() == 0)
-//            this.gender = 2;
-//        else if (gender.startsWith("f"))
-//            this.gender = 0;
-//        else
-//            this.gender = 1;
-//    }
-//    
-//    public String getLang() {
-//        return lang;
-//    }
-
-//    public void setLang(String lang) {
-//        if (lang != null & lang.length() > 2)
-//            lang = lang.substring(0, 2);
-//        this.lang = lang;
-//    }
-//
-//    public String getProfileUrl() {
-//        return profileUrl;
-//    }
-
-//    public String getBrandUrl() {
-//        if (profileUrl != null && profileUrl.matches("[a-zA-Z].+")) {
-//            return "~" + profileUrl;
-//        }
-//        return profileUrl;
-//    }
-//    
-//    public void setProfileUrl(String profileUrl) {
-//        this.profileUrl = profileUrl;
-//    }
 
     public boolean isTemp() {
         return isTemp;
@@ -320,38 +240,6 @@ public class NnUser implements Serializable {
     public void setTemp(boolean isTemp) {
         this.isTemp = isTemp;
     }
-//
-//    public boolean isFeatured() {
-//        return featured;
-//    }
-//
-//    public void setFeatured(boolean featured) {
-//        this.featured = featured;
-//    }
-//
-//    public int getCntSubscribe() {
-//        return cntSubscribe;
-//    }
-//
-//    public void setCntSubscribe(int cntSubscribe) {
-//        this.cntSubscribe = cntSubscribe;
-//    }
-
-//    public int getCntChannel() {
-//        return cntChannel;
-//    }
-
-//    public void setCntChannel(int cntChannel) {
-//        this.cntChannel = cntChannel;
-//    }
-
-//    public int getCntFollower() {
-//        return cntFollower;
-//    }
-
-//    public void setCntFollower(int cntFollower) {
-//        this.cntFollower = cntFollower;
-//    }
 
     public String getFbId() {
         return fbId;
@@ -375,13 +263,9 @@ public class NnUser implements Serializable {
     }
 
     public NnUserProfile getProfile() {
-        /*
-        if (profile == null || profile.getId() == 0) {
-            this.profile = new NnUserProfile(this.getId(), this.getMsoId());            
-        }
-        */
+        
         if (profile == null) {
-            this.profile = new NnUserProfile(this.getId(), this.getMsoId());            
+            this.profile = new NnUserProfile(this.getId(), this.getMsoId());
         }
         return profile;
     }

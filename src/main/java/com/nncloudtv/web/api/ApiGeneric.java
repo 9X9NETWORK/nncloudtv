@@ -158,7 +158,7 @@ public class ApiGeneric {
 		}
 	}
 	
-	/** used for identify the client who is, return userId if exist. */
+    // TODO: rewrite
 	public Long userIdentify(HttpServletRequest req) {
 	    
 	    String token = CookieHelper.getCookie(req, "user");
@@ -389,10 +389,14 @@ public class ApiGeneric {
         if (profile.getPriv() == null) {
             profile.setPriv("000111");
         }
+        String priv = profile.getPriv();
+        int privLen = priv.length();
         
         for (int i = 0; i < requirePriv.length(); i++) {
             
-            if (requirePriv.charAt(i) == '1' && profile.getPriv().charAt(i) != '1') {
+            if (requirePriv.charAt(i) == '1' &&
+                    (privLen <= i || priv.charAt(i) != '1')) {
+                
                 return false;
             }
         }

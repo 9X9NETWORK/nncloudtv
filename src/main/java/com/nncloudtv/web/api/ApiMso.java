@@ -25,7 +25,9 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.MsoPromotion;
+import com.nncloudtv.model.MyLibrary;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -2117,6 +2119,209 @@ public class ApiMso extends ApiGeneric {
         
         log.info(printExitState(now, req, "ok"));
         return ok(resp);
+    }
+    
+    @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.DELETE)
+    public @ResponseBody void myLibraryDelete(
+            HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("libraryId") String libraryIdStr) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            unauthorized(resp);
+            return;
+        }
+        MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        if (library == null) {
+            notFound(resp, "Library Not Found");
+            return;
+        }
+        Mso mso = NNF.getMsoMngr().findById(library.getMsoId());
+        if (mso == null) {
+            log.warning("library " + library.getId() + " has a bad msoId.");
+            internalError(resp);
+            return;
+        }
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            
+            notFound(resp, "User Not Found");
+            return;
+            
+        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            forbidden(resp);
+            return;
+        }
+        
+        if (library != null) {
+            NNF.getLibraryMngr().delete(library);
+        }
+        
+        ok(resp);
+    }
+    
+    @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.PUT)
+    public @ResponseBody MyLibrary myLibraryUpdate(
+            HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("libraryId") String libraryIdStr) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            unauthorized(resp);
+            return null;
+        }
+        MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
+        if (library == null) {
+            notFound(resp, "Library Not Found");
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findById(library.getMsoId());
+        if (mso == null) {
+            log.warning("library " + library.getId() + " has a bad msoId.");
+            internalError(resp);
+            return null;
+        }
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            
+            notFound(resp, "User Not Found");
+            return null;
+            
+        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        // name
+        String name = req.getParameter("name");
+        if (name != null) {
+            library.setName(name);
+        }
+        
+        // contentType
+        Short contentType = evaluateShort(req.getParameter("contentType"));
+        if (contentType != null) {
+            library.setContentType(contentType);
+        }
+        
+        // intro
+        String intro = req.getParameter("intro");
+        if (intro != null) {
+            library.setIntro(intro);
+        }
+        
+        // imageUrl
+        String imageUrl = req.getParameter("imageUrl");
+        if (imageUrl != null) {
+            library.setImageUrl(imageUrl);
+        }
+        
+        // fileUrl
+        String fileUrl = req.getParameter("fileUrl");
+        if (fileUrl != null) {
+            library.setFileUrl(fileUrl);
+        }
+        
+        // seq
+        Short seq = evaluateShort(req.getParameter("seq"));
+        if (seq != null) {
+            library.setSeq(seq);
+        }
+        
+        // duration
+        Integer duration = evaluateInt(req.getParameter("duration"));
+        if (duration != null) {
+            library.setDuration(duration);
+        }
+        
+        return NNF.getLibraryMngr().save(library);
+    }
+    
+    @RequestMapping(value = "mso/{msoId}/my_library", method = RequestMethod.POST)
+    public @ResponseBody MyLibrary myLibraryCreate(
+            HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            unauthorized(resp);
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        if (mso == null) {
+            badRequest(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            
+            notFound(resp, "User Not Found");
+            return null;
+            
+        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        String name = req.getParameter("name");
+        String fileUrl = req.getParameter("fileUrl");
+        Short contentType = evaluateShort(req.getParameter("contentType"));
+        if (contentType == null) {
+            contentType = MyLibrary.CONTENTTYPE_DIRECTLINK;
+        }
+        if (name == null || fileUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        Short seq = evaluateShort(req.getParameter("seq"));
+        Integer duration = evaluateInt(req.getParameter("duration"));
+        MyLibrary library = new MyLibrary(mso, user, name, contentType, fileUrl);
+        library.setIntro(req.getParameter("intro"));
+        library.setImageUrl(req.getParameter("imageUrl"));
+        
+        if (seq != null) {
+            library.setSeq(seq);
+        }
+        if (duration != null) {
+            library.setDuration(duration);
+        }
+        library = NNF.getLibraryMngr().save(library);
+        NNF.getLibraryMngr().reorderMsoLibrary(mso.getId());
+        
+        return library;
+    }
+    
+    @RequestMapping(value = "mso/{msoId}/my_library", method = RequestMethod.GET)
+    public @ResponseBody List<MyLibrary> myLibrary(
+            HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            unauthorized(resp);
+            return null;
+        }
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        if (mso == null) {
+            badRequest(resp, INVALID_PATH_PARAMETER);
+            return null;
+        }
+        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
+        if (user == null) {
+            
+            notFound(resp, "User Not Found");
+            return null;
+            
+        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        return NNF.getLibraryMngr().findByMso(mso);
     }
     
 }

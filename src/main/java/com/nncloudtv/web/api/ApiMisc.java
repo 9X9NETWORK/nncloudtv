@@ -1,14 +1,25 @@
 package com.nncloudtv.web.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,20 +30,34 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.VimeoLib;
+import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.task.FeedingAvconvTask;
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FBPost;
 
@@ -67,52 +92,81 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
-	public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
-		
-	    Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+    public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long userId = userIdentify(req);
+        if (userId == null) {
+            
             unauthorized(resp);
             return null;
         }
-		
-		String prefix = req.getParameter("prefix");
-		String type = req.getParameter("type");
-		String acl = req.getParameter("acl");
-		long size = 0;
-		
-		try {
-			String sizeStr = req.getParameter("size");
-			Long sizeL = Long.valueOf(sizeStr);
-			size = sizeL.longValue();
-		} catch (NumberFormatException e) {
-		}
-		
-		Map<String, String> result = new TreeMap<String, String>();
-		
-		if (size == 0 || prefix == null || type == null || acl == null ||
-		    (!type.equals("audio") && !type.equals("image")) ||
-		    (!acl.equals("public-read"))) {
-			
-			badRequest(resp, INVALID_PARAMETER);
-			return result;
-		} 
-		
-		String bucket = MsoConfigManager.getS3UploadBucket();
-		String policy = AmazonLib.buildS3Policy(bucket, acl, type, size);
-		String signature = "";
-		try {
-			signature = AmazonLib.calculateRFC2104HMAC(policy);
-		} catch (SignatureException e) {
-		}
-		
-		result.put("bucket", bucket);
-		result.put("policy", policy);
-		result.put("signature", signature);
-		result.put("id", MsoConfigManager.getAWSId());
-		
-		return result;
-	}
-	
+        
+        Mso mso = null;
+        String msoIdStr = req.getParameter("mso");
+        if (msoIdStr != null) {
+            
+            mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+            if (mso == null) {
+                notFound(resp, INVALID_PATH_PARAMETER);
+                return null;
+            }
+            if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+                
+                forbidden(resp);
+                return null;
+            }
+        }
+        
+        String prefix = req.getParameter("prefix");
+        String type = req.getParameter("type");
+        String acl = req.getParameter("acl");
+        long size = 0;
+        
+        try {
+            String sizeStr = req.getParameter("size");
+            Long sizeL = Long.valueOf(sizeStr);
+            size = sizeL.longValue();
+        } catch (NumberFormatException e) {
+        }
+        
+        Map<String, String> result = new TreeMap<String, String>();
+        
+        if (size == 0 || prefix == null || type == null || acl == null ||
+                (!type.equals("audio") && !type.equals("image") && !type.equals("video")) ||
+                (!acl.equals("public-read") && !acl.equals("private"))) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return result;
+        }
+        
+        String bucket = MsoConfigManager.getS3UploadBucket();
+        if (mso != null) {
+            String alt = null;
+            if (type.equals("video")) {
+                alt = NNF.getConfigMngr().getS3VideoBucket(mso);
+            } else {
+                alt = NNF.getConfigMngr().getS3UploadBucket(mso);
+            }
+            if (alt != null) {
+                bucket = alt;
+            }
+        }
+        
+        String policy = AmazonLib.buildS3Policy(bucket, acl, type, size);
+        String signature = "";
+        try {
+            signature = AmazonLib.calculateRFC2104HMAC(policy, MsoConfigManager.getAWSKey(mso));
+        } catch (SignatureException e) {
+        }
+        
+        result.put("bucket", bucket);
+        result.put("policy", policy);
+        result.put("signature", signature);
+        result.put("id", MsoConfigManager.getAWSId(mso));
+        
+        return result;
+    }
+    
 	@RequestMapping(value = "login", method = RequestMethod.DELETE)
 	public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
 		
@@ -126,20 +180,15 @@ public class ApiMisc extends ApiGeneric {
 	@RequestMapping(value = "login", method = RequestMethod.GET)
 	public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
 	    
-	    String mso = req.getParameter("mso");
-		
 		Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
 		    nullResponse(resp);
 		    return null;
 		}
         
-        NnUser user = null;
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId(), (short) 0 /* TODO: rewrite */);
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        user = NNF.getUserMngr().findById(verifiedUserId, brand.getId(), (short) 0);
-        
-        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(verifiedUserId);
+        NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -150,7 +199,6 @@ public class ApiMisc extends ApiGeneric {
         
         if (user == null) {
             nullResponse(resp);
-            log.warning("undefined exception happend");
             return null;
         }
 		
@@ -164,19 +212,17 @@ public class ApiMisc extends ApiGeneric {
 		String token = req.getParameter("token");
 		String email = req.getParameter("email");
 		String password = req.getParameter("password");
-		String mso = req.getParameter("mso");
 		
 		NnUser user = null;
-		Mso brand = NNF.getMsoMngr().findOneByName(mso);
-		if (token != null) {			
-			log.info("token = " + token);			
-			user = NNF.getUserMngr().findByToken(token, brand.getId());
+		if (token != null) {
+			log.info("token = " + token);
+			user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
 			
 		} else if (email != null && password != null) {
 			
 			log.info("email = " + email + ", password = xxxxxx");
 			
-			user = NNF.getUserMngr().findAuthenticatedUser(email, password, brand.getId(), req);
+			user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
 			if (user != null) {
 				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
 			}
@@ -190,7 +236,7 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
 		
-        NnUserProfile profile = NNF.getProfileMngr().pickSuperProfile(user.getId());
+        NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
@@ -429,5 +475,158 @@ public class ApiMisc extends ApiGeneric {
         
         return ok(resp);
     }
-
+    
+    @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
+    public @ResponseBody List<Map<String, String>> thumbnails(
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        URL url = null;
+        HttpURLConnection conn = null;
+        
+        Double offset = 5.0;
+        if (req.getParameter("t") != null) {
+            try {
+                offset = Double.valueOf(req.getParameter("t"));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        try {
+            url = new URL(videoUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
+        } catch (MalformedURLException e) {
+            log.info("bad url format");
+            return empty;
+        } catch (IOException e) {
+            log.info("failed to open url");
+            return empty;
+        }
+        
+        InputStream videoIn = null;
+        String thumbnailUrl = null;
+        Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
+        Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
+        if (vimeoMatcher.find()) {
+            
+            log.info("vimeo url format");
+            
+            videoUrl = VimeoLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing vimeo url failed");
+                return empty;
+            }
+        } else if (s3Matcher.find()) {
+            
+            log.info("S3 url format");
+            String bucket = s3Matcher.group(1);
+            String filename = s3Matcher.group(2);
+            Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
+            AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
+                                                                 MsoConfigManager.getAWSKey(mso));
+            AmazonS3 s3 = new AmazonS3Client(credentials);
+            try {
+                S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
+                videoIn = s3Object.getObjectContent();
+            } catch(AmazonS3Exception e) {
+                log.info(e.getMessage());
+            }
+        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+            
+            log.info("youtube url format");
+            String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
+                       + NnStringUtil.escapeURLInShellArg(videoUrl);
+            log.info("[exec] " + cmd);
+            
+            try {
+                Process process = Runtime.getRuntime().exec(cmd);
+                videoIn = process.getInputStream();
+                // piping error message to stdout
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                pipingTask.start();
+                
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+                return empty;
+            }
+        } else if (url.getProtocol().equals("https")) {
+            
+            log.info("https url format");
+            try {
+                videoIn = conn.getInputStream();
+            } catch (IOException e) {
+                log.info(e.getMessage());
+                return empty;
+            }
+        }
+        
+        FeedingAvconvTask feedingAvconvTask = null;
+        
+        try {
+            String cmd = "/usr/bin/avconv -v debug -i "
+                       + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
+                       + " -ss " + offset + " -vframes 1 -vcodec png -y -f image2pipe /dev/stdout";
+            
+            log.info("[exec] " + cmd);
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            
+            InputStream thumbIn = process.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            
+            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            pipingTask.start();
+            
+            if (videoIn != null) {
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask.start();
+            }
+            
+            pipingTask.join();
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
+            log.info("thumbnail size = " + baos.size());
+            if (baos.size() > 0) {
+                
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType("image/png");
+                metadata.setContentLength(baos.size());
+                thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
+                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  new ByteArrayInputStream(baos.toByteArray()),
+                                                  metadata);
+            }
+        } catch (InterruptedException e) {
+            log.info(e.getMessage());
+            return empty;
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            return empty;
+        } finally {
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
+        }
+        
+        log.info("thumbnailUrl = " + thumbnailUrl);
+        if (thumbnailUrl == null) {
+            return empty;
+        }
+        
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("url", thumbnailUrl);
+        List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+        result.add(map);
+        
+        return result;
+    }
 }

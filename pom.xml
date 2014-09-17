@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
-    <version>4.5.5-RELEASE</version>
+    <version>4.7.0-RELEASE</version>
     <name>nncloudtv</name>
     <reporting>
         <outputDirectory>doc</outputDirectory>
@@ -423,6 +423,11 @@
             <version>5.10.0.3706</version>
         </dependency>
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.8.9.1</version>
+        </dependency>
+        <dependency>
             <groupId>net.java.dev.jets3t</groupId>
             <artifactId>jets3t</artifactId>
             <version>0.9.0</version>
@@ -438,9 +443,14 @@
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.8.6</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.2</version>
         </dependency>
     </dependencies>
 

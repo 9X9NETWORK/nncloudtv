@@ -179,8 +179,7 @@ public class GCMLib {
             }
             
             if (targetDevices.size() > 1) {
-                List<NnDevice> deleteDevices = targetDevices.subList(1, targetDevices.size() - 1);
-                NNF.getDeviceMngr().delete(deleteDevices);
+                NNF.getDeviceMngr().delete(targetDevices.subList(1, targetDevices.size()));
             }
         }
     }

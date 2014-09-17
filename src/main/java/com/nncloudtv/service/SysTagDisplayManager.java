@@ -350,6 +350,7 @@ public class SysTagDisplayManager {
         String setStr = "";
         List<SetInfo> setInfo = new ArrayList<SetInfo>();
         for (SysTagDisplay display : displays) {
+            SysTag sysTag = NNF.getSysTagMngr().findById(display.getSystagId());
             String id = display.getId() + "-" + display.getSystagId();
             String name = display.getName();
             String intro = "";
@@ -370,6 +371,8 @@ public class SysTagDisplayManager {
                     bannerImageUrl,
                     bannerImageUrl2,
                     channeltag,
+                    String.valueOf(sysTag.getTimeStart()),
+                    String.valueOf(sysTag.getTimeEnd())
                 };
                 setStr += NnStringUtil.getDelimitedStr(obj) + "\n";
             } else {
@@ -402,7 +405,7 @@ public class SysTagDisplayManager {
             if (format == PlayerApiService.FORMAT_PLAIN) {
                 channelStr = (String)NNF.getChannelMngr().composeChannelLineup(channels, version, format);
             } else {
-                channelLineup = (List<ChannelLineup>)NNF.getChannelMngr().composeChannelLineup(channels, version, format);
+                channelLineup = (List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels, version, format);
             }
             //3. list of the latest episode of each channel of the first set
             if (format == PlayerApiService.FORMAT_PLAIN) {
