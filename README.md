@@ -248,6 +248,7 @@ Jetty
         apt-get install jetty
         apt-get install libjetty-extra
         apt-get install openjdk-6-jdk
+        apt-get install libav-tools
 
 -   configuration
 
