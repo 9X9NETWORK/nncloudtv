@@ -25,11 +25,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import com.mysql.jdbc.CommunicationsException;
@@ -46,6 +41,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
+import com.nncloudtv.lib.VimeoLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
@@ -3345,41 +3341,16 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);        
     }
     */
-
+    
     //url = "http://vimeo.com/" + videoId;
     public Object getVimeoDirectUrl(String url) {
         if (url == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        String dataConfigUrl = null;
-        String videoUrl = null;
-        //step 1, get <div.player data-config-url>
-        try {
-           Document doc = Jsoup.connect(url).get();
-           Element element = doc.select("div.player").first();
-           if (element != null) {
-              dataConfigUrl = element.attr("data-config-url");
-              log.info("vimeo data-config-url=" + dataConfigUrl);
-           }
-        } catch (IOException e) {        
-            log.info("vimeo div.player data-config-url not exisiting");
-            NnLogUtil.logException(e);
-            return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
-        }            
-        if (dataConfigUrl == null)
-           return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);        
-        //step 2, get json data
-        String jsonStr = NnNetUtil.urlGet(dataConfigUrl);
-        JSONObject json = new JSONObject(jsonStr);
-        try {
-            videoUrl = json.getJSONObject("request").getJSONObject("files").getJSONObject("h264").getJSONObject("hd").get("url").toString();
-        } catch (JSONException e){
-            log.info("vimeo hd failed");
-            NnLogUtil.logException(e);
-        }
+        String videoUrl = VimeoLib.getDirectVideoUrl(url);
         if (videoUrl == null)
            this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
         log.info("vimeo url:" + videoUrl);
-        String data = PlayerApiService.assembleKeyValue("url", videoUrl);        
+        String data = PlayerApiService.assembleKeyValue("url", videoUrl);
         String[] result = {data};
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
@@ -3389,19 +3360,26 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         String[] urls = url.split(",");
         MsoConfigManager configMngr = NNF.getConfigMngr();
-        MsoConfig cfDomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AMAZON_CF_DOMAIN);
-        if (cfDomainConfig == null)
+        // NOTE: maybe the mso can be determined by bucket name
+        MsoConfig cfSubomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
+        if (cfSubomainConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
-        MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.AMAZON_CF_KEYPAIR);
+        MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_KEY_PAIR_ID);
         if (cfKeypairConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
         String keypair = cfKeypairConfig.getValue();	
-        String cfDomainStr = cfDomainConfig.getValue();
+        String cfDomainStr = cfSubomainConfig.getValue() + ".cloudfront.net";
         String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
         String signedUrls = "";
         for (String u : urls) {
-            signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, u) + "\n";            
+            
+            Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(u);
+            if (matcher.find()) {
+                signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
+            } else {
+                signedUrls += u + "\n";
+            }
         }
         String[] result = {signedUrls};
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);

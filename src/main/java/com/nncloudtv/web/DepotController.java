@@ -41,6 +41,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
@@ -195,13 +196,64 @@ public class DepotController {
     public @ResponseBody String processThumbnail(HttpServletRequest req) {
         
         String result = "NOTHING";
+        String episodeIdStr = req.getParameter("episode");
         String channelIdStr = req.getParameter("channel");
         String setIdStr = req.getParameter("set");
         String promotionIdStr = req.getParameter("promotion");
-        
-        if (channelIdStr != null) {
+        if (episodeIdStr != null) {
             
-            result = "NOT_OK";
+            result = "EPISODE_NOT_OK";
+            NnEpisode episode = NNF.getEpisodeMngr().findById(episodeIdStr);
+            if (episode == null) {
+                return "episode not found!";
+            }
+            log.info("resize episode thumbnail - " + episodeIdStr);
+            
+            String imageUrl = episode.getImageUrl();
+            if (imageUrl == null) {
+                return "episode has no imageUrl";
+            }
+            
+            String resizedImageUrl = null;
+            try {
+                BufferedImage image = NNF.getDepotService()
+                                         .resizeImage(imageUrl, NnEpisode.DEFAULT_WIDTH, NnEpisode.DEFAULT_HEIGHT);
+                if (image != null) {
+                    resizedImageUrl = AmazonLib.s3Upload(MsoConfigManager.getS3DepotBucket(),
+                            "thumb-ep" + episode.getId() + ".png", image);
+                    if (resizedImageUrl != null) {
+                        
+                        log.info("update episode with new imageUrl - " + resizedImageUrl);
+                        episode.setImageUrl(resizedImageUrl);
+                        NNF.getEpisodeMngr().save(episode);
+                        result = "OK";
+                    }
+                }
+                
+            } catch (AmazonServiceException e) {
+                
+                log.warning("amazon service exception - " + e.getMessage());
+                return "AmazonServiceException";
+                
+            } catch (AmazonClientException e) {
+                
+                log.warning("amazon client exception - " + e.getMessage());
+                return "AmazonClientException";
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning("episode image url is malformed - " + episode.getId());
+                return "MalformedURLException";
+                
+            } catch (IOException e) {
+                
+                log.warning("failed to load image - " + episode.getImageUrl());
+                return "IOException";
+            }
+            
+        } else if (channelIdStr != null) {
+            
+            result = "CHANNEL_NOT_OK";
             NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
             if (channel == null) {
                 return "channel not found!";

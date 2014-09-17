@@ -514,7 +514,7 @@ public class MsoManager {
             log.info("memcache error");
         }        
         log.info("NOT get mso object from cache:" + name);
-        Mso mso = dao.findByName(name);
+        Mso mso = findByIdOrName(name);
         CacheFactory.set(cacheKey, mso);
         return mso;
     }
@@ -730,5 +730,4 @@ public class MsoManager {
         }
         return output;
     }
-    
 }

@@ -69,7 +69,7 @@ public class MsoConfigManager {
             return path + mso.getName() + "_apns_dev.p12";
         }
     }
-
+    
     static public String getCfPrivateKeyPath(Mso mso) {        
         String path = "/var/opt/cf/";
         return path + "rsa-key-" + mso.getName() + ".der";
@@ -395,6 +395,24 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_AWS, "s3_upload_bucket");
     }
     
+    public String getS3UploadBucket(Mso mso) {
+        
+        MsoConfig config = findByMsoAndItem(mso, MsoConfig.S3_UPLOAD_BUCKET);
+        if (config != null) {
+            return config.getValue();
+        }
+        return getS3UploadBucket();
+    }
+    
+    public String getS3VideoBucket(Mso mso) {
+        
+        MsoConfig config = findByMsoAndItem(mso, MsoConfig.S3_VIDEO_BUCKET);
+        if (config != null) {
+            return config.getValue();
+        }
+        return getS3UploadBucket();
+    }
+    
     public static String getS3DepotBucket() {
         
         return getProperty(PROPERTIES_AWS, "s3_depot_bucket");
@@ -405,9 +423,33 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_AWS, "aws_id");
     }
     
+    public static String getAWSId(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.AWS_ID);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getAWSId();
+    }
+    
     public static String getAWSKey() {
         
         return getProperty(PROPERTIES_AWS, "aws_key");
+    }
+    
+    public static String getAWSKey(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.AWS_KEY);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getAWSKey();
     }
     
     public static String getCCClientId() {
@@ -498,6 +540,16 @@ public class MsoConfigManager {
             if (adConfig != null)
                 ad = adConfig.getValue();
             return ad;
+        }
+        return null;
+    }
+    
+    public Mso findMsoByVideoBucket(String bucket) {
+        
+        MsoConfig config = configDao.findByItemAndValue(MsoConfig.S3_VIDEO_BUCKET, bucket);
+        if (config != null) {
+            
+            return NNF.getMsoMngr().findById(config.getMsoId());
         }
         return null;
     }

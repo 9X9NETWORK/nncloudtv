@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -20,10 +21,71 @@ public class NnUserProfileManager {
     
     private NnUserProfileDao dao = NNF.getProfileDao();
     
+    public List<NnUserProfile> findAllByUser(NnUser user) {
+        
+        return dao.findByUserId(user.getId(), user.getShard());
+    }
+    
     public NnUserProfile findByUser(NnUser user) {
         if (user == null)
             return null;
         return dao.findByUser(user);
+    }
+    
+    public static Comparator<NnUserProfile> getComparator() {
+        
+        // priv from high to low
+        return new Comparator<NnUserProfile>() {
+            
+            public int compare(NnUserProfile profile1, NnUserProfile profile2) {
+                
+                String priv1 = profile1.getPriv();
+                String priv2 = profile2.getPriv();
+                
+                if (priv1 == null && priv2 == null) {
+                    
+                    return 0;
+                    
+                } else if (priv1 == null) {
+                    
+                    return 1;
+                    
+                } else if (priv2 == null) {
+                    
+                    return -1;
+                    
+                } else {
+                    
+                    int len = (priv1.length() > priv2.length()) ? priv1.length() : priv2.length();
+                    char[] arr1 = priv1.toCharArray();
+                    char[] arr2 = priv2.toCharArray();
+                    for (int i = 0; i < len; i++) {
+                        
+                        if (arr1.length <= i) {
+                            
+                            return 1;
+                            
+                        } else if (arr2.length <= i) {
+                            
+                            return -1;
+                            
+                        } else {
+                            
+                            if (arr1[i] < arr2[i]) {
+                                
+                                return 1;
+                                
+                            } else if (arr1[i] < arr2[i]) {
+                                
+                                return -1;
+                            }
+                        }
+                    }
+                }
+                return 0;
+            }
+            
+        };
     }
     
     public NnUserProfile findByUserIdAndMsoId(Long userId, Long msoId) {
@@ -31,19 +93,6 @@ public class NnUserProfileManager {
             return null;
         }
         return dao.findByUserIdAndMsoId(userId, msoId);
-    }
-    
-    public List<NnUserProfile> findByUserId(Long userId) {
-        
-        if (userId == null) {
-            return new ArrayList<NnUserProfile>();
-        }
-        
-        List<NnUserProfile> results = dao.findByUserId(userId);
-        if (results == null) {
-            return new ArrayList<NnUserProfile>();
-        }
-        return results;
     }
     
     public NnUserProfile save(NnUser user, NnUserProfile profile) {
@@ -58,34 +107,20 @@ public class NnUserProfileManager {
         
     }
     
-    /** return if this user has super priv to access PCS */
-    public NnUserProfile pickSuperProfile(Long userId) {
+    /** pick up highest priv profile */
+    public NnUserProfile pickupBestProfile(NnUser user) {
         
-        if (userId == null) {
+        List<NnUserProfile> profiles = findAllByUser(user);
+        
+        if (profiles.isEmpty()) {
+            
             return null;
         }
+        Collections.sort(profiles, NnUserProfileManager.getComparator());
         
-        NnUserProfile target = null;
-        List<NnUserProfile> profiles = findByUserId(userId);
-        if (profiles == null || profiles.size() == 0) {
-            return null;
-        } else {
-            for (NnUserProfile profile : profiles) {
-                if (profile.getPriv() != null && profile.getPriv().startsWith("111")) { // logic hard coded
-                    if (target == null) {
-                        target = profile;
-                    } else {
-                        // multiple assigned 
-                        target = profile;
-                        log.warning("this userId : " + userId + " has multiple super profile and this func cant choose approriate one");
-                    }
-                }
-            }
-        }
-        
-        return target;
+        return profiles.get(0);
     }
-
+    
     public Object getPlayerProfile(NnUser user, short format) {
         NnUserProfile profile = user.getProfile();
         String name = profile.getName();

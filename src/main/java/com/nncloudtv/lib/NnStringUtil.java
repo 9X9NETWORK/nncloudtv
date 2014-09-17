@@ -134,9 +134,26 @@ public class NnStringUtil {
         return result.toString();
     }
     
+    public static String escapeURLInShellArg(String str) {
+        
+        return str.replaceAll(  " ", "%20")
+                  .replaceAll(  ";", "%3b")
+                  .replaceAll("\\(", "%28")
+                  .replaceAll("\\)", "%29")
+                  .replaceAll(  "<", "%3c")
+                  .replaceAll(  ">", "%3e")
+                  .replaceAll("\\{", "%7b")
+                  .replaceAll("\\}", "%7d")
+                  .replaceAll( "\"", "%22")
+                  .replaceAll("\\^", "%5e")
+                  .replaceAll("\\$", "%24")
+                  .replaceAll(  "`", "%60")
+                  .replaceAll(  "'", "%27");
+    }
+    
     public static String escapeDoubleQuote(String str) {
         
-        return "\"" + str.replaceAll("\\", "\\\\")
+        return "\"" + str.replaceAll("\\\\", "\\\\\\\\")
                          .replaceAll("\"", "\\\"") + "\"";
     }
     

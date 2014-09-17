@@ -28,6 +28,11 @@ public class NnEpisodeManager {
     
     private NnEpisodeDao dao = NNF.getEpisodeDao();
     
+    public NnEpisode findById(String episodeIdStr) {
+        
+        return dao.findById(episodeIdStr);
+    }
+    
     public NnEpisode findById(long id) {
         return dao.findById(id);
     }
@@ -182,7 +187,7 @@ public class NnEpisodeManager {
             episodes.get(i).setSeq(i + 1);
         }
         
-        save(episodes);
+        dao.saveAll(episodes);
     }
     
     public void delete(NnEpisode episode) {

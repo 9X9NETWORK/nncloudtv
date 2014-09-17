@@ -46,6 +46,8 @@ public class NnEpisode implements Serializable {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
+    public static final short DEFAULT_WIDTH = 720;
+    public static final short DEFAULT_HEIGHT = 405;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
@@ -53,6 +55,12 @@ public class NnEpisode implements Serializable {
     
     @Persistent
     private boolean isPublic;
+    
+    @Persistent
+    public short contentType;
+    public static final short CONTENTTYPE_GENERAL    = 0;
+    public static final short CONTENTTYPE_REFERENCED = 3;
+    public static final short CONTENTTYPE_UPLOADED   = 5; // this episdoe contains only uploaded video (for CMS)
     
     @Persistent
     private Date scheduleDate;
@@ -217,6 +225,14 @@ public class NnEpisode implements Serializable {
 
     public void setStorageId(long storageId) {
         this.storageId = storageId;
+    }
+
+    public short getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(short contentType) {
+        this.contentType = contentType;
     }
      
 }

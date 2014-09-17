@@ -601,7 +601,7 @@ public class NnProgramManager {
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
                 if (episodes.size() > (PlayerApiService.PAGING_ROWS)) {
-                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS);
                 }
                 Random rand = new Random(NnDateUtil.now().getTime());
                 for (NnEpisode ep : classics) {
@@ -653,7 +653,7 @@ public class NnProgramManager {
                 
                 Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
                 if (episodes.size() > PlayerApiService.PAGING_ROWS) {
-                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS - 1);
+                    episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS);
                 }
                 Random rand = new Random(NnDateUtil.now().getTime());
                 for (NnEpisode ep : classics) {
