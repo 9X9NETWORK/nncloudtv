@@ -81,12 +81,14 @@ public class MyLibrary {
     @Persistent
     private Date updateDate;
     
-    public MyLibrary(String name, short contentType, String fileUrl) {
+    public MyLibrary(Mso mso, NnUser user, String name, short contentType, String fileUrl) {
         
         this.name = name;
         this.contentType = contentType;
         this.fileUrl = fileUrl;
         this.isPublic = true;
+        this.msoId = mso.getId();
+        this.userIdStr = user.getIdStr();
     }
 
     public long getId() {
@@ -207,5 +209,13 @@ public class MyLibrary {
 
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public String getUserIdStr() {
+        return userIdStr;
+    }
+
+    public void setUserIdStr(String userIdStr) {
+        this.userIdStr = userIdStr;
     }
 }

@@ -28,7 +28,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
-import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.ApiUserService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.NnChannelManager;

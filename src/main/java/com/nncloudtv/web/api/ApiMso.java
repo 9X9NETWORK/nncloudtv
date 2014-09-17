@@ -2278,10 +2278,10 @@ public class ApiMso extends ApiGeneric {
         }
         Short seq = evaluateShort(req.getParameter("seq"));
         Integer duration = evaluateInt(req.getParameter("duration"));
-        MyLibrary library = new MyLibrary(name, contentType, fileUrl);
+        MyLibrary library = new MyLibrary(mso, user, name, contentType, fileUrl);
         library.setIntro(req.getParameter("intro"));
         library.setImageUrl(req.getParameter("imageUrl"));
-        library.setMsoId(mso.getId());
+        
         if (seq != null) {
             library.setSeq(seq);
         }
