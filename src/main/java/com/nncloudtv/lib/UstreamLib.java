@@ -15,11 +15,9 @@ public class UstreamLib {
     
     public static final String REGEX_USTREAM_URL = "^https?:\\/\\/www\\.ustream\\.tv\\/(channels\\/)?(.+)$";
     
-    public static String getDirectVideoUrl(String url) {
+    public static String getUstreamChannelId(String url) {
         
         if (url == null) { return null; }
-        
-        log.info("ustream url = " + url);
         
         try {
             Document doc = Jsoup.connect(url).get();
@@ -33,7 +31,31 @@ public class UstreamLib {
                 log.warning("idStr is empty");
                 return null;
             }
-            log.info("ustream channel ID = " + idStr);
+            log.info("ustream channel_id = " + idStr);
+            
+            return idStr;
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            
+        }
+        
+        return null;
+    }
+    
+    public static String getDirectVideoUrl(String url) {
+        
+        if (url == null) { return null; }
+        
+        log.info("ustream url = " + url);
+        
+        try {
+            
+            String idStr = getUstreamChannelId(url);
+            if (idStr == null) {
+                return null;
+            }
             String jsonUrl = "http://api.ustream.tv/channels/" + idStr+ ".json";
             log.info("json url = " + jsonUrl);
             String jsonStr = NnNetUtil.urlGet(jsonUrl);
@@ -52,9 +74,6 @@ public class UstreamLib {
             
             log.warning(e.getMessage());
             
-        } catch (IOException e) {
-            
-            log.warning(e.getMessage());
         }
         
         return null;

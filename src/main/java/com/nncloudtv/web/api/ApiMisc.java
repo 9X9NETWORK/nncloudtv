@@ -488,12 +488,12 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        String m3u8Url = UstreamLib.getDirectVideoUrl(url);
+        String idStr = UstreamLib.getUstreamChannelId(url);
         
-        if (m3u8Url != null) {
+        if (idStr != null) {
             
             Map<String, String> map = new HashMap<String, String>();
-            map.put("url", m3u8Url);
+            map.put("id", idStr);
             List<Map<String, String>> result = new ArrayList<Map<String, String>>();
             result.add(map);
             
