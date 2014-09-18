@@ -483,7 +483,7 @@ public class ApiMisc extends ApiGeneric {
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
         
         String ustreamUrl = req.getParameter("url");
-        log.info("ustreamUrl = " + ustreamUrl);
+        log.info("ustream url = " + ustreamUrl);
         if (ustreamUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;

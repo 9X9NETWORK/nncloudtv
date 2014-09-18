@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 
 public class UstreamLib {
     
@@ -19,7 +19,7 @@ public class UstreamLib {
         
         try {
             Document doc = Jsoup.connect(url).get();
-            Elements element = doc.select("meta[name=\"ustream:channel_id\"]");
+            Element element = doc.select("meta[name=\"ustream:channel_id\"]").first();
             if (element == null) {
                 log.warning("meta tag is not found");
                 return null;
