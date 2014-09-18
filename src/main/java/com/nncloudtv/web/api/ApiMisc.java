@@ -47,6 +47,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.UstreamLib;
 import com.nncloudtv.lib.VimeoLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
@@ -476,6 +477,32 @@ public class ApiMisc extends ApiGeneric {
         return ok(resp);
     }
     
+    @RequestMapping(value = "ustream", method = RequestMethod.GET)
+    public @ResponseBody List<Map<String, String>> ustream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        
+        String url = req.getParameter("url");
+        if (url == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        
+        String idStr = UstreamLib.getUstreamChannelId(url);
+        
+        if (idStr != null) {
+            
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("id", idStr);
+            List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+            result.add(map);
+            
+            return result;
+        }
+        
+        return empty;
+    }
+    
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
     public @ResponseBody List<Map<String, String>> thumbnails(
             HttpServletRequest req, HttpServletResponse resp) {
@@ -515,7 +542,18 @@ public class ApiMisc extends ApiGeneric {
         String thumbnailUrl = null;
         Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
         Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
-        if (vimeoMatcher.find()) {
+        Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
+        
+        if (ustreamMatcher.find()) {
+            
+            log.info("ustream url format");
+            videoUrl = UstreamLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing ustream url failed");
+                return empty;
+            }
+            
+        } else if (vimeoMatcher.find()) {
             
             log.info("vimeo url format");
             

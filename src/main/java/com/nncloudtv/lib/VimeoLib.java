@@ -1,6 +1,7 @@
 package com.nncloudtv.lib;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,11 +9,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import twitter4j.Logger;
-
 public class VimeoLib {
     
-    protected static final Logger log = Logger.getLogger(VimeoLib.class);
+    protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     
     public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/([0-9]+)$";
     
