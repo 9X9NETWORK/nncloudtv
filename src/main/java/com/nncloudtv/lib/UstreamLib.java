@@ -1,6 +1,5 @@
 package com.nncloudtv.lib;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -35,10 +34,9 @@ public class UstreamLib {
             
             return idStr;
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             
             log.warning(e.getMessage());
-            
         }
         
         return null;
