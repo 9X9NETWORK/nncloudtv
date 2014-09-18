@@ -542,7 +542,18 @@ public class ApiMisc extends ApiGeneric {
         String thumbnailUrl = null;
         Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
         Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
-        if (vimeoMatcher.find()) {
+        Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
+        
+        if (ustreamMatcher.find()) {
+            
+            log.info("ustream url format");
+            videoUrl = UstreamLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing ustream url failed");
+                return empty;
+            }
+            
+        } else if (vimeoMatcher.find()) {
             
             log.info("vimeo url format");
             

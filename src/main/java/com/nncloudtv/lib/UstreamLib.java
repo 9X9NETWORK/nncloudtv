@@ -13,6 +13,8 @@ public class UstreamLib {
     
     protected static final Logger log = Logger.getLogger(UstreamLib.class.getName());
     
+    public static final String REGEX_USTREAM_URL = "^https?:\\/\\/www\\.ustream\\.com\\/(channels\\/)?(.+)$";
+    
     public static String getDirectVideoUrl(String url) {
         
         if (url == null) { return null; }
