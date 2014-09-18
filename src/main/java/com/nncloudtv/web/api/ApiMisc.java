@@ -47,6 +47,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.UstreamLib;
 import com.nncloudtv.lib.VimeoLib;
 import com.nncloudtv.lib.YouTubeLib;
 import com.nncloudtv.model.LangTable;
@@ -474,6 +475,33 @@ public class ApiMisc extends ApiGeneric {
         }
         
         return ok(resp);
+    }
+    
+    @RequestMapping(value = "ustream", method = RequestMethod.GET)
+    public @ResponseBody List<Map<String, String>> ustream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
+        
+        String ustreamUrl = req.getParameter("url");
+        log.info("ustreamUrl = " + ustreamUrl);
+        if (ustreamUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        
+        String m3u8Url = UstreamLib.getDirectVideoUrl(ustreamUrl);
+        
+        if (m3u8Url != null) {
+            
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("url", m3u8Url);
+            List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+            result.add(map);
+            
+            return result;
+        }
+        
+        return empty;
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
