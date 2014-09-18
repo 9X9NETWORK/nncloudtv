@@ -482,14 +482,13 @@ public class ApiMisc extends ApiGeneric {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
         
-        String ustreamUrl = req.getParameter("url");
-        log.info("ustream url = " + ustreamUrl);
-        if (ustreamUrl == null) {
+        String url = req.getParameter("url");
+        if (url == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
-        String m3u8Url = UstreamLib.getDirectVideoUrl(ustreamUrl);
+        String m3u8Url = UstreamLib.getDirectVideoUrl(url);
         
         if (m3u8Url != null) {
             

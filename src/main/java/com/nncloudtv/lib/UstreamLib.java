@@ -17,9 +17,11 @@ public class UstreamLib {
         
         if (url == null) { return null; }
         
+        log.info("ustream url = " + url);
+        
         try {
             Document doc = Jsoup.connect(url).get();
-            Element element = doc.select("meta[name=\"ustream:channel_id\"]").first();
+            Element element = doc.select("[name=\"ustream:channel_id\"]").first();
             if (element == null) {
                 log.warning("meta tag is not found");
                 return null;
