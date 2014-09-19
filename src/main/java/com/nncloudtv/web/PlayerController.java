@@ -1,7 +1,12 @@
 package com.nncloudtv.web;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
@@ -35,6 +41,24 @@ public class PlayerController {
         NnLogUtil.logException(e);
         return "error/exception";                
     }        
+
+    @RequestMapping("gwallet") 
+    public @ResponseBody String gwallet(HttpServletRequest req, HttpServletResponse resp) {
+    	try {
+    		 StringBuilder buffer = new StringBuilder();
+    		 BufferedReader reader = req.getReader();
+    		 String line;
+    		 while ((line = reader.readLine()) != null) {
+    		    buffer.append(line);
+    		 }
+    		 String data = buffer.toString();
+    		 log.info("\n-----gwallet start----\n" + data + "\n-----gwallet end----\n");    		 
+        } catch (IOException e) {
+	        e.printStackTrace();
+        }
+        return "OK";
+    }
+        
     
     @RequestMapping({"", "tv","10ft"})
     public String tv(@RequestParam(value="mso",required=false) String mso, 
