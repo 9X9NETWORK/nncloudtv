@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -53,6 +55,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
+import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
@@ -665,11 +668,12 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({CacheFactory.class})
+    @PrepareForTest({CacheFactory.class,PMF.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
         
         private MsoConfigManager configMngr;
+        private PersistenceManagerFactory pmf;
         
         private Mso defaultMso;
         private String defaultOS;
@@ -813,6 +817,10 @@ public class PlayerApiServiceTest {
             CacheFactory.isEnabled = false;
             CacheFactory.isRunning = false;
             
+            pmf = JDOHelper.getPersistenceManagerFactory("hsql.properties");
+            NnTestUtil.emptyTable(pmf, Mso.class);
+            NnTestUtil.emptyTable(pmf, MsoConfig.class);
+            
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             configMngr = Mockito.spy(new MsoConfigManager());
             MsoDao msoDao = Mockito.spy(new MsoDao());
@@ -821,22 +829,24 @@ public class PlayerApiServiceTest {
             NNFWrapper.setConfigMngr(configMngr);
             NNFWrapper.setMsoDao(msoDao);
             
+            PowerMockito.mockStatic(PMF.class);
+            when(PMF.getContent()).thenReturn(pmf);
             // must stub, prepService call database where these are not point in test case care about
-            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
-            doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
+            //doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
+            //doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
+            //doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
+            //doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
             
             String brandName = "cts";
             defaultMso = NnTestUtil.getNnMso();
-            defaultMso.setId(3);
             defaultMso.setName(brandName);
             defaultMso.setType(Mso.TYPE_MSO);
             
-            doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
+            defaultMso = msoDao.save(defaultMso);
+            //doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
             
             defaultOS = PlayerService.OS_WEB;
             // default input
@@ -852,6 +862,7 @@ public class PlayerApiServiceTest {
         @After
         public void tearDown2() {
             configMngr = null;
+            pmf = null;
             
             defaultMso = null;
             defaultOS = null;
@@ -1102,6 +1113,7 @@ public class PlayerApiServiceTest {
         }
         
         // TODO third part 'ad' section test case
+        
     }
     
     @RunWith(MockitoJUnitRunner.class)

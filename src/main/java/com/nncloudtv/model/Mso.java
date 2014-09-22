@@ -99,6 +99,121 @@ public class Mso implements Serializable {
         this.type = type;
     }
     
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (apnsEnabled ? 1231 : 1237);
+        result = prime * result
+                + ((contactEmail == null) ? 0 : contactEmail.hashCode());
+        result = prime * result
+                + ((createDate == null) ? 0 : createDate.hashCode());
+        result = prime * result + (gcmEnabled ? 1231 : 1237);
+        result = prime * result + (int) (id ^ (id >>> 32));
+        result = prime * result + ((intro == null) ? 0 : intro.hashCode());
+        result = prime * result
+                + ((jingleUrl == null) ? 0 : jingleUrl.hashCode());
+        result = prime * result + ((lang == null) ? 0 : lang.hashCode());
+        result = prime * result + ((logoUrl == null) ? 0 : logoUrl.hashCode());
+        result = prime * result + maxChPerSet;
+        result = prime * result + maxSets;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result
+                + ((shortIntro == null) ? 0 : shortIntro.hashCode());
+        result = prime * result + ((slogan == null) ? 0 : slogan.hashCode());
+        result = prime * result
+                + ((supportedRegion == null) ? 0 : supportedRegion.hashCode());
+        result = prime * result + ((title == null) ? 0 : title.hashCode());
+        result = prime * result + type;
+        result = prime * result
+                + ((updateDate == null) ? 0 : updateDate.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Mso other = (Mso) obj;
+        if (apnsEnabled != other.apnsEnabled)
+            return false;
+        if (contactEmail == null) {
+            if (other.contactEmail != null)
+                return false;
+        } else if (!contactEmail.equals(other.contactEmail))
+            return false;
+        if (createDate == null) {
+            if (other.createDate != null)
+                return false;
+        } else if (!createDate.equals(other.createDate))
+            return false;
+        if (gcmEnabled != other.gcmEnabled)
+            return false;
+        if (id != other.id)
+            return false;
+        if (intro == null) {
+            if (other.intro != null)
+                return false;
+        } else if (!intro.equals(other.intro))
+            return false;
+        if (jingleUrl == null) {
+            if (other.jingleUrl != null)
+                return false;
+        } else if (!jingleUrl.equals(other.jingleUrl))
+            return false;
+        if (lang == null) {
+            if (other.lang != null)
+                return false;
+        } else if (!lang.equals(other.lang))
+            return false;
+        if (logoUrl == null) {
+            if (other.logoUrl != null)
+                return false;
+        } else if (!logoUrl.equals(other.logoUrl))
+            return false;
+        if (maxChPerSet != other.maxChPerSet)
+            return false;
+        if (maxSets != other.maxSets)
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (!name.equals(other.name))
+            return false;
+        if (shortIntro == null) {
+            if (other.shortIntro != null)
+                return false;
+        } else if (!shortIntro.equals(other.shortIntro))
+            return false;
+        if (slogan == null) {
+            if (other.slogan != null)
+                return false;
+        } else if (!slogan.equals(other.slogan))
+            return false;
+        if (supportedRegion == null) {
+            if (other.supportedRegion != null)
+                return false;
+        } else if (!supportedRegion.equals(other.supportedRegion))
+            return false;
+        if (title == null) {
+            if (other.title != null)
+                return false;
+        } else if (!title.equals(other.title))
+            return false;
+        if (type != other.type)
+            return false;
+        if (updateDate == null) {
+            if (other.updateDate != null)
+                return false;
+        } else if (!updateDate.equals(other.updateDate))
+            return false;
+        return true;
+    }
+    
     public String getSupportedRegion() {
         return supportedRegion;
     }
