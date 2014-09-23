@@ -1007,7 +1007,7 @@ public class NnChannelManager {
     public Object composeEachChannelLineup(NnChannel channel, int version, short format) {
         Object result = null;
         log.info("version number: " + version);
-
+        
         String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), version, format);
         try {
             result = CacheFactory.get(cacheKey);
