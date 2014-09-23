@@ -16,11 +16,9 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -673,7 +671,6 @@ public class PlayerApiServiceTest {
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
         
         private MsoConfigManager configMngr;
-        private PersistenceManagerFactory pmf;
         
         private Mso defaultMso;
         private String defaultOS;
@@ -817,25 +814,18 @@ public class PlayerApiServiceTest {
             CacheFactory.isEnabled = false;
             CacheFactory.isRunning = false;
             
-            pmf = JDOHelper.getPersistenceManagerFactory("hsql.properties");
+            PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory("hsql.properties");
             NnTestUtil.emptyTable(pmf, Mso.class);
             NnTestUtil.emptyTable(pmf, MsoConfig.class);
             
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             configMngr = Mockito.spy(new MsoConfigManager());
-            MsoDao msoDao = Mockito.spy(new MsoDao());
             
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setConfigMngr(configMngr);
-            NNFWrapper.setMsoDao(msoDao);
             
             PowerMockito.mockStatic(PMF.class);
             when(PMF.getContent()).thenReturn(pmf);
-            // must stub, prepService call database where these are not point in test case care about
-            //doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
-            //doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
-            //doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
-            //doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
@@ -845,8 +835,8 @@ public class PlayerApiServiceTest {
             defaultMso.setName(brandName);
             defaultMso.setType(Mso.TYPE_MSO);
             
+            MsoDao msoDao = new MsoDao();
             defaultMso = msoDao.save(defaultMso);
-            doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
             
             defaultOS = PlayerService.OS_WEB;
             // default input
@@ -862,41 +852,22 @@ public class PlayerApiServiceTest {
         @After
         public void tearDown2() {
             configMngr = null;
-            pmf = null;
             
             defaultMso = null;
             defaultOS = null;
         }
         
-        // turn on config interaction with database in MsoManager.composeBrandInfoStr
+        // all config available from database
         private void makeAllConfigAvailable() {
             
-            List<MsoConfig> configs = new ArrayList<MsoConfig>();
             for (String itemName : items.keySet()) {
                 
                 MsoConfig config = new MsoConfig();
                 config.setMsoId(defaultMso.getId());
                 config.setItem(itemName);
                 config.setValue(items.get(itemName));
-                
-                doReturn(config).when(configMngr).findByMsoAndItem(defaultMso, itemName);
-                
-                configs.add(config);
+                configMngr.save(defaultMso, config);
             }
-            
-            doReturn(configs).when(configMngr).findByMso(defaultMso);
-        }
-        
-        // turn off config interaction with database in MsoManager.composeBrandInfoStr
-        private void makeAllConfigUnavailable() {
-            
-            List<MsoConfig> configs = new ArrayList<MsoConfig>();
-            for (String itemName : items.keySet()) {
-                
-                doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, itemName);
-            }
-            
-            doReturn(configs).when(configMngr).findByMso(defaultMso);
         }
         
         @Test
@@ -921,13 +892,6 @@ public class PlayerApiServiceTest {
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             doReturn(locale).when(userMngr).findLocaleByHttpRequest(req);
             NNFWrapper.setUserMngr(userMngr); // overwrite
-            
-            // make all unavoid interactions with configMngr return as null, in os=web situation
-            doReturn(new ArrayList<MsoConfig>()).when(configMngr).findByMso(defaultMso);
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.SEARCH);
-            String item = configMngr.getKeyNameByOs(defaultOS, "google");
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, item);
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.AUDIO_BACKGROUND);
             
             // execute
             service.prepService(req, resp, true);
@@ -1008,9 +972,6 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_WEB;
             req.setParameter("os", os);
-            
-            // stubs
-            makeAllConfigUnavailable();
             
             // execute
             service.prepService(req, resp, true);
