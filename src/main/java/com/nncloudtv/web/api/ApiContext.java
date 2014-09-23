@@ -17,6 +17,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.PlayerApiService;
 
 
 public class ApiContext {
@@ -33,6 +34,7 @@ public class ApiContext {
     public final static String PARAM_LANG = "lang";
     public final static String PARAM_SPHERE = "shpere";
     public final static String PARAM_VERSION = "v";
+    public final static String PARAM_FORMAT = "format";
     
     HttpServletRequest httpReq;
     Locale locale;
@@ -42,6 +44,12 @@ public class ApiContext {
     String root;
     Mso mso;
     Boolean productionSite = null;
+    short format;
+    
+    public short getFormat() {
+        
+        return format;
+    }
     
     public Integer getVersion() {
         
@@ -49,10 +57,12 @@ public class ApiContext {
     }
     
     public String getAppVersion() {
+        
     	return appVersion;
     }
     
     public String getOs() {
+        
     	return os;
     }
     
@@ -80,6 +90,13 @@ public class ApiContext {
         httpReq = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         
+        String returnFormat = httpReq.getParameter(ApiContext.PARAM_FORMAT);
+        if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
+            this.format = PlayerApiService.FORMAT_PLAIN;
+        } else {
+            this.format = PlayerApiService.FORMAT_JSON;
+        }
+        
         String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
         if (LangTable.isValidLanguage(lang)) {
             locale = LangTable.getLocale(lang);
@@ -99,7 +116,7 @@ public class ApiContext {
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
             os = ApiContext.DEFAULT_OS;        	
-
+        
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
             appVersion = os + " " + appVersion;

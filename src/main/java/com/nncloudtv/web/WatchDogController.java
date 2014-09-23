@@ -43,6 +43,7 @@ import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.player.ChannelLineup;
 
@@ -264,7 +265,7 @@ public class WatchDogController {
     }
 
     @RequestMapping(value="channelLineup", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String channelLineup(
+    public @ResponseBody String channelLineup(HttpServletRequest req,
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="v", required=false) String v) {
         NnChannelManager mngr = NNF.getChannelMngr();
@@ -273,10 +274,7 @@ public class WatchDogController {
             return "channel does not exist";
         List<NnChannel> channels = new ArrayList<NnChannel>();
         channels.add(c);
-        int version = 40;
-        if (v != null)
-            version = Integer.parseInt(v);
-        String result = (String) mngr.composeChannelLineup(channels, version, PlayerApiService.FORMAT_PLAIN);
+        String result = (String) mngr.composeChannelLineup(channels, new ApiContext(req));
         if (result == null) {
             return "error, can't be null";
         }
@@ -284,7 +282,7 @@ public class WatchDogController {
         String[] data = result.split("\t");
         String output = "";
         output += "number of fields:" + lengthTest.length + "\n\n";
-
+        
         for (int i=0; i < data.length; i++) {
             if (i == 0)  output += "grid:";
             if (i == 1)  output += "channel id:"; 
@@ -484,10 +482,10 @@ public class WatchDogController {
     
     @RequestMapping("json") 
     public @ResponseBody ChannelLineup json (
-    		@RequestParam(value="id") long id) {         
+    		@RequestParam(value="id") long id, HttpServletRequest req) {         
        NnChannelManager chMngr = NNF.getChannelMngr();
        NnChannel c = chMngr.findById(id);
-       ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, 40, PlayerApiService.FORMAT_JSON);
+       ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, new ApiContext(req));
        System.out.println(json);       
        return json;
     }        

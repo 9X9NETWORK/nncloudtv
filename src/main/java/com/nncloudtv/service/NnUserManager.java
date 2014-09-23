@@ -30,6 +30,7 @@ import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.UserInfo;
@@ -436,7 +437,7 @@ public class NnUserManager {
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, version, PlayerApiService.FORMAT_PLAIN);
+        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext(req));
         return result;
     }
     

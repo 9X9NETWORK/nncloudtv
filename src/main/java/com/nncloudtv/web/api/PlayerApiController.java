@@ -449,7 +449,7 @@ public class PlayerApiController {
         }
         NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
-        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
+        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, new ApiContext(req));
         return json;
         //return "player/api";
     }
