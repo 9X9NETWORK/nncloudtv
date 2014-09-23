@@ -846,7 +846,7 @@ public class PlayerApiServiceTest {
             defaultMso.setType(Mso.TYPE_MSO);
             
             defaultMso = msoDao.save(defaultMso);
-            //doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
+            doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
             
             defaultOS = PlayerService.OS_WEB;
             // default input
