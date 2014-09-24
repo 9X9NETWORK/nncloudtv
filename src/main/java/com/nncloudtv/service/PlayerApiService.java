@@ -3363,25 +3363,32 @@ public class PlayerApiService {
         // NOTE: maybe the mso can be determined by bucket name
         MsoConfig cfSubomainConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_SUBDOMAIN);
         if (cfSubomainConfig == null)
-        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+            return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
         MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_KEY_PAIR_ID);
         if (cfKeypairConfig == null)
-        	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
-        String keypair = cfKeypairConfig.getValue();	
+            return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
+        
+        String keypair = cfKeypairConfig.getValue();    
         String cfDomainStr = cfSubomainConfig.getValue() + ".cloudfront.net";
         String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
-        String signedUrls = "";
-        for (String u : urls) {
-            
-            Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(u);
-            if (matcher.find()) {
-                signedUrls += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
-            } else {
-                signedUrls += u + "\n";
+        String videoStr = "";
+        for (String u : urls) {    
+            try {
+                u = URLDecoder.decode(u, "utf-8");
+                Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(u);
+                String signedUrl = "";
+                if (matcher.find()) {
+                    signedUrl += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
+                } else {
+                    signedUrl += u + "\n";
+                }
+                videoStr += u + "\t" + signedUrl;
+            } catch (UnsupportedEncodingException e) {
+                NnLogUtil.logException(e);
             }
         }
-        String[] result = {signedUrls};
+        String[] result = {videoStr};
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
