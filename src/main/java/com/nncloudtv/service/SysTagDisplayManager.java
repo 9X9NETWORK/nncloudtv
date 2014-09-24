@@ -229,11 +229,11 @@ public class SysTagDisplayManager {
         String programInfo = "";
         String channelInfo = "";
         //find whaton systag and its channels
-        SysTagDisplay whatson = this.findByType(ctx.getMso().getId(), SysTag.TYPE_WHATSON, ctx.getLocale().getLanguage());
+        SysTagDisplay whatson = this.findByType(ctx.getMso().getId(), SysTag.TYPE_WHATSON, ctx.getLang());
         if (!minimal) {
 	        NnChannel daypartingChannel = null;
 	        if (whatson != null ) {
-	            List<NnChannel> whatsonChannels = NNF.getSysTagMngr().findPlayerAllChannelsById(whatson.getSystagId(), ctx.getLocale().getLanguage(), SysTag.SORT_SEQ, ctx.getMso().getId());
+	            List<NnChannel> whatsonChannels = NNF.getSysTagMngr().findPlayerAllChannelsById(whatson.getSystagId(), ctx.getLang(), SysTag.SORT_SEQ, ctx.getMso().getId());
 	            listingChannels.addAll(whatsonChannels);
 	            for (NnChannel c : whatsonChannels) {
 	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
@@ -244,11 +244,11 @@ public class SysTagDisplayManager {
 	            }	            
 	        }	        
 	        //find the real dayparting channels
-	        SysTagDisplay dayparting = this.findDayparting(time, ctx.getLocale().getLanguage(), ctx.getMso().getId());
+	        SysTagDisplay dayparting = this.findDayparting(time, ctx.getLang(), ctx.getMso().getId());
 	        if (dayparting != null) {
 	            log.info("dayparting:" + dayparting.getName());
-	            List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), ctx.getLocale().getLanguage(), ctx.getMso().getId(), time);
-	            programInfo += (String) NNF.getYtProgramMngr().findByDaypartingChannels(daypartingChannels, daypartingChannel, ctx.getMso().getId(), time, ctx.getLocale().getLanguage());
+	            List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(dayparting.getSystagId(), ctx.getLang(), ctx.getMso().getId(), time);
+	            programInfo += (String) NNF.getYtProgramMngr().findByDaypartingChannels(daypartingChannels, daypartingChannel, ctx.getMso().getId(), time, ctx.getLang());
 	        } else {
 	            return new String[]{"", "", ""};
 	        }

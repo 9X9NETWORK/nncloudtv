@@ -207,4 +207,9 @@ public class ApiContext {
         
         return httpReq;
     }
+    
+    public String getLang() {
+        
+        return locale.getLanguage();
+    }
 }
