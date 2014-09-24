@@ -3379,11 +3379,11 @@ public class PlayerApiService {
                 Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(u);
                 String signedUrl = "";
                 if (matcher.find()) {
-                    signedUrl += AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2)) + "\n";            
+                    signedUrl = AmazonLib.cfUrlSignature(cfDomainStr, privateKeyPath, keypair, matcher.group(2));            
                 } else {
-                    signedUrl += u + "\n";
+                    signedUrl = u;
                 }
-                videoStr += u + "\t" + signedUrl;
+                videoStr += u + "\t" + signedUrl + "\n";
             } catch (UnsupportedEncodingException e) {
                 NnLogUtil.logException(e);
             }
