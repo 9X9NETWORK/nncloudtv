@@ -190,7 +190,7 @@ public class PlayerApiControllerTest {
         String actual2 = (String) captureActual.getValue();
         
         expected = NnStatusCode.SUCCESS + "\t" +
-                NnStatusMsg.getPlayerMsgText(NnStatusCode.SUCCESS, null) + "\n";
+                NnStatusMsg.getPlayerMsgText(NnStatusCode.SUCCESS) + "\n";
         assertTrue("missing 'v' in request parameter and without 'v' setting in database " +
                 "should always see as success operation.", actual2.startsWith(expected));
         

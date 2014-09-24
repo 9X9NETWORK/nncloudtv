@@ -56,11 +56,6 @@ public class ApiContext {
     	return os;
     }
     
-    public Locale getLocale() {
-        
-        return locale;
-    }
-    
     public Mso getMso() {
     
         return mso;
@@ -99,7 +94,7 @@ public class ApiContext {
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
             os = ApiContext.DEFAULT_OS;        	
-
+        
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
             appVersion = os + " " + appVersion;

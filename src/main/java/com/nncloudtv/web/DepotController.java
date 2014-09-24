@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -124,7 +123,7 @@ public class DepotController {
     public ResponseEntity<String> itemUpdate(@RequestBody RtnProgram rtnProgram, HttpServletRequest req) {
         log.info(rtnProgram.toString());
         PostResponse resp = new PostResponse(
-                String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, Locale.ENGLISH));        
+                String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));        
         try {
             resp = depotService.updateProgram(rtnProgram);
         } catch (Exception e) {
@@ -496,7 +495,7 @@ public class DepotController {
     public @ResponseBody PostResponse channelUpdate(@RequestBody RtnChannel podcast) {
         log.info(podcast.toString());
         PostResponse resp = new PostResponse(
-            String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, Locale.ENGLISH));
+            String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));
         try {
             resp = depotService.updateChannel(podcast);
         } catch (Exception e) {
@@ -533,7 +532,7 @@ public class DepotController {
         
         log.info(podcast.toString());
         PostResponse resp = new PostResponse(
-                String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, Locale.ENGLISH));
+                String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));
         try {
             resp = depotService.updateChannel(podcast);
         } catch (Exception e) {

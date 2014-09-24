@@ -557,6 +557,7 @@ public class MsoManager {
         return dao.total(filter);
     }
     
+    //TODO: to be removed
     /** indicate which brands that channel can play on, means channel is in the brand's store */
     public List<Mso> findValidMso(NnChannel channel) {
         

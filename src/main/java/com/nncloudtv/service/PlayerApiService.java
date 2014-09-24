@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -104,7 +103,6 @@ public class PlayerApiService {
     private Mso    mso;
     private int    version = 32;
     private String appVersion = null;
-    private Locale locale  = Locale.ENGLISH;
     private short  format  = FORMAT_PLAIN;
     private ApiContext context = null;
     HttpServletResponse resp;
@@ -131,7 +129,6 @@ public class PlayerApiService {
             NnNetUtil.logUrl(req);
         
         context = new ApiContext(req);
-        this.locale  = context.getLocale();
         this.mso     = context.getMso();
         this.version = context.getVersion();
         this.appVersion = context.getAppVersion();
@@ -222,11 +219,11 @@ public class PlayerApiService {
         if (this.format == FORMAT_JSON) {
             ApiStatus apiStatus = new ApiStatus();
             apiStatus.setCode(status);
-            apiStatus.setMessage(NnStatusMsg.getPlayerMsgText(status, locale));
+            apiStatus.setMessage(NnStatusMsg.getPlayerMsgText(status));
             apiStatus.setData(data);
             return apiStatus;
         }
-        String result = NnStatusMsg.getPlayerMsg(status, locale);
+        String result = NnStatusMsg.getPlayerMsg(status);
         String[] raw = (String[]) data;        
         String separatorStr = "--\n";
         if (raw != null && raw.length > 0) {
