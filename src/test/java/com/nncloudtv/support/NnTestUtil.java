@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.PersistenceManager;
+import javax.jdo.PersistenceManagerFactory;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
@@ -83,21 +86,26 @@ public class NnTestUtil {
     
     public static Mso getNnMso() {
         
-        int id = 1;
         String name = Mso.NAME_9X9;
         String title = "title";
         String logoUrl = "logoUrl";
         String jingleUrl = "jingleUrl";
-        String preferredLangCode = "preferredLangCode";
+        String preferredLangCode = "zh";
         
         Mso mso = new Mso(name, "intro", "email", Mso.TYPE_NN);
-        mso.setId(id);
         mso.setTitle(title);
         mso.setLogoUrl(logoUrl);
         mso.setJingleUrl(jingleUrl);
         mso.setLang(preferredLangCode);
         
         return mso;
+    }
+    
+    public static void emptyTable(PersistenceManagerFactory pmf, @SuppressWarnings("rawtypes") Class clazz) {
+            
+            PersistenceManager pm = pmf.getPersistenceManager();
+            pm.newQuery(clazz).deletePersistentAll();
+            pm.close();
     }
 
 }

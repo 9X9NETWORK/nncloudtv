@@ -16,11 +16,9 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -28,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -53,6 +53,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
+import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
@@ -665,7 +666,7 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({CacheFactory.class})
+    @PrepareForTest({CacheFactory.class,PMF.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
         
@@ -813,30 +814,29 @@ public class PlayerApiServiceTest {
             CacheFactory.isEnabled = false;
             CacheFactory.isRunning = false;
             
+            PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory("hsql.properties");
+            NnTestUtil.emptyTable(pmf, Mso.class);
+            NnTestUtil.emptyTable(pmf, MsoConfig.class);
+            
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             configMngr = Mockito.spy(new MsoConfigManager());
-            MsoDao msoDao = Mockito.spy(new MsoDao());
             
             NNFWrapper.setUserMngr(userMngr);
             NNFWrapper.setConfigMngr(configMngr);
-            NNFWrapper.setMsoDao(msoDao);
             
-            // must stub, prepService call database where these are not point in test case care about
-            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
-            doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
+            PowerMockito.mockStatic(PMF.class);
+            when(PMF.getContent()).thenReturn(pmf);
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
             
             String brandName = "cts";
             defaultMso = NnTestUtil.getNnMso();
-            defaultMso.setId(3);
             defaultMso.setName(brandName);
             defaultMso.setType(Mso.TYPE_MSO);
             
-            doReturn(defaultMso).when(msoDao).findByName(brandName); // must stub
+            MsoDao msoDao = new MsoDao();
+            defaultMso = msoDao.save(defaultMso);
             
             defaultOS = PlayerService.OS_WEB;
             // default input
@@ -857,35 +857,17 @@ public class PlayerApiServiceTest {
             defaultOS = null;
         }
         
-        // turn on config interaction with database in MsoManager.composeBrandInfoStr
+        // all config available from database
         private void makeAllConfigAvailable() {
             
-            List<MsoConfig> configs = new ArrayList<MsoConfig>();
             for (String itemName : items.keySet()) {
                 
                 MsoConfig config = new MsoConfig();
                 config.setMsoId(defaultMso.getId());
                 config.setItem(itemName);
                 config.setValue(items.get(itemName));
-                
-                doReturn(config).when(configMngr).findByMsoAndItem(defaultMso, itemName);
-                
-                configs.add(config);
+                configMngr.save(defaultMso, config);
             }
-            
-            doReturn(configs).when(configMngr).findByMso(defaultMso);
-        }
-        
-        // turn off config interaction with database in MsoManager.composeBrandInfoStr
-        private void makeAllConfigUnavailable() {
-            
-            List<MsoConfig> configs = new ArrayList<MsoConfig>();
-            for (String itemName : items.keySet()) {
-                
-                doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, itemName);
-            }
-            
-            doReturn(configs).when(configMngr).findByMso(defaultMso);
         }
         
         @Test
@@ -910,13 +892,6 @@ public class PlayerApiServiceTest {
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             doReturn(locale).when(userMngr).findLocaleByHttpRequest(req);
             NNFWrapper.setUserMngr(userMngr); // overwrite
-            
-            // make all unavoid interactions with configMngr return as null, in os=web situation
-            doReturn(new ArrayList<MsoConfig>()).when(configMngr).findByMso(defaultMso);
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.SEARCH);
-            String item = configMngr.getKeyNameByOs(defaultOS, "google");
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, item);
-            doReturn(null).when(configMngr).findByMsoAndItem(defaultMso, MsoConfig.AUDIO_BACKGROUND);
             
             // execute
             service.prepService(req, resp, true);
@@ -997,9 +972,6 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_WEB;
             req.setParameter("os", os);
-            
-            // stubs
-            makeAllConfigUnavailable();
             
             // execute
             service.prepService(req, resp, true);
@@ -1102,6 +1074,7 @@ public class PlayerApiServiceTest {
         }
         
         // TODO third part 'ad' section test case
+        
     }
     
     @RunWith(MockitoJUnitRunner.class)
