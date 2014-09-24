@@ -66,11 +66,6 @@ public class ApiContext {
     	return os;
     }
     
-    public Locale getLocale() {
-        
-        return locale;
-    }
-    
     public Mso getMso() {
     
         return mso;
