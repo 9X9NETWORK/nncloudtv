@@ -281,11 +281,6 @@ public class NnStringUtil {
     
     public static String getSharingUrl(boolean flipr, String mso, Long channelId, Long episodeId) {
         
-        if (mso == null) {
-            
-            mso = NNF.getChPrefMngr().getBrand(channelId).getValue();
-        }
-        
         String schema = "http";
         if (flipr) {
             schema = "flipr";

@@ -616,10 +616,7 @@ public class ApiUser extends ApiGeneric {
         // fbUserId
         userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_USER_ID);
         if (userPref != null) {
-            if (userPref.getValue().equals(fbUserId) == false) {
-                // remove all channels autoshare setting
-                NNF.getChPrefMngr().deleteAllChannelsFBbyUser(user);
-            } else {
+            if (userPref.getValue().equals(fbUserId) != false) {
                 // update page token
                 List<FacebookPage> pages = null;
                 FacebookResponse response = FacebookLib.populatePageList(fbUserId, accessToken);
@@ -634,10 +631,6 @@ public class ApiUser extends ApiGeneric {
                     log.warning("error type:" + error.getType());
                 } else {
                     log.warning("neither no data nor error");
-                }
-                
-                if (pages != null && pages.size() > 0) {
-                    NNF.getChPrefMngr().updateAllChannelsFBbyUser(user, pages);
                 }
             }
             userPref.setValue(fbUserId);
@@ -693,9 +686,6 @@ public class ApiUser extends ApiGeneric {
         
         NnUserPrefManager prefMngr = NNF.getPrefMngr();
         NnUserPref userPref = null;
-        
-        // remove all channels autoshare setting
-        NNF.getChPrefMngr().deleteAllChannelsFBbyUser(user);
         
         // fbUserId
         userPref = prefMngr.findByUserAndItem(user, NnUserPref.FB_USER_ID);

@@ -12,14 +12,10 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
-import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.TitleCard;
-import com.nncloudtv.web.json.facebook.FBPost;
 
 @Service
 public class NnEpisodeManager {
@@ -235,46 +231,6 @@ public class NnEpisodeManager {
         }
         
         return totalDuration;
-    }
-    
-    // hook, auto share to facebook
-    public void autoShareToFacebook(NnEpisode episode) {
-        
-        FBPost fbPost = new FBPost(NnStringUtil.revertHtml(episode.getName()), NnStringUtil.revertHtml(episode.getIntro()), episode.getImageUrl());
-        String url = NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId());
-        fbPost.setLink(url);
-        log.info("share link: " + url);
-        
-        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if (channel == null) {
-            return ;
-        }
-        
-        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
-        if (user == null) {
-            return ;
-        }
-        
-        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
-        List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
-        String facebookId, accessToken;
-        String[] parsedObj;
-        
-        fbPost.setCaption(" ");
-        
-        for (NnChannelPref pref : prefList) {
-            parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
-            if (parsedObj == null) {
-                continue;
-            }
-            facebookId = parsedObj[0];
-            accessToken = parsedObj[1];
-            fbPost.setFacebookId(facebookId);
-            fbPost.setAccessToken(accessToken);
-            
-            QueueFactory.add("/fb/postToFacebook", fbPost);
-        }
-        log.info(fbPost.toString());
     }
     
     /** adapt NnEpisode to format that CMS API required */

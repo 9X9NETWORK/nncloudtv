@@ -33,11 +33,9 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
@@ -47,7 +45,6 @@ import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
-import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.TitleCardManager;
@@ -72,299 +69,7 @@ public class ApiContent extends ApiGeneric {
         this.apiContentService = apiContentService;
     }
     
-    @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
-    public @ResponseBody
-    String facebookAutosharingDelete(HttpServletRequest req,
-            HttpServletResponse resp,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
-        
-        prefMngr.delete(prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
-        
-        return ok(resp);
-    }
-    
-    @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.POST)
-    public @ResponseBody
-    String facebookAutosharingCreate(HttpServletRequest req,
-            HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        String fbUserId = req.getParameter("userId");
-        String accessToken = req.getParameter("accessToken");
-        if (fbUserId == null || accessToken == null) {
-            
-            badRequest(resp, MISSING_PARAMETER);
-            return null;
-        }
-        
-        String[] fbUserIdList = fbUserId.split(",");
-        String[] accessTokenList = accessToken.split(",");
-        
-        if (fbUserIdList.length != accessTokenList.length) {
-            
-            badRequest(resp, INVALID_PARAMETER);
-            return null;
-        }
-        
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(verifiedUserId, brand.getId());
-        if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        NnUserPref fbUserToken = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_TOKEN);
-        if (fbUserToken == null || fbUserToken.getValue() == null) {
-            forbidden(resp);
-            return null;
-        }
-        
-        List<NnChannelPref> prefList = new ArrayList<NnChannelPref>();
-        NnChannelPrefManager chPrefMngr = NNF.getChPrefMngr();
-        
-        for (int i = 0; i < fbUserIdList.length; i++) {
-            if (accessTokenList[i].equals(fbUserToken.getValue())) { // post to facebook time line use app token
-                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, chPrefMngr.composeFacebookAutoshare(fbUserIdList[i], NNF.getConfigMngr().getFacebookInfo(MsoConfig.FACEBOOK_APPTOKEN, brand))));
-            } else {
-                prefList.add(new NnChannelPref(channel.getId(), NnChannelPref.FB_AUTOSHARE, chPrefMngr.composeFacebookAutoshare(fbUserIdList[i], accessTokenList[i])));
-            }
-        }
-        
-        chPrefMngr.delete(chPrefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
-        chPrefMngr.save(prefList);
-        
-        return ok(resp);
-    }
-    
-    @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.GET)
-    public @ResponseBody
-    List<Map<String, Object>> facebookAutosharing(HttpServletRequest req,
-            HttpServletResponse resp,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
-        List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE);
-        
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        Map<String, Object> result;
-        String[] parsedObj;
-        for (NnChannelPref pref : prefList) {
-            parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
-            if (parsedObj == null) {
-                continue;
-            }
-            result = new TreeMap<String, Object>();
-            result.put("userId", parsedObj[0]);
-            result.put("accessToken", parsedObj[1]);
-            results.add(result);
-        }
-        
-        return results;
-    }
-    
-    @RequestMapping(value = "episodes/{episodeId}/scheduledAutosharing/facebook", method = RequestMethod.GET)
-    public @ResponseBody
-    String facebookAutosharingScheduled(HttpServletRequest req,
-            HttpServletResponse resp,
-            @PathVariable("episodeId") String episodeIdStr) {
-        
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
-        if (episode == null) {
-            notFound(resp, "Episode Not Found");
-            return null;
-        }
-        
-        // mark as hook position
-        NNF.getEpisodeMngr().autoShareToFacebook(episode);
-        
-        return ok(resp);
-    }
-    
-    @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.GET)
-    public @ResponseBody
-    Map<String, Object> brandAutosharingGet(HttpServletRequest req,
-            HttpServletResponse resp,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        NnChannelPref pref = NNF.getChPrefMngr().getBrand(channel.getId());
-        Mso mso = NNF.getMsoMngr().findByName(pref.getValue());
-        String brand = pref.getValue();
-        if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
-            brand = Mso.NAME_9X9;
-        }
-        
-        Map<String, Object> result = new TreeMap<String, Object>();
-        result.put("brand", brand);
-        log.info(printExitState(now, req, "ok"));
-        return result;
-    }
-    
-    @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.PUT)
-    public @ResponseBody String brandAutosharingSet(HttpServletRequest req, HttpServletResponse resp,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
-            forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
-        }
-        
-        // brand
-        String brand = req.getParameter("brand");
-        if (brand == null) {
-            badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
-        }
-        Mso mso = NNF.getMsoMngr().findByName(brand);
-        if (mso == null) {
-            badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
-        }
-        if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
-            badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
-        }
-        
-        NNF.getChPrefMngr().setBrand(channel.getId(), mso);
-        
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
-    }
-    
+    // TODO: rewrite
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
     public @ResponseBody
     List<Map<String, Object>> validBrandsAutosharingGet(HttpServletRequest req,
@@ -1705,15 +1410,11 @@ public class ApiContent extends ApiGeneric {
             episode.setStorageId(storageId);
         }
         
-        boolean autoShare = false;
         // isPublic
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
             Boolean isPublic = Boolean.valueOf(isPublicStr);
             if (isPublic != null) {
-                if (episode.isPublic() == false && isPublic == true) {
-                    autoShare = true;
-                }
                 episode.setPublic(isPublic);
             }
         }
@@ -1757,12 +1458,6 @@ public class ApiContent extends ApiGeneric {
         
         episode.setName(NnStringUtil.revertHtml(episode.getName()));
         episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
-        
-        // mark as hook position
-        if (autoShare == true) {
-            episodeMngr.autoShareToFacebook(episode);
-            channelMngr.renewChannelUpdateDate(episode.getChannelId());
-        }
         
         if (dirty) {
             QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
@@ -1893,16 +1588,12 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        boolean autoShare = false;
         // isPublic
         episode.setPublic(false); // default is draft
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
             Boolean isPublic = Boolean.valueOf(isPublicStr);
             if (isPublic != null) {
-                if (isPublic == true) {
-                    autoShare = true;
-                }
                 episode.setPublic(isPublic);
             }
         }
@@ -1941,12 +1632,6 @@ public class ApiContent extends ApiGeneric {
         
         channel.setCntEpisode(channelMngr.calcuateEpisodeCount(channel));
         channelMngr.save(channel);
-        
-        // mark as hook position 
-        if (autoShare == true) {
-            episodeMngr.autoShareToFacebook(episode);
-            channelMngr.renewChannelUpdateDate(channelId);
-        }
         
         if (dirty) {
             QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
