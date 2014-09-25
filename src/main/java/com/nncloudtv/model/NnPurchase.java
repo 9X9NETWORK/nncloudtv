@@ -55,6 +55,7 @@ public class NnPurchase {
         this.itemId = item.getId();
         this.userIdStr = user.getIdStr();
         this.status = ACTIVE;
+        this.verified = false;
     }
     
     public long getId() {
