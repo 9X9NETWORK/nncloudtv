@@ -19,6 +19,8 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.BrandInfo;
 
@@ -730,5 +732,16 @@ public class MsoManager {
             return null;
         }
         return output;
+    }
+    
+    public Mso findByPurchase(NnPurchase purchase) {
+        
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        if (item != null) {
+            
+            return NNF.getMsoMngr().findById(item.getMsoId());
+        }
+        
+        return null;
     }
 }

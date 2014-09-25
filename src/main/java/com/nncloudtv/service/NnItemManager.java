@@ -28,4 +28,9 @@ public class NnItemManager {
         
         return dao.findOne(mso.getId(), platform, channel.getId());
     }
+    
+    public NnItem findById(long id) {
+        
+        return dao.findById(id);
+    }
 }

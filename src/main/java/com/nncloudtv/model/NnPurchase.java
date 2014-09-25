@@ -54,6 +54,7 @@ public class NnPurchase {
         this.purchaseToken = purchaseToken;
         this.itemId = item.getId();
         this.userIdStr = user.getIdStr();
+        this.status = ACTIVE;
     }
     
     public long getId() {
@@ -109,8 +110,24 @@ public class NnPurchase {
     public void setStatus(short status) {
         this.status = status;
     }
-
+    
     public String getSubscriptionIdRef() {
         return subscriptionIdRef;
+    }
+    
+    public boolean isVerified() {
+        return verified;
+    }
+    
+    public void setVerified(boolean verified) {
+        this.verified = verified;
+    }
+    
+    public Date getExpireDate() {
+        return expireDate;
+    }
+    
+    public void setExpireDate(Date expireDate) {
+        this.expireDate = expireDate;
     }
 }

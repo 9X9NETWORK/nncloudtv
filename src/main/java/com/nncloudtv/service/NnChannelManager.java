@@ -1026,7 +1026,7 @@ public class NnChannelManager {
             paidChannelRef = "UNAVAILABLE";
             if (ctx != null) {
                 NnItem item = NNF.getItemMngr().findOne(ctx.getMso(), ctx.getOs(), channel);
-                if (item != null) {
+                if (item != null && item.getStatus() == NnItem.ACTIVE) {
                     log.info("found item");
                     if (item.getProductIdRef() != null) {
                         paidChannelRef = item.getProductIdRef();

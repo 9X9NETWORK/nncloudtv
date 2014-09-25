@@ -14,6 +14,8 @@ import com.google.api.services.androidpublisher.AndroidPublisher.Builder;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions.Get;
+import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.service.MsoConfigManager;
 
@@ -23,7 +25,7 @@ public class GooglePlayLib {
     
     static final String SERVICE_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
     
-    public static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
+    private static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
         
         return new GoogleCredential
                        .Builder()
@@ -35,37 +37,33 @@ public class GooglePlayLib {
                        .build();
     }
     
-    public static AndroidPublisher getAndroidPublisher() throws GeneralSecurityException, IOException {
+    private static AndroidPublisher getAndroidPublisher(Mso mso) throws GeneralSecurityException, IOException {
         
         return new Builder(GoogleNetHttpTransport.newTrustedTransport(),
                            JacksonFactory.getDefaultInstance(),
                            getGoogleCredential())
-                       .setApplicationName(MsoConfigManager.getGooglePlayAppName())
+                       .setApplicationName(MsoConfigManager.getGooglePlayAppName(mso))
                        .build();
     }
     
-    public static boolean verifyPurcaseSubscription(NnPurchase purchase) {
+    public static SubscriptionPurchase getSubscriptionPurchase(NnPurchase purchase) throws GeneralSecurityException, IOException {
         
-        boolean verified = false;
+        if (purchase == null) { return null; }
         
-        try {
-            AndroidPublisher publisher = getAndroidPublisher();
-            
-            Purchases purchases = publisher.purchases();
-            Subscriptions subscriptions = purchases.subscriptions();
-            Get request = subscriptions.get(MsoConfigManager.getGooglePlayPackageName(),
-                                            purchase.getSubscriptionIdRef(),
-                                            purchase.getPurchaseToken());
-            if (request.execute() != null) {
-                verified = true;
-            }
-        } catch (GeneralSecurityException e) {
-            log.warning(e.getMessage());
-        } catch (IOException e) {
-            log.warning(e.getMessage());
-        }
+        Mso mso = NNF.getMsoMngr().findByPurchase(purchase);
+        String subscriptionIdRef = purchase.getSubscriptionIdRef();
+        String purchaseToken = purchase.getPurchaseToken();
+        String packageName = MsoConfigManager.getGooglePlayPackageName(mso);
         
-        return verified;
+        log.info("packageName = " + packageName);
+        log.info("subscriptionId = " + subscriptionIdRef);
+        log.info("purchaseToken = " + purchaseToken);
+        
+        AndroidPublisher publisher = getAndroidPublisher(mso);
+        Purchases purchases = publisher.purchases();
+        Subscriptions subscriptions = purchases.subscriptions();
+        Get request = subscriptions.get(packageName, subscriptionIdRef, purchaseToken);
+        
+        return request.execute();
     }
-    
 }

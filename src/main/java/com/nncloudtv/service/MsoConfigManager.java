@@ -56,11 +56,27 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_GOOGLEPLAY, "pem_file_path");
     }
     
-    public static String getGooglePlayPackageName() {
+    public static String getGooglePlayPackageName(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.PACKAGE_NAME);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
         return getProperty(PROPERTIES_GOOGLEPLAY, "package_name");
     }
     
-    public static String getGooglePlayAppName() {
+    public static String getGooglePlayAppName(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_NAME);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
         return getProperty(PROPERTIES_GOOGLEPLAY, "app_name");
     }
     

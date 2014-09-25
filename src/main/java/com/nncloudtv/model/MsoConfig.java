@@ -94,6 +94,10 @@ public class MsoConfig implements Serializable  {
     public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
     public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
     
+    // In App Purchase configurations
+    public static String APP_NAME     = "app-name";
+    public static String PACKAGE_NAME = "package-name";
+    
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;
     
