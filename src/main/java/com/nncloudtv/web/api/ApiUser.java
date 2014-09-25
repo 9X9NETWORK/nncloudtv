@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +27,7 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
-import com.nncloudtv.service.ApiUserService;
+import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
@@ -43,14 +42,6 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 public class ApiUser extends ApiGeneric {
 
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
-    
-    private ApiUserService apiUserService;
-    
-    @Autowired
-    public ApiUser(ApiUserService apiUserService) {
-        
-        this.apiUserService = apiUserService;
-    }
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
     public @ResponseBody
@@ -464,11 +455,10 @@ public class ApiUser extends ApiGeneric {
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            // TODO: rewrite
-            //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
-            //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+            NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(user);
+            if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
                 status = evaluateShort(statusStr);
-            //}
+            }
         }
         
         // contentType
@@ -484,21 +474,67 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        NnChannel savedChannel = apiUserService.userChannelCreate(user, name, intro, imageUrl, lang, isPublic, sphere, tag,
-                categoryId, req.getParameter("autoSync"), sourceUrl, sorting, status, contentType);
-        if (savedChannel == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
+        NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL);
+        channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
+        channel.setPublic(true); // default : true
+        channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
+        channel.setPoolType(NnChannel.POOL_BASE);
+        channel.setUserIdStr(user.getShard(), user.getId());
+        channel.setLang(LangTable.LANG_EN); // default : en
+        channel.setSphere(LangTable.LANG_EN); // default : en
+        channel.setSeq((short) 0);
+        
+        if (intro != null) {
+            channel.setIntro(intro);
+        }
+        if (imageUrl != null) {
+            channel.setImageUrl(imageUrl);
+        }
+        if (lang != null) {
+            channel.setLang(lang);
+        }
+        if (isPublic != null) {
+            channel.setPublic(isPublic);
+        }
+        if (sphere != null) {
+            channel.setSphere(sphere);
+        }
+        if (tag != null) {
+            channel.setTag(tag);
+        }
+        if (sourceUrl != null) {
+            channel.setSourceUrl(sourceUrl);
+        }
+        if (sorting != null) {
+            channel.setSorting(sorting);
+        }
+        if (status != null) {
+            channel.setStatus(status);
+        }
+        if (contentType != null) {
+            channel.setContentType(contentType);
+        }
+        
+        channel = NNF.getChannelMngr().save(channel);
+        
+        NNF.getChannelMngr().reorderUserChannels(user);
+        
+        if (categoryId != null) {
+            NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
+        }
+        
+        String autoSync = req.getParameter("autoSync");
+        if (autoSync != null) {
+            NNF.getChPrefMngr().setAutoSync(channel.getId(), autoSync);
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        channelMngr.populateCategoryId(savedChannel);
-        channelMngr.populateAutoSync(savedChannel);
-        channelMngr.normalize(savedChannel);
+        channelMngr.populateCategoryId(channel);
+        channelMngr.populateAutoSync(channel);
+        channelMngr.normalize(channel);
         
         log.info(printExitState(now, req, "ok"));
-        return savedChannel;
+        return channel;
     }
     
     @RequestMapping(value = "users/{userId}/channels/{channelId}", method = RequestMethod.DELETE)
