@@ -1862,6 +1862,15 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
+        // duration
+        String durationStr = req.getParameter("duration");
+        if (durationStr != null) {
+            Integer duration = evaluateInt(durationStr);
+            if (duration != null && duration >= 0) {
+                episode.setDuration(duration);
+            }
+        }
+        
         // publishDate
         String publishDateStr = req.getParameter("publishDate");
         if (publishDateStr != null) {
