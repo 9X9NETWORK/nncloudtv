@@ -24,14 +24,14 @@ public class NnUserChannelSortingManager {
             existed.setSort(sorting.getSort());
         }
         existed.setUpdateDate(now);
-        return sortingDao.save(user, existed);        
+        return sortingDao.save(user, existed);
     }        
     
-    public NnUserChannelSorting findByUserAndChannel(NnUser user, long channelId) {        
+    public NnUserChannelSorting findByUserAndChannel(NnUser user, long channelId) {
         return sortingDao.findByUserAndChannel(user, channelId);
     }
     
-    public List<NnUserChannelSorting> findByUser(NnUser user) {        
+    public List<NnUserChannelSorting> findByUser(NnUser user) {
         return sortingDao.findByUser(user);
     }
     

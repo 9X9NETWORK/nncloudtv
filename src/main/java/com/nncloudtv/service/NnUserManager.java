@@ -40,7 +40,6 @@ public class NnUserManager {
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
     
     private NnUserDao dao = NNF.getUserDao();
-    public static short MSO_DEFAULT = 1;
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {

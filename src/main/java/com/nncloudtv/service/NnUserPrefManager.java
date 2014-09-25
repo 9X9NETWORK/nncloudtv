@@ -25,12 +25,12 @@ public class NnUserPrefManager {
         pref.setUpdateDate(now);
         return dao.save(user, pref);
     }
-
+    
     public List<NnUserPref> findByUser(NnUser user) {
         return dao.findByUser(user);
     }
-
-    public NnUserPref findByUserAndItem(NnUser user, String item) {        
+    
+    public NnUserPref findByUserAndItem(NnUser user, String item) {
         return dao.findByUserAndItem(user, item);
     }
     
