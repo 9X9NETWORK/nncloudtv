@@ -135,7 +135,7 @@ public class NnEpisodeManager {
                         } else if (pubDate2 == null) {
                             return 1;
                         } else {
-                            return pubDate1.compareTo(pubDate2);
+                            return pubDate2.compareTo(pubDate1);
                         }
                     } else {
                         
@@ -148,7 +148,7 @@ public class NnEpisodeManager {
                         } else if (schedule2 == null) {
                             return 1;
                         } else {
-                            return schedule1.compareTo(schedule2);
+                            return schedule2.compareTo(schedule1);
                         }
                     }
                 }
