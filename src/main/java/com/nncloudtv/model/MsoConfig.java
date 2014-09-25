@@ -70,6 +70,7 @@ public class MsoConfig implements Serializable  {
     public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
     public static String SEARCH                = "search"; //all, store, off, youtube
+    public static String CMS_LOGO              = "cms-logo"; // private label cms logo
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";

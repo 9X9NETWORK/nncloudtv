@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,10 +30,9 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
-import com.nncloudtv.service.ApiMsoService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
@@ -46,19 +44,6 @@ import com.nncloudtv.web.json.cms.Set;
 public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
-    
-    private SetService setService;
-    private ApiMsoService apiMsoService;
-    private CategoryService categoryService;
-    
-    @Autowired
-    public ApiMso(NnUserProfileManager userProfileMngr, SetService setService,
-            ApiMsoService apiMsoService, CategoryService categoryService) {
-        
-        this.setService = setService;
-        this.apiMsoService = apiMsoService;
-        this.categoryService = categoryService;
-    }
     
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.PUT)
     public @ResponseBody MsoPromotion msoPromotionUpdate(HttpServletRequest req,
@@ -296,9 +281,9 @@ public class ApiMso extends ApiGeneric {
         List<Set> results;
         
         if (lang != null) {
-            results = setService.findByMsoIdAndLang(mso.getId(), lang);
+            results = NNF.getSetService().findByMsoIdAndLang(mso.getId(), lang);
         } else {
-            results = setService.findByMsoId(mso.getId());
+            results = NNF.getSetService().findByMsoId(mso.getId());
         }
         
         for (Set result : results) {
@@ -422,7 +407,7 @@ public class ApiMso extends ApiGeneric {
             set.setAndroidBannerUrl(androidBannerUrl);
         }
         
-        set = setService.create(set);
+        set = NNF.getSetService().create(set);
         set = SetService.normalize(set);
         
         log.info(printExitState(now, req, "ok"));
@@ -444,7 +429,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -628,7 +613,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -667,7 +652,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -686,11 +671,9 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<NnChannel> results = apiMsoService.setChannels(set.getId());
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
-            return new ArrayList<NnChannel>();
-        }
+        List<NnChannel> results = NNF.getSetService().getChannels(set.getId());
+        results = NNF.getChannelMngr().normalize(results);
+        
         log.info(printExitState(now, req, "ok"));
         return results;
     }
@@ -710,7 +693,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -795,7 +778,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -851,7 +834,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set set = setService.findById(setId);
+        Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
@@ -863,41 +846,49 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+        } else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
         }
         
         String channelIdsStr = req.getParameter("channels");
-        List<Long> channelIdList = new ArrayList<Long>();
-        if (channelIdsStr == null || channelIdsStr.isEmpty()) {
-            channelIdList = null;
-        } else {
-            
-            String[] channelIdStrList = channelIdsStr.split(",");
-            for (String channelIdStr : channelIdStrList) {
-            
-                Long channelId = null;
-                try {
-                    channelId = Long.valueOf(channelIdStr);
-                } catch(Exception e) {
-                    badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
-                    return null;
-                }
-                channelIdList.add(channelId);
-            }
-            
-            if (setService.isContainAllChannels(set.getId(), channelIdList) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
+        if (channelIdsStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
         }
         
-        apiMsoService.setChannelsSorting(set.getId(), channelIdList);
+        List<Long> channelIdList = new ArrayList<Long>();
+        String[] channelIdStrArr = channelIdsStr.split(",");
+        for (String channelIdStr : channelIdStrArr) {
+            
+            Long channelId = null;
+            try {
+                channelId = Long.valueOf(channelIdStr);
+            } catch (NumberFormatException e) {
+            }
+            if (channelId != null) {
+                channelIdList.add(channelId);
+            }
+        }
+        List<SysTagMap> origList = NNF.getSysTagMapMngr().findBySysTagId(set.getId());
+        if (channelIdList.size() != origList.size()) {
+            log.info("list size is not equal");
+            badRequest(resp, INVALID_PARAMETER);
+            return null;
+        }
+        for (SysTagMap map : origList) {
+            
+            int seq = channelIdList.indexOf(map.getChannelId());
+            if (seq < 0) {
+                log.info("list item is not match");
+                badRequest(resp, INVALID_PARAMETER);
+                return null;
+            }
+            map.setSeq((short) (seq + 1));
+        }
+        NNF.getSysTagMapMngr().save(origList);
+        
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -911,14 +902,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -966,9 +950,9 @@ public class ApiMso extends ApiGeneric {
         List<Long> results = new ArrayList<Long>();
         if (channelIds != null) {
             List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
-            results = NNF.getMsoMngr().getPlayableChannels(channels, msoId);
+            results = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
         } else if (categoryId != null) {
-            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, msoId);
+            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
         }        
         log.info(printExitState(now, req, "ok"));
         return results;
@@ -982,14 +966,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1029,8 +1006,7 @@ public class ApiMso extends ApiGeneric {
                 channelIds.add(channelId);
             }
         }
-        
-        apiMsoService.storeChannelRemove(mso.getId(), channelIds);
+        NNF.getStoreListingMngr().addChannelsToBlackList(channelIds, mso.getId());
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -1044,14 +1020,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1092,7 +1061,7 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        apiMsoService.storeChannelAdd(mso.getId(), channelIds);
+        NNF.getStoreListingMngr().removeChannelsFromBlackList(channelIds, mso.getId());
         log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
@@ -1112,7 +1081,25 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Mso result = apiMsoService.mso(mso.getId());
+        mso.setMaxSets(MsoConfig.MAXSETS_DEFAULT);
+        MsoConfig maxSets = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
+            try {
+                mso.setMaxSets(Short.valueOf(maxSets.getValue()));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
+        mso.setMaxChPerSet(MsoConfig.MAXCHPERSET_DEFAULT);
+        MsoConfig maxChPerSet = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
+            try {
+                mso.setMaxChPerSet(Short.valueOf(maxChPerSet.getValue()));
+            } catch (NumberFormatException e) {
+            }
+        }
+        
+        MsoManager.normalize(mso);
         
         // check if push notification was enabled
         boolean apnsEnabled = true;
@@ -1125,11 +1112,17 @@ public class ApiMso extends ApiGeneric {
         if (p12.exists() == false) {
             apnsEnabled = false;
         }
-        result.setGcmEnabled(gcmEnabled);
-        result.setApnsEnabled(apnsEnabled);
+        mso.setGcmEnabled(gcmEnabled);
+        mso.setApnsEnabled(apnsEnabled);
+        
+        // cms logo
+        MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
+        if (config != null) {
+            mso.setCmsLogo(config.getValue());
+        }
         
         log.info(printExitState(now, req, "ok"));
-        return result;
+        return mso;
     }
     
     @RequestMapping(value = "mso/{msoId}", method = RequestMethod.PUT)
@@ -1195,14 +1188,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1232,7 +1218,7 @@ public class ApiMso extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        List<Category> results = apiMsoService.msoCategories(mso.getId());
+        List<Category> results = NNF.getCategoryService().findByMsoId(mso.getId());
         
         for (Category result : results) {
             if (lang.equals(LangTable.LANG_ZH)) {
@@ -1257,14 +1243,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, "Mso Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1321,24 +1300,24 @@ public class ApiMso extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        Category result = apiMsoService.msoCategoryCreate(mso.getId(), seq, zhName, enName);
-        if (result == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
-        }
+        Category category = new Category();
+        category.setMsoId(mso.getId());
+        category.setSeq(seq);
+        category.setZhName(zhName);
+        category.setEnName(enName);
         
         if (lang.equals(LangTable.LANG_ZH)) {
-            result.setLang(LangTable.LANG_ZH);
-            result.setName(result.getZhName());
+            category.setLang(LangTable.LANG_ZH);
+            category.setName(category.getZhName());
         } else if (lang.equals(LangTable.LANG_EN)) {
-            result.setLang(LangTable.LANG_EN);
-            result.setName(result.getEnName());
+            category.setLang(LangTable.LANG_EN);
+            category.setName(category.getEnName());
         }
-        result = CategoryService.normalize(result);
+        category = CategoryService.normalize(category);
+        category = NNF.getCategoryService().create(category);
         
         log.info(printExitState(now, req, "ok"));
-        return result;
+        return category;
     }
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.GET)
@@ -1356,7 +1335,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1386,24 +1365,17 @@ public class ApiMso extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        Category result = apiMsoService.category(category.getId());
-        if (result == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
-        }
-        
         if (lang.equals(LangTable.LANG_ZH)) {
-            result.setLang(LangTable.LANG_ZH);
-            result.setName(result.getZhName());
+            category.setLang(LangTable.LANG_ZH);
+            category.setName(category.getZhName());
         } else if (lang.equals(LangTable.LANG_EN)) {
-            result.setLang(LangTable.LANG_EN);
-            result.setName(result.getEnName());
+            category.setLang(LangTable.LANG_EN);
+            category.setName(category.getEnName());
         }
-        result = CategoryService.normalize(result);
+        category = CategoryService.normalize(category);
         
         log.info(printExitState(now, req, "ok"));
-        return result;
+        return category;
     }
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.PUT)
@@ -1421,7 +1393,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1446,6 +1418,7 @@ public class ApiMso extends ApiGeneric {
         if (seqStr != null) {
             try {
                 seq = Short.valueOf(seqStr);
+                category.setSeq(seq);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
@@ -1457,12 +1430,14 @@ public class ApiMso extends ApiGeneric {
         String zhName = req.getParameter("zhName");
         if (zhName != null) {
             zhName = NnStringUtil.htmlSafeAndTruncated(zhName);
+            category.setZhName(zhName);
         }
         
         // enName
         String enName = req.getParameter("enName");
         if (enName != null) {
             enName = NnStringUtil.htmlSafeAndTruncated(enName);
+            category.setEnName(enName);
         }
         
         // lang
@@ -1476,24 +1451,20 @@ public class ApiMso extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        Category result = apiMsoService.categoryUpdate(category.getId(), seq, zhName, enName);
-        if (result == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
-        }
+        category = NNF.getCategoryService().updateCntChannel(category);
+        category = NNF.getCategoryService().save(category);
         
         if (lang.equals(LangTable.LANG_ZH)) {
-            result.setLang(LangTable.LANG_ZH);
-            result.setName(result.getZhName());
+            category.setLang(LangTable.LANG_ZH);
+            category.setName(category.getZhName());
         } else if (lang.equals(LangTable.LANG_EN)) {
-            result.setLang(LangTable.LANG_EN);
-            result.setName(result.getEnName());
+            category.setLang(LangTable.LANG_EN);
+            category.setName(category.getEnName());
         }
-        result = CategoryService.normalize(result);
+        category = CategoryService.normalize(category);
         
         log.info(printExitState(now, req, "ok"));
-        return result;
+        return category;
     }
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.DELETE)
@@ -1511,7 +1482,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1549,7 +1520,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1568,7 +1539,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<NnChannel> results = categoryService.getChannels(categoryId);
+        List<NnChannel> results = NNF.getCategoryService().getChannels(categoryId);
         NNF.getChannelMngr().normalize(results);
         log.info(printExitState(now, req, "ok"));
         return results;
@@ -1589,7 +1560,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
@@ -1666,7 +1637,7 @@ public class ApiMso extends ApiGeneric {
         if (channelId != null) {
             NNF.getSysTagMngr().addChannel(categoryId, channelId, alwaysOnTop, false, seq);
         } else if (channelIds != null) {
-            categoryService.addChannels(categoryId, channelIds);
+            NNF.getCategoryService().addChannels(categoryId, channelIds);
         }
         
         log.info(printExitState(now, req, "ok"));
@@ -1688,7 +1659,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Category category = categoryService.findById(categoryId);
+        Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
             log.info(printExitState(now, req, "404"));
