@@ -188,6 +188,8 @@ public class ApiContentService {
             
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                 results = episodeMngr.list(page, rows, "seq", "desc", "channelId == " + channelId);
+            } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+                results = episodeMngr.list(page, rows, "isPublic asc,", "publishDate desc, scheduleDate desc", "channelId == " + channelId);
             } else {
                 results = episodeMngr.list(page, rows, "seq", "asc", "channelId == " + channelId);
             }
@@ -195,10 +197,11 @@ public class ApiContentService {
             results = episodeMngr.findByChannelId(channelId);
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                 Collections.sort(results, NnEpisodeManager.getComparator("reverse"));
+            } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+                Collections.sort(results, NnEpisodeManager.getComparator("timedLinear"));
             } else {
                 Collections.sort(results, NnEpisodeManager.getComparator("seq"));
             }
-            // TODO: SORT_TIMED_LINEAR
         }
         
         episodeMngr.normalize(results);

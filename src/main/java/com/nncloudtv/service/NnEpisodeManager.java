@@ -110,7 +110,50 @@ public class NnEpisodeManager {
     
     public static Comparator<NnEpisode> getComparator(String sort) {
         
-        if (sort.equals("publishDate")) {
+        if (sort == null) {
+            sort = "default";
+        }
+        
+        if (sort.equals("timedLinear")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode ep1, NnEpisode ep2) {
+                    
+                    if (ep1.isPublic() == false && ep2.isPublic() == true) {
+                        return -1;
+                    } else if (ep1.isPublic() == true && ep2.isPublic() == false) {
+                        return 1;
+                    } else if (ep1.isPublic() == true && ep2.isPublic() == true) {
+                        
+                        Date pubDate1 = ep1.getPublishDate();
+                        Date pubDate2 = ep2.getPublishDate();
+                        if (pubDate1 == null && pubDate2 == null) {
+                            return 0;
+                        } else if (pubDate1 == null) {
+                            return -1;
+                        } else if (pubDate2 == null) {
+                            return 1;
+                        } else {
+                            return pubDate1.compareTo(pubDate2);
+                        }
+                    } else {
+                        
+                        Date schedule1 = ep1.getScheduleDate();
+                        Date schedule2 = ep2.getScheduleDate();
+                        if (schedule1 == null && schedule2 == null) {
+                            return 0;
+                        } else if (schedule1 == null) {
+                            return -1;
+                        } else if (schedule2 == null) {
+                            return 1;
+                        } else {
+                            return schedule1.compareTo(schedule2);
+                        }
+                    }
+                }
+            };
+        } else if (sort.equals("publishDate")) {
             
             return new Comparator<NnEpisode>() {
                 
