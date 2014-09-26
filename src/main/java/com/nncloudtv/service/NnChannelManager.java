@@ -854,7 +854,7 @@ public class NnChannelManager {
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
             if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)  {
-                output += this.composeEachChannelLineup(c, null) + "\n";
+                output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
