@@ -25,7 +25,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnUser.class);
-            query.setFilter("userIdStr == userIdStrParam && status = " + NnPurchase.ACTIVE);
+            query.setFilter("userIdStr == userIdStrParam && status == " + NnPurchase.ACTIVE);
             query.declareParameters("String userIdStrParam");
             query.setOrdering("updateDate desc");
             @SuppressWarnings("unchecked")
