@@ -3425,7 +3425,7 @@ public class PlayerApiService {
     
     public Object addPurchase(String userToken, String productIdRef, String subscriptionIdRef, String purchaseToken, HttpServletRequest req) {
         
-        if (purchaseToken == null) {
+        if (purchaseToken == null || productIdRef == null) {
             return assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         
@@ -3453,11 +3453,13 @@ public class PlayerApiService {
             NNF.getPurchaseMngr().updatePurchase(purchase);
         }
         
-        String result = "";
+        String purchaseStr = "";
         String[] obj = {
                 String.valueOf(item.getChannelId())
         };
-        result += NnStringUtil.getDelimitedStr(obj) + "\n";
+        purchaseStr += NnStringUtil.getDelimitedStr(obj) + "\n";
+        
+        String[] result = { purchaseStr };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
@@ -3484,7 +3486,7 @@ public class PlayerApiService {
             log.info("platform = appstore");
             platform = NnItem.APPSTORE;
         }
-        String result = "";
+        String purchasesStr = "";
         List<NnPurchase> purchases = NNF.getPurchaseMngr().findByUser(user);
         for (NnPurchase purchase : purchases) {
             
@@ -3497,9 +3499,11 @@ public class PlayerApiService {
                 String[] obj = {
                         String.valueOf(item.getChannelId())
                 };
-                result += NnStringUtil.getDelimitedStr(obj) + "\n";
+                purchasesStr += NnStringUtil.getDelimitedStr(obj) + "\n";
             }
         }
+        
+        String[] result = { purchasesStr };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
