@@ -56,7 +56,9 @@ import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnGuest;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnProgram;
+import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserChannelSorting;
 import com.nncloudtv.model.NnUserPref;
@@ -106,6 +108,12 @@ public class PlayerApiService {
     private short  format  = FORMAT_PLAIN;
     private ApiContext context = null;
     HttpServletResponse resp;
+    
+    @Override
+    protected void finalize() throws Throwable {
+        
+        log.info(this.getClass().getName() + " is recycled");
+    }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
         
@@ -3358,7 +3366,7 @@ public class PlayerApiService {
         MsoConfig cfKeypairConfig = configMngr.findByMsoAndItem(mso, MsoConfig.CF_KEY_PAIR_ID);
         if (cfKeypairConfig == null)
         	return this.assembleMsgs(NnStatusCode.DATA_ERROR, null);
-        String keypair = cfKeypairConfig.getValue();	
+        String keypair = cfKeypairConfig.getValue();
         String cfDomainStr = cfSubomainConfig.getValue() + ".cloudfront.net";
         String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
@@ -3415,9 +3423,84 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    @Override
-    protected void finalize() throws Throwable {
+    public Object addPurchase(String userToken, String productIdRef, String subscriptionIdRef, String purchaseToken, HttpServletRequest req) {
         
-        log.info(this.getClass().getName() + " is recycled");
+        if (purchaseToken == null) {
+            return assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+        }
+        
+        if (userToken == null) {
+            userToken = CookieHelper.getCookie(req, CookieHelper.USER);
+            if (userToken == null) {
+                return assembleMsgs(NnStatusCode.USER_INVALID, null);
+            }
+        }
+        
+        NnUser user = NNF.getUserMngr().findByToken(userToken, mso.getId());
+        if (user == null) {
+            return assembleMsgs(NnStatusCode.USER_INVALID, null);
+        }
+        
+        NnItem item = NNF.getItemMngr().findByProductIdRef(productIdRef);
+        if (item == null) {
+            log.warning("invalid productIdRef = " + productIdRef);
+            return assembleMsgs(NnStatusCode.INPUT_ERROR, null);
+        }
+        
+        NnPurchase purchase = new NnPurchase(item, user, purchaseToken, subscriptionIdRef);
+        
+        if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
+            NNF.getPurchaseMngr().updatePurchase(purchase);
+        }
+        
+        String result = "";
+        String[] obj = {
+                String.valueOf(item.getChannelId())
+        };
+        result += NnStringUtil.getDelimitedStr(obj) + "\n";
+        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+    
+    public Object getPurchases(String userToken, HttpServletRequest req) {
+        
+        if (userToken == null) {
+            userToken = CookieHelper.getCookie(req, CookieHelper.USER);
+            if (userToken == null) {
+                return assembleMsgs(NnStatusCode.USER_INVALID, null);
+            }
+        }
+        
+        NnUser user = NNF.getUserMngr().findByToken(userToken, mso.getId());
+        if (user == null) {
+            return assembleMsgs(NnStatusCode.USER_INVALID, null);
+        }
+        
+        short platform = NnItem.UNKNOWN;
+        if (context.getOs().equals(PlayerService.OS_ANDROID)) {
+            log.info("platform = googleplay");
+            platform = NnItem.GOOGLEPLAY;
+        } else if (context.getOs().equals(PlayerService.OS_IOS)) {
+            log.info("platform = appstore");
+            platform = NnItem.APPSTORE;
+        }
+        String result = "";
+        List<NnPurchase> purchases = NNF.getPurchaseMngr().findByUser(user);
+        for (NnPurchase purchase : purchases) {
+            
+            NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+            if (item == null) {
+                log.warning("item not found, itemId = " + purchase.getItemId());
+                continue;
+            }
+            if (item.getBillingPlatform() == platform && item.getMsoId() == mso.getId()) {
+                String[] obj = {
+                        String.valueOf(item.getChannelId())
+                };
+                result += NnStringUtil.getDelimitedStr(obj) + "\n";
+            }
+        }
+        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
 }

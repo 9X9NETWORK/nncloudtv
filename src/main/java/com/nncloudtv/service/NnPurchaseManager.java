@@ -3,6 +3,7 @@ package com.nncloudtv.service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnPurchase;
+import com.nncloudtv.model.NnUser;
 
 @Service
 public class NnPurchaseManager {
@@ -20,6 +22,15 @@ public class NnPurchaseManager {
     protected static final Logger log = Logger.getLogger(NnPurchaseManager.class.getName());
     
     protected NnPurchaseDao dao = NNF.getPurchaseDao();
+    
+    public List<NnPurchase> findByUser(NnUser user) {
+        
+        if (user == null) {
+            return null;
+        }
+        
+        return dao.findByUserIdStr(user.getIdStr());
+    }
     
     public void updatePurchase(NnPurchase purchase) {
         

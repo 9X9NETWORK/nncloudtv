@@ -33,4 +33,9 @@ public class NnItemManager {
         
         return dao.findById(id);
     }
+    
+    public NnItem findByProductIdRef(String productIdRef) {
+        
+        return dao.findByProductIdRef(productIdRef);
+    }
 }

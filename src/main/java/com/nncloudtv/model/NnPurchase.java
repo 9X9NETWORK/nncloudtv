@@ -49,13 +49,14 @@ public class NnPurchase {
     public static final short ACTIVE   = 0;
     public static final short INACTIVE = 1;
     
-    public NnPurchase(NnItem item, NnUser user, String purchaseToken) {
+    public NnPurchase(NnItem item, NnUser user, String purchaseToken, String subscriptionIdRef) {
         
         this.purchaseToken = purchaseToken;
         this.itemId = item.getId();
         this.userIdStr = user.getIdStr();
         this.status = ACTIVE;
         this.verified = false;
+        this.subscriptionIdRef = subscriptionIdRef;
     }
     
     public long getId() {
@@ -114,6 +115,10 @@ public class NnPurchase {
     
     public String getSubscriptionIdRef() {
         return subscriptionIdRef;
+    }
+    
+    public void setSubscriptionIdRef(String subscriptionIdRef) {
+        this.subscriptionIdRef = subscriptionIdRef;
     }
     
     public boolean isVerified() {

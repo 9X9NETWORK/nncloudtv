@@ -1022,16 +1022,14 @@ public class NnChannelManager {
         }
         String paidChannelRef = "";
         if (channel.isPaidChannel()) {
-            log.info("paid channel");
+            log.info("paid channel, channelId = " + channel.getId());
             paidChannelRef = "UNAVAILABLE";
-            if (ctx != null) {
-                NnItem item = NNF.getItemMngr().findOne(ctx.getMso(), ctx.getOs(), channel);
-                if (item != null && item.getStatus() == NnItem.ACTIVE) {
-                    log.info("found item");
-                    if (item.getProductIdRef() != null) {
-                        paidChannelRef = item.getProductIdRef();
-                        log.info("productIdRef = " + paidChannelRef);
-                    }
+            NnItem item = NNF.getItemMngr().findOne(ctx.getMso(), ctx.getOs(), channel);
+            if (item != null && item.getStatus() == NnItem.ACTIVE) {
+                log.info("found item");
+                if (item.getProductIdRef() != null) {
+                    paidChannelRef = item.getProductIdRef();
+                    log.info("productIdRef = " + paidChannelRef);
                 }
             }
         }

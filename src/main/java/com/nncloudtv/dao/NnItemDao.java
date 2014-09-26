@@ -37,4 +37,24 @@ public class NnItemDao extends GenericDao<NnItem> {
         return detached;
     }
     
+    @SuppressWarnings("unchecked")
+    public NnItem findByProductIdRef(String productIdRef) {
+        
+        NnItem detached = null;
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnItem.class);
+            query.setFilter("productIdRef == productIdRefParam");
+            query.declareParameters("String productIdRefParam");
+            List<NnItem> results = (List<NnItem>) query.execute(productIdRef);
+            if (results.size() > 0) {
+                detached = pm.detachCopy(results.get(0));
+            }
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
+        return detached;
+    }
+    
 }
