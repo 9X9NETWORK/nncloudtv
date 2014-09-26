@@ -3425,9 +3425,7 @@ public class PlayerApiService {
     
     public Object addPurchase(String userToken, String productIdRef, String subscriptionIdRef, String purchaseToken, HttpServletRequest req) {
         
-        
         if (purchaseToken == null) {
-            NNF.getItemMngr().save(new NnItem(mso.getId(), 0, NnItem.GOOGLEPLAY));
             return assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         
