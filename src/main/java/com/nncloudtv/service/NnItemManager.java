@@ -1,11 +1,13 @@
 package com.nncloudtv.service;
 
+import java.util.Date;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnItemDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
@@ -37,5 +39,17 @@ public class NnItemManager {
     public NnItem findByProductIdRef(String productIdRef) {
         
         return dao.findByProductIdRef(productIdRef);
+    }
+    
+    public NnItem save(NnItem item) {
+        
+        Date now = NnDateUtil.now();
+                
+        if (item.getCreateDate() == null) {
+            item.setCreateDate(now);
+        }
+        item.setUpdateDate(now);
+        
+        return dao.save(item);
     }
 }

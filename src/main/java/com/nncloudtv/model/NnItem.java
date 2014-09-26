@@ -1,5 +1,7 @@
 package com.nncloudtv.model;
 
+import java.util.Date;
+
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
@@ -14,6 +16,12 @@ public class NnItem {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    @Persistent
+    private Date createDate;
+    
+    @Persistent
+    private Date updateDate;
     
     @Persistent
     private long msoId;
@@ -39,7 +47,15 @@ public class NnItem {
     public static final short WAIT_FOR_APPROVAL = 3;
     public static final short TERMINATED = 4;
     
-    public long getId() {
+    public NnItem(long msoId, long channelId, short billingPlatform) {
+        
+        this.msoId = msoId;
+        this.channelId = channelId;
+        this.billingPlatform = billingPlatform;
+        this.status = WAIT_FOR_APPROVAL;
+    }
+    
+	public long getId() {
         return id;
     }
     
@@ -82,6 +98,22 @@ public class NnItem {
         return status;
     }
     
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+
     public void setStatus(short status) {
         this.status = status;
     }
