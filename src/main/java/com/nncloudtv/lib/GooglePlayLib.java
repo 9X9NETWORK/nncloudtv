@@ -32,6 +32,10 @@ public class GooglePlayLib {
         String path = MsoConfigManager.getGooglePlayPemFilePath();
         log.info("read pem file from " + path);
         File pem = new File(path);
+        if (!pem.canRead()) {
+            log.severe("can not read pem file from " + path);
+            return null;
+        }
         
         builder = builder.setServiceAccountPrivateKeyFromPemFile(pem);
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
