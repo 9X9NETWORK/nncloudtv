@@ -3447,6 +3447,8 @@ public class PlayerApiService {
             return assembleMsgs(NnStatusCode.INPUT_ERROR, null);
         }
         
+        //TODO: chaeck if purchased
+        
         NnPurchase purchase = new NnPurchase(item, user, purchaseToken, subscriptionIdRef);
         
         if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {

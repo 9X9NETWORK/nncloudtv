@@ -27,14 +27,19 @@ public class GooglePlayLib {
     
     private static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
         
-        return new GoogleCredential
-                       .Builder()
-                       .setTransport(GoogleNetHttpTransport.newTrustedTransport())
-                       .setJsonFactory(JacksonFactory.getDefaultInstance())
-                       .setServiceAccountId(MsoConfigManager.getGooglePlayAccountEmail())
-                       .setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE))
-                       .setServiceAccountPrivateKeyFromPemFile(new File(MsoConfigManager.getGooglePlayPemFilePath()))
-                       .build();
+        GoogleCredential.Builder builder = new GoogleCredential.Builder();
+        
+        String path = MsoConfigManager.getGooglePlayPemFilePath();
+        log.info("read pem file from " + path);
+        File pem = new File(path);
+        
+        builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
+        builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
+        builder = builder.setServiceAccountId(MsoConfigManager.getGooglePlayAccountEmail());
+        builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
+        builder = builder.setServiceAccountPrivateKeyFromPemFile(pem);
+        
+        return builder.build();
     }
     
     private static AndroidPublisher getAndroidPublisher(Mso mso) throws GeneralSecurityException, IOException {
