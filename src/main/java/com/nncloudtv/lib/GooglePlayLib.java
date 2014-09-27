@@ -33,11 +33,11 @@ public class GooglePlayLib {
         log.info("read pem file from " + path);
         File pem = new File(path);
         
+        builder = builder.setServiceAccountPrivateKeyFromPemFile(pem);
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
         builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
         builder = builder.setServiceAccountId(MsoConfigManager.getGooglePlayAccountEmail());
         builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
-        builder = builder.setServiceAccountPrivateKeyFromPemFile(pem);
         
         return builder.build();
     }
