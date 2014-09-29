@@ -3455,7 +3455,7 @@ public class PlayerApiService {
             purchase.setStatus(NnPurchase.ACTIVE);
             purchase.setPurchaseToken(purchaseToken);
         } else {
-            purchase = new NnPurchase(item, user, purchaseToken, subscriptionIdRef);
+            purchase = new NnPurchase(item, user, purchaseToken, item.getProductIdRef());
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
@@ -3485,6 +3485,8 @@ public class PlayerApiService {
         String purchasesStr = "";
         List<NnPurchase> purchases = NNF.getPurchaseMngr().findByUser(user);
         for (NnPurchase purchase : purchases) {
+            
+            //TODO: if verified
             
             NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
             if (item == null) {

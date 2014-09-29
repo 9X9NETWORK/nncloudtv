@@ -50,12 +50,13 @@ public class NnPurchaseManager {
                 log.info("set to inactive");
                 purchase.setStatus(NnPurchase.INACTIVE);
             }
-            save(purchase);
             
         } catch (GeneralSecurityException e) {
             log.warning(e.getMessage());
         } catch (IOException e) {
             log.warning(e.getMessage());
+        } finally {
+            save(purchase);
         }
     }
     
