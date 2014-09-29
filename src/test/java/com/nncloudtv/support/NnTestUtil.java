@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
@@ -103,9 +104,13 @@ public class NnTestUtil {
     
     public static void emptyTable(PersistenceManagerFactory pmf, @SuppressWarnings("rawtypes") Class clazz) {
             
-            PersistenceManager pm = pmf.getPersistenceManager();
-            pm.newQuery(clazz).deletePersistentAll();
-            pm.close();
+        PersistenceManager pm = pmf.getPersistenceManager();
+        pm.newQuery(clazz).deletePersistentAll();
+        pm.close();
+    }
+    
+    public static PersistenceManagerFactory getPMF() {
+        return JDOHelper.getPersistenceManagerFactory("hsql.properties");
     }
 
 }

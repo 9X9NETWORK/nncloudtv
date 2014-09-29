@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -814,7 +813,7 @@ public class PlayerApiServiceTest {
             CacheFactory.isEnabled = false;
             CacheFactory.isRunning = false;
             
-            PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory("hsql.properties");
+            PersistenceManagerFactory pmf = NnTestUtil.getPMF();
             NnTestUtil.emptyTable(pmf, Mso.class);
             NnTestUtil.emptyTable(pmf, MsoConfig.class);
             
