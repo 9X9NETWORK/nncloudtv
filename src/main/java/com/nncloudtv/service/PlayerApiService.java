@@ -3448,6 +3448,7 @@ public class PlayerApiService {
         }
         
         NnPurchase purchase = NNF.getPurchaseMngr().findBySubscriptionId(subscriptionIdRef);
+        log.info("found purchase");
         if (purchase != null && purchase.getUserIdStr() != null && purchase.getUserIdStr().equals(user.getIdStr())) {
             purchase.setStatus(NnPurchase.ACTIVE);
             purchase.setPurchaseToken(purchaseToken);
