@@ -33,14 +33,16 @@ public class GooglePlayLib {
         log.info("read pem file from " + path);
         File p12 = new File(path);
         if (!p12.canRead()) {
-            log.severe("can not read pem file from " + path);
+            log.severe("can not read p12 file from " + path);
             return null;
         }
+        String accountEmail = MsoConfigManager.getGooglePlayAccountEmail();
+        log.info("google account email = " + accountEmail);
         
         builder = builder.setServiceAccountPrivateKeyFromP12File(p12);
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
         builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
-        builder = builder.setServiceAccountId(MsoConfigManager.getGooglePlayAccountEmail());
+        builder = builder.setServiceAccountId(accountEmail);
         builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
         
         return builder.build();
