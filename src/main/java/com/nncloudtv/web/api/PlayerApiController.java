@@ -3067,7 +3067,7 @@ public class PlayerApiController {
     public @ResponseBody Object addPurchase(
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="productId", required=false) String productIdRef,
-            @RequestParam(value="subsciptionId", required=false) String subscriptionIdRef,
+            @RequestParam(value="subscriptionId", required=false) String subscriptionIdRef,
             @RequestParam(value="purchaseToken", required=false) String purchaseToken,
             HttpServletRequest req,
             HttpServletResponse resp) {
