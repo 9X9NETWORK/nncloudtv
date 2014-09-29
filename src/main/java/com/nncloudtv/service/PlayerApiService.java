@@ -3458,13 +3458,9 @@ public class PlayerApiService {
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
-        if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
-            NNF.getPurchaseMngr().updatePurchase(purchase);
-        }
+        NNF.getPurchaseMngr().verifyPurchase(purchase);
         
-        String[] result = { (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) };
-        
-        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return getPurchases(userToken, req);
     }
     
     public Object getPurchases(String userToken, HttpServletRequest req) {

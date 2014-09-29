@@ -41,6 +41,14 @@ public class NnDateUtil {
         return isSameDay(date, Calendar.getInstance().getTime());
     }
     
+    public static Date yesterday() {
+        
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        
+        return cal.getTime();
+    }
+    
     public static Date tomorrow() {
         
         Calendar cal = Calendar.getInstance();

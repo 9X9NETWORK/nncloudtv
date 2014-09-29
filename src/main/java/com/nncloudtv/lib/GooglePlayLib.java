@@ -61,9 +61,8 @@ public class GooglePlayLib {
     public static SubscriptionPurchase getSubscriptionPurchase(NnPurchase purchase) throws GeneralSecurityException, IOException {
         
         if (purchase == null) { return null; }
-        
-        Mso mso = NNF.getMsoMngr().findByPurchase(purchase);
-        NnItem item = NNF.getItemMngr().findByPurchase(purchase);
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
         String purchaseToken = purchase.getPurchaseToken();
         String packageName = MsoConfigManager.getGooglePlayPackageName(mso);
         

@@ -34,26 +34,35 @@ public class NnPurchaseManager {
         return dao.findByUserIdStr(user.getIdStr());
     }
     
-    public void updatePurchase(NnPurchase purchase) {
+    public void verifyPurchase(NnPurchase purchase) {
         
         if (purchase == null) { return; }
         
-        try {
-            purchase.setVerified(false);
-            SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
-            purchase.setVerified(true);
-            purchase.setExpireDate(new Date(subscription.getExpiryTimeMillis()));
-            if (purchase.getExpireDate().before(NnDateUtil.now())) {
-                log.info("set to inactive");
-                purchase.setStatus(NnPurchase.INACTIVE);
-            }
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        
+        if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
             
-        } catch (GeneralSecurityException e) {
-            log.warning(e.getMessage());
-        } catch (IOException e) {
-            log.warning(e.getMessage());
-        } finally {
-            save(purchase);
+            try {
+                purchase.setVerified(false);
+                SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
+                purchase.setExpireDate(new Date(subscription.getExpiryTimeMillis()));
+                purchase.setVerified(true);
+                if (purchase.getExpireDate().before(NnDateUtil.now())) {
+                    purchase.setStatus(NnPurchase.INACTIVE);
+                } else {
+                    purchase.setStatus(NnPurchase.ACTIVE);
+                }
+            } catch (GeneralSecurityException e) {
+                log.warning("GeneralSecurityException");
+                log.warning(e.getMessage());
+            } catch (IOException e) {
+                log.warning("IOException");
+                log.warning(e.getMessage());
+            } finally {
+                save(purchase);
+            }
+        } else {
+            // unknown platform - do nothing
         }
     }
     
@@ -75,8 +84,6 @@ public class NnPurchaseManager {
                 String.valueOf(item.getChannelId()),
                 item.getProductIdRef(),
                 String.valueOf(item.getBillingPlatform()),
-                String.valueOf(purchase.isVerified()),
-                purchase.getExpireDate() == null ? "" : String.valueOf(purchase.getExpireDate().getTime())
         };
         
         return NnStringUtil.getDelimitedStr(obj);
