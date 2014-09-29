@@ -52,6 +52,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -665,11 +666,9 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({CacheFactory.class,PMF.class})
+    @PrepareForTest({PMF.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
-        
-        private MsoConfigManager configMngr;
         
         private Mso defaultMso;
         private String defaultOS;
@@ -793,6 +792,7 @@ public class PlayerApiServiceTest {
             iosDefaultMap.put(MsoConfig.SIGNUP_ENFORCE, "never");
             
             androidDefaultMap.put("ga", "UA-47454448-2");
+            androidDefaultMap.put("flurry", "CJGQT59JKHN4MWBQFXZN");
             androidDefaultMap.put("ad", "off");
             androidDefaultMap.put(MsoConfig.AUDIO_BACKGROUND, "off");
             androidDefaultMap.put("youtube",
@@ -818,10 +818,7 @@ public class PlayerApiServiceTest {
             NnTestUtil.emptyTable(pmf, MsoConfig.class);
             
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
-            configMngr = Mockito.spy(new MsoConfigManager());
-            
             NNFWrapper.setUserMngr(userMngr);
-            NNFWrapper.setConfigMngr(configMngr);
             
             PowerMockito.mockStatic(PMF.class);
             when(PMF.getContent()).thenReturn(pmf);
@@ -834,7 +831,7 @@ public class PlayerApiServiceTest {
             defaultMso.setName(brandName);
             defaultMso.setType(Mso.TYPE_MSO);
             
-            MsoDao msoDao = new MsoDao();
+            MsoDao msoDao = NNF.getMsoDao();
             defaultMso = msoDao.save(defaultMso);
             
             defaultOS = PlayerService.OS_WEB;
@@ -850,7 +847,6 @@ public class PlayerApiServiceTest {
         
         @After
         public void tearDown2() {
-            configMngr = null;
             
             defaultMso = null;
             defaultOS = null;
@@ -858,6 +854,8 @@ public class PlayerApiServiceTest {
         
         // all config available from database
         private void makeAllConfigAvailable() {
+            
+            MsoConfigManager configMngr = NNF.getConfigMngr();
             
             for (String itemName : items.keySet()) {
                 
@@ -1007,6 +1005,24 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_IOS;
             req.setParameter("os", os);
+            
+            // stubs
+            makeAllConfigAvailable();
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         @Test
@@ -1028,6 +1044,21 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_IOS;
             req.setParameter("os", os);
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         @Test
@@ -1049,6 +1080,24 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_ANDROID;
             req.setParameter("os", os);
+            
+            // stubs
+            makeAllConfigAvailable();
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         @Test
@@ -1070,6 +1119,21 @@ public class PlayerApiServiceTest {
             // input
             String os = PlayerService.OS_ANDROID;
             req.setParameter("os", os);
+            
+            // execute
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            // verify
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            
+            String respText = (String) actual;
+            for (String key : exist.keySet()) {
+                assertTrue("Missing '" + key + "' pair.", respText.contains(pair(key, exist.get(key))));
+            }
+            for (String key : notExist) {
+                assertFalse("'" + key + "' pair can't appear in response.", respText.contains(key + "\t"));
+            }
         }
         
         // TODO third part 'ad' section test case
