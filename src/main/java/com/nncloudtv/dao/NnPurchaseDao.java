@@ -44,7 +44,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnUser.class);
-            query.setFilter("subscriptionIdRefStr == subscriptionIdRefParam");
+            query.setFilter("subscriptionIdRef == subscriptionIdRefParam");
             query.declareParameters("String subscriptionIdRefParam");
             query.setOrdering("updateDate desc");
             @SuppressWarnings("unchecked")
