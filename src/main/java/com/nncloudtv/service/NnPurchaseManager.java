@@ -91,6 +91,6 @@ public class NnPurchaseManager {
     
     public NnPurchase findByUserAndItem(NnUser user, NnItem item) {
         
-        return dao.findOne(user.getIdStr(), item.getProductIdRef());
+        return dao.findOne(user.getIdStr(), item.getId());
     }
 }

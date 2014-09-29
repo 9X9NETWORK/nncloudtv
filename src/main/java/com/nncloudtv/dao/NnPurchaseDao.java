@@ -37,17 +37,17 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         return detached;
     }
     
-    public NnPurchase findOne(String userIdStr, String productIdRef) {
+    public NnPurchase findOne(String userIdStr, long itemId) {
         
         NnPurchase detached = null;
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnPurchase.class);
-            query.setFilter("userIdStr == userIdStrParam && productIdRef == productIdRefParam");
-            query.declareParameters("String userIdStrParam, String productIdRefParam");
+            query.setFilter("userIdStr == userIdStrParam && itemId == itemIdParam");
+            query.declareParameters("String userIdStrParam, long itemIdParam");
             query.setOrdering("updateDate desc");
             @SuppressWarnings("unchecked")
-            List<NnPurchase> results = (List<NnPurchase>) query.execute(userIdStr, productIdRef);
+            List<NnPurchase> results = (List<NnPurchase>) query.execute(userIdStr, itemId);
             if (results.size() > 0) {
                 detached = pm.detachCopy(results.get(0));
             }
