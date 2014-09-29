@@ -3067,7 +3067,6 @@ public class PlayerApiController {
     public @ResponseBody Object addPurchase(
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="productId", required=false) String productIdRef,
-            @RequestParam(value="subscriptionId", required=false) String subscriptionIdRef,
             @RequestParam(value="purchaseToken", required=false) String purchaseToken,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -3079,7 +3078,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }
-            output = playerApiService.addPurchase(userToken, productIdRef, subscriptionIdRef, purchaseToken, req);
+            output = playerApiService.addPurchase(userToken, productIdRef, purchaseToken, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

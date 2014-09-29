@@ -35,28 +35,23 @@ public class NnPurchase {
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
-    private String subscriptionIdRef;
-    
-    @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String purchaseToken;
     
     @Persistent
-    private boolean verified; // verified by server side
+    private boolean verified; // server side verified
     
     @Persistent
     private short status;
     public static final short ACTIVE   = 0;
     public static final short INACTIVE = 1;
     
-    public NnPurchase(NnItem item, NnUser user, String purchaseToken, String subscriptionIdRef) {
+    public NnPurchase(NnItem item, NnUser user, String purchaseToken) {
         
         this.purchaseToken = purchaseToken;
         this.itemId = item.getId();
         this.userIdStr = user.getIdStr();
         this.status = ACTIVE;
         this.verified = false;
-        this.subscriptionIdRef = subscriptionIdRef;
     }
     
     public long getId() {
@@ -111,14 +106,6 @@ public class NnPurchase {
     
     public void setStatus(short status) {
         this.status = status;
-    }
-    
-    public String getSubscriptionIdRef() {
-        return subscriptionIdRef;
-    }
-    
-    public void setSubscriptionIdRef(String subscriptionIdRef) {
-        this.subscriptionIdRef = subscriptionIdRef;
     }
     
     public boolean isVerified() {

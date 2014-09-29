@@ -11,6 +11,7 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnPurchase;
 
 @Service
 public class NnItemManager {
@@ -51,5 +52,10 @@ public class NnItemManager {
         item.setUpdateDate(now);
         
         return dao.save(item);
+    }
+    
+    public NnItem findByPurchase(NnPurchase purchase) {
+        
+        return dao.findById(purchase.getItemId());
     }
 }

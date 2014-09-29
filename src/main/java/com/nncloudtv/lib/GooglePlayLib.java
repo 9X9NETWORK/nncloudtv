@@ -16,6 +16,7 @@ import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subsc
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions.Get;
 import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.service.MsoConfigManager;
 
@@ -62,18 +63,18 @@ public class GooglePlayLib {
         if (purchase == null) { return null; }
         
         Mso mso = NNF.getMsoMngr().findByPurchase(purchase);
-        String subscriptionIdRef = purchase.getSubscriptionIdRef();
+        NnItem item = NNF.getItemMngr().findByPurchase(purchase);
         String purchaseToken = purchase.getPurchaseToken();
         String packageName = MsoConfigManager.getGooglePlayPackageName(mso);
         
         log.info("packageName = " + packageName);
-        log.info("subscriptionId = " + subscriptionIdRef);
+        log.info("productId = " + item.getProductIdRef());
         log.info("purchaseToken = " + purchaseToken);
         
         AndroidPublisher publisher = getAndroidPublisher(mso);
         Purchases purchases = publisher.purchases();
         Subscriptions subscriptions = purchases.subscriptions();
-        Get request = subscriptions.get(packageName, subscriptionIdRef, purchaseToken);
+        Get request = subscriptions.get(packageName, item.getProductIdRef(), purchaseToken);
         
         return request.execute();
     }

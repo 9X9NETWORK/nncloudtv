@@ -3423,7 +3423,7 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    public Object addPurchase(String userToken, String productIdRef, String subscriptionIdRef, String purchaseToken, HttpServletRequest req) {
+    public Object addPurchase(String userToken, String productIdRef, String purchaseToken, HttpServletRequest req) {
         
         if (purchaseToken == null || productIdRef == null) {
             return assembleMsgs(NnStatusCode.INPUT_MISSING, null);
@@ -3447,15 +3447,14 @@ public class PlayerApiService {
             return assembleMsgs(NnStatusCode.INPUT_ERROR, null);
         }
         
-        NnPurchase purchase = NNF.getPurchaseMngr().findBySubscriptionIdRef(subscriptionIdRef);
-        if (purchase != null &&
-            purchase.getUserIdStr() != null && purchase.getUserIdStr().equals(user.getIdStr()) &&
-            purchase.getItemId() == item.getId()) {
-            
+        NnPurchase purchase = NNF.getPurchaseMngr().findByUserAndItem(user, item);
+        if (purchase != null) {
+            // renew token existing purchase
             purchase.setStatus(NnPurchase.ACTIVE);
+            purchase.setVerified(false);
             purchase.setPurchaseToken(purchaseToken);
         } else {
-            purchase = new NnPurchase(item, user, purchaseToken, item.getProductIdRef());
+            purchase = new NnPurchase(item, user, purchaseToken);
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
@@ -3486,14 +3485,12 @@ public class PlayerApiService {
         List<NnPurchase> purchases = NNF.getPurchaseMngr().findByUser(user);
         for (NnPurchase purchase : purchases) {
             
-            //TODO: if verified
-            
             NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
             if (item == null) {
                 log.warning("item not found, itemId = " + purchase.getItemId());
                 continue;
             }
-            if (item.getMsoId() == mso.getId()) {
+            if (item.getMsoId() == mso.getId() && purchase.isVerified()) {
                 
                 purchasesStr += (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) + "\n";
             }

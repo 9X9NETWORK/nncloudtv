@@ -39,11 +39,8 @@ public class NnPurchaseManager {
         if (purchase == null) { return; }
         
         try {
+            purchase.setVerified(false);
             SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
-            if (subscription == null) {
-                log.warning("can not get SubscriptionPurchase");
-                return;
-            }
             purchase.setVerified(true);
             purchase.setExpireDate(new Date(subscription.getExpiryTimeMillis()));
             if (purchase.getExpireDate().before(NnDateUtil.now())) {
@@ -76,15 +73,17 @@ public class NnPurchaseManager {
         
         String[] obj = {
                 String.valueOf(item.getChannelId()),
-                String.valueOf(purchase.isVerified()),
+                item.getProductIdRef(),
                 String.valueOf(item.getBillingPlatform()),
-                purchase.getExpireDate() == null ? "" : String.valueOf(purchase.getExpireDate().getTime())};
+                String.valueOf(purchase.isVerified()),
+                purchase.getExpireDate() == null ? "" : String.valueOf(purchase.getExpireDate().getTime())
+        };
         
         return NnStringUtil.getDelimitedStr(obj);
     }
     
-    public NnPurchase findBySubscriptionIdRef(String subscriptionIdRef) {
+    public NnPurchase findByUserAndItem(NnUser user, NnItem item) {
         
-        return dao.findBySubscriptionIdRef(subscriptionIdRef);
+        return dao.findOne(user.getIdStr(), item.getProductIdRef());
     }
 }
