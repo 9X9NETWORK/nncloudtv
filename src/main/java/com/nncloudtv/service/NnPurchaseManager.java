@@ -82,8 +82,8 @@ public class NnPurchaseManager {
         return NnStringUtil.getDelimitedStr(obj);
     }
     
-    public NnPurchase findBySubscriptionId(String subscriptionIdRef) {
+    public NnPurchase findBySubscriptionIdRef(String subscriptionIdRef) {
         
-        return dao.findBySuscriptionId(subscriptionIdRef);
+        return dao.findBySubscriptionIdRef(subscriptionIdRef);
     }
 }
