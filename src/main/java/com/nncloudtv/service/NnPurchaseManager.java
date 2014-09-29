@@ -77,7 +77,7 @@ public class NnPurchaseManager {
                 String.valueOf(item.getChannelId()),
                 String.valueOf(purchase.isVerified()),
                 String.valueOf(item.getBillingPlatform()),
-                String.valueOf(purchase.getExpireDate().getTime())};
+                purchase.getExpireDate() == null ? "" : String.valueOf(purchase.getExpireDate().getTime())};
         
         return NnStringUtil.getDelimitedStr(obj);
     }

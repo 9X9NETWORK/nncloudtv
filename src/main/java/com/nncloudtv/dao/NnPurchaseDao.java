@@ -8,7 +8,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import com.nncloudtv.model.NnPurchase;
-import com.nncloudtv.model.NnUser;
 
 public class NnPurchaseDao extends GenericDao<NnPurchase> {
     
