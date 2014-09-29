@@ -13,6 +13,8 @@ import com.nncloudtv.dao.NnPurchaseDao;
 import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
 
@@ -57,7 +59,7 @@ public class NnPurchaseManager {
         }
     }
     
-    private void save(NnPurchase purchase) {
+    public NnPurchase save(NnPurchase purchase) {
         
         Date now = NnDateUtil.now();
         
@@ -66,6 +68,22 @@ public class NnPurchaseManager {
         }
         purchase.setUpdateDate(now);
         
-        dao.save(purchase);
+        return dao.save(purchase);
+    }
+    
+    public Object composeEachPurchase(NnPurchase purchase, NnItem item) {
+        
+        String[] obj = {
+                String.valueOf(item.getChannelId()),
+                String.valueOf(purchase.isVerified()),
+                String.valueOf(item.getBillingPlatform()),
+                String.valueOf(purchase.getExpireDate().getTime())};
+        
+        return NnStringUtil.getDelimitedStr(obj);
+    }
+    
+    public NnPurchase findBySubscriptionId(String subscriptionIdRef) {
+        
+        return dao.findBySuscriptionId(subscriptionIdRef);
     }
 }

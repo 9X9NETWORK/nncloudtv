@@ -3447,21 +3447,20 @@ public class PlayerApiService {
             return assembleMsgs(NnStatusCode.INPUT_ERROR, null);
         }
         
-        //TODO: chaeck if purchased
-        
-        NnPurchase purchase = new NnPurchase(item, user, purchaseToken, subscriptionIdRef);
+        NnPurchase purchase = NNF.getPurchaseMngr().findBySubscriptionId(subscriptionIdRef);
+        if (purchase != null && purchase.getUserIdStr() != null && purchase.getUserIdStr().equals(user.getIdStr())) {
+            purchase.setStatus(NnPurchase.ACTIVE);
+            purchase.setPurchaseToken(purchaseToken);
+        } else {
+            purchase = new NnPurchase(item, user, purchaseToken, subscriptionIdRef);
+        }
+        purchase = NNF.getPurchaseMngr().save(purchase);
         
         if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
             NNF.getPurchaseMngr().updatePurchase(purchase);
         }
         
-        String purchaseStr = "";
-        String[] obj = {
-                String.valueOf(item.getChannelId())
-        };
-        purchaseStr += NnStringUtil.getDelimitedStr(obj) + "\n";
-        
-        String[] result = { purchaseStr };
+        String[] result = { (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) };
         
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
@@ -3498,10 +3497,8 @@ public class PlayerApiService {
                 continue;
             }
             if (item.getBillingPlatform() == platform && item.getMsoId() == mso.getId()) {
-                String[] obj = {
-                        String.valueOf(item.getChannelId())
-                };
-                purchasesStr += NnStringUtil.getDelimitedStr(obj) + "\n";
+                
+                purchasesStr += (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) + "\n";
             }
         }
         

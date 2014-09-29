@@ -20,8 +20,8 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
     }
     
     public List<NnPurchase> findByUserIdStr(String userIdStr) {
-        List<NnPurchase> detached = new ArrayList<NnPurchase>();
         
+        List<NnPurchase> detached = new ArrayList<NnPurchase>();
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnUser.class);
@@ -31,6 +31,27 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
             @SuppressWarnings("unchecked")
             List<NnPurchase> results = (List<NnPurchase>) query.execute(userIdStr);
             detached = (List<NnPurchase>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
+        return detached;
+    }
+    
+    public NnPurchase findBySuscriptionId(String subscriptionIdRef) {
+        
+        NnPurchase detached = null;
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnUser.class);
+            query.setFilter("subscriptionIdRefStr == subscriptionIdRefParam");
+            query.declareParameters("String subscriptionIdRefParam");
+            query.setOrdering("updateDate desc");
+            @SuppressWarnings("unchecked")
+            List<NnPurchase> results = (List<NnPurchase>) query.execute(subscriptionIdRef);
+            if (results.size() > 0) {
+                detached = results.get(0);
+            }
             query.closeAll();
         } finally {
             pm.close();
