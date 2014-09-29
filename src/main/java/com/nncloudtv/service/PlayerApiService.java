@@ -3482,14 +3482,6 @@ public class PlayerApiService {
             return assembleMsgs(NnStatusCode.USER_INVALID, null);
         }
         
-        short platform = NnItem.UNKNOWN;
-        if (context.getOs().equals(PlayerService.OS_ANDROID)) {
-            log.info("platform = googleplay");
-            platform = NnItem.GOOGLEPLAY;
-        } else if (context.getOs().equals(PlayerService.OS_IOS)) {
-            log.info("platform = appstore");
-            platform = NnItem.APPSTORE;
-        }
         String purchasesStr = "";
         List<NnPurchase> purchases = NNF.getPurchaseMngr().findByUser(user);
         for (NnPurchase purchase : purchases) {
@@ -3499,7 +3491,7 @@ public class PlayerApiService {
                 log.warning("item not found, itemId = " + purchase.getItemId());
                 continue;
             }
-            if (item.getBillingPlatform() == platform && item.getMsoId() == mso.getId()) {
+            if (item.getMsoId() == mso.getId()) {
                 
                 purchasesStr += (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) + "\n";
             }
