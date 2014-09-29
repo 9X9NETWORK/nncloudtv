@@ -24,7 +24,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         List<NnPurchase> detached = new ArrayList<NnPurchase>();
         PersistenceManager pm = getPersistenceManager();
         try {
-            Query query = pm.newQuery(NnUser.class);
+            Query query = pm.newQuery(NnPurchase.class);
             query.setFilter("userIdStr == userIdStrParam && status == " + NnPurchase.ACTIVE);
             query.declareParameters("String userIdStrParam");
             query.setOrdering("updateDate desc");
@@ -43,7 +43,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         NnPurchase detached = null;
         PersistenceManager pm = getPersistenceManager();
         try {
-            Query query = pm.newQuery(NnUser.class);
+            Query query = pm.newQuery(NnPurchase.class);
             query.setFilter("subscriptionIdRef == subscriptionIdRefParam");
             query.declareParameters("String subscriptionIdRefParam");
             query.setOrdering("updateDate desc");
