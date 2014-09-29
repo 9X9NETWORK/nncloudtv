@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnItemDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
@@ -57,5 +58,16 @@ public class NnItemManager {
     public NnItem findByPurchase(NnPurchase purchase) {
         
         return dao.findById(purchase.getItemId());
+    }
+    
+    public Object composeEachItem(NnItem item) {
+        
+        String[] obj = {
+                String.valueOf(item.getChannelId()),
+                item.getProductIdRef(),
+                String.valueOf(item.getBillingPlatform()),
+        };
+        
+        return NnStringUtil.getDelimitedStr(obj);
     }
 }

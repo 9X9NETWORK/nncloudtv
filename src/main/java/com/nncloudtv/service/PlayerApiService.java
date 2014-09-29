@@ -3488,7 +3488,7 @@ public class PlayerApiService {
             }
             if (item.getMsoId() == mso.getId() && purchase.isVerified()) {
                 
-                purchasesStr += (String) NNF.getPurchaseMngr().composeEachPurchase(purchase, item) + "\n";
+                purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
             }
         }
         
