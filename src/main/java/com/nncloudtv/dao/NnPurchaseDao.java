@@ -49,7 +49,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
             @SuppressWarnings("unchecked")
             List<NnPurchase> results = (List<NnPurchase>) query.execute(subscriptionIdRef);
             if (results.size() > 0) {
-                detached = results.get(0);
+                detached = pm.detachCopy(results.get(0));
             }
             query.closeAll();
         } finally {
