@@ -29,7 +29,6 @@ import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
@@ -1020,19 +1019,6 @@ public class NnChannelManager {
             log.info("get channel lineup from cache" + ". v=" + ctx.getVersion() +";channel=" + channel.getId());
             return result;
         }
-        String paidChannelRef = "";
-        if (channel.isPaidChannel()) {
-            log.info("paid channel, channelId = " + channel.getId());
-            paidChannelRef = "UNAVAILABLE";
-            NnItem item = NNF.getItemMngr().findOne(ctx.getMso(), ctx.getOs(), channel);
-            if (item != null && item.getStatus() == NnItem.ACTIVE) {
-                log.info("found item");
-                if (item.getProductIdRef() != null) {
-                    paidChannelRef = item.getProductIdRef();
-                    log.info("productIdRef = " + paidChannelRef);
-                }
-            }
-        }
         
         log.info("channel lineup NOT from cache:" + channel.getId());
         //name and last episode title
@@ -1164,7 +1150,7 @@ public class NnChannelManager {
             ori.add(channel.getPlayerPrefSource());
             ori.add(String.valueOf(channel.getUpdateDate().getTime()));
             ori.add(String.valueOf(getPlayerDefaultSorting(channel))); //use default sorting for all
-            ori.add(paidChannelRef); // paid channel reference
+            ori.add(String.valueOf(channel.isPaidChannel())); // paid channel reference
             ori.add(""); //recently watched program
             ori.add(channel.getOriName());
             ori.add(String.valueOf(channel.getCntSubscribe())); //cnt subscribe, replace
