@@ -99,20 +99,6 @@ for r in rows:
    url = "http://localhost:8080/wd/programCache?channel=" + str(cid)
    urllib2.urlopen(url).read()
    
-   resultPage = GetPage("http://localhost:8080/api/episodes/" + str(eid) + "/scheduledAutosharing/facebook")
-   autoshareCurl.setopt(autoshareCurl.URL, resultPage.url)
-   autoshareCurl.setopt(autoshareCurl.WRITEFUNCTION, resultPage.read_page)
-   autoshareCurl.perform()
-   print "autosharing episode ID : " + str(eid)
-   resultPage.show_page()
-   
-   #message = "http://localhost:8080/api/episodes/" + str(eid) + "/scheduledAutosharing/facebook"
-   #message = bytearray(message)
-   #channel = connection.channel()
-   #channel.queue_declare(queue='/')
-   #channel.basic_publish(exchange="", routing_key="QUEUE_NNCLOUDTV", body=message)
-   #channel.close()
-   
    i = i + 1                  
                                                                           
 dbcontent.close()
