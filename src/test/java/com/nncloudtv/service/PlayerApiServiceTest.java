@@ -150,12 +150,11 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({CacheFactory.class})
+    @PrepareForTest({CacheFactory.class,PMF.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfo extends PlayerApiServiceTest {
         
         private MemcachedClient cache;
-        private NnUserManager userMngr;
         private MsoConfigManager configMngr;
         
         private String brandInfo9x9;
@@ -166,18 +165,18 @@ public class PlayerApiServiceTest {
         public void setUp2() {
             
             cache = Mockito.mock(MemcachedClient.class);
-            userMngr = Mockito.spy(new NnUserManager());
-            configMngr = Mockito.spy(new MsoConfigManager());
+            NnUserManager userMngr = Mockito.spy(new NnUserManager());
+            configMngr = NNF.getConfigMngr();
+            
+            PersistenceManagerFactory pmf = NnTestUtil.getPMF();
+            NnTestUtil.emptyTable(pmf, Mso.class);
+            NnTestUtil.emptyTable(pmf, MsoConfig.class);
+            
+            PowerMockito.mockStatic(PMF.class);
+            when(PMF.getContent()).thenReturn(pmf);
             
             setUpMemCacheMock(cache);
             NNFWrapper.setUserMngr(userMngr);
-            NNFWrapper.setConfigMngr(configMngr);
-            
-            // must stub, prepService call database where these are not point in test case care about
-            doReturn(null).when(configMngr).findByItem(MsoConfig.API_MINIMAL);
-            doReturn(null).when(configMngr).findByItem(MsoConfig.RO);
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_EXPIRE));
-            doReturn(null).when(configMngr).getByMsoAndItem((Mso) anyObject(), eq(MsoConfig.APP_VERSION_EXPIRE));
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
@@ -209,7 +208,6 @@ public class PlayerApiServiceTest {
         public void tearDown2() {
             
             cache = null;
-            userMngr = null;
             configMngr = null;
             
             brandInfo9x9 = null;
@@ -224,16 +222,10 @@ public class PlayerApiServiceTest {
             String brandName = "notExist";
             req.setParameter("mso", brandName);
             
-            // mock object
-            MsoDao msoDao = Mockito.spy(new MsoDao());
-            NNFWrapper.setMsoDao(msoDao);
-            
             // stubs
             // mso=notExist unavailable from cache
             String cacheKey = "mso(" + brandName + ")";
             recordMemoryCacheGet(cache, cacheKey, null);
-            // mso=notExist unavailable from database
-            doReturn(null).when(msoDao).findByName(brandName); // must stub
             
             // execute
             service.prepService(req, resp, true);
@@ -304,23 +296,20 @@ public class PlayerApiServiceTest {
             req.setServerName(brandName + ".flipr.tv");
             req.setRequestURI("/playerAPI/brandInfo");
             
-            // mock object
-            MsoDao msoDao = Mockito.spy(new MsoDao());
-            NNFWrapper.setMsoDao(msoDao);
-            
             // mock data
             Mso mso = NnTestUtil.getNnMso();
-            mso.setId(3);
             mso.setName(brandName);
             mso.setType(Mso.TYPE_MSO);
+            
+            // mso=cts available from database
+            MsoDao msoDao = NNF.getMsoDao();
+            mso = msoDao.save(mso);
             
             String brandInfo = "";
             brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
             brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
             
             // stubs
-            // mso=cts available from database
-            doReturn(mso).when(msoDao).findByName(brandName); // must stub
             // brandInfo=cts from cache
             String cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
@@ -432,6 +421,7 @@ public class PlayerApiServiceTest {
             String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(mso, adConfig);
             
             String adInfo = "";
             String tab = "\t";
@@ -446,9 +436,6 @@ public class PlayerApiServiceTest {
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
-            
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, adInfo);
@@ -483,6 +470,7 @@ public class PlayerApiServiceTest {
             String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(mso, adConfig);
             
             String adInfo = "";
             String tab = "\t";
@@ -497,9 +485,6 @@ public class PlayerApiServiceTest {
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
-            
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, adInfo);
@@ -533,6 +518,7 @@ public class PlayerApiServiceTest {
             String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(mso, adConfig);
             
             String adInfo = "";
             String tab = "\t";
@@ -547,9 +533,6 @@ public class PlayerApiServiceTest {
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
-            
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, adInfo);
@@ -584,6 +567,7 @@ public class PlayerApiServiceTest {
             String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(mso, adConfig);
             
             String adInfo = "";
             String tab = "\t";
@@ -598,9 +582,6 @@ public class PlayerApiServiceTest {
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
-            doReturn(adConfig).when(configMngr).findByMsoAndItem(mso, adKeyName); // must stub, mso equality check
-            
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
             recordMemoryCacheGet(cache, cacheKey, adInfo);
