@@ -32,9 +32,9 @@ public class NnEpisode implements Serializable {
     /**
      * The usage of episode `storageId`
      * 
-     * 1. orphan episode:     store channelId
-     * 2. referenced episode: store referenced episodeId
-     * 3. virtual channel:    store real channelId (temporarily)
+     * 1. orphan episode:     store channelId (at the meanwhile channelId=0)
+     * 2. referenced episode: store referenced episodeId (contentType=3)
+     * 3. virtual channel:    store real channelId (temporarily used in composeEachEpisodeInfo())
      */
     @Persistent
     private long storageId;

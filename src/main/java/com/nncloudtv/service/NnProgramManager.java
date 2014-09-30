@@ -534,14 +534,16 @@ public class NnProgramManager {
             
             List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
             
-            
-            
-            
-            
-            
-            
-            
-            
+            for (NnEpisode episode : episodes) {
+                
+                if (episode.getContentType() == NnEpisode.CONTENTTYPE_REFERENCED && episode.getStorageId() > 0) {
+                    // use referenced episode to rewrite current episode
+                    NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
+                    episode.setId(reference.getId());
+                    episode.setChannelId(reference.getChannelId());
+                    episode.setStorageId(0);
+                }
+            }
             
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(channel.getId());
             
@@ -1008,6 +1010,8 @@ public class NnProgramManager {
                     iAmHere++;
                 }
                 
+                // episode is come from another channel
+                // temporarily use storageId to store foreign channel
                 long real = episode.getChannelId();
                 if (real != 0 && real != channel.getId()) {
                     
@@ -1016,6 +1020,7 @@ public class NnProgramManager {
                 } else {
                     episode.setStorageId(0);
                 }
+                
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     poiStr = poiStr.replaceAll("\\|$", "");
                     result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
