@@ -144,9 +144,9 @@ public class NnEpisodeManager {
                         if (schedule1 == null && schedule2 == null) {
                             return 0;
                         } else if (schedule1 == null) {
-                            return -1;
-                        } else if (schedule2 == null) {
                             return 1;
+                        } else if (schedule2 == null) {
+                            return -1;
                         } else {
                             return schedule2.compareTo(schedule1);
                         }
