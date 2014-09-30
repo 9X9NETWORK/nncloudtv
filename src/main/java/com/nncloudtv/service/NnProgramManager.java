@@ -533,6 +533,16 @@ public class NnProgramManager {
         if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED || channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_LIVE ) {
             
             List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             List<NnProgram> programs = this.findPlayerNnProgramsByChannel(channel.getId());
             
             return composeNnProgramInfo(channel, episodes, programs, format);
@@ -1003,6 +1013,8 @@ public class NnProgramManager {
                     
                     episode.setStorageId(real);
                     episode.setChannelId(channel.getId());
+                } else {
+                    episode.setStorageId(0);
                 }
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     poiStr = poiStr.replaceAll("\\|$", "");
