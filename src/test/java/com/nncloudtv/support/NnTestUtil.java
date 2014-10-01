@@ -24,6 +24,9 @@ import com.nncloudtv.model.Mso;
 
 public class NnTestUtil {
     
+    private static final PersistenceManagerFactory pmf =
+            JDOHelper.getPersistenceManagerFactory("datanucleus_content.properties");
+    
     public static void assertEqualURL(String expectedURL, String actualURL) {
         
         if ("".equals(expectedURL)) {
@@ -102,15 +105,11 @@ public class NnTestUtil {
         return mso;
     }
     
-    public static void emptyTable(PersistenceManagerFactory pmf, @SuppressWarnings("rawtypes") Class clazz) {
-            
+    public static void emptyTable(@SuppressWarnings("rawtypes") Class clazz) {
+        
         PersistenceManager pm = pmf.getPersistenceManager();
         pm.newQuery(clazz).deletePersistentAll();
         pm.close();
-    }
-    
-    public static PersistenceManagerFactory getPMF() {
-        return JDOHelper.getPersistenceManagerFactory("hsql.properties");
     }
 
 }

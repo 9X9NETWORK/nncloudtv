@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import javax.jdo.PersistenceManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -53,7 +52,6 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
-import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
@@ -150,7 +148,7 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({CacheFactory.class,PMF.class})
+    @PrepareForTest({CacheFactory.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfo extends PlayerApiServiceTest {
         
@@ -168,12 +166,8 @@ public class PlayerApiServiceTest {
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             configMngr = NNF.getConfigMngr();
             
-            PersistenceManagerFactory pmf = NnTestUtil.getPMF();
-            NnTestUtil.emptyTable(pmf, Mso.class);
-            NnTestUtil.emptyTable(pmf, MsoConfig.class);
-            
-            PowerMockito.mockStatic(PMF.class);
-            when(PMF.getContent()).thenReturn(pmf);
+            NnTestUtil.emptyTable(Mso.class);
+            NnTestUtil.emptyTable(MsoConfig.class);
             
             setUpMemCacheMock(cache);
             NNFWrapper.setUserMngr(userMngr);
@@ -647,7 +641,6 @@ public class PlayerApiServiceTest {
     }
     
     @RunWith(PowerMockRunner.class)
-    @PrepareForTest({PMF.class})
     @Category(NnTestImportant.class)
     public static class testBrandInfoWithoutCache extends PlayerApiServiceTest {
         
@@ -794,15 +787,11 @@ public class PlayerApiServiceTest {
             CacheFactory.isEnabled = false;
             CacheFactory.isRunning = false;
             
-            PersistenceManagerFactory pmf = NnTestUtil.getPMF();
-            NnTestUtil.emptyTable(pmf, Mso.class);
-            NnTestUtil.emptyTable(pmf, MsoConfig.class);
+            NnTestUtil.emptyTable(Mso.class);
+            NnTestUtil.emptyTable(MsoConfig.class);
             
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
             NNFWrapper.setUserMngr(userMngr);
-            
-            PowerMockito.mockStatic(PMF.class);
-            when(PMF.getContent()).thenReturn(pmf);
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
