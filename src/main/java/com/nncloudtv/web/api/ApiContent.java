@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -1355,7 +1356,7 @@ public class ApiContent extends ApiGeneric {
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                 results = NNF.getEpisodeMngr().list(page, rows, "seq", "desc", "channelId == " + channelId);
             } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
-                results = NNF.getEpisodeMngr().list(page, rows, "isPublic asc,", "case isPublic when true publishDate else scheduleDate end desc", "channelId == " + channelId);
+                results = NNF.getEpisodeMngr().list(page, rows, NnEpisodeDao.LINEAR_ORDERING, null, "channelId == " + channelId);
             } else {
                 results = NNF.getEpisodeMngr().list(page, rows, "seq", "asc", "channelId == " + channelId);
             }

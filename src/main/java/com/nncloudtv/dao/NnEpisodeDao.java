@@ -15,6 +15,8 @@ import com.nncloudtv.service.PlayerApiService;
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
+    public static final String LINEAR_ORDERING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
+    
     public NnEpisodeDao() {
         super(NnEpisode.class);
     }
@@ -51,7 +53,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             if (sort == NnChannel.SORT_TIMED_LINEAR) {
                 
                 query.setFilter("channelId == channelIdParam && (isPublic || scheduleDate != null)");
-                query.setOrdering("isPublic asc, case isPublic when true publishDate else scheduleDate end desc");
+                query.setOrdering(LINEAR_ORDERING);
                 
             } else {
                 
