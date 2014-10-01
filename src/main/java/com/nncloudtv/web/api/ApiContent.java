@@ -755,7 +755,6 @@ public class ApiContent extends ApiGeneric {
             
             Short contentType = evaluateShort(contentTypeStr);
             if (contentType == null) {
-                log.info("contentType"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -771,7 +770,6 @@ public class ApiContent extends ApiGeneric {
         } else {
             Short duration = evaluateShort(durationStr);
             if ((duration == null) || (duration < 0)) {
-                log.info("duration"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -788,7 +786,6 @@ public class ApiContent extends ApiGeneric {
             
             Short startTime = evaluateShort(startTimeStr);
             if ((startTime == null) || (startTime < 0)) {
-                log.info("startTime"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -804,7 +801,6 @@ public class ApiContent extends ApiGeneric {
             
             Short endTime = evaluateShort(endTimeStr);
             if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
-                log.info("endTime"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
@@ -816,7 +812,7 @@ public class ApiContent extends ApiGeneric {
         
         // subSeq
         String subSeqStr = req.getParameter("subSeq");
-        if (subSeqStr == null) {
+        if (subSeqStr == null || subSeqStr.isEmpty()) {
             
             program.setSubSeq(0);
         } else {
@@ -826,7 +822,6 @@ public class ApiContent extends ApiGeneric {
             } catch (NumberFormatException e) {
             }
             if (subSeq == null) {
-                log.info("subSeq"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
