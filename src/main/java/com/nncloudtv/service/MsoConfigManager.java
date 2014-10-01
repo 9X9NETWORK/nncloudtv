@@ -70,9 +70,11 @@ public class MsoConfigManager {
         }
     }
     
-    static public String getCfPrivateKeyPath(Mso mso) {        
+    static public String getCFPrivateKeyPath(Mso mso) {
+        
+        String msoName = (mso == null) ? NNF.getMsoMngr().getSystemMsoName() : mso.getName();
         String path = "/var/opt/p12files/";
-        return path + "rsa-key-" + mso.getName() + ".der";
+        return path + "rsa-key-" + msoName + ".der";
     }
     
     static public String getServerDomain() {
@@ -82,7 +84,7 @@ public class MsoConfigManager {
         }
         return serverDomain;
     }
-        
+    
     static public String getFacebookAppToken() {        
         return getProperty("facebook.properties", "facebook_apptoken");
     }
@@ -97,7 +99,7 @@ public class MsoConfigManager {
         }
         MsoConfig config = this.findByMsoAndItem(mso, type);
         if (config != null) {
-            return config.getValue(); 
+            return config.getValue();
         }
         if (type == MsoConfig.FACEBOOK_CLIENTID)
             return getProperty("facebook.properties", "facebook_clientid");
@@ -168,7 +170,7 @@ public class MsoConfigManager {
             if (os.equals(PlayerService.OS_ANDROID))
                 return "758834427689";
         }
-        return null;        
+        return null;
     }
     
     //used for device dependant key name. currently flurry and ga and youtube
@@ -318,15 +320,6 @@ public class MsoConfigManager {
         }
         
         return results;
-    }
-    
-    public static String composeCategoryMask(List<String> masks) {
-        
-        if (masks == null || masks.size() < 1) {
-            return "";
-        }
-        
-        return StringUtils.join(validateMasks(masks), ",");
     }
     
     private static List<String> validateMasks(List<String> masks) {
@@ -520,7 +513,7 @@ public class MsoConfigManager {
             if (masks == null || masks.isEmpty()) {
                 config.setValue("");
             } else {
-                config.setValue(MsoConfigManager.composeCategoryMask(masks));
+                config.setValue(StringUtils.join(validateMasks(masks), ","));
             }
             
             config = NNF.getConfigMngr().save(mso, config);
