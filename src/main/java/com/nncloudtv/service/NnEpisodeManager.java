@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
@@ -87,7 +88,17 @@ public class NnEpisodeManager {
             return episode;
         }
         
-        log.info("publishDate = " + episode.getPublishDate());
+        log.info("isPublic = " + episode.isPublic() + ", publishDate = " + episode.getPublishDate());
+        if (episode.isPublic() == false && episode.getPublishDate() != null) {
+            
+            log.warning("to force pubishDate be null when is not published, just in case");
+            episode.setPublishDate(null);
+            
+        } else if (episode.isPublic() && episode.getPublishDate() == null) {
+            
+            log.warning("to force pubishDate be not null when is published, just in case");
+            episode.setPublishDate(NnDateUtil.now());
+        }
         
         return save(episode);
     }
@@ -95,17 +106,6 @@ public class NnEpisodeManager {
     public List<NnEpisode> findByChannelId(long channelId) {
     
         return dao.findByChannelId(channelId);
-    }
-    
-    public int getProgramCnt(NnEpisode episode) {
-        
-        if (episode == null) {
-            return 0;
-        }
-        
-        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
-        
-        return programs.size();
     }
     
     public static Comparator<NnEpisode> getComparator(String sort) {
