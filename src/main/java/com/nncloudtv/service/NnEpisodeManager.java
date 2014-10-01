@@ -251,11 +251,16 @@ public class NnEpisodeManager {
     
         return dao.list(page, rows, sidx, sord, filter);
     }
-
+    
+    public List<NnEpisode> listV2(long start,long limit, String sorting, String filter) {
+        
+        return dao.listV2(start, limit, sorting, filter);
+    }
+    
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
         return dao.findPlayerEpisode(channelId, sort, start, end);
     }
-
+    
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {
         
         return dao.findPlayerLatestEpisode(channelId, sort);
