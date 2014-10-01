@@ -145,10 +145,10 @@ public class ApiUser extends ApiGeneric {
     public @ResponseBody
     List<NnChannel> userChannels(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
-    
+        
         List<NnChannel> results = new ArrayList<NnChannel>();
+        ApiContext ctx = new ApiContext(req);
         
         Long userId = null;
         try {
@@ -159,8 +159,7 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        NnUser user = NNF.getUserMngr().findById(userId, ctx.getMsoId());
         if (user == null) {
             notFound(resp, "User Not Found");
             return null;

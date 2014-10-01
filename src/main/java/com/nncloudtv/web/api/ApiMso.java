@@ -953,7 +953,7 @@ public class ApiMso extends ApiGeneric {
             results = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
         } else if (categoryId != null) {
             results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
-        }        
+        }
         log.info(printExitState(now, req, "ok"));
         return results;
     }
