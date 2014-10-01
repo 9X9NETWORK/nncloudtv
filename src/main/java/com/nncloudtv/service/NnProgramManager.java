@@ -1003,6 +1003,7 @@ public class NnProgramManager {
                 if (episode.getStorageId() > 0) {
                     NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
                     if (reference != null) {
+                        log.info("ep" + episode.getId() + " reference to ep" + reference.getId());
                         episode.setId(reference.getId());
                         episode.setChannelId(reference.getChannelId());
                         episode.setStorageId(0);
