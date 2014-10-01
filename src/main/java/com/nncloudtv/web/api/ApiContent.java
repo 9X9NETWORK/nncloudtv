@@ -753,13 +753,12 @@ public class ApiContent extends ApiGeneric {
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
             
-            Short contentType = Short.valueOf(contentTypeStr);
+            Short contentType = evaluateShort(contentTypeStr);
             if (contentType == null) {
                 log.info("contentType"); // Qoo
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
-            
             program.setContentType(contentType);
         }
         
