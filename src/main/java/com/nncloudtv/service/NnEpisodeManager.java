@@ -142,7 +142,7 @@ public class NnEpisodeManager {
                         Date schedule1 = ep1.getScheduleDate();
                         Date schedule2 = ep2.getScheduleDate();
                         if (schedule1 == null && schedule2 == null) {
-                            return 0;
+                            return ep1.getSeq() - ep2.getSeq();
                         } else if (schedule1 == null) {
                             return 1;
                         } else if (schedule2 == null) {
