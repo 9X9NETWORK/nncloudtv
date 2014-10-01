@@ -730,4 +730,9 @@ public class MsoManager {
         }
         return output;
     }
+    
+    public String getSystemMsoName() {
+        
+        return getSystemMso().getName();
+    }
 }

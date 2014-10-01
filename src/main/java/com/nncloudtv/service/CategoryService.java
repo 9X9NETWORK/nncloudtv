@@ -227,7 +227,6 @@ public class CategoryService {
         en = NNF.getDisplayMngr().save(en);
         
         return composeCategory(sysTag, zh, en);
-        
     }
     
     /**
@@ -294,19 +293,15 @@ public class CategoryService {
         return channels;
     }
     
-    /**
-     * Get total number of Channels in the Category.
-     * @param categoryId required, Category ID
-     * @return number of Channels
-     */
-    public int getCntChannel(Long categoryId) {
+    public Category updateCntChannel(Category category) {
         
-        if (categoryId == null) {
-            return 0;
+        if (category == null) {
+            return null;
         }
         
-        List<SysTagMap> channels = NNF.getSysTagMapMngr().findBySysTagId(categoryId);
-        return channels.size();
+        category.setCntChannel(NNF.getSysTagMapMngr().findBySysTagId(category.getId()).size());
+        
+        return category;
     }
     
     public static Comparator<Category> getComparator() {

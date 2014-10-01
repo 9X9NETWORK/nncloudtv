@@ -166,7 +166,7 @@ public class GenericDao<T> {
             Query query = pm.newQuery(daoClass);
             if (filter != null && filter != "")
                 query.setFilter(filter);
-            if (sidx != null && sidx != "" && sord != null && sord != "")
+            if (sidx != null || sord != null)
                 query.setOrdering(sidx + " " + sord);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")

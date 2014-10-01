@@ -15,6 +15,8 @@ import com.nncloudtv.service.PlayerApiService;
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
+    public static final String LINEAR_ORDERING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
+    
     public NnEpisodeDao() {
         super(NnEpisode.class);
     }
@@ -42,38 +44,36 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
     }
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {
-        List<NnEpisode> detached = new ArrayList<NnEpisode>();
-        PersistenceManager pm = getPersistenceManager();
-        try {
-            Query query = pm.newQuery(NnEpisode.class);
+        
+        String filtering = "isPublic = true and channelId = " + channelId;
+        String ordering = "seq asc";
+        String range = start + ", " + (end - start);
+        
+        if (sort == NnChannel.SORT_POSITION_REVERSE) {
             
-            query.declareParameters("long channelIdParam, boolean isPublicParam");
-            if (sort == NnChannel.SORT_TIMED_LINEAR) {
-                
-                query.setFilter("channelId == channelIdParam && (publishDate != null || scheduleDate != null)");
-                query.setOrdering("scheduleDate desc, publishDate desc");
-                
-            } else {
-                
-                query.setFilter("channelId == channelIdParam && isPublic == isPublicParam");
-                if (sort == NnChannel.SORT_POSITION_REVERSE) {
-                    query.setOrdering("seq desc");
-                } else {
-                    query.setOrdering("seq asc");
-                }
-            }
-            query.setRange(start, end);
-            @SuppressWarnings("unchecked")
-            List<NnEpisode> episodes = (List<NnEpisode>) query.execute(channelId, true);
-            if (episodes.size() > 0) {
-                detached = (List<NnEpisode>) pm.detachCopyAll(episodes);
-            }
-            query.closeAll();
-        } finally {
-            pm.close();
+            ordering = "seq desc";
+            
+        } else if (sort == NnChannel.SORT_TIMED_LINEAR) {
+            
+            filtering = "(isPublic || scheduleDate is not null) && channelId = " + channelId;
+            ordering = LINEAR_ORDERING;
         }
-        return detached;
+        
+        String query = "select * from nnepisode where " + filtering
+                     + "     order by " + ordering
+                     + "        limit " + range;
+        
+        return sql(query);
     }    
+    
+    public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
+        
+        String query = "select * from nnepisode where " + filter
+                     + "     order by " + sorting
+                     + "        limit " + start + ", " + limit;
+        
+        return sql(query);
+    }
     
     public List<NnEpisode> findPlayerLatestEpisode(long channelId, short sort) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
