@@ -33,7 +33,7 @@ public class NnEpisode implements Serializable {
      * The usage of episode `storageId`
      * 
      * 1. orphan episode:     store channelId (at the meanwhile channelId=0)
-     * 2. referenced episode: store referenced episodeId (contentType=3)
+     * 2. referenced episode: store referenced episodeId
      * 3. virtual channel:    store real channelId (temporarily used in composeEachEpisodeInfo())
      */
     @Persistent
@@ -59,7 +59,6 @@ public class NnEpisode implements Serializable {
     @Persistent
     public short contentType;
     public static final short CONTENTTYPE_GENERAL    = 0;
-    public static final short CONTENTTYPE_REFERENCED = 3;
     public static final short CONTENTTYPE_UPLOADED   = 5; // this episdoe contains only uploaded video (for CMS)
     
     @Persistent

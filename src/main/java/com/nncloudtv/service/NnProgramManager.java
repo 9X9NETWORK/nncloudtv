@@ -536,7 +536,7 @@ public class NnProgramManager {
             
             for (NnEpisode episode : episodes) {
                 
-                if (episode.getContentType() == NnEpisode.CONTENTTYPE_REFERENCED && episode.getStorageId() > 0) {
+                if (episode.getStorageId() > 0) {
                     // use referenced episode to rewrite current episode
                     NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
                     episode.setId(reference.getId());
