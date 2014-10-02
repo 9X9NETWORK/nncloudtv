@@ -623,17 +623,7 @@ public class ApiMisc extends ApiGeneric {
                 feedingAvconvTask.start();
             }
             
-            while (pipingTask.isAlive()) {
-                
-                if (!process.isAlive()) {
-                    log.info("converting process finished");
-                    thumbIn.close();
-                    pipingTask.join();
-                    break;
-                }
-                
-                pipingTask.join(500);
-            }
+            pipingTask.join();
             
             resp.flushBuffer();
             
@@ -779,9 +769,6 @@ public class ApiMisc extends ApiGeneric {
             }
             
             pipingTask.join();
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
-            }
             log.info("thumbnail size = " + baos.size());
             if (baos.size() > 0) {
                 
