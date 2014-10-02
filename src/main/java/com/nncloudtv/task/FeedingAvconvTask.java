@@ -41,7 +41,7 @@ public class FeedingAvconvTask extends PipingTask {
         int total = 0, len = 0;
         try {
             do {
-                while (err.ready()) {
+                while (err.ready() && (total % 2) == 0) {
                     String line = err.readLine();
                     if (line != null) {
                         log.info("[avconv] " + line);
