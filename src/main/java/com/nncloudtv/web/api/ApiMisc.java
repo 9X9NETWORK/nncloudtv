@@ -624,7 +624,7 @@ public class ApiMisc extends ApiGeneric {
             }
             
             pipingTask.join();
-            
+            log.info("streaming done");
             resp.flushBuffer();
             
         } catch (InterruptedException e) {
