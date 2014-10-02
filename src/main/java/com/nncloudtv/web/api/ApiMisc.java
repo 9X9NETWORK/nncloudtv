@@ -633,11 +633,7 @@ public class ApiMisc extends ApiGeneric {
             internalError(resp);
             return;
         } catch (IOException e) {
-            log.info(e.getMessage());
-            internalError(resp);
-            return;
-        } catch (IllegalStateException e) {
-            log.info("streaming is broken, but its ok");
+            // maybe user closed browser
         } finally {
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
