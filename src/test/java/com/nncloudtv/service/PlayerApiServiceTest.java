@@ -21,17 +21,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.internal.GetFuture;
 
 import org.junit.After;
 import org.junit.Before;
@@ -90,57 +84,12 @@ public class PlayerApiServiceTest {
     
     @After
     public void tearDown() {
+        
         req = null;
         resp = null;
         service = null;
         
         NNFWrapper.empty();
-    }
-    
-    private static void setUpMemCacheMock(MemcachedClient cache) {
-        
-        CacheFactory.isEnabled = true;
-        CacheFactory.isRunning = true;
-        
-        PowerMockito.spy(CacheFactory.class);
-        try {
-            PowerMockito.doReturn(cache).when(CacheFactory.class, "getSharedClient");
-            PowerMockito.doReturn(cache).when(CacheFactory.class, "getClient");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        @SuppressWarnings("unchecked")
-        GetFuture<Object> future = Mockito.mock(GetFuture.class);
-        
-        // default return null for any kind of key
-        when(cache.asyncGet(anyString())).thenReturn(future);
-        try {
-            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(null);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private static void recordMemoryCacheGet(MemcachedClient cache, String key, Object returnObj) {
-        
-        @SuppressWarnings("unchecked")
-        GetFuture<Object> future = Mockito.mock(GetFuture.class);
-        
-        when(cache.asyncGet(key)).thenReturn(future);
-        try {
-            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(returnObj);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
     }
     
     private static String pair(String key, String value) {
@@ -152,7 +101,7 @@ public class PlayerApiServiceTest {
     @Category(NnTestImportant.class)
     public static class testBrandInfo extends PlayerApiServiceTest {
         
-        private MemcachedClient cache;
+        private Map<String, Object> memCache;
         private MsoConfigManager configMngr;
         
         private String brandInfo9x9;
@@ -162,15 +111,16 @@ public class PlayerApiServiceTest {
         @Before
         public void setUp2() {
             
-            cache = Mockito.mock(MemcachedClient.class);
+            memCache = new HashMap<String, Object>();
+            NnTestUtil.initMockMemcache(memCache);
+            
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
+            NNFWrapper.setUserMngr(userMngr);
+            
             configMngr = NNF.getConfigMngr();
             
             NnTestUtil.emptyTable(Mso.class);
             NnTestUtil.emptyTable(MsoConfig.class);
-            
-            setUpMemCacheMock(cache);
-            NNFWrapper.setUserMngr(userMngr);
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
@@ -178,7 +128,7 @@ public class PlayerApiServiceTest {
             // default cache for mso=9x9
             mso9x9 = NnTestUtil.getNnMso();
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso9x9);
+            CacheFactory.set(cacheKey, mso9x9);
             
             // default cache for brandInfo=9x9, at os="web" format="text"
             brandInfo9x9 = "";
@@ -186,7 +136,7 @@ public class PlayerApiServiceTest {
             brandInfo9x9 += PlayerApiService.assembleKeyValue("name", mso9x9.getName());
             defaultOS = PlayerService.OS_WEB;
             cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo9x9);
+            CacheFactory.set(cacheKey, brandInfo9x9);
             
             // default input
             req.setParameter("v", "40");
@@ -201,7 +151,7 @@ public class PlayerApiServiceTest {
         @After
         public void tearDown2() {
             
-            cache = null;
+            memCache = null;
             configMngr = null;
             
             brandInfo9x9 = null;
@@ -215,11 +165,6 @@ public class PlayerApiServiceTest {
             // input
             String brandName = "notExist";
             req.setParameter("mso", brandName);
-            
-            // stubs
-            // mso=notExist unavailable from cache
-            String cacheKey = "mso(" + brandName + ")";
-            recordMemoryCacheGet(cache, cacheKey, null);
             
             // execute
             service.prepService(req, resp, true);
@@ -267,10 +212,10 @@ public class PlayerApiServiceTest {
             // stubs
             // mso=cts available from cache
             String cacheKey = "mso(" + brandName + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo=cts from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -306,7 +251,7 @@ public class PlayerApiServiceTest {
             // stubs
             // brandInfo=cts from cache
             String cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -347,7 +292,7 @@ public class PlayerApiServiceTest {
             // stubs
             // brandInfo(format=json) from cache
             String cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_JSON);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -426,13 +371,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -475,13 +420,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -523,13 +468,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -572,13 +517,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);

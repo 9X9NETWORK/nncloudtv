@@ -18,7 +18,12 @@ import javax.jdo.PersistenceManagerFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 
@@ -110,6 +115,29 @@ public class NnTestUtil {
         PersistenceManager pm = pmf.getPersistenceManager();
         pm.newQuery(clazz).deletePersistentAll();
         pm.close();
+    }
+    
+    public static void initMockMemcache(Map<String, Object> map) {
+        
+        final Map<String, Object> memCache = map;
+        
+        PowerMockito.spy(CacheFactory.class);
+        Mockito.when(CacheFactory.get(Mockito.anyString())).thenAnswer(new Answer<Object>() {
+            
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                return memCache.get(key);
+            }
+        });
+        Mockito.when(CacheFactory.set(Mockito.anyString(), Mockito.anyObject())).thenAnswer(new Answer<Object>() {
+            
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                Object value = (Object) invocation.getArguments()[1];
+                memCache.put(key, value);
+                return memCache.get(key);
+            }
+        });
     }
 
 }
