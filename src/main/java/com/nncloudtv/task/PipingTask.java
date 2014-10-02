@@ -67,12 +67,11 @@ public class PipingTask extends Thread {
             
             
         } catch (IOException e) {
-            log.info(e.getMessage());
+            log.info("IOException");
         } catch (InterruptedException e) {
-            log.info(e.getMessage());
+            log.info("InterruptedException");
         }
-        
-        log.info("total piped size = " + total);
-        log.info("piping finished with keepGoing = " + keepGoing);
+        log.info("... piping finished");
+        log.info("total piped size = " + total + ", keepGoing = " + keepGoing);
     }
 }

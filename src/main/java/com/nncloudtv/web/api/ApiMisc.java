@@ -633,7 +633,9 @@ public class ApiMisc extends ApiGeneric {
             internalError(resp);
             return;
         } catch (IOException e) {
-            // maybe user closed browser
+            log.info(e.getMessage());
+            internalError(resp);
+            return;
         } finally {
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
