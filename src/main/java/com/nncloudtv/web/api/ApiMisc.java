@@ -601,6 +601,7 @@ public class ApiMisc extends ApiGeneric {
         }
         
         FeedingAvconvTask feedingAvconvTask = null;
+        PipingTask pipingTask = null;
         
         try {
             String cmd = "/usr/bin/avconv -v debug -i "
@@ -614,7 +615,7 @@ public class ApiMisc extends ApiGeneric {
             InputStream thumbIn = process.getInputStream();
             resp.setContentType("video/mpegts");
             
-            PipingTask pipingTask = new PipingTask(thumbIn, resp.getOutputStream());
+            pipingTask = new PipingTask(thumbIn, resp.getOutputStream());
             pipingTask.start();
             
             if (videoIn != null) {
@@ -635,9 +636,14 @@ public class ApiMisc extends ApiGeneric {
             log.info(e.getMessage());
             internalError(resp);
             return;
+        } catch (IllegalStateException e) {
+            log.info("streaming is broken, but its ok");
         } finally {
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
+            }
+            if (pipingTask != null) {
+                pipingTask.stopCopying();
             }
         }
     }
