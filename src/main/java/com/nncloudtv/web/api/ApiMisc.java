@@ -619,15 +619,24 @@ public class ApiMisc extends ApiGeneric {
             pipingTask.start();
             
             if (videoIn != null) {
-                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 0);
                 feedingAvconvTask.start();
             }
             
-            pipingTask.join();
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
+            while (pipingTask.isAlive()) {
+                
+                if (!process.isAlive()) {
+                    log.info("converting process finished");
+                    thumbIn.close();
+                    pipingTask.join();
+                    break;
+                }
+                
+                pipingTask.join(500);
             }
+            
             resp.flushBuffer();
+            
         } catch (InterruptedException e) {
             log.info(e.getMessage());
             internalError(resp);
@@ -765,7 +774,7 @@ public class ApiMisc extends ApiGeneric {
             pipingTask.start();
             
             if (videoIn != null) {
-                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 30);
                 feedingAvconvTask.start();
             }
             
