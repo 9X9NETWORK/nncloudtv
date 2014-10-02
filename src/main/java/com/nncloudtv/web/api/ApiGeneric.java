@@ -135,29 +135,28 @@ public class ApiGeneric {
         
     }
     
-	public void internalError(HttpServletResponse resp) {
-	    internalError(resp, null);
-	}
-	
+    public void internalError(HttpServletResponse resp) {
+        internalError(resp, null);
+    }
+    
     @ExceptionHandler(Exception.class)
-	public void internalError(HttpServletResponse resp, Exception e) {
-		
-		try {
-		    resp.resetBuffer();
+    public void internalError(HttpServletResponse resp, Exception e) {
+        
+        try {
+            resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
-			PrintWriter writer = resp.getWriter();
-			if (e != null) {
+            PrintWriter writer = resp.getWriter();
+            if (e != null) {
                 NnLogUtil.logException(e);
-	            writer.println(e.getMessage());
-			}
-			resp.setStatus(HTTP_500);
-			resp.flushBuffer();
-		} catch (IOException ex) {
-			NnLogUtil.logException(ex);
-		}
-	}
-	
+                writer.println(e.getMessage());
+            }
+            resp.setStatus(HTTP_500);
+            resp.flushBuffer();
+        } catch (Exception ex) {
+        }
+    }
+    
     // TODO: rewrite
 	public Long userIdentify(HttpServletRequest req) {
 	    
