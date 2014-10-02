@@ -503,6 +503,145 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
+    @RequestMapping(value = "stream", method = RequestMethod.GET)
+    public void stream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        URL url = null;
+        HttpURLConnection conn = null;
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        try {
+            url = new URL(videoUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
+        } catch (MalformedURLException e) {
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+        } catch (IOException e) {
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+        }
+        
+        InputStream videoIn = null;
+        Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
+        Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
+        Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
+        
+        if (ustreamMatcher.find()) {
+            
+            log.info("ustream url format");
+            
+            videoUrl = UstreamLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing ustream url failed");
+                internalError(resp);
+                return;
+            }
+        } else if (vimeoMatcher.find()) {
+            
+            log.info("vimeo url format");
+            
+            videoUrl = VimeoLib.getDirectVideoUrl(videoUrl);
+            if (videoUrl == null) {
+                log.info("parsing vimeo url failed");
+                internalError(resp);
+                return;
+            }
+        } else if (s3Matcher.find()) {
+            
+            log.info("S3 url format");
+            String bucket = s3Matcher.group(1);
+            String filename = s3Matcher.group(2);
+            Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
+            AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
+                                                                 MsoConfigManager.getAWSKey(mso));
+            AmazonS3 s3 = new AmazonS3Client(credentials);
+            try {
+                S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
+                videoIn = s3Object.getObjectContent();
+            } catch(AmazonS3Exception e) {
+                log.info(e.getMessage());
+                internalError(resp);
+                return;
+            }
+        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+            
+            log.info("youtube url format");
+            String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
+                       + NnStringUtil.escapeURLInShellArg(videoUrl);
+            log.info("[exec] " + cmd);
+            
+            try {
+                Process process = Runtime.getRuntime().exec(cmd);
+                videoIn = process.getInputStream();
+                // piping error message to stdout
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                pipingTask.start();
+            } catch (IOException e) {
+                log.info(e.getMessage());
+                internalError(resp);
+                return;
+            }
+        } else if (url.getProtocol().equals("https")) {
+            
+            log.info("https url format");
+            try {
+                videoIn = conn.getInputStream();
+            } catch (IOException e) {
+                log.info(e.getMessage());
+                internalError(resp);
+                return;
+            }
+        }
+        
+        FeedingAvconvTask feedingAvconvTask = null;
+        
+        try {
+            String cmd = "/usr/bin/avconv -v debug -i "
+                       + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
+                       + " -vcodec mpeg2video -acodec ac3 -f mpegts -y pipe:1";
+            
+            log.info("[exec] " + cmd);
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            
+            InputStream thumbIn = process.getInputStream();
+            resp.setContentType("video/mpegts");
+            
+            PipingTask pipingTask = new PipingTask(thumbIn, resp.getOutputStream());
+            pipingTask.start();
+            
+            if (videoIn != null) {
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask.start();
+            }
+            
+            pipingTask.join();
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
+            resp.flushBuffer();
+        } catch (InterruptedException e) {
+            log.info(e.getMessage());
+            internalError(resp);
+            return;
+        } catch (IOException e) {
+            log.info(e.getMessage());
+            internalError(resp);
+            return;
+        } finally {
+            if (feedingAvconvTask != null) {
+                feedingAvconvTask.stopCopying();
+            }
+        }
+    }
+    
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
     public @ResponseBody List<Map<String, String>> thumbnails(
             HttpServletRequest req, HttpServletResponse resp) {
