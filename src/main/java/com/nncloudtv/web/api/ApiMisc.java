@@ -536,9 +536,17 @@ public class ApiMisc extends ApiGeneric {
                 }
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
-                Long duration = feed.getMediaGroup().getDuration();
-                log.info("playlist duration = " + duration);
                 List<PlaylistEntry> entries = feed.getEntries();
+                Long duration = feed.getMediaGroup().getDuration();
+                if (duration == null) {
+                    
+                    duration = (long) 0;
+                    for (PlaylistEntry entry : entries) {
+                        
+                        duration += entry.getMediaGroup().getDuration();
+                    }
+                }
+                log.info("playlist duration = " + duration);
                 writer.println("#EXTM3U");
                 writer.println("#EXT-X-TARGETDURATION:" + duration);
                 writer.println("#EXT-X-MEDIA-SEQUENCE:1");
