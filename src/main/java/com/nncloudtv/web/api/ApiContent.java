@@ -1,6 +1,8 @@
 package com.nncloudtv.web.api;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -30,6 +32,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
+import com.nncloudtv.lib.UstreamLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -428,6 +431,49 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         return ytProgram;
+    }
+    
+    @RequestMapping(value = "programs/{programId}.ts", method = RequestMethod.GET)
+    public void programStream(@PathVariable("programId") String programIdStr,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long programId = null;
+        try {
+            programId = Long.valueOf(programIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (programId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        NnProgram program = NNF.getProgramMngr().findById(programId);
+        if (program == null) {
+            notFound(resp, "Pogram Not Found");
+            return;
+        }
+        
+        try {
+            
+            UstreamLib.steaming(program.getFileUrl(), resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            log.warning("MalformedURLException");
+            log.warning(e.getMessage());
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "programs/{programId}", method = RequestMethod.GET)
