@@ -193,6 +193,9 @@ public class MsoManager {
             	searchSet = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.SEARCH, c.getValue());            	
             }
+            if (c.getItem().equals(MsoConfig.STORE)) {
+                result += PlayerApiService.assembleKeyValue(MsoConfig.STORE, c.getValue());            	
+            }
             if (c.getItem().equals(MsoConfig.AUDIO_BACKGROUND) && !os.equals(PlayerService.OS_WEB)) {
             	audioSet = true;
             	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, c.getValue());
