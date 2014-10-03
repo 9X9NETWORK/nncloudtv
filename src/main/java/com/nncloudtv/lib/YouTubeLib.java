@@ -33,8 +33,8 @@ public class YouTubeLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     
-    public static final String REGEX_YOUTUBE_PLAYLIST  = "^https?:\\/\\/www\\.youtube\\.com\\/playlist\\?list=([^&]+)";
-    public static final String REGEX_VIDEO_URL         = "^https?:\\/\\/www\\.youtube\\.com\\/watch\\?v=([^&]+)";
+    public static final String REGEX_YOUTUBE_PLAYLIST  = "^https?:\\/\\/www\\.youtube\\.com\\/playlist\\?list=([^&]+).*$";
+    public static final String REGEX_VIDEO_URL         = "^https?:\\/\\/www\\.youtube\\.com\\/watch\\?v=([^&]+).*$";
     public static final String REGEX_VIDEO_ID_STR      = "v=([^&]+)";
     public static final String YOUTUBE_CHANNEL_PREFIX  = "http://www.youtube.com/user/";
     public static final String YOUTUBE_PLAYLIST_PREFIX = "http://www.youtube.com/view_play_list?p=";
