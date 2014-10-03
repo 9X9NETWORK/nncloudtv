@@ -1659,7 +1659,7 @@ public class ApiContent extends ApiGeneric {
             writer.println("#EXTM3U");
             for (NnProgram program : programs) {
                 
-                writer.println("http://" + ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
+                writer.println(ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
             }
             writer.flush();
             writer.close();
