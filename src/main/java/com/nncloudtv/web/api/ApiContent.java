@@ -1681,7 +1681,7 @@ public class ApiContent extends ApiGeneric {
             writer.println("#EXTM3U");
             for (NnProgram program : programs) {
                 
-                writer.println("#EXT-X-STREAM-INF:BANDWITDH=" + 500000 + ",CODECS=mpeg2video, ac3");
+                writer.println("#EXT-X-STREAM-INF:BANDWITDH=" + 500000 + ",CODECS=\"mpeg2video, ac3\"");
                 writer.println("#EXTINF:" + program.getDurationInt() + "," + program.getName());
                 writer.println(ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
             }
