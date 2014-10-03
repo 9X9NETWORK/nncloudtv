@@ -98,8 +98,8 @@ public class ApiContext {
                 
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
-            os = ApiContext.DEFAULT_OS;        	
-
+            os = ApiContext.DEFAULT_OS;
+        
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
             appVersion = os + " " + appVersion;
@@ -158,8 +158,10 @@ public class ApiContext {
         log.info("domain = " + domain);
         List<String> splits = new ArrayList<String>(Arrays.asList(domain.split("\\.")));
         
-        if (splits.size() < 3)
+        if (splits.size() < 3) {
+            
             return MsoManager.isNNMso(mso) ? "www." + domain : mso.getName() + "." + domain;
+        }
         
         log.info("subdomain = " + splits.get(0));
         if (NNF.getMsoMngr().findByName(splits.get(0)) != null) {
@@ -186,7 +188,7 @@ public class ApiContext {
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
             log.info("request from ios");
-            return true;            
+            return true;
         }        
         return false;
     }
@@ -199,5 +201,9 @@ public class ApiContext {
     public long getMsoId() {
         
         return mso.getId();
+    }
+    
+    public String getRoot() {
+        return root;
     }
 }

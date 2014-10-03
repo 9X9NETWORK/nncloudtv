@@ -1633,6 +1633,7 @@ public class ApiContent extends ApiGeneric {
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
     public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -1658,7 +1659,7 @@ public class ApiContent extends ApiGeneric {
             writer.println("#EXTM3U");
             for (NnProgram program : programs) {
                 
-                writer.println("http://" + MsoConfigManager.getServerDomain() + "/api/programs/" + program.getId() + ".ts");
+                writer.println("http://" + ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
             }
             writer.flush();
             writer.close();
