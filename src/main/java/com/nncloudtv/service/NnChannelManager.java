@@ -606,7 +606,7 @@ public class NnChannelManager {
                 }
             };
             
-        }else {
+        } else {
             
             return new Comparator<NnChannel>() {
                 

@@ -195,4 +195,9 @@ public class ApiContext {
         
         return httpReq;
     }
+    
+    public long getMsoId() {
+        
+        return mso.getId();
+    }
 }

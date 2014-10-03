@@ -3370,7 +3370,7 @@ public class PlayerApiService {
         
         String keypair = cfKeypairConfig.getValue();    
         String cfDomainStr = cfSubomainConfig.getValue() + ".cloudfront.net";
-        String privateKeyPath = MsoConfigManager.getCfPrivateKeyPath(mso);
+        String privateKeyPath = MsoConfigManager.getCFPrivateKeyPath(mso);
         log.info("private key path:" + privateKeyPath);
         String videoStr = "";
         for (String u : urls) {    

@@ -12,16 +12,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 
 public class NnTestUtil {
+    
+    private static final PersistenceManagerFactory pmf =
+            JDOHelper.getPersistenceManagerFactory("datanucleus_content.properties");
     
     public static void assertEqualURL(String expectedURL, String actualURL) {
         
@@ -101,11 +110,34 @@ public class NnTestUtil {
         return mso;
     }
     
-    public static void emptyTable(PersistenceManagerFactory pmf, @SuppressWarnings("rawtypes") Class clazz) {
+    public static void emptyTable(@SuppressWarnings("rawtypes") Class clazz) {
+        
+        PersistenceManager pm = pmf.getPersistenceManager();
+        pm.newQuery(clazz).deletePersistentAll();
+        pm.close();
+    }
+    
+    public static void initMockMemcache(Map<String, Object> map) {
+        
+        final Map<String, Object> memCache = map;
+        
+        PowerMockito.spy(CacheFactory.class);
+        Mockito.when(CacheFactory.get(Mockito.anyString())).thenAnswer(new Answer<Object>() {
             
-            PersistenceManager pm = pmf.getPersistenceManager();
-            pm.newQuery(clazz).deletePersistentAll();
-            pm.close();
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                return memCache.get(key);
+            }
+        });
+        Mockito.when(CacheFactory.set(Mockito.anyString(), Mockito.anyObject())).thenAnswer(new Answer<Object>() {
+            
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                String key = (String) invocation.getArguments()[0];
+                Object value = (Object) invocation.getArguments()[1];
+                memCache.put(key, value);
+                return memCache.get(key);
+            }
+        });
     }
 
 }

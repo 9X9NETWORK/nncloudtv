@@ -116,25 +116,25 @@ public class ApiGeneric {
 	public void badRequest(HttpServletResponse resp) {
 		badRequest(resp, null);
 	}
-	
-	public void badRequest(HttpServletResponse resp, String message) {
-		
-		try {
-		    resp.resetBuffer();
+    
+    public void badRequest(HttpServletResponse resp, String message) {
+        
+        try {
+            resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
-			if (message != null) {
-				log.warning(message);
-				resp.getWriter().println(message);
-			}
-			resp.setStatus(400);
-			resp.flushBuffer();
-		} catch (IOException e) {
-			internalError(resp, e);
-		}
-		
-	}
-	
+            if (message != null) {
+                log.warning(message);
+                resp.getWriter().println(message);
+            }
+            resp.setStatus(400);
+            resp.flushBuffer();
+        } catch (IOException e) {
+            internalError(resp, e);
+        }
+        
+    }
+    
 	public void internalError(HttpServletResponse resp) {
 	    internalError(resp, null);
 	}
