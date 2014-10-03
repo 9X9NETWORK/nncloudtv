@@ -36,23 +36,27 @@ public class FeedingAvconvTask extends PipingTask {
         int total = 0, len = 0;
         try {
             do {
-                while (err.ready()) {
-                    String line = err.readLine();
-                    if (line != null && 
-                        (total % 5 == 0 || total < 1000) /* calm the log down*/) {
-                        
-                        log.info("[avconv] " + line);
-                    }
-                }
                 
                 len = in.read(buf);
                 if (len < 0) {
                     
                     break;
+                    
+                } else if (len > 0) {
+                    
+                    total += len;
+                    log.fine(total + " feeded");
+                    out.write(buf, 0, len);
+                    
+                    if (err.ready()) {
+                        String line = err.readLine();
+                        if (line != null && 
+                            (total % 5 == 0 || total < 1000) /* calm the log down*/) {
+                            
+                            log.info("[avconv] " + line);
+                        }
+                    }
                 }
-                total += len;
-                log.fine(total + " feeded");
-                out.write(buf, 0, len);
                 
                 yield();
                 if (in.available() == 0) {
