@@ -49,7 +49,7 @@ public class FeedingAvconvTask extends PipingTask {
                     out.write(buf, 0, len);
                     
                     boolean dirty = false;
-                    if (err.ready()) {
+                    while (err.ready()) {
                         String line = err.readLine();
                         if (line != null) {
                             
