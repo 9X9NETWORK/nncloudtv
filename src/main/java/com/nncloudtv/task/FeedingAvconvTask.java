@@ -38,7 +38,9 @@ public class FeedingAvconvTask extends PipingTask {
             do {
                 while (err.ready()) {
                     String line = err.readLine();
-                    if (line != null && total % 3 == 0) {
+                    if (line != null && 
+                        (total % 5 == 0 || total < 1000) /* calm the log down*/) {
+                        
                         log.info("[avconv] " + line);
                     }
                 }

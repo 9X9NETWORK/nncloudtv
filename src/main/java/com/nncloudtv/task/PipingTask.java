@@ -70,7 +70,7 @@ public class PipingTask extends Thread {
                 out.write(buf, 0, len);
                 
                 // progress log
-                if (total % 7 == 0) {
+                if (total % 13 == 0) {
                     
                     Date now = NnDateUtil.now();
                     long deltaSec = (now.getTime() - lastTime.getTime());
