@@ -1681,11 +1681,12 @@ public class ApiContent extends ApiGeneric {
             writer.println("#EXTM3U");
             for (NnProgram program : programs) {
                 
+                writer.println("#EXTINF:" + program.getDurationInt() + "," + program.getName());
                 writer.println(ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
             }
             writer.flush();
             writer.close();
-            resp.setContentType("application/x-mpegurl");
+            resp.setContentType("application/vnd.apple.mpegurl");
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             
