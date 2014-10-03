@@ -620,7 +620,7 @@ public class ApiMisc extends ApiGeneric {
                 Process process = Runtime.getRuntime().exec(cmd);
                 videoIn = process.getInputStream();
                 // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
                 pipingTask.start();
                 
             } catch (IOException e) {
@@ -652,7 +652,7 @@ public class ApiMisc extends ApiGeneric {
             InputStream thumbIn = process.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             
-            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            PipingTask pipingTask = new PipingTask(thumbIn, baos, 0);
             pipingTask.start();
             
             if (videoIn != null) {

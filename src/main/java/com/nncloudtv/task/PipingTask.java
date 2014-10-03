@@ -3,7 +3,10 @@ package com.nncloudtv.task;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.logging.Logger;
+
+import com.nncloudtv.lib.NnDateUtil;
 
 /**
  * Piping from one input stream to another without blocking
@@ -20,14 +23,18 @@ public class PipingTask extends Thread {
     protected boolean  keepGoing = true;
     protected final int  BUFSIZE = 147457;
     protected byte[]         buf = null;
+    protected Date     startTime = null;
+    protected int    timeoutMili = 0;
     
-    public PipingTask(InputStream in, OutputStream out) {
+    public PipingTask(InputStream in, OutputStream out, int timeout) {
         
         super();
         this.in = in;
         this.out = out;
         this.keepGoing = true;
         this.buf = new byte[BUFSIZE];
+        this.startTime = NnDateUtil.now();
+        this.timeoutMili = timeout * 1000;
     }
     
     public void stopCopying() {
@@ -46,7 +53,11 @@ public class PipingTask extends Thread {
             log.warning("null output stream, abort.");
         }
         
-        int len = 0, total = 0;
+        
+        int  len       = 0;
+        long total     = 0;
+        long lastTotal = 0;
+        Date lastTime  = startTime;
         try {
             do {
                 len = in.read(buf);
@@ -58,18 +69,39 @@ public class PipingTask extends Thread {
                 log.fine(total + " piped");
                 out.write(buf, 0, len);
                 
+                // progress log
+                if (total % 13 == 0) {
+                    
+                    Date now = NnDateUtil.now();
+                    long deltaSec = (now.getTime() - lastTime.getTime()) / 1000;
+                    long deltaLen = total - lastTotal;
+                    float pipingSpeed = (float) deltaLen / deltaSec;
+                    float avarageSpeed = (float) total / (now.getTime() - startTime.getTime());
+                    
+                    log.info("piping speed = " + pipingSpeed + " bps, in avarage = " + avarageSpeed);
+                    
+                    lastTime = now;
+                    lastTotal = total;
+                }
+                
                 yield();
                 if (in.available() == 0) {
                     log.fine("sleep a while");
                     sleep(100);
                 }
+                
+                if (timeoutMili > 0 && NnDateUtil.now().getTime() - startTime.getTime() > timeoutMili) {
+                    
+                    log.warning("streaming is too long, give up.");
+                    break;
+                }
+                
             } while(keepGoing);
             
-            
         } catch (IOException e) {
-            log.info("IOException");
+            log.info(e.getMessage());
         } catch (InterruptedException e) {
-            log.info("InterruptedException");
+            log.info(e.getMessage());
         }
         log.info("... piping finished");
         log.info("total piped size = " + total + ", keepGoing = " + keepGoing);

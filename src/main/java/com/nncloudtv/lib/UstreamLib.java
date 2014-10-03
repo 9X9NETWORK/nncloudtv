@@ -129,7 +129,7 @@ public class UstreamLib {
                 Process process = Runtime.getRuntime().exec(cmd);
                 videoIn = process.getInputStream();
                 // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
                 pipingTask.start();
             } catch (IOException e) {
                 log.warning(e.getMessage());
@@ -158,7 +158,7 @@ public class UstreamLib {
             
             Process process = Runtime.getRuntime().exec(cmd);
             
-            pipingTask = new PipingTask(process.getInputStream(), videoOut);
+            pipingTask = new PipingTask(process.getInputStream(), videoOut, 0);
             pipingTask.start();
             
             if (videoIn != null) {

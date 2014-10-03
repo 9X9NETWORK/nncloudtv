@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import com.nncloudtv.lib.NnDateUtil;
@@ -15,16 +14,12 @@ public class FeedingAvconvTask extends PipingTask {
     
     Process    process = null;
     BufferedReader err = null;
-    Date     startTime = null;
-    int    timeoutMili = 0;
     
     public FeedingAvconvTask(InputStream in, Process process, int timeout) {
         
-        super(in, process.getOutputStream());
+        super(in, process.getOutputStream(), timeout);
         this.process = process;
         this.err = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        this.startTime = NnDateUtil.now();
-        this.timeoutMili = timeout * 1000;
     }
     
     public void run() {
