@@ -1,6 +1,11 @@
 package com.nncloudtv.web.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -18,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -452,7 +458,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setHeader(ApiContext.HEADER_CONTENTTYPE, "video/mpegts");
+        resp.setContentType("video/mpegts");;
         
         try {
             
@@ -1622,6 +1628,58 @@ public class ApiContent extends ApiGeneric {
         }
         
         return ok(resp);
+    }
+    
+    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
+    public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
+        
+        Long episodeId = null;
+        try {
+            episodeId = Long.valueOf(episodeIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (episodeId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        if (episode == null) {
+            
+            notFound(resp, "Episode Not Found");
+            return;
+        }
+        
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeId);
+        
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+            
+            for (NnProgram program : programs) {
+                
+                writer.println("http://" + MsoConfigManager.getServerDomain() + "/api/programs/" + program.getId() + ".ts");
+            }
+            resp.setContentType("application/mpegurl");
+            resp.setContentLength(baos.size());
+            IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+            
+        } catch (UnsupportedEncodingException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "episodes/{episodeId}", method = RequestMethod.GET)

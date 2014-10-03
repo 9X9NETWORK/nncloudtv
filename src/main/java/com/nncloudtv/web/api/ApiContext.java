@@ -26,7 +26,6 @@ public class ApiContext {
     public final static String DEFAULT_OS = "web";
     public final static String HEADER_USER_AGENT = "user-agent";
     public final static String HEADER_REFERRER = "referer";
-    public static final String HEADER_CONTENTTYPE = "Content-Type";
     
     public final static String PARAM_APP_VERSION = "appver";
     public final static String PARAM_OS = "os";
