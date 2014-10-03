@@ -1366,6 +1366,94 @@ public class ApiContent extends ApiGeneric {
         return channelIds;
     }
     
+    
+    @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.HEAD)
+    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        Long channelId = evaluateLong(channelIdStr);
+        if (channelId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
+        if (channel == null) {
+            notFound(resp, "Channel Not Found");
+            return;
+        }
+        
+        resp.setContentType("application/vnd.apple.mpegurl");
+    }
+    
+    @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
+    public void channelStream(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        Long channelId = evaluateLong(channelIdStr);
+        if (channelId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
+        if (channel == null) {
+            notFound(resp, "Channel Not Found");
+            return;
+        }
+        
+        ApiContext ctx = new ApiContext(req);
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channelId);
+        if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("reverse"));
+        } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("timedLinear"));
+        } else {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("seq"));
+        }
+        
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+            
+            int totalDuration = 0;
+            for (NnEpisode episode : episodes) {
+                totalDuration += episode.getDuration();
+            }
+            
+            writer.println("#EXTM3U");
+            writer.println("#EXT-X-TARGETDURATION:" + totalDuration);
+            writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+            for (NnEpisode episode : episodes) {
+                
+                writer.println("#EXTINF:" + episode.getDuration() + "," + episode.getName());
+                writer.println(ctx.getRoot() + "/api/episodes/" + episode.getId() + ".m3u8");
+            }
+            writer.println("#EXT-X-ENDLIST");
+            writer.flush();
+            resp.setContentType("application/vnd.apple.mpegurl");
+            resp.setContentLength(baos.size());
+            IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+            
+        } catch (UnsupportedEncodingException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
+    }
+    
     @RequestMapping(value = "channels/{channelId}/episodes", method = RequestMethod.GET)
     public @ResponseBody
     List<NnEpisode> channelEpisodes(HttpServletResponse resp,
@@ -1649,7 +1737,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("application/x-mpegurl");
+        resp.setContentType("application/vnd.apple.mpegurl");
     }
     
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)

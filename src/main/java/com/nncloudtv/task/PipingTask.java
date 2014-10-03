@@ -99,9 +99,9 @@ public class PipingTask extends Thread {
             } while(keepGoing);
             
         } catch (IOException e) {
-            log.info(e.getMessage());
+            log.info("IO");
         } catch (InterruptedException e) {
-            log.info(e.getMessage());
+            log.info("Interrupted");
         }
         log.info("... piping finished");
         log.info("total piped size = " + total + ", keepGoing = " + keepGoing);
