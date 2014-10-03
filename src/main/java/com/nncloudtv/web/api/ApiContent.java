@@ -1655,13 +1655,14 @@ public class ApiContent extends ApiGeneric {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
             
+            writer.println("#EXTM3U");
             for (NnProgram program : programs) {
                 
                 writer.println("http://" + MsoConfigManager.getServerDomain() + "/api/programs/" + program.getId() + ".ts");
             }
             writer.flush();
             writer.close();
-            resp.setContentType("application/mpegurl");
+            resp.setContentType("application/x-mpegurl");
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             
