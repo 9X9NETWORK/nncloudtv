@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,10 +23,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.youtube.PlaylistEntry;
-import com.google.gdata.data.youtube.PlaylistFeed;
-import com.google.gdata.util.ServiceException;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.task.FeedingAvconvTask;
@@ -88,7 +83,6 @@ public class UstreamLib {
         Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
         Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
         Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
-        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
         
         if (ustreamMatcher.find()) {
             
@@ -141,55 +135,6 @@ public class UstreamLib {
                 log.warning(e.getMessage());
                 return;
             }
-        } else if (ytPlaylistMatcher.find()) {
-            
-            log.info("youtube playlist format");
-            String playlistId = ytPlaylistMatcher.group(1);
-            log.info("playlistId = " + playlistId);
-            
-            try {
-                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
-                
-                List<PlaylistEntry> entries = feed.getEntries();
-                for (PlaylistEntry entry : entries) {
-                    
-                    Link link = entry.getHtmlLink();
-                    String href = link.getHref();
-                    log.info(href);
-                    
-                    
-                    
-                    
-                    
-                }
-                
-                
-                
-                
-            } catch (MalformedURLException e) {
-                
-                log.warning(e.getMessage());
-                return;
-                
-            } catch (IOException e) {
-                
-                log.warning(e.getMessage());
-                return;
-                
-            } catch (ServiceException e) {
-                
-                log.warning("ServiceException");
-                log.warning(e.getMessage());
-                return;
-            }
-            
-            
-            
-            
-            
-            
-            
-            
         } else if (url.getProtocol().equals("https")) {
             
             log.info("https url format");

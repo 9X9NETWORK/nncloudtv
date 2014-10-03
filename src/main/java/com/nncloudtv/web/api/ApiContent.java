@@ -1383,7 +1383,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("application/vnd.apple.mpegurl");
+        resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
     }
     
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
@@ -1431,7 +1431,7 @@ public class ApiContent extends ApiGeneric {
             }
             writer.println("#EXT-X-ENDLIST");
             writer.flush();
-            resp.setContentType("application/vnd.apple.mpegurl");
+            resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             
@@ -1737,7 +1737,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("application/vnd.apple.mpegurl");
+        resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
     }
     
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
@@ -1776,7 +1776,8 @@ public class ApiContent extends ApiGeneric {
             }
             writer.println("#EXT-X-ENDLIST");
             writer.flush();
-            resp.setContentType("application/vnd.apple.mpegurl");
+            
+            resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             

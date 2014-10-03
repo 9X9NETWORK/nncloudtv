@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,6 +26,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,6 +42,9 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
+import com.google.gdata.data.youtube.PlaylistEntry;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -510,6 +516,69 @@ public class ApiMisc extends ApiGeneric {
         log.info("videoUrl = " + videoUrl);
         if (videoUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
+        
+        if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
+            ApiContext ctx = new ApiContext(req);
+            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                if (feed == null) {
+                    log.info("failed to get feed");
+                    return;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+                long duration = feed.getMediaGroup().getDuration();
+                log.info("playlist duration = " + duration);
+                List<PlaylistEntry> entries = feed.getEntries();
+                writer.println("#EXTM3U");
+                writer.println("#EXT-X-TARGETDURATION:" + duration);
+                writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+                for (PlaylistEntry entry : entries) {
+                    
+                    String href = entry.getHtmlLink().getHref();
+                    
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                }
+                writer.println("#EXT-X-ENDLIST");
+                writer.flush();
+                
+                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentLength(baos.size());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            } finally {
+                
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                }
+            }
+            
             return;
         }
         
