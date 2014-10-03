@@ -150,7 +150,7 @@ public class UstreamLib {
         PipingTask pipingTask = null;
         
         try {
-            String cmd = "/usr/bin/avconv -v verbose -i "
+            String cmd = "/usr/bin/avconv -v debug -i "
                        + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
                        + " -vcodec mpeg2video -acodec ac3 -ab 128k -f mpegts -y pipe:1";
             
