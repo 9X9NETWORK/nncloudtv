@@ -452,6 +452,8 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
+        resp.setHeader(ApiContext.HEADER_CONTENTTYPE, "video/mpegts");
+        
         try {
             
             UstreamLib.steaming(program.getFileUrl(), resp.getOutputStream());
