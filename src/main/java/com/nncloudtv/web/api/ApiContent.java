@@ -1659,6 +1659,8 @@ public class ApiContent extends ApiGeneric {
                 
                 writer.println("http://" + MsoConfigManager.getServerDomain() + "/api/programs/" + program.getId() + ".ts");
             }
+            writer.flush();
+            writer.close();
             resp.setContentType("application/mpegurl");
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
