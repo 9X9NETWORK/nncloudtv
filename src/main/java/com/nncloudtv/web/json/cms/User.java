@@ -1,77 +1,29 @@
 package com.nncloudtv.web.json.cms;
 
-import java.io.Serializable;
 import java.util.Date;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
-public class User implements Serializable {
+public class User {
     
-    /**
-     * eclipse generated
-     */
-    private static final long serialVersionUID = 2819895395719371672L;
-
-    private long id;
-    
-    private Date createDate;
-    
-    private Date updateDate;
-    
-    private String userEmail;
-    
+    private long    id;
+    private Date    createDate;
+    private Date    updateDate;
+    private String  userEmail;
+    private String  idStr;
     private boolean fbUser;
-    
-    private String name;
-    
-    private String intro;
-    
-    private String imageUrl;
-    
-    private String lang;
-    
-    private String profileUrl;
-    
-    private short shard;
-    
-    private String sphere;
-    
-    private short type;
-    
-    private int cntSubscribe;
-    
-    private int cntChannel;
-    
-    private int cntFollower;
-    
-    private long msoId;
-    
-    private String msoName;
-    
-    private String priv;
-    
-    public String toString() {
-        return new ToStringBuilder(this).
-            append("id", id).
-            append("createDate", createDate).
-            append("updateDate", updateDate).
-            append("userEmail", userEmail).
-            append("fbUser", fbUser).
-            append("name", name).
-            append("intro", intro).
-            append("imageUrl", imageUrl).
-            append("lang", lang).
-            append("profileUrl", profileUrl).
-            append("shard", shard).
-            append("sphere", sphere).
-            append("type", type).
-            append("cntSubscribe", cntSubscribe).
-            append("cntChannel", cntChannel).
-            append("cntFollower", cntFollower).
-            append("msoId", msoId).
-            append("priv", priv).
-            toString();
-    }
+    private String  name;
+    private String  intro;
+    private String  imageUrl;
+    private String  lang;
+    private String  profileUrl;
+    private short   shard;
+    private String  sphere;
+    private short   type;
+    private int     cntSubscribe;
+    private int     cntChannel;
+    private int     cntFollower;
+    private long    msoId;
+    private String  msoName;
+    private String  priv;
 
     public long getId() {
         return id;
@@ -223,6 +175,14 @@ public class User implements Serializable {
 
     public void setPriv(String priv) {
         this.priv = priv;
+    }
+
+    public String getIdStr() {
+        return idStr;
+    }
+
+    public void setIdStr(String idStr) {
+        this.idStr = idStr;
     }
 
 }
