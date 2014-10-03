@@ -83,6 +83,7 @@ public class UstreamLib {
         Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
         Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
         Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
         
         if (ustreamMatcher.find()) {
             
@@ -118,7 +119,7 @@ public class UstreamLib {
                 log.warning(e.getMessage());
                 return;
             }
-        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+        } else if (videoUrl.matches(YouTubeLib.REGEX_VIDEO_URL)) {
             
             log.info("youtube url format");
             String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
@@ -135,6 +136,20 @@ public class UstreamLib {
                 log.warning(e.getMessage());
                 return;
             }
+        } else if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            log.info("playlistId = " + ytPlaylistMatcher.group(1));
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
         } else if (url.getProtocol().equals("https")) {
             
             log.info("https url format");

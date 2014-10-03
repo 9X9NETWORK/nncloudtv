@@ -29,10 +29,11 @@ public class YouTubeLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     
-    public static final String regexNormalizedVideoUrl = "^https?:\\/\\/www\\.youtube\\.com\\/watch\\?v=[^&]+$";
-    public static final String regexVideoIdStr = "v=([^&]+)";
-    public static final String youtubeChannelPrefix = "http://www.youtube.com/user/";
-    public static final String youtubePlaylistPrefix = "http://www.youtube.com/view_play_list?p=";
+    public static final String REGEX_YOUTUBE_PLAYLIST  = "^https?:\\/\\/www\\.youtube\\.com\\/playlist\\?list=([^&]+)";
+    public static final String REGEX_VIDEO_URL         = "^https?:\\/\\/www\\.youtube\\.com\\/watch\\?v=([^&]+)";
+    public static final String REGEX_VIDEO_ID_STR      = "v=([^&]+)";
+    public static final String YOUTUBE_CHANNEL_PREFIX  = "http://www.youtube.com/user/";
+    public static final String YOUTUBE_PLAYLIST_PREFIX = "http://www.youtube.com/view_play_list?p=";
         
     /** 
      * 1. remove those invalid keywords we already know.
@@ -71,14 +72,14 @@ public class YouTubeLib {
                             "entertainment", "music", "news", "movies",
                             "comedy", "gaming", "sports", "education",
                             "shows", 
-                            "store", "channels", "contests_main"};        
+                            "store", "channels", "contests_main"};
         HashSet<String> dic = new HashSet<String>();
         for (int i=0; i<invalid.length; i++) {
             dic.add(invalid[i]);
         }
         //youtube channel
         String url = null;
-        String reg = "^(http|https)://?(www.)?youtube.com/(user/|profile\\?user=)?(\\w+)";        
+        String reg = "^(http|https)://?(www.)?youtube.com/(user/|profile\\?user=)?(\\w+)";
         Pattern pattern = Pattern.compile(reg);
         Matcher m = pattern.matcher(urlStr);
         while (m.find()) {
@@ -246,7 +247,6 @@ public class YouTubeLib {
            }
         });
         */
-        
         // build the HTTP GET request
         HttpRequest request;
         VideoFeed feed;
@@ -346,7 +346,7 @@ public class YouTubeLib {
             return false;
         }
         
-        return url.matches(regexNormalizedVideoUrl);
+        return url.matches(REGEX_VIDEO_URL);
     }
     
     public static String getYouTubeVideoIdStr(String url) {
@@ -359,7 +359,7 @@ public class YouTubeLib {
             return null;
         }
         
-        Pattern pattern = Pattern.compile(regexVideoIdStr);
+        Pattern pattern = Pattern.compile(REGEX_VIDEO_ID_STR);
         Matcher matcher = pattern.matcher(url);
         
         if (matcher.find()) {

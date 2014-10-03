@@ -609,7 +609,7 @@ public class ApiMisc extends ApiGeneric {
             } catch(AmazonS3Exception e) {
                 log.info(e.getMessage());
             }
-        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+        } else if (videoUrl.matches(YouTubeLib.REGEX_VIDEO_URL)) {
             
             log.info("youtube url format");
             String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
