@@ -1630,6 +1630,28 @@ public class ApiContent extends ApiGeneric {
         return ok(resp);
     }
     
+    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.HEAD)
+    public void episodeStreamHead(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
+        
+        Long episodeId = null;
+        try {
+            episodeId = Long.valueOf(episodeIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (episodeId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        if (episode == null) {
+            
+            notFound(resp, "Episode Not Found");
+            return;
+        }
+        
+        resp.setContentType("application/x-mpegurl");
+    }
+    
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
     public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
         
