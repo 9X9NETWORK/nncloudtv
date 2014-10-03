@@ -48,12 +48,16 @@ public class FeedingAvconvTask extends PipingTask {
                     log.fine(total + " feeded");
                     out.write(buf, 0, len);
                     
+                    boolean dirty = false;
                     if (err.ready()) {
                         String line = err.readLine();
-                        if (line != null && 
-                            (total % 5 == 0 || total < 1000) /* calm the log down*/) {
+                        if (line != null) {
                             
-                            log.info("[avconv] " + line);
+                            if (total < this.BUFSIZE || ( total % 5 == 0 && dirty == false)) {
+                                
+                                System.out.println("[avconv] " + line);
+                                dirty = true;
+                            }
                         }
                     }
                 }
