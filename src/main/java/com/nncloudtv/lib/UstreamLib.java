@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +24,10 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.youtube.PlaylistEntry;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.task.FeedingAvconvTask;
@@ -139,9 +144,44 @@ public class UstreamLib {
         } else if (ytPlaylistMatcher.find()) {
             
             log.info("youtube playlist format");
-            log.info("playlistId = " + ytPlaylistMatcher.group(1));
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
             
-            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                
+                List<PlaylistEntry> entries = feed.getEntries();
+                for (PlaylistEntry entry : entries) {
+                    
+                    Link link = entry.getHtmlLink();
+                    String href = link.getHref();
+                    log.info(href);
+                    
+                    
+                    
+                    
+                    
+                }
+                
+                
+                
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            }
             
             
             

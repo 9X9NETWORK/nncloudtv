@@ -2,6 +2,7 @@ package com.nncloudtv.lib;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,9 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.client.util.Key;
+import com.google.gdata.client.youtube.YouTubeService;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.web.api.NnStatusCode;
 
 public class YouTubeLib {
@@ -367,5 +371,13 @@ public class YouTubeLib {
         }
         
         return null;
+    }
+    
+    public static PlaylistFeed getPlaylistFeed(String playlistId) throws MalformedURLException, IOException, ServiceException {
+        
+        if (playlistId == null) { return null; }
+        YouTubeService service = new YouTubeService("FLIPr.tv");
+        
+        return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
     }
 }
