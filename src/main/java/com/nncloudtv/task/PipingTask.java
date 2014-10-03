@@ -72,18 +72,22 @@ public class PipingTask extends Thread {
                     out.write(buf, 0, len);
                     
                     // progress log
-                    if (total % 13 == 0) {
+                    if (total % 13 == 0 ) {
                         
                         Date now = NnDateUtil.now();
                         long deltaSec = (now.getTime() - lastTime.getTime());
-                        long deltaLen = total - lastTotal;
-                        float pipingSpeed = (float) deltaLen / deltaSec;
-                        float avarageSpeed = (float) total / (now.getTime() - startTime.getTime());
                         
-                        log.info("piping speed = " + pipingSpeed + " kbps, avarage = " + avarageSpeed + " kbps");
-                        
-                        lastTime = now;
-                        lastTotal = total;
+                        if (deltaSec > 1000) {
+                            
+                            long deltaLen = total - lastTotal;
+                            float pipingSpeed = (float) deltaLen / deltaSec;
+                            float avarageSpeed = (float) total / (now.getTime() - startTime.getTime());
+                            
+                            log.info("piping speed = " + pipingSpeed + " kbps, avarage = " + avarageSpeed + " kbps");
+                            
+                            lastTime = now;
+                            lastTotal = total;
+                        }
                     }
                 }
                 
