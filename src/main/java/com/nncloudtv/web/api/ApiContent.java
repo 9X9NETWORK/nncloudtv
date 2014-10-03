@@ -1679,12 +1679,14 @@ public class ApiContent extends ApiGeneric {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
             
             writer.println("#EXTM3U");
+            writer.println("#EXT-X-TARGETDURATION:" + episode.getDuration());
+            writer.println("#EXT-X-MEDIA-SEQUENCE:1");
             for (NnProgram program : programs) {
                 
-                writer.println("#EXT-X-STREAM-INF:BANDWITDH=" + 500000 + ",CODECS=\"mpeg2video, ac3\"");
                 writer.println("#EXTINF:" + program.getDurationInt() + "," + program.getName());
                 writer.println(ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
             }
+            writer.println("#EXT-X-ENDLIST");
             writer.flush();
             resp.setContentType("application/vnd.apple.mpegurl");
             resp.setContentLength(baos.size());
