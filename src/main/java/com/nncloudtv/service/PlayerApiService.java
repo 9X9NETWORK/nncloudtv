@@ -30,6 +30,7 @@ import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -1173,7 +1174,8 @@ public class PlayerApiService {
                                   String userToken, String ipgId,
                                   boolean userInfo, String sidx, String limit,
                                   String start, String count,
-                                  String time) {
+                                  String time) throws NotPurchasedException {
+        
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
@@ -1269,14 +1271,14 @@ public class PlayerApiService {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
                     if (format == PlayerApiService.FORMAT_PLAIN) {
-                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
+                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, context);
                         if (pagination) {
                             NnChannel c = NNF.getChannelMngr().findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
                     } else {
-                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, version, this.format, shortTime, mso);
+                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, context);
                     }
                 }
             }
@@ -1313,14 +1315,14 @@ public class PlayerApiService {
             } else {
                 if (format == PlayerApiService.FORMAT_PLAIN) {
                     long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, version, this.format, shortTime, mso);
+                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, context);
                     if (pagination) {
                         NnChannel c = NNF.getChannelMngr().findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
                 } else {
-                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, version, this.format, shortTime, mso);
+                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, context);
                     playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
@@ -1355,12 +1357,12 @@ public class PlayerApiService {
         //obsolete
         return this.assembleMsgs(NnStatusCode.ERROR, null);                 
     }    
-
+    
     public Object loadIpg(long ipgId) {
         //obsolete
         return this.assembleMsgs(NnStatusCode.ERROR, null);                 
     }            
-
+    
     public Object moveChannel(String userToken, String grid1, String grid2) {        
         //verify input
         if (userToken == null || userToken.length() == 0 || userToken.equals("undefined") || grid1 == null || grid2 == null) {
@@ -1381,7 +1383,7 @@ public class PlayerApiService {
         if (!success) { return this.assembleMsgs(NnStatusCode.SUBSCRIPTION_ERROR, null); }
         return this.assembleMsgs(NnStatusCode.SUCCESS, null);
     }
-
+    
     public Object setSetInfo(String userToken, String name, String pos) {
         //verify input
         if (name == null || pos == null)  {            
@@ -3458,7 +3460,7 @@ public class PlayerApiService {
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
-        NNF.getPurchaseMngr().verifyPurchase(purchase);
+        NNF.getPurchaseMngr().verifyPurchase(purchase, new ApiContext(req));
         
         return getPurchases(userToken, req);
     }

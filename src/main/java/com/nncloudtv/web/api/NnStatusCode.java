@@ -98,5 +98,7 @@ public class NnStatusCode {
     public static final int DATABASE_TIMEOUT = 901;
     public static final int DATABASE_NEED_INDEX = 902;
     public static final int DATABASE_READONLY = 903;
-
+    
+    //1000 in-app-purchase error
+    public static final int IAP_NOT_PURCHASED = 1000;
 }

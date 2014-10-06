@@ -10,12 +10,15 @@ import org.springframework.stereotype.Service;
 
 import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
 import com.nncloudtv.dao.NnPurchaseDao;
+import com.nncloudtv.lib.AppStoreLib;
 import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class NnPurchaseManager {
@@ -33,7 +36,7 @@ public class NnPurchaseManager {
         return dao.findByUserIdStr(user.getIdStr());
     }
     
-    public void verifyPurchase(NnPurchase purchase) {
+    public void verifyPurchase(NnPurchase purchase, ApiContext ctx) {
         
         if (purchase == null) { return; }
         
@@ -60,6 +63,10 @@ public class NnPurchaseManager {
             } finally {
                 save(purchase);
             }
+        } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
+            
+            AppStoreLib.verifyReceipt(purchase, ctx.isProductionSite());
+            
         } else {
             // unknown platform - do nothing
         }
@@ -80,5 +87,25 @@ public class NnPurchaseManager {
     public NnPurchase findByUserAndItem(NnUser user, NnItem item) {
         
         return dao.findOne(user.getIdStr(), item.getId());
+    }
+    
+    // TODO: rewrite
+    public boolean isPurchased(NnUser user, NnChannel channel) {
+        
+        if (user == null || channel == null) { return false; }
+        
+        List<NnPurchase> purchases = findByUser(user);
+        
+        for (NnPurchase purchase : purchases) {
+            
+            NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+            
+            if (item.getChannelId() == channel.getId()) {
+                
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

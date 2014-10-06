@@ -18,7 +18,9 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -32,6 +34,7 @@ import com.nncloudtv.model.PoiPoint;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.PlayerPoi;
 import com.nncloudtv.web.json.player.PlayerTitleCard;
 import com.nncloudtv.web.json.player.ProgramInfo;
@@ -448,16 +451,38 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, int version, short format, short time, Mso mso) {
+    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, short time, ApiContext ctx) throws NotPurchasedException {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) { return ""; }
+        
+        // paid channel check
+        if (channel.isPaidChannel()) {
+            
+            String errMsg = "paid channel";
+            String userToken = ctx.getCookie(CookieHelper.USER);
+            if (userToken == null) {
+                
+                throw new NotPurchasedException(errMsg);
+            }
+            NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
+            if (user == null) {
+                
+                throw new NotPurchasedException(errMsg);
+            }
+            
+            if (NNF.getPurchaseMngr().isPurchased(user, channel) == false) {
+                
+                throw new NotPurchasedException(errMsg);
+            }
+        }
+        
         //don't cache dayparting for now
         log.info("time:" + time);
         String cacheKey = null;
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
-            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, version, format);
+            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVersion(), ctx.getFormat());
             if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
@@ -470,7 +495,7 @@ public class NnProgramManager {
                 }
             }
         }
-        Object output = this.assembleProgramInfo(channel, format, start, end, time, mso);
+        Object output = this.assembleProgramInfo(channel, ctx.getFormat(), start, end, time, ctx.getMso());
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);

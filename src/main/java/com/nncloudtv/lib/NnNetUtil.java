@@ -177,7 +177,7 @@ public class NnNetUtil {
             int index = input.read(data);
             String str = new String(data, 0, index);
             
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {                
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("response not ok!" + connection.getResponseCode());
                 log.info("text = " + str);
             }

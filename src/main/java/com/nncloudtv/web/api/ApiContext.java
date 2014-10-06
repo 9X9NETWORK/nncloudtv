@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
+import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
@@ -69,6 +70,11 @@ public class ApiContext {
     public Mso getMso() {
     
         return mso;
+    }
+    
+    public long getMsoId() {
+        
+        return mso.getId();
     }
     
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
@@ -211,5 +217,10 @@ public class ApiContext {
     public String getLang() {
         
         return locale.getLanguage();
+    }
+    
+    public String getCookie(String cookieName) {
+        
+        return CookieHelper.getCookie(httpReq, cookieName);
     }
 }

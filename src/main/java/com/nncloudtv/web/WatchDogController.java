@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
@@ -206,8 +207,16 @@ public class WatchDogController {
 
     @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programInfo(
-            @RequestParam(value="channel", required=false) String channel) {
-        String result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, 40, PlayerApiService.FORMAT_PLAIN, (short) 0, null);
+            @RequestParam(value="channel", required=false) String channel, HttpServletRequest req) {
+        
+        String result = null;
+        try {
+            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, new ApiContext(req));
+            
+        } catch (NotPurchasedException e1) {
+            
+            return "paid channel";
+        }
         if (result == null)
             return "null, error";
         String output = "";
