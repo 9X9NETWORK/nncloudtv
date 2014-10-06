@@ -765,10 +765,10 @@ public class PlayerApiService {
         if (limit > 200)
             limit = 200;
         if (programInfo)
-            limit = 20;        
+            limit = 20;
         TagManager tagMngr = new TagManager();
         if (tagStr != null) {
-            channels = tagMngr.findChannelsByTag(tagStr, true); //TODO removed            
+            channels = tagMngr.findChannelsByTag(tagStr, true); //TODO removed
         } else {
             channels = NNF.getSysTagMngr().findPlayerChannelsById(display.getSystagId(), display.getLang(), Integer.parseInt(start), 
                     Integer.parseInt(String.valueOf(limit)), SysTag.SORT_DATE, mso.getId());
@@ -777,7 +777,6 @@ public class PlayerApiService {
         Object result = NNF.getDisplayMngr().getPlayerCategoryInfo(display, programInfo, channels, Long.valueOf(start), limit, longTotal, context); 
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
-     
     
     public Object channelStack(String stack, String lang, String userToken, String channel, boolean isReduced) {
         if (stack == null)
