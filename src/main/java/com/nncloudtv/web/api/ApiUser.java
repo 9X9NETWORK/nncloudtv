@@ -31,6 +31,7 @@ import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FacebookError;
@@ -174,7 +175,7 @@ public class ApiUser extends ApiGeneric {
                 it.remove();
             }
         }
-        int rows = 20;
+        int rows = PlayerApiService.PAGING_ROWS;
         Integer rowsI = evaluateInt(req.getParameter("rows"));
         if (rowsI != null && rowsI > 0) {
             rows = rowsI;
