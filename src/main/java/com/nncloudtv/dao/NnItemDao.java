@@ -1,5 +1,6 @@
 package com.nncloudtv.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -15,6 +16,24 @@ public class NnItemDao extends GenericDao<NnItem> {
     public NnItemDao() {
         
         super(NnItem.class);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<NnItem> findByMsoIdAndPlatform(long msoId, short platform) {
+        
+        List<NnItem> detached = new ArrayList<NnItem>();
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnItem.class);
+            query.setFilter("msoId == msoIdParam && billingPlatform == billingPlatformParam && status == " + NnItem.ACTIVE);
+            query.declareParameters("long msoIdParam, short billingPlatformParam");
+            detached = (List<NnItem>) query.execute(msoId, platform);
+            detached = (List<NnItem>) pm.detachCopyAll(detached);
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
+        return detached;
     }
     
     @SuppressWarnings("unchecked")

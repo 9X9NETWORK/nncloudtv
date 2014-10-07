@@ -3424,14 +3424,14 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    public Object addPurchase(String userToken, String productIdRef, String purchaseToken, HttpServletRequest req) {
+    public Object addPurchase(String userToken, String productIdRef, String purchaseToken) {
         
         if (purchaseToken == null || productIdRef == null) {
             return assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
         
         if (userToken == null) {
-            userToken = CookieHelper.getCookie(req, CookieHelper.USER);
+            userToken = context.getCookie(CookieHelper.USER);
             if (userToken == null) {
                 return assembleMsgs(NnStatusCode.USER_INVALID, null);
             }
@@ -3459,15 +3459,15 @@ public class PlayerApiService {
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
-        NNF.getPurchaseMngr().verifyPurchase(purchase, new ApiContext(req));
+        NNF.getPurchaseMngr().verifyPurchase(purchase, context.isProductionSite());
         
-        return getPurchases(userToken, req);
+        return getPurchases(userToken);
     }
     
-    public Object getPurchases(String userToken, HttpServletRequest req) {
+    public Object getPurchases(String userToken) {
         
         if (userToken == null) {
-            userToken = CookieHelper.getCookie(req, CookieHelper.USER);
+            userToken = context.getCookie(CookieHelper.USER);
             if (userToken == null) {
                 return assembleMsgs(NnStatusCode.USER_INVALID, null);
             }
@@ -3495,6 +3495,21 @@ public class PlayerApiService {
         
         String[] result = { purchasesStr };
         
-        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+    
+    public Object getItems() {
+        
+        List<NnItem> items = NNF.getItemMngr().findByMsoAndOs(mso, context.getOs());
+        
+        String purchasesStr = "";
+        for (NnItem item : items) {
+            
+            purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
+        }
+        
+        String[] result = { purchasesStr };
+        
+        return assembleMsgs(NnStatusCode.SUCCESS, result);
     }
 }

@@ -18,7 +18,6 @@ import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class NnPurchaseManager {
@@ -36,7 +35,7 @@ public class NnPurchaseManager {
         return dao.findByUserIdStr(user.getIdStr());
     }
     
-    public void verifyPurchase(NnPurchase purchase, ApiContext ctx) {
+    public void verifyPurchase(NnPurchase purchase, boolean isProduction) {
         
         if (purchase == null) { return; }
         
@@ -65,7 +64,7 @@ public class NnPurchaseManager {
             }
         } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
             
-            AppStoreLib.verifyReceipt(purchase, ctx.isProductionSite());
+            AppStoreLib.verifyReceipt(purchase, isProduction);
             
         } else {
             // unknown platform - do nothing

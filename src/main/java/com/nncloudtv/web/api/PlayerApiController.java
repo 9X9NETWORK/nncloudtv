@@ -3081,7 +3081,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }
-            output = playerApiService.addPurchase(userToken, productIdRef, purchaseToken, req);
+            output = playerApiService.addPurchase(userToken, productIdRef, purchaseToken);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -3106,7 +3106,29 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }
-            output = playerApiService.getPurchases(userToken, req);
+            output = playerApiService.getPurchases(userToken);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+    
+    /**
+     * Get all available items
+     */
+    @RequestMapping(value="getItems")
+    public @ResponseBody Object getItems(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }
+            output = playerApiService.getItems();
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
