@@ -607,7 +607,7 @@ public class NnChannelManager {
                 }
             };
             
-        }else {
+        } else {
             
             return new Comparator<NnChannel>() {
                 
@@ -1260,5 +1260,11 @@ public class NnChannelManager {
             return;
         }
         channel.setAutoSync(channelPrefs.get(0).getValue());
+    }
+    
+    public int calculateUserChannels(NnUser user) {
+        
+        return NNF.getChannelMngr().total("contentType != " + NnChannel.CONTENTTYPE_FAVORITE + 
+                                          " && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
     }
 }

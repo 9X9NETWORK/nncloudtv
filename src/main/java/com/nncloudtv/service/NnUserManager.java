@@ -259,7 +259,7 @@ public class NnUserManager {
         return result;
     }    
 
-    private NnUser setUserProfile(NnUser user) {
+    private NnUser populateUserProfile(NnUser user) {
         if (user != null) {
             log.info("user mso id:" + user.getMsoId());
             NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
@@ -278,7 +278,7 @@ public class NnUserManager {
         NnUser user = dao.findByEmail(email.toLowerCase(), shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }        
@@ -288,7 +288,7 @@ public class NnUserManager {
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }
@@ -315,7 +315,7 @@ public class NnUserManager {
         NnUser user = dao.findByToken(token);
         if (user != null) {
             user.setMsoId(msoId);
-            this.setUserProfile(user);
+            this.populateUserProfile(user);
         }
         return user;
     }
@@ -357,9 +357,8 @@ public class NnUserManager {
         NnUser user = dao.findById(id);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
-        //user.setMsoId(msoId);
         return user;
     }
     
@@ -367,7 +366,7 @@ public class NnUserManager {
         NnUser user = dao.findById(id, shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }
@@ -393,7 +392,7 @@ public class NnUserManager {
         List<NnUser> users = dao.search(email, name, generic, msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);            
+            user = this.populateUserProfile(user);            
         }
         return users;
         
@@ -403,7 +402,7 @@ public class NnUserManager {
         List<NnUser> users = dao.findFeatured(msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);            
+            user = this.populateUserProfile(user);            
         }
         return users;
     }
@@ -412,7 +411,7 @@ public class NnUserManager {
         NnUser user = dao.findByProfileUrl(profileUrl);
         if (user != null)
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         return user;
     }
 

@@ -204,8 +204,8 @@ public class ApiContext {
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
             log.info("request from ios");
-            return true;            
-        }        
+            return true;
+        }
         return false;
     }
     
@@ -223,4 +223,5 @@ public class ApiContext {
         
         return CookieHelper.getCookie(httpReq, cookieName);
     }
+    
 }

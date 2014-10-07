@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -63,7 +64,7 @@ public class ApiContent extends ApiGeneric {
     
     public ApiContent() {
         
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), NNF.getChPrefMngr(), NNF.getEpisodeMngr(), NNF.getProgramMngr());
+        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), NNF.getChPrefMngr(), NNF.getProgramMngr());
     }
     
     @Autowired
@@ -752,12 +753,11 @@ public class ApiContent extends ApiGeneric {
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
             
-            Short contentType = Short.valueOf(contentTypeStr);
+            Short contentType = evaluateShort(contentTypeStr);
             if (contentType == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
-            
             program.setContentType(contentType);
         }
         
@@ -812,7 +812,7 @@ public class ApiContent extends ApiGeneric {
         
         // subSeq
         String subSeqStr = req.getParameter("subSeq");
-        if (subSeqStr == null) {
+        if (subSeqStr == null || subSeqStr.isEmpty()) {
             
             program.setSubSeq(0);
         } else {
@@ -852,7 +852,7 @@ public class ApiContent extends ApiGeneric {
             @RequestParam(required = false, value = "userId") String userIdStr,
             @RequestParam(required = false, value = "ytPlaylistId") String ytPlaylistIdStr,
             @RequestParam(required = false, value = "ytUserId") String ytUserIdStr) {
-    
+        
         List<NnChannel> results = new ArrayList<NnChannel>();
         NnChannelManager channelMngr = NNF.getChannelMngr();
         Mso mso = NNF.getMsoMngr().findOneByName(msoName);
@@ -1338,16 +1338,41 @@ public class ApiContent extends ApiGeneric {
         // page
         String pageStr = req.getParameter("page");
         Long page = evaluateLong(pageStr);
+        if (page == null) {
+            page = (long) 0;
+        }
         
         // rows
         String rowsStr = req.getParameter("rows");
         Long rows = evaluateLong(rowsStr);
+        if (rows == null) {
+            rows = (long) 0;
+        }
         
-        List<NnEpisode> results = apiContentService.channelEpisodes(channel.getId(), page, rows);
-        if (results == null) {
-            internalError(resp);
-            log.warning(printExitState(now, req, "500"));
-            return null;
+        List<NnEpisode> results = new ArrayList<NnEpisode>();
+        if (page > 0 && rows > 0) {
+            
+            if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+                results = NNF.getEpisodeMngr().list(page, rows, "seq", "desc", "channelId == " + channelId);
+            } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+                results = NNF.getEpisodeMngr().listV2(page -1, rows, NnEpisodeDao.LINEAR_ORDERING, "channelId = " + channelId);
+            } else {
+                results = NNF.getEpisodeMngr().list(page, rows, "seq", "asc", "channelId == " + channelId);
+            }
+        } else {
+            results = NNF.getEpisodeMngr().findByChannelId(channelId);
+            if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+                Collections.sort(results, NnEpisodeManager.getComparator("reverse"));
+            } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+                Collections.sort(results, NnEpisodeManager.getComparator("timedLinear"));
+            } else {
+                Collections.sort(results, NnEpisodeManager.getComparator("seq"));
+            }
+        }
+        
+        NNF.getEpisodeMngr().normalize(results);
+        for (NnEpisode episode : results) {
+            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
         log.info(printExitState(now, req, "ok"));
@@ -1859,6 +1884,15 @@ public class ApiContent extends ApiGeneric {
                 }
                 
                 episode.setScheduleDate(new Date(scheduleDateLong));
+            }
+        }
+        
+        // duration
+        String durationStr = req.getParameter("duration");
+        if (durationStr != null) {
+            Integer duration = evaluateInt(durationStr);
+            if (duration != null && duration >= 0) {
+                episode.setDuration(duration);
             }
         }
         

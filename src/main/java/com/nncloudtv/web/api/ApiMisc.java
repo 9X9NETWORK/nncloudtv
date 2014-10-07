@@ -187,13 +187,13 @@ public class ApiMisc extends ApiGeneric {
 		    return null;
 		}
         
-        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId(), (short) 0 /* TODO: rewrite */);
+        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId());
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().total("contentType != 11 && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
@@ -241,7 +241,7 @@ public class ApiMisc extends ApiGeneric {
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
             user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().total("contentType != 11 && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
