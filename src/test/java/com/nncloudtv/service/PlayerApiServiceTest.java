@@ -1206,4 +1206,92 @@ public class PlayerApiServiceTest {
             assertEquals(result, actual);
         }
     }
+    
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({CacheFactory.class})
+    @Category(NnTestImportant.class)
+    public static class testPrepService extends PlayerApiServiceTest {
+        
+        private Map<String, Object> memCache;
+        private Mso defaultMso;
+        
+        @Before
+        public void setUp2() {
+            
+            NnTestUtil.emptyTable(Mso.class);
+            NnTestUtil.emptyTable(MsoConfig.class);
+            
+            memCache = new HashMap<String, Object>();
+            NnTestUtil.initMockMemcache(memCache);
+            
+            defaultMso = NnTestUtil.getNnMso();
+            MsoDao msoDao = NNF.getMsoDao();
+            defaultMso = msoDao.save(defaultMso);
+        }
+        
+        @After
+        public void tearDown2() {
+            
+            memCache = null;
+            defaultMso = null;
+        }
+        
+        @Test
+        public void notProvideVersionNorDatabaseSetting() {
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("missing 'v' in request parameter and without 'v' setting in database " +
+                    "should always see as success operation.", NnStatusCode.SUCCESS, status);
+        }
+        
+        @Test
+        public void notProvideVersionButDatabaseSettingHigherThanDefault() {
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("40");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("missing 'v' setting will evalute to v=31, with database hold v=40 then " +
+                    "should response for 'api force upgrade'.", NnStatusCode.API_FORCE_UPGRADE, status);
+        }
+        
+        @Test
+        public void provideVersionHigherThanDatabaseSetting() {
+            
+            req.setParameter("v", "40");
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("32");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("when 'v' set to v=40, with database hold v=32 then " +
+                    "should return as success operation.", NnStatusCode.SUCCESS, status);
+        }
+        
+        @Test
+        public void provideVersionLowerThanDatabaseSetting() {
+            
+            req.setParameter("v", "32");
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("40");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("when 'v' set to v=32, with database hold v=40 then " +
+                    "should response for 'api force upgrade'.", NnStatusCode.API_FORCE_UPGRADE, status);
+        }
+    }
 }
