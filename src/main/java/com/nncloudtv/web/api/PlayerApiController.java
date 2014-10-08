@@ -1110,9 +1110,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (NotPurchasedException e){

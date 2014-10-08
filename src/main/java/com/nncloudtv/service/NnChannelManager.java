@@ -1150,7 +1150,7 @@ public class NnChannelManager {
             ori.add(channel.getPlayerPrefSource());
             ori.add(String.valueOf(channel.getUpdateDate().getTime()));
             ori.add(String.valueOf(getPlayerDefaultSorting(channel))); //use default sorting for all
-            ori.add(String.valueOf(channel.isPaidChannel())); // paid channel reference
+            ori.add(String.valueOf(channel.isPaidChannel())); //paid channel reference
             ori.add(""); //recently watched program
             ori.add(channel.getOriName());
             ori.add(String.valueOf(channel.getCntSubscribe())); //cnt subscribe, replace
@@ -1160,8 +1160,8 @@ public class NnChannelManager {
             ori.add(""); //userName
             ori.add(""); //userIntro
             ori.add(""); //userImageUrl
-            ori.add(""); //subscriberProfile, used to be subscriber profile urls, will be removed
-            ori.add(""); //subscriberImage, used to be subscriber image urls
+            ori.add(""); //social network, ex: "twitter NBA;facebook ETtoday"
+            ori.add(""); //banner image url
             if (ctx.getVersion() == 32)
                 ori.add(" ");
             else

@@ -33,6 +33,8 @@ public class NnChannelPref implements Serializable {
     public static final String FB_AUTOSHARE    = "fb-autoshare";
     public static final String BRAND_AUTOSHARE = "brand-autoshare"; // indicate which brand the channel sharing at, the value is mso's name
     public static final String AUTO_SYNC       = "auto-sync";       // indicate YouTube-sync-channel is auto sync to YouTube
+    public static final String SOCIAL_FEEDS    = "social-feeds";    // channel related social network information, refer to MsoConfig.SOCIAL_FEEDS
+    public static final String BANNER_IMAGE    = "banner-image";    // banner image url
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
