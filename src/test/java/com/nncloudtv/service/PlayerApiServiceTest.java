@@ -162,39 +162,6 @@ public class PlayerApiServiceTest {
         }
         
         @Test
-        public void notExistMso() {
-            
-            // input
-            String brandName = "notExist";
-            req.setParameter("mso", brandName);
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not exist mso should return as default(mso=9x9) brand info.",
-                    ((String) actual).contains(brandInfo9x9));
-        }
-        
-        @Test
-        public void notProvideMso() {
-            
-            // input
-            req.removeParameter("mso");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not provide mso should return as default(mso=9x9) brand info.",
-                    ((String) actual).contains(brandInfo9x9));
-        }
-        
-        @Test
         public void existMso() {
             
             // input
@@ -226,43 +193,6 @@ public class PlayerApiServiceTest {
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
             assertTrue("Provide exist mso should return as its brand info.", ((String) actual).contains(brandInfo));
-        }
-        
-        @Test
-        public void existMsoFromRoot() {
-            
-            // input
-            String brandName = "cts";
-            req.removeParameter("mso");
-            req.setServerName(brandName + ".flipr.tv");
-            req.setRequestURI("/playerAPI/brandInfo");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            mso.setName(brandName);
-            mso.setType(Mso.TYPE_MSO);
-            
-            // mso=cts available from database
-            MsoDao msoDao = NNF.getMsoDao();
-            mso = msoDao.save(mso);
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // brandInfo=cts from cache
-            String cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            CacheFactory.set(cacheKey, brandInfo);
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Provide exist mso from root domain should return as its brand info.",
-                    ((String) actual).contains(brandInfo));
         }
         
         @Test
@@ -1305,6 +1235,94 @@ public class PlayerApiServiceTest {
                 format.setAccessible(true);
                 assertEquals("parameter format not provide should see as default format=text to access.",
                         PlayerApiService.FORMAT_PLAIN, format.getShort(service));
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notExistMso() {
+            
+            req.setParameter("mso", "notExist");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                    fail("Not exist mso should see as default(mso=9x9) to access.");
+                }
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notProvideMso() {
+            
+            req.removeParameter("mso");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                    fail("Not provide mso should see as default(mso=9x9) to access.");
+                }
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void existMsoFromRoot() {
+            
+            String brandName = "cts";
+            req.removeParameter("mso");
+            req.setServerName(brandName + ".flipr.tv");
+            req.setRequestURI("/playerAPI/brandInfo");
+            
+            Mso mso = NnTestUtil.getNnMso();
+            mso.setName(brandName);
+            mso.setType(Mso.TYPE_MSO);
+            
+            // mso=cts available from database
+            NNF.getMsoDao().save(mso);
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != brandName) {
+                    fail("Provide exist mso from root domain should set it to further access.");
+                }
                 
             } catch (SecurityException e) {
                 fail(e.toString());
