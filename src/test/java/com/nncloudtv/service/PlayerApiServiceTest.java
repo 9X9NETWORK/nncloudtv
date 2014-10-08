@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -305,40 +307,6 @@ public class PlayerApiServiceTest {
             BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
             assertEquals("Should return wanted(format=json) brand info.", brandInfo.getKey(), actualBrandInfo.getKey());
             assertEquals("Should return wanted(format=json) brand info.", brandInfo.getName(), actualBrandInfo.getName());
-        }
-        
-        @Test
-        public void provideUnknownFormat() {
-            
-            // TODO discuz, provide unknown format parameter test case apply for all player api, need each api write one ?
-            
-            // input
-            req.setParameter("format", "xyz");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=xyz(unknown format) should return text format response.", actual instanceof String);
-            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
-        }
-        
-        @Test
-        public void notProvideFormat() {
-            
-            // TODO discuz, not provide format parameter test case apply for all player api, need each api write one ?
-            
-            // input
-            req.removeParameter("format");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format not provide should return text format response.", actual instanceof String);
-            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -1218,6 +1186,9 @@ public class PlayerApiServiceTest {
         @Before
         public void setUp2() {
             
+            // replace mock one, mock hide field that we want to verify
+            service = new PlayerApiService();
+            
             NnTestUtil.emptyTable(Mso.class);
             NnTestUtil.emptyTable(MsoConfig.class);
             
@@ -1239,6 +1210,8 @@ public class PlayerApiServiceTest {
         @Test
         public void notProvideVersionNorDatabaseSetting() {
             
+            req.removeParameter("v");
+            
             int status = service.prepService(req, resp);
             
             assertEquals("missing 'v' in request parameter and without 'v' setting in database " +
@@ -1247,6 +1220,8 @@ public class PlayerApiServiceTest {
         
         @Test
         public void notProvideVersionButDatabaseSettingHigherThanDefault() {
+            
+            req.removeParameter("v");
             
             MsoConfig minVersion = new MsoConfig();
             minVersion.setMsoId(defaultMso.getId());
@@ -1292,6 +1267,54 @@ public class PlayerApiServiceTest {
             
             assertEquals("when 'v' set to v=32, with database hold v=40 then " +
                     "should response for 'api force upgrade'.", NnStatusCode.API_FORCE_UPGRADE, status);
+        }
+        
+        @Test
+        public void provideUnknownFormat() {
+            
+            req.setParameter("format", "xyz");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("format");
+                format.setAccessible(true);
+                assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
+                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notProvideFormat() {
+            
+            req.removeParameter("format");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("format");
+                format.setAccessible(true);
+                assertEquals("parameter format not provide should see as default format=text to access.",
+                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
         }
     }
 }
