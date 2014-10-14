@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -507,6 +508,29 @@ public class ApiMisc extends ApiGeneric {
         }
         
         return empty;
+    }
+    
+    @RequestMapping(value = "cors/{uri}", method = RequestMethod.HEAD)
+    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("uri") String uriStr) {
+        
+        String urlStr = req.getScheme() + "://" + uriStr;
+        log.info("urlStr = " + urlStr);
+        
+        try {
+            URL url = new URL(urlStr);
+            
+        } catch (MalformedURLException e) {
+            
+            log.info("invalid uri");
+            badRequest(resp);
+        }
+        
+        
+        
+        
+        
+        
     }
     
     @RequestMapping(value = "stream", method = RequestMethod.GET)
