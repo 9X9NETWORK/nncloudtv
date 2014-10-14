@@ -562,11 +562,11 @@ public class ApiMisc extends ApiGeneric {
             InputStream in = conn.getInputStream();
             
             Map<String, List<String>> headerFields = conn.getHeaderFields();
-            headerFields.remove(null);
             
             for (Entry<String, List<String>> entry : headerFields.entrySet()) {
                 
                 String key = entry.getKey();
+                if (key == null) continue;
                 List<String> values = entry.getValue();
                 
                 for (String value : values) {
