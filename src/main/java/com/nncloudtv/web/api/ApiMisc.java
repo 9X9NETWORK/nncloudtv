@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -501,6 +502,133 @@ public class ApiMisc extends ApiGeneric {
         }
         
         return empty;
+    }
+    
+    @RequestMapping(value = "cors/{uri}", method = RequestMethod.HEAD)
+    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("uri") String uriStr) {
+        
+        String urlStr = req.getScheme() + "://" + uriStr;
+        log.info("urlStr = " + urlStr);
+        
+        try {
+            URL url = new URL(urlStr);
+            
+        } catch (MalformedURLException e) {
+            
+            log.info("invalid uri");
+            badRequest(resp);
+        }
+        
+        
+        
+        
+        
+        
+    }
+    
+    @RequestMapping(value = "stream", method = RequestMethod.GET)
+    public void stream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
+        
+        if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
+            ApiContext ctx = new ApiContext(req);
+            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                if (feed == null) {
+                    log.info("failed to get feed");
+                    return;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+                List<PlaylistEntry> entries = feed.getEntries();
+                Long duration = feed.getMediaGroup().getDuration();
+                if (duration == null) {
+                    
+                    duration = (long) 0;
+                    for (PlaylistEntry entry : entries) {
+                        
+                        duration += entry.getMediaGroup().getDuration();
+                    }
+                }
+                log.info("playlist duration = " + duration);
+                writer.println("#EXTM3U");
+                writer.println("#EXT-X-TARGETDURATION:" + duration);
+                writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+                for (PlaylistEntry entry : entries) {
+                    
+                    String href = entry.getHtmlLink().getHref();
+                    
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                }
+                writer.println("#EXT-X-ENDLIST");
+                writer.flush();
+                
+                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentLength(baos.size());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            } finally {
+                
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                }
+            }
+            
+            return;
+        }
+        
+        try {
+            
+            UstreamLib.steaming(videoUrl, resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
