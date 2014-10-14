@@ -510,39 +510,8 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
-    @RequestMapping(value = "cors", method = RequestMethod.HEAD)
-    public void corsHead(HttpServletResponse resp, HttpServletRequest req) {
-        
-        String urlStr = req.getParameter("url");
-        log.info("urlStr = " + urlStr);
-        if (urlStr == null) {
-            
-            log.warning("missing parameter");
-            badRequest(resp);
-            return;
-        }
-        
-        try {
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            
-        } catch (MalformedURLException e) {
-            
-            log.info("invalid url");
-            badRequest(resp);
-            return;
-            
-        } catch (IOException e) {
-            
-            internalError(resp);
-            return;
-        }
-        
-    }
-    
     @RequestMapping(value = "cors", method = RequestMethod.GET)
-    public void corsGet(HttpServletResponse resp, HttpServletRequest req) {
+    public void cors(HttpServletResponse resp, HttpServletRequest req) {
         
         String urlStr = req.getParameter("url");
         log.info("urlStr = " + urlStr);
