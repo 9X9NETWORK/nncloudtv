@@ -504,20 +504,33 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
-    @RequestMapping(value = "cors/{uri:.+}", method = RequestMethod.HEAD)
-    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
-            @PathVariable("uri") String uriStr) {
+    @RequestMapping(value = "cors", method = RequestMethod.HEAD)
+    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req) {
         
-        String urlStr = req.getScheme() + "://" + uriStr;
+        String urlStr = req.getParameter("url");
         log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            log.warning("missing parameter");
+            badRequest(resp);
+            return;
+        }
         
         try {
             URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
             
         } catch (MalformedURLException e) {
             
-            log.info("invalid uri");
+            log.info("invalid url");
             badRequest(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            internalError(resp);
+            return;
         }
         
         
