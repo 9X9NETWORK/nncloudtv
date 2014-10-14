@@ -562,6 +562,7 @@ public class ApiMisc extends ApiGeneric {
             InputStream in = conn.getInputStream();
             
             Map<String, List<String>> headerFields = conn.getHeaderFields();
+            headerFields.remove(null);
             
             for (Entry<String, List<String>> entry : headerFields.entrySet()) {
                 
