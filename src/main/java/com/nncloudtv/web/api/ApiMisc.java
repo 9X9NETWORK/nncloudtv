@@ -557,6 +557,7 @@ public class ApiMisc extends ApiGeneric {
             
         } catch (IOException e) {
             
+            log.info(e.getMessage());
             internalError(resp);
             return;
         }
