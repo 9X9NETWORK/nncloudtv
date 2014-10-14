@@ -504,7 +504,7 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
-    @RequestMapping(value = "cors/{uri}", method = RequestMethod.HEAD)
+    @RequestMapping(value = "cors/{uri:.+}", method = RequestMethod.HEAD)
     public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("uri") String uriStr) {
         
