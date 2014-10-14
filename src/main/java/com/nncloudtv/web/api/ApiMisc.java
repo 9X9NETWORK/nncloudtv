@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -28,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -511,7 +511,7 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping(value = "cors", method = RequestMethod.HEAD)
-    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req) {
+    public void corsHead(HttpServletResponse resp, HttpServletRequest req) {
         
         String urlStr = req.getParameter("url");
         log.info("urlStr = " + urlStr);
@@ -539,10 +539,57 @@ public class ApiMisc extends ApiGeneric {
             return;
         }
         
+    }
+    
+    @RequestMapping(value = "cors", method = RequestMethod.GET)
+    public void corsGet(HttpServletResponse resp, HttpServletRequest req) {
         
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            log.warning("missing parameter");
+            badRequest(resp);
+            return;
+        }
         
-        
-        
+        try {
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
+            InputStream in = conn.getInputStream();
+            
+            Map<String, List<String>> headerFields = conn.getHeaderFields();
+            
+            for (Entry<String, List<String>> entry : headerFields.entrySet()) {
+                
+                String key = entry.getKey();
+                List<String> values = entry.getValue();
+                
+                for (String value : values) {
+                    
+                    resp.setHeader(key, value);
+                    System.out.println(key + ": " + value);
+                }
+            }
+            
+            resp.setStatus(conn.getResponseCode());
+            IOUtils.copy(in, resp.getOutputStream());
+            resp.flushBuffer();
+            
+        } catch (MalformedURLException e) {
+            
+            log.info("invalid url");
+            badRequest(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            internalError(resp);
+            return;
+        }
         
     }
     
