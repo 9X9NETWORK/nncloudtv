@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -16,22 +17,17 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.internal.GetFuture;
 
 import org.junit.After;
 import org.junit.Before;
@@ -90,57 +86,12 @@ public class PlayerApiServiceTest {
     
     @After
     public void tearDown() {
+        
         req = null;
         resp = null;
         service = null;
         
         NNFWrapper.empty();
-    }
-    
-    private static void setUpMemCacheMock(MemcachedClient cache) {
-        
-        CacheFactory.isEnabled = true;
-        CacheFactory.isRunning = true;
-        
-        PowerMockito.spy(CacheFactory.class);
-        try {
-            PowerMockito.doReturn(cache).when(CacheFactory.class, "getSharedClient");
-            PowerMockito.doReturn(cache).when(CacheFactory.class, "getClient");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        @SuppressWarnings("unchecked")
-        GetFuture<Object> future = Mockito.mock(GetFuture.class);
-        
-        // default return null for any kind of key
-        when(cache.asyncGet(anyString())).thenReturn(future);
-        try {
-            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(null);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private static void recordMemoryCacheGet(MemcachedClient cache, String key, Object returnObj) {
-        
-        @SuppressWarnings("unchecked")
-        GetFuture<Object> future = Mockito.mock(GetFuture.class);
-        
-        when(cache.asyncGet(key)).thenReturn(future);
-        try {
-            when(future.get(anyInt(), (TimeUnit) anyObject())).thenReturn(returnObj);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
     }
     
     private static String pair(String key, String value) {
@@ -152,7 +103,7 @@ public class PlayerApiServiceTest {
     @Category(NnTestImportant.class)
     public static class testBrandInfo extends PlayerApiServiceTest {
         
-        private MemcachedClient cache;
+        private Map<String, Object> memCache;
         private MsoConfigManager configMngr;
         
         private String brandInfo9x9;
@@ -162,15 +113,16 @@ public class PlayerApiServiceTest {
         @Before
         public void setUp2() {
             
-            cache = Mockito.mock(MemcachedClient.class);
+            memCache = new HashMap<String, Object>();
+            NnTestUtil.initMockMemcache(memCache);
+            
             NnUserManager userMngr = Mockito.spy(new NnUserManager());
+            NNFWrapper.setUserMngr(userMngr);
+            
             configMngr = NNF.getConfigMngr();
             
             NnTestUtil.emptyTable(Mso.class);
             NnTestUtil.emptyTable(MsoConfig.class);
-            
-            setUpMemCacheMock(cache);
-            NNFWrapper.setUserMngr(userMngr);
             
             // must stub, call network access
             doReturn("zh").when(userMngr).findLocaleByHttpRequest(req);
@@ -178,7 +130,7 @@ public class PlayerApiServiceTest {
             // default cache for mso=9x9
             mso9x9 = NnTestUtil.getNnMso();
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso9x9);
+            CacheFactory.set(cacheKey, mso9x9);
             
             // default cache for brandInfo=9x9, at os="web" format="text"
             brandInfo9x9 = "";
@@ -186,7 +138,7 @@ public class PlayerApiServiceTest {
             brandInfo9x9 += PlayerApiService.assembleKeyValue("name", mso9x9.getName());
             defaultOS = PlayerService.OS_WEB;
             cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo9x9);
+            CacheFactory.set(cacheKey, brandInfo9x9);
             
             // default input
             req.setParameter("v", "40");
@@ -201,50 +153,12 @@ public class PlayerApiServiceTest {
         @After
         public void tearDown2() {
             
-            cache = null;
+            memCache = null;
             configMngr = null;
             
             brandInfo9x9 = null;
             mso9x9 = null;
             defaultOS = null;
-        }
-        
-        @Test
-        public void notExistMso() {
-            
-            // input
-            String brandName = "notExist";
-            req.setParameter("mso", brandName);
-            
-            // stubs
-            // mso=notExist unavailable from cache
-            String cacheKey = "mso(" + brandName + ")";
-            recordMemoryCacheGet(cache, cacheKey, null);
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not exist mso should return as default(mso=9x9) brand info.",
-                    ((String) actual).contains(brandInfo9x9));
-        }
-        
-        @Test
-        public void notProvideMso() {
-            
-            // input
-            req.removeParameter("mso");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Not provide mso should return as default(mso=9x9) brand info.",
-                    ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -267,10 +181,10 @@ public class PlayerApiServiceTest {
             // stubs
             // mso=cts available from cache
             String cacheKey = "mso(" + brandName + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo=cts from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -279,43 +193,6 @@ public class PlayerApiServiceTest {
             // verify
             assertTrue("parameter format=text should return text format response.", actual instanceof String);
             assertTrue("Provide exist mso should return as its brand info.", ((String) actual).contains(brandInfo));
-        }
-        
-        @Test
-        public void existMsoFromRoot() {
-            
-            // input
-            String brandName = "cts";
-            req.removeParameter("mso");
-            req.setServerName(brandName + ".flipr.tv");
-            req.setRequestURI("/playerAPI/brandInfo");
-            
-            // mock data
-            Mso mso = NnTestUtil.getNnMso();
-            mso.setName(brandName);
-            mso.setType(Mso.TYPE_MSO);
-            
-            // mso=cts available from database
-            MsoDao msoDao = NNF.getMsoDao();
-            mso = msoDao.save(mso);
-            
-            String brandInfo = "";
-            brandInfo += PlayerApiService.assembleKeyValue("key", String.valueOf(mso.getId()));
-            brandInfo += PlayerApiService.assembleKeyValue("name", mso.getName());
-            
-            // stubs
-            // brandInfo=cts from cache
-            String cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=text should return text format response.", actual instanceof String);
-            assertTrue("Provide exist mso from root domain should return as its brand info.",
-                    ((String) actual).contains(brandInfo));
         }
         
         @Test
@@ -347,7 +224,7 @@ public class PlayerApiServiceTest {
             // stubs
             // brandInfo(format=json) from cache
             String cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_JSON);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -360,40 +237,6 @@ public class PlayerApiServiceTest {
             BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
             assertEquals("Should return wanted(format=json) brand info.", brandInfo.getKey(), actualBrandInfo.getKey());
             assertEquals("Should return wanted(format=json) brand info.", brandInfo.getName(), actualBrandInfo.getName());
-        }
-        
-        @Test
-        public void provideUnknownFormat() {
-            
-            // TODO discuz, provide unknown format parameter test case apply for all player api, need each api write one ?
-            
-            // input
-            req.setParameter("format", "xyz");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format=xyz(unknown format) should return text format response.", actual instanceof String);
-            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
-        }
-        
-        @Test
-        public void notProvideFormat() {
-            
-            // TODO discuz, not provide format parameter test case apply for all player api, need each api write one ?
-            
-            // input
-            req.removeParameter("format");
-            
-            // execute
-            service.prepService(req, resp, true);
-            Object actual = service.brandInfo(defaultOS, req);
-            
-            // verify
-            assertTrue("parameter format not provide should return text format response.", actual instanceof String);
-            assertTrue("Should return default(format=text) brand info.", ((String) actual).contains(brandInfo9x9));
         }
         
         @Test
@@ -426,13 +269,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -475,13 +318,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -523,13 +366,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -572,13 +415,13 @@ public class PlayerApiServiceTest {
             // stubs
             // only mso=9x9 available from cache, overwrite original one, becuz need mso equality check at later stub
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
-            recordMemoryCacheGet(cache, cacheKey, mso);
+            CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
             cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, brandInfo);
+            CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
             cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-            recordMemoryCacheGet(cache, cacheKey, adInfo);
+            CacheFactory.set(cacheKey, adInfo);
             
             // execute
             service.prepService(req, resp, true);
@@ -1259,6 +1102,237 @@ public class PlayerApiServiceTest {
             verify(service).assembleMsgs(NnStatusCode.SUCCESS, raw);
             
             assertEquals(result, actual);
+        }
+    }
+    
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({CacheFactory.class})
+    @Category(NnTestImportant.class)
+    public static class testPrepService extends PlayerApiServiceTest {
+        
+        private Map<String, Object> memCache;
+        private Mso defaultMso;
+        
+        @Before
+        public void setUp2() {
+            
+            // replace mock one, mock hide field that we want to verify
+            service = new PlayerApiService();
+            
+            NnTestUtil.emptyTable(Mso.class);
+            NnTestUtil.emptyTable(MsoConfig.class);
+            
+            memCache = new HashMap<String, Object>();
+            NnTestUtil.initMockMemcache(memCache);
+            
+            defaultMso = NnTestUtil.getNnMso();
+            MsoDao msoDao = NNF.getMsoDao();
+            defaultMso = msoDao.save(defaultMso);
+        }
+        
+        @After
+        public void tearDown2() {
+            
+            memCache = null;
+            defaultMso = null;
+        }
+        
+        @Test
+        public void notProvideVersionNorDatabaseSetting() {
+            
+            req.removeParameter("v");
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("missing 'v' in request parameter and without 'v' setting in database " +
+                    "should always see as success operation.", NnStatusCode.SUCCESS, status);
+        }
+        
+        @Test
+        public void notProvideVersionButDatabaseSettingHigherThanDefault() {
+            
+            req.removeParameter("v");
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("40");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("missing 'v' setting will evalute to v=31, with database hold v=40 then " +
+                    "should response for 'api force upgrade'.", NnStatusCode.API_FORCE_UPGRADE, status);
+        }
+        
+        @Test
+        public void provideVersionHigherThanDatabaseSetting() {
+            
+            req.setParameter("v", "40");
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("32");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("when 'v' set to v=40, with database hold v=32 then " +
+                    "should return as success operation.", NnStatusCode.SUCCESS, status);
+        }
+        
+        @Test
+        public void provideVersionLowerThanDatabaseSetting() {
+            
+            req.setParameter("v", "32");
+            
+            MsoConfig minVersion = new MsoConfig();
+            minVersion.setMsoId(defaultMso.getId());
+            minVersion.setItem(MsoConfig.API_MINIMAL);
+            minVersion.setValue("40");
+            NNF.getConfigMngr().save(defaultMso, minVersion);
+            
+            int status = service.prepService(req, resp);
+            
+            assertEquals("when 'v' set to v=32, with database hold v=40 then " +
+                    "should response for 'api force upgrade'.", NnStatusCode.API_FORCE_UPGRADE, status);
+        }
+        
+        @Test
+        public void provideUnknownFormat() {
+            
+            req.setParameter("format", "xyz");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("format");
+                format.setAccessible(true);
+                assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
+                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notProvideFormat() {
+            
+            req.removeParameter("format");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("format");
+                format.setAccessible(true);
+                assertEquals("parameter format not provide should see as default format=text to access.",
+                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notExistMso() {
+            
+            req.setParameter("mso", "notExist");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                    fail("Not exist mso should see as default(mso=9x9) to access.");
+                }
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void notProvideMso() {
+            
+            req.removeParameter("mso");
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                    fail("Not provide mso should see as default(mso=9x9) to access.");
+                }
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+        }
+        
+        @Test
+        public void existMsoFromRoot() {
+            
+            String brandName = "cts";
+            req.removeParameter("mso");
+            req.setServerName(brandName + ".flipr.tv");
+            req.setRequestURI("/playerAPI/brandInfo");
+            
+            Mso mso = NnTestUtil.getNnMso();
+            mso.setName(brandName);
+            mso.setType(Mso.TYPE_MSO);
+            
+            // mso=cts available from database
+            NNF.getMsoDao().save(mso);
+            
+            service.prepService(req, resp);
+            
+            try {
+                Field format = service.getClass().getDeclaredField("mso");
+                format.setAccessible(true);
+                Mso actual = (Mso) format.get(service);
+                if (actual == null || actual.getName() != brandName) {
+                    fail("Provide exist mso from root domain should set it to further access.");
+                }
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
         }
     }
 }
