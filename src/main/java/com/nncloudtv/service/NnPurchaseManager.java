@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
@@ -14,6 +16,7 @@ import com.nncloudtv.lib.AppStoreLib;
 import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
@@ -38,14 +41,20 @@ public class NnPurchaseManager {
     public void verifyPurchase(NnPurchase purchase, boolean isProduction) {
         
         if (purchase == null) { return; }
-        
+        log.info("verify purchase, purchaseId = " + purchase.getId());
         NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
         
         if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
             
             try {
+                
                 purchase.setVerified(false);
                 SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
+                if (subscription == null) {
+                    
+                    log.warning("fail to get subscriptionPurchase");
+                    return;
+                }
                 purchase.setExpireDate(new Date(subscription.getExpiryTimeMillis()));
                 purchase.setVerified(true);
                 if (purchase.getExpireDate().before(NnDateUtil.now())) {
@@ -53,22 +62,78 @@ public class NnPurchaseManager {
                 } else {
                     purchase.setStatus(NnPurchase.ACTIVE);
                 }
+                
             } catch (GeneralSecurityException e) {
+                
                 log.warning("GeneralSecurityException");
                 log.warning(e.getMessage());
+                
             } catch (IOException e) {
+                
                 log.warning("IOException");
                 log.warning(e.getMessage());
+                
             } finally {
+                
                 save(purchase);
             }
+            
         } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
             
-            AppStoreLib.verifyReceipt(purchase, isProduction);
+            JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
+            if (receipt == null) {
+                
+                log.warning("fail to get receipt");
+                return;
+            }
+            
+            try {
+                
+                purchase.setExpireDate(new Date(receipt.getLong("expires_date")));
+                String productIdRef = receipt.getString("product_id");
+                // check productId
+                if (item.getProductIdRef().equals(productIdRef) == false) {
+                    
+                    log.warning("productIdRef not match");
+                    purchase.setVerified(false);
+                    purchase.setStatus(NnPurchase.INVALID);
+                    save(purchase);
+                    
+                    return;
+                }
+                // check bundleId
+                Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
+                String bundleId = MsoConfigManager.getAppStoreBundleId(mso);
+                if (bundleId.equals(receipt.getString("app_item_id")) == false) {
+                    
+                    log.warning("bundleId not match");
+                    purchase.setVerified(false);
+                    purchase.setStatus(NnPurchase.INACTIVE);
+                    save(purchase);
+                    
+                    return;
+                }
+                
+                purchase.setVerified(true);
+                if (purchase.getExpireDate().before(NnDateUtil.now())) {
+                    purchase.setStatus(NnPurchase.INACTIVE);
+                } else {
+                    purchase.setStatus(NnPurchase.ACTIVE);
+                }
+                
+            } catch (JSONException e) {
+                
+            } finally {
+                
+                save(purchase);
+            }
             
         } else {
+            
+            log.warning("not supported platform");
             // unknown platform - do nothing
         }
+        
     }
     
     public NnPurchase save(NnPurchase purchase) {

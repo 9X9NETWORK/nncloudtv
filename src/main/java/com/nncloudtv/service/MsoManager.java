@@ -469,14 +469,14 @@ public class MsoManager {
         
         if (extend) {
             
-            return populateMso(mso);
+            populateMso(mso);
         }
         
         return mso;
         
     }
     
-    private Mso populateMso(Mso mso) {
+    public static void populateMso(Mso mso) {
         
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
@@ -490,7 +490,6 @@ public class MsoManager {
             mso.setJingleUrl(config.getValue());
         }
         
-        return mso;
     }
     
     public Mso findByIdOrName(String idStr) {
@@ -528,15 +527,15 @@ public class MsoManager {
         return dao.findById(id);
     }
     
-    /** rewrite method findById, populate supportedRegion information 
-     * @param extend TODO*/
+    // TODO: to be removed
     public Mso findById(long id, boolean extend) {
         
         Mso mso = dao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
-            mso = populateMso(mso);
+            
+            populateMso(mso);
         }
         
         return mso;

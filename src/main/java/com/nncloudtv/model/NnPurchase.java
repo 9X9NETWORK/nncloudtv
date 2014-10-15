@@ -44,6 +44,7 @@ public class NnPurchase {
     private short status;
     public static final short ACTIVE   = 0;
     public static final short INACTIVE = 1;
+    public static final short INVALID  = 2;
     
     public NnPurchase(NnItem item, NnUser user, String purchaseToken) {
         

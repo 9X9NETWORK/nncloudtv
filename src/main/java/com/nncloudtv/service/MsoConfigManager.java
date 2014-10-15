@@ -31,6 +31,7 @@ public class MsoConfigManager {
     protected static final String PROPERTIES_CLEARCOMMRCE = "clearcommerce.properties";
     protected static final String PROPERTIES_AWS          =           "aws.properties";
     protected static final String PROPERTIES_GOOGLEPLAY   =    "googleplay.properties";
+    protected static final String PROPERTIES_APPSTORE     =      "appstore.properties";
     
     protected static String serverDomain = null;
     
@@ -56,10 +57,22 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_GOOGLEPLAY, "pem_file_path");
     }
     
+    public static String getAppStoreBundleId(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APPSTORE_BUNDLE_ID);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getProperty(PROPERTIES_APPSTORE, "bundle_id");
+    }
+    
     public static String getGooglePlayPackageName(Mso mso) {
         
         if (mso != null) {
-            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.PACKAGE_NAME);
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.GOOGLEPLAY_PACKAGE_NAME);
             if (config != null) {
                 return config.getValue();
             }
@@ -71,7 +84,7 @@ public class MsoConfigManager {
     public static String getGooglePlayAppName(Mso mso) {
         
         if (mso != null) {
-            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_NAME);
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.GOOGLEPLAY_APP_NAME);
             if (config != null) {
                 return config.getValue();
             }

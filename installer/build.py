@@ -9,7 +9,8 @@ if choice == "1":
 #---- copy property files ----
 list=['datanucleus_analytics.properties', 'datanucleus_content.properties', 'datanucleus_billing.properties', 'clearcommerce.properties',
       'datanucleus_nnuser1.properties', 'datanucleus_nnuser2.properties', 'datanucleus_recommend.properties', 'aws.properties',
-      'memcache.properties', 'queue.properties', 'facebook.properties', 'crawler.properties', 'services.properties', 'googleplay.properties']
+      'memcache.properties', 'queue.properties', 'facebook.properties', 'crawler.properties', 'services.properties', 'googleplay.properties',
+      'appstore.properties']
 
 for l in list:
    src = server + "/" + l
