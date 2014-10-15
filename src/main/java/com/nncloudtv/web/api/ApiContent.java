@@ -1366,26 +1366,6 @@ public class ApiContent extends ApiGeneric {
         return channelIds;
     }
     
-    
-    @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.HEAD)
-    public void channelStreamHead(HttpServletResponse resp, HttpServletRequest req,
-            @PathVariable("channelId") String channelIdStr) {
-        
-        Long channelId = evaluateLong(channelIdStr);
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            return;
-        }
-        
-        resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
-    }
-    
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
     public void channelStream(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
@@ -1716,28 +1696,6 @@ public class ApiContent extends ApiGeneric {
         }
         
         return ok(resp);
-    }
-    
-    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.HEAD)
-    public void episodeStreamHead(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
-        
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
-        if (episode == null) {
-            
-            notFound(resp, "Episode Not Found");
-            return;
-        }
-        
-        resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
     }
     
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
