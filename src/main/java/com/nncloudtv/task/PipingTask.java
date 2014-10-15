@@ -75,15 +75,17 @@ public class PipingTask extends Thread {
                     if (total % 13 == 0 ) {
                         
                         Date now = NnDateUtil.now();
-                        long deltaSec = (now.getTime() - lastTime.getTime());
+                        long deltaMiliSec = (now.getTime() - lastTime.getTime());
                         
-                        if (deltaSec > 1000) {
+                        if (deltaMiliSec > 1000) {
                             
                             long deltaLen = total - lastTotal;
-                            float pipingSpeed = (float) deltaLen / deltaSec;
-                            float avarageSpeed = (float) total / (now.getTime() - startTime.getTime());
+                            long totalMiliSec = now.getTime() - startTime.getTime();
+                            float pipingSpeed = ((float) deltaLen / deltaMiliSec) * 8;
+                            float avarageSpeed = ((float) total / totalMiliSec) * 8;
+                            float lastMinutes = totalMiliSec / 60 / 1000;
                             
-                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s", pipingSpeed, avarageSpeed));
+                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %3.1f minutes", pipingSpeed, avarageSpeed, lastMinutes));
                             
                             lastTime = now;
                             lastTotal = total;
