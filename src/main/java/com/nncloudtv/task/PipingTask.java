@@ -83,7 +83,7 @@ public class PipingTask extends Thread {
                             float pipingSpeed = (float) deltaLen / deltaSec;
                             float avarageSpeed = (float) total / (now.getTime() - startTime.getTime());
                             
-                            log.info("piping speed = " + pipingSpeed + " kbps, avarage = " + avarageSpeed + " kbps");
+                            log.info(String.format("piping speed = %f5.1 kbits/s, avarage = %f5.1 kbits/s", pipingSpeed, avarageSpeed));
                             
                             lastTime = now;
                             lastTotal = total;

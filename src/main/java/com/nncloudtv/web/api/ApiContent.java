@@ -462,7 +462,7 @@ public class ApiContent extends ApiGeneric {
         
         try {
             
-            UstreamLib.steaming(program.getFileUrl(), resp.getOutputStream());
+            UstreamLib.streaming(program.getFileUrl(), resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             

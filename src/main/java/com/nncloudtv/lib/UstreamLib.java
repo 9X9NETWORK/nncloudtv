@@ -62,7 +62,7 @@ public class UstreamLib {
         return null;
     }
     
-    public static void steaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {
+    public static void streaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {
         
         URL url = null;
         HttpURLConnection conn = null;

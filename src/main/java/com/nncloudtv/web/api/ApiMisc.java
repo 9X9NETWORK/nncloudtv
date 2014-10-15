@@ -647,7 +647,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            UstreamLib.steaming(videoUrl, resp.getOutputStream());
+            UstreamLib.streaming(videoUrl, resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
