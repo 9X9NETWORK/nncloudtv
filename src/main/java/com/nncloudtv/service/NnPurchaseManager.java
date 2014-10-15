@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
 import com.nncloudtv.dao.NnPurchaseDao;
+import com.nncloudtv.exception.AppStoreFailedVerifiedException;
 import com.nncloudtv.lib.AppStoreLib;
 import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
@@ -48,28 +49,28 @@ public class NnPurchaseManager {
             
             try {
                 
-                purchase.setVerified(false);
                 SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
                 if (subscription == null) {
                     
-                    log.warning("fail to get subscriptionPurchase");
+                    log.warning("subscription is null");
+                    purchase.setStatus(NnPurchase.INVALID);
+                    save(purchase);
+                    
                     return;
                 }
                 purchase.setExpireDate(new Date(subscription.getExpiryTimeMillis()));
                 purchase.setVerified(true);
-                if (purchase.getExpireDate().before(NnDateUtil.now())) {
-                    purchase.setStatus(NnPurchase.INACTIVE);
-                } else {
-                    purchase.setStatus(NnPurchase.ACTIVE);
-                }
+                checkExpireDate(purchase);
                 
             } catch (GeneralSecurityException e) {
                 
+                purchase.setVerified(false);
                 log.warning("GeneralSecurityException");
                 log.warning(e.getMessage());
                 
             } catch (IOException e) {
                 
+                //purchase.setVerified(false);
                 log.warning("IOException");
                 log.warning(e.getMessage());
                 
@@ -80,14 +81,14 @@ public class NnPurchaseManager {
             
         } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
             
-            JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
-            if (receipt == null) {
-                
-                log.warning("fail to get receipt");
-                return;
-            }
-            
             try {
+                
+                JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
+                if (receipt == null) {
+                    
+                    log.warning("fail to get receipt");
+                    return;
+                }
                 
                 purchase.setExpireDate(new Date(receipt.getLong("expires_date")));
                 String productIdRef = receipt.getString("product_id");
@@ -106,22 +107,25 @@ public class NnPurchaseManager {
                 String bundleId = MsoConfigManager.getAppStoreBundleId(mso);
                 if (bundleId.equals(receipt.getString("app_item_id")) == false) {
                     
-                    log.warning("bundleId not match");
+                    log.warning("bundleId not matched");
                     purchase.setVerified(false);
-                    purchase.setStatus(NnPurchase.INACTIVE);
+                    purchase.setStatus(NnPurchase.INVALID);
                     save(purchase);
                     
                     return;
                 }
                 
                 purchase.setVerified(true);
-                if (purchase.getExpireDate().before(NnDateUtil.now())) {
-                    purchase.setStatus(NnPurchase.INACTIVE);
-                } else {
-                    purchase.setStatus(NnPurchase.ACTIVE);
-                }
+                checkExpireDate(purchase);
                 
             } catch (JSONException e) {
+                log.warning("JSONException");
+                log.warning(e.getMessage());
+                
+            } catch (AppStoreFailedVerifiedException e) {
+                
+                log.warning("AppStoreFailedVerifiedException");
+                purchase.setVerified(false);
                 
             } finally {
                 
@@ -132,6 +136,20 @@ public class NnPurchaseManager {
             
             log.warning("not supported platform");
             // unknown platform - do nothing
+        }
+        
+    }
+    
+    private void checkExpireDate(NnPurchase purchase) {
+        
+        if (purchase == null || purchase.getExpireDate() == null) { return; }
+        
+        if (purchase.getExpireDate().before(NnDateUtil.now())) {
+            log.info("inactive");
+            purchase.setStatus(NnPurchase.INACTIVE);
+        } else {
+            log.info("active");
+            purchase.setStatus(NnPurchase.ACTIVE);
         }
         
     }
@@ -171,5 +189,15 @@ public class NnPurchaseManager {
         }
         
         return false;
+    }
+    
+    public List<NnPurchase> findAllActive() {
+        
+        return dao.findAllActive();
+    }
+    
+    public List<NnPurchase> findAll() {
+        
+        return dao.findAll();
     }
 }

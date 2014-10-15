@@ -16,15 +16,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.api.client.util.IOUtils;
+import com.nncloudtv.exception.AppStoreFailedVerifiedException;
 import com.nncloudtv.model.NnPurchase;
-import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.ApiGeneric;
 
 public class AppStoreLib {
     
     protected static final Logger log = Logger.getLogger(AppStoreLib.class.getName());
     
-    public static JSONObject getReceipt(NnPurchase purchase, boolean isProduction) {
+    public static JSONObject getReceipt(NnPurchase purchase, boolean isProduction) throws AppStoreFailedVerifiedException {
         
         String requestUrl = "https://" + (isProduction ? "buy" : "sandbox") + ".itunes.apple.com/verifyReceipt";
         
@@ -48,8 +48,7 @@ public class AppStoreLib {
                 
                 log.warning("appstore returns not ok, " + conn.getResponseCode() + " " + conn.getResponseMessage());
                 // log more when not ok (pipe inputstream to stdout)
-                (new PipingTask(conn.getInputStream(), System.out)).start();
-                
+                //(new PipingTask(conn.getInputStream(), System.out)).start();
                 return null;
             }
             
@@ -60,11 +59,13 @@ public class AppStoreLib {
             if (status != 0) {
                 
                 log.info("appstore resturns status = " + status);
+                throw new AppStoreFailedVerifiedException();
             }
             JSONObject receipt = json.getJSONObject("receipt");
             if (receipt == null) {
                 
                 log.warning("receipt is null");
+                return null;
             }
             
             // receipt format: http://stackoverflow.com/questions/15255564/ios-in-app-purchases-receipt-string-explained
