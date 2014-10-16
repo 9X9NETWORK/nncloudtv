@@ -23,19 +23,21 @@ import com.nncloudtv.service.PlayerApiService;
 
 public class ApiContext {
     
-    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/(www\\.)?(9x9|flipr)\\.tv$";
-    public final static String DEFAULT_VERSION = "31";
-    public final static String DEFAULT_OS = "web";
+    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
+    
+    public final static String DEFAULT_VERSION   = "31";
+    public final static String DEFAULT_OS        = "web";
+    
     public final static String HEADER_USER_AGENT = "user-agent";
-    public final static String HEADER_REFERRER = "referer";
+    public final static String HEADER_REFERRER   = "referer";
     
     public final static String PARAM_APP_VERSION = "appver";
-    public final static String PARAM_OS = "os";
-    public final static String PARAM_MSO = "mso";
-    public final static String PARAM_LANG = "lang";
-    public final static String PARAM_SPHERE = "shpere";
-    public final static String PARAM_VERSION = "v";
-    public final static String PARAM_FORMAT = "format";
+    public final static String PARAM_OS          = "os";
+    public final static String PARAM_MSO         = "mso";
+    public final static String PARAM_LANG        = "lang";
+    public final static String PARAM_SPHERE      = "shpere";
+    public final static String PARAM_VERSION     = "v";
+    public final static String PARAM_FORMAT      = "format";
     
     HttpServletRequest httpReq;
     Locale locale;
@@ -172,7 +174,7 @@ public class ApiContext {
     
     public String getAppDomain() {
         
-        String domain = root.replaceAll("^http(s)?:\\/\\/(www\\.)?", "");
+        String domain = root.replaceAll("^http(s)?:\\/\\/((cc|api|www)\\.)?", "");
         log.info("domain = " + domain);
         List<String> splits = new ArrayList<String>(Arrays.asList(domain.split("\\.")));
         
@@ -180,7 +182,7 @@ public class ApiContext {
             return MsoManager.isNNMso(mso) ? "www." + domain : mso.getName() + "." + domain;
         
         log.info("subdomain = " + splits.get(0));
-        if (NNF.getMsoMngr().findByName(splits.get(0)) != null) {
+        if (NNF.getMsoMngr().findByName(splits.get(0)) == null) {
             
             splits.remove(0);
         }
