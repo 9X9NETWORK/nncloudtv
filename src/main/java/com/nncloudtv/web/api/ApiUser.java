@@ -652,7 +652,7 @@ public class ApiUser extends ApiGeneric {
         // fbUserId
         userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_USER_ID);
         if (userPref != null) {
-            if (userPref.getValue().equals(fbUserId) != false) {
+            if (userPref.getValue().equals(fbUserId)) {
                 // update page token
                 List<FacebookPage> pages = null;
                 FacebookResponse response = FacebookLib.populatePageList(fbUserId, accessToken);
