@@ -44,8 +44,8 @@ public class NnItem {
     public static final short ACTIVE     = 0;
     public static final short INACTIVE   = 1;
     public static final short PROCESSING = 2;
-    public static final short WAIT_FOR_APPROVAL = 3;
-    public static final short REJECTED   = 4;
+    public static final short REJECTED   = 3;
+    public static final short WAIT_FOR_APPROVAL = 4;
     public static final short TERMINATED = 5;
     
     public NnItem(long msoId, long channelId, short billingPlatform) {
