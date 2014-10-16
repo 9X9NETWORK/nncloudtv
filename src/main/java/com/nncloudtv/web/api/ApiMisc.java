@@ -256,6 +256,7 @@ public class ApiMisc extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         
         result.put("isProduction", ctx.isProductionSite());
+        result.put("mso", ctx.getMsoName());
         
         return result;
     }

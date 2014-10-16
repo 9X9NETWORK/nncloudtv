@@ -79,6 +79,11 @@ public class ApiContext {
         return mso.getId();
     }
     
+    public Object getMsoName() {
+        
+        return mso.getName();
+    }
+    
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
     
     @Autowired
@@ -115,10 +120,10 @@ public class ApiContext {
             } catch (NumberFormatException e) {
             }
         }
-                
+        
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
-            os = ApiContext.DEFAULT_OS;        	
+            os = ApiContext.DEFAULT_OS;
         
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
