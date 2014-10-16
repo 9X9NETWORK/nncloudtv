@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnEpisode;
 
 @Service
 public class ApiContentService {
@@ -25,16 +23,13 @@ public class ApiContentService {
     
     private NnChannelManager channelMngr;
     private NnChannelPrefManager channelPrefMngr;
-    private NnEpisodeManager episodeMngr;
     private NnProgramManager programMngr;
     
     @Autowired
-    public ApiContentService(NnChannelManager channelMngr, NnChannelPrefManager channelPrefMngr, NnEpisodeManager episodeMngr,
-                NnProgramManager programMngr) {
+    public ApiContentService(NnChannelManager channelMngr, NnChannelPrefManager channelPrefMngr, NnProgramManager programMngr) {
         
         this.channelMngr = channelMngr;
         this.channelPrefMngr = channelPrefMngr;
-        this.episodeMngr = episodeMngr;
         this.programMngr = programMngr;
     }
     
@@ -165,48 +160,4 @@ public class ApiContentService {
         
         return response;
     }
-    
-    public List<NnEpisode> channelEpisodes(Long channelId, Long page, Long rows) {
-        
-        if (channelId == null) {
-            return null;
-        }
-        NnChannel channel = channelMngr.findById(channelId);
-        if (channel == null) {
-            return null;
-        }
-        
-        if (page == null) {
-            page = (long) 0;
-        }
-        if (rows == null) {
-            rows = (long) 0;
-        }
-        
-        List<NnEpisode> results = null;
-        if (page > 0 && rows > 0) {
-            
-            if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
-                results = episodeMngr.list(page, rows, "seq", "desc", "channelId == " + channelId);
-            } else {
-                results = episodeMngr.list(page, rows, "seq", "asc", "channelId == " + channelId);
-            }
-        } else {
-            results = episodeMngr.findByChannelId(channelId);
-            if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
-                Collections.sort(results, NnEpisodeManager.getComparator("reverse"));
-            } else {
-                Collections.sort(results, NnEpisodeManager.getComparator("seq"));
-            }
-            // TODO: SORT_TIMED_LINEAR
-        }
-        
-        episodeMngr.normalize(results);
-        for (NnEpisode episode : results) {
-            episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
-        }
-        
-        return results;
-    }
-
 }

@@ -11,17 +11,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.api.client.googleapis.GoogleHeaders;
-import com.google.api.client.googleapis.json.JsonCParser;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.client.util.Key;
 import com.nncloudtv.web.api.NnStatusCode;
 
@@ -180,23 +175,10 @@ public class YouTubeLib {
         
     public static HttpRequestFactory getFactory() {
         HttpTransport transport = new NetHttpTransport();
-        final JsonFactory jsonFactory = new JacksonFactory();
-        HttpRequestFactory factory = transport.createRequestFactory(new HttpRequestInitializer() {
-               public void initialize(HttpRequest request) {
-                  // set the parser
-                  JsonCParser parser = new JsonCParser(jsonFactory);
-                  //parser.jsonFactory = jsonFactory;
-                  request.addParser(parser);
-                   //set up the Google headers
-                  GoogleHeaders headers = new GoogleHeaders();
-                  headers.setApplicationName("Google-YouTubeSample/1.0");
-                  headers.gdataVersion = "2";
-                  request.setHeaders(headers);
-               }
-            });
+        HttpRequestFactory factory = transport.createRequestFactory();
         return factory;
     }
-
+    
     public static Map<String, String> getYouTubeVideo(String videoId) {
         Map<String, String> results = new HashMap<String, String>();
         HttpRequestFactory factory = YouTubeLib.getFactory();        
@@ -293,8 +275,8 @@ public class YouTubeLib {
                 log.info("play list title:" + feed.title + "; author:" + feed.author + "; description:" + feed.description);
             }
         } catch (HttpResponseException e) {
-            results.put("status", String.valueOf(NnStatusCode.ERROR));            
-            log.info("youtube http response error:" + e.getResponse().getStatusCode());
+            results.put("status", String.valueOf(NnStatusCode.ERROR));
+            log.info("youtube http response error:" + e.getMessage());
         } catch (IOException e) {
             results.put("status", String.valueOf(NnStatusCode.ERROR));
             NnLogUtil.logException(e);

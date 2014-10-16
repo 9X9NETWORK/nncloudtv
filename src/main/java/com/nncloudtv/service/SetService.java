@@ -13,7 +13,6 @@ import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.web.json.cms.Set;
 
 @Service
@@ -166,50 +165,6 @@ public class SetService {
         }
         
         return channels;
-    }
-    
-    /**
-     * check if input Channel's IDs represent all Channels in the Set
-     * 
-     * @param setId
-     *            required, SysTag's ID with type = Set
-     * @param channelIds
-     *            required, Channel's IDs to be tested
-     * @return true if full match, false for not
-     */
-    public boolean isContainAllChannels(Long setId, List<Long> channelIds) {
-        
-        if (setId == null || channelIds == null) {
-            return false;
-        }
-        
-        // it must same as setChannels's result
-        List<SysTagMap> setChannels = NNF.getSysTagMapMngr().findBySysTagId(setId);
-        if (setChannels == null) {
-            if (channelIds.size() == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        
-        int index;
-        for (SysTagMap channel : setChannels) {
-            index = channelIds.indexOf(channel.getChannelId());
-            if (index > -1) {
-                // pass
-            } else {
-                // input missing this Channel ID 
-                return false;
-            }
-        }
-        
-        if (setChannels.size() != channelIds.size()) {
-            // input contain duplicate or other Channel Id
-            return false;
-        }
-        
-        return true;
     }
     
     public Set create(Set set) {

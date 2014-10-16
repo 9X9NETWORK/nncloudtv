@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
@@ -446,7 +447,7 @@ public class PlayerApiController {
         }
         NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
-        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, 1, PlayerApiService.FORMAT_JSON);        
+        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, new ApiContext(req));
         return json;
         //return "player/api";
     }
@@ -1114,6 +1115,8 @@ public class PlayerApiController {
             }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
+        } catch (NotPurchasedException e){
+            output = playerApiService.assembleMsgs(NnStatusCode.IAP_NOT_PURCHASED, null);
         } catch (Exception e){
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -2728,7 +2731,7 @@ public class PlayerApiController {
      *            Example: TAG_NAME1:channelId1,channelId;TAG_NAME2:channelId1,channelId2   
      */    
     @RequestMapping(value="portal")
-    public @ResponseBody Object portal(                      
+    public @ResponseBody Object portal(
             @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="type", required=false) String type,
@@ -2740,22 +2743,21 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            }
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.portal(lang, time, isMinimal, type);        
+            output = playerApiService.portal(lang, time, isMinimal, type);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return playerApiService.response(output);
     }
     
-    
     @RequestMapping(value="bulkIdentifier")
-    public @ResponseBody Object bulkIdentifier(                      
+    public @ResponseBody Object bulkIdentifier(
             @RequestParam(value="channelNames", required=false) String ytUsers,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
@@ -2764,9 +2766,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            }
             ytUsers = req.getParameter("channelNames");
             output = playerApiService.bulkIdentifier(ytUsers);    
         } catch (Exception e) {
@@ -2774,7 +2776,7 @@ public class PlayerApiController {
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return playerApiService.response(output);
     }
     
     @RequestMapping(value="bulkSubscribe")
@@ -2822,7 +2824,7 @@ public class PlayerApiController {
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
             log.info("in queue?" + isQueued);  
-
+            
             user = req.getParameter("user");
             channel = req.getParameter("channel");
             payload = req.getParameter("payload");
@@ -2972,7 +2974,7 @@ public class PlayerApiController {
         return playerApiService.response(output);
     }        
     */
-
+    
     /**
      *  Get vimeo video url. Server backup solution.
      *  
@@ -3011,7 +3013,7 @@ public class PlayerApiController {
      */
     @RequestMapping(value="generateSignedUrls")
     public @ResponseBody Object generateSignedUrls (
-            @RequestParam(value="url", required=false) String url,            
+            @RequestParam(value="url", required=false) String url,
             HttpServletRequest req,
             HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
@@ -3020,7 +3022,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(req, resp, true);
             if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            }
             output = playerApiService.generateSignedUrls(url);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -3049,9 +3051,9 @@ public class PlayerApiController {
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            }
             output = playerApiService.notificationList(token, req);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
@@ -3060,6 +3062,79 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-
+    /**
+     * Add a purchase
+     */
+    
+    @RequestMapping(value="addPurchase")
+    public @ResponseBody Object addPurchase(
+            @RequestParam(value="user", required=false) String userToken,
+            @RequestParam(value="productId", required=false) String productIdRef,
+            @RequestParam(value="purchaseToken", required=false) String purchaseToken,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }
+            output = playerApiService.addPurchase(userToken, productIdRef, purchaseToken);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+    
+    /**
+     * Get purchased items
+     */
+    @RequestMapping(value="getPurchases")
+    public @ResponseBody Object getPurchases(
+            @RequestParam(value="user", required=false) String userToken,
+            HttpServletRequest req,
+            HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }
+            output = playerApiService.getPurchases(userToken);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+    
+    /**
+     * Get all available items
+     */
+    @RequestMapping(value="getItems")
+    public @ResponseBody Object getItems(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }
+            output = playerApiService.getItems();
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
 }
 

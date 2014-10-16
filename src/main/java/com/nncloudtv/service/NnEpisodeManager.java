@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
@@ -83,7 +84,17 @@ public class NnEpisodeManager {
             return episode;
         }
         
-        log.info("publishDate = " + episode.getPublishDate());
+        log.info("isPublic = " + episode.isPublic() + ", publishDate = " + episode.getPublishDate());
+        if (episode.isPublic() == false && episode.getPublishDate() != null) {
+            
+            log.warning("to force pubishDate be null when is not published, just in case");
+            episode.setPublishDate(null);
+            
+        } else if (episode.isPublic() && episode.getPublishDate() == null) {
+            
+            log.warning("to force pubishDate be not null when is published, just in case");
+            episode.setPublishDate(NnDateUtil.now());
+        }
         
         return save(episode);
     }
@@ -93,20 +104,52 @@ public class NnEpisodeManager {
         return dao.findByChannelId(channelId);
     }
     
-    public int getProgramCnt(NnEpisode episode) {
-        
-        if (episode == null) {
-            return 0;
-        }
-        
-        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
-        
-        return programs.size();
-    }
-    
     public static Comparator<NnEpisode> getComparator(String sort) {
         
-        if (sort.equals("publishDate")) {
+        if (sort == null) {
+            sort = "default";
+        }
+        
+        if (sort.equals("timedLinear")) {
+            
+            return new Comparator<NnEpisode>() {
+                
+                public int compare(NnEpisode ep1, NnEpisode ep2) {
+                    
+                    if (ep1.isPublic() == false && ep2.isPublic() == true) {
+                        return -1;
+                    } else if (ep1.isPublic() == true && ep2.isPublic() == false) {
+                        return 1;
+                    } else if (ep1.isPublic() == true && ep2.isPublic() == true) {
+                        
+                        Date pubDate1 = ep1.getPublishDate();
+                        Date pubDate2 = ep2.getPublishDate();
+                        if (pubDate1 == null && pubDate2 == null) {
+                            return 0;
+                        } else if (pubDate1 == null) {
+                            return -1;
+                        } else if (pubDate2 == null) {
+                            return 1;
+                        } else {
+                            return pubDate2.compareTo(pubDate1);
+                        }
+                    } else {
+                        
+                        Date schedule1 = ep1.getScheduleDate();
+                        Date schedule2 = ep2.getScheduleDate();
+                        if (schedule1 == null && schedule2 == null) {
+                            return ep1.getSeq() - ep2.getSeq();
+                        } else if (schedule1 == null) {
+                            return 1;
+                        } else if (schedule2 == null) {
+                            return -1;
+                        } else {
+                            return schedule2.compareTo(schedule1);
+                        }
+                    }
+                }
+            };
+        } else if (sort.equals("publishDate")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -204,11 +247,16 @@ public class NnEpisodeManager {
     
         return dao.list(page, rows, sidx, sord, filter);
     }
-
+    
+    public List<NnEpisode> listV2(long start,long limit, String sorting, String filter) {
+        
+        return dao.listV2(start, limit, sorting, filter);
+    }
+    
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
         return dao.findPlayerEpisode(channelId, sort, start, end);
     }
-
+    
     public List<NnEpisode> findPlayerLatestEpisodes(long channelId, short sort) {
         
         return dao.findPlayerLatestEpisode(channelId, sort);

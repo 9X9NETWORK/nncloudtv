@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.nncloudtv.web.api.ApiGeneric;
+
 public class NnNetUtil {
     
     protected final static Logger log = Logger.getLogger(NnNetUtil.class.getName());
@@ -42,11 +44,13 @@ public class NnNetUtil {
     }
     
     public static ResponseEntity<String> textReturn(String output) {
+        
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf("text/plain;charset=utf-8"));
-        return new ResponseEntity<String>(output, headers, HttpStatus.OK);        
-    }    
-
+        headers.setContentType(MediaType.valueOf(ApiGeneric.PLAIN_TEXT_UTF8));
+        
+        return new ResponseEntity<String>(output, headers, HttpStatus.OK);
+    }
+    
     public static ResponseEntity<String> htmlReturn(String output) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf("text/html;charset=utf-8"));                                                                
@@ -177,7 +181,7 @@ public class NnNetUtil {
             int index = input.read(data);
             String str = new String(data, 0, index);
             
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {                
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("response not ok!" + connection.getResponseCode());
                 log.info("text = " + str);
             }

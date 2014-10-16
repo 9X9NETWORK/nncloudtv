@@ -77,9 +77,9 @@ public class NnUserDao extends GenericDao<NnUser> {
     public NnUser findById(long id) {
         
         NnUser user = null;
-        user = findById(id, (short) 1);
+        user = findById(id, NnUser.SHARD_DEFAULT);
         if (user == null) {
-            return findById(id, (short) 2);
+            return findById(id, NnUser.SHARD_CHINESE);
         } else {
             return user;
         }

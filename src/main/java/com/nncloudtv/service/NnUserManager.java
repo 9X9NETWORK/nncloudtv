@@ -30,6 +30,7 @@ import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.UserInfo;
@@ -257,7 +258,7 @@ public class NnUserManager {
         return result;
     }    
 
-    private NnUser setUserProfile(NnUser user) {
+    private NnUser populateUserProfile(NnUser user) {
         if (user != null) {
             log.info("user mso id:" + user.getMsoId());
             NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
@@ -276,7 +277,7 @@ public class NnUserManager {
         NnUser user = dao.findByEmail(email.toLowerCase(), shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }        
@@ -286,7 +287,7 @@ public class NnUserManager {
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }
@@ -313,7 +314,7 @@ public class NnUserManager {
         NnUser user = dao.findByToken(token);
         if (user != null) {
             user.setMsoId(msoId);
-            this.setUserProfile(user);
+            this.populateUserProfile(user);
         }
         return user;
     }
@@ -355,9 +356,8 @@ public class NnUserManager {
         NnUser user = dao.findById(id);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
-        //user.setMsoId(msoId);
         return user;
     }
     
@@ -365,7 +365,7 @@ public class NnUserManager {
         NnUser user = dao.findById(id, shard);
         if (user != null) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         }
         return user;
     }
@@ -391,7 +391,7 @@ public class NnUserManager {
         List<NnUser> users = dao.search(email, name, generic, msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);            
+            user = this.populateUserProfile(user);            
         }
         return users;
         
@@ -401,7 +401,7 @@ public class NnUserManager {
         List<NnUser> users = dao.findFeatured(msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);            
+            user = this.populateUserProfile(user);            
         }
         return users;
     }
@@ -410,7 +410,7 @@ public class NnUserManager {
         NnUser user = dao.findByProfileUrl(profileUrl);
         if (user != null)
             user.setMsoId(msoId);
-            user = this.setUserProfile(user);
+            user = this.populateUserProfile(user);
         return user;
     }
 
@@ -435,7 +435,7 @@ public class NnUserManager {
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, version, PlayerApiService.FORMAT_PLAIN);
+        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext(req));
         return result;
     }
     

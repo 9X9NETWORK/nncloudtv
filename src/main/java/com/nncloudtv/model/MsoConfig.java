@@ -72,7 +72,9 @@ public class MsoConfig implements Serializable  {
     public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
     public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
-    public static String SEARCH                = "search"; //all, store
+    public static String SEARCH                = "search"; //all, store, off, youtube
+    public static String STORE                 = "store"; //on, off
+    public static String CMS_LOGO              = "cms-logo"; // private label cms logo
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
@@ -96,6 +98,11 @@ public class MsoConfig implements Serializable  {
     public static String CF_SUBDOMAIN     = "cf-subdomain";
     public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
     public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
+    
+    // In App Purchase configurations
+    public static String GOOGLEPLAY_APP_NAME     = "googleplay-app-name";
+    public static String GOOGLEPLAY_PACKAGE_NAME = "googleplay-package-name";
+    public static String APPSTORE_BUNDLE_ID      = "appstore-bundle-id";
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

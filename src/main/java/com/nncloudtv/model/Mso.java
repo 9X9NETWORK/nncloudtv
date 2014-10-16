@@ -50,6 +50,9 @@ public class Mso implements Serializable {
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String jingleUrl;
     
+    @NotPersistent
+    private String cmsLogo;
+    
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String contactEmail;
@@ -241,5 +244,13 @@ public class Mso implements Serializable {
 
     public void setSlogan(String slogan) {
         this.slogan = slogan;
+    }
+
+    public String getCmsLogo() {
+        return cmsLogo;
+    }
+
+    public void setCmsLogo(String cmsLogo) {
+        this.cmsLogo = cmsLogo;
     }
 }
