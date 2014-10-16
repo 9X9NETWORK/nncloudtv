@@ -29,37 +29,83 @@ public class MsoConfigManager {
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
     protected static final String PROPERTIES_CLEARCOMMRCE = "clearcommerce.properties";
-    protected static final String PROPERTIES_AWS = "aws.properties";
+    protected static final String PROPERTIES_AWS          =           "aws.properties";
+    protected static final String PROPERTIES_GOOGLEPLAY   =    "googleplay.properties";
+    protected static final String PROPERTIES_APPSTORE     =      "appstore.properties";
     
-    protected static String serverDomain = null; 
+    protected static String serverDomain = null;
     
-    protected static String getProperty(String propertyFile, String propertyName) {
+    protected static String getProperty(String file, String name) {
         
         Properties properties = new Properties();
         String result = null;
-        log.info("to get property " + propertyName + " from " + propertyFile);
+        log.info("to get property " + name + " from " + file);
         try {
-            properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(propertyFile));
-            result = properties.getProperty(propertyName);
+            properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(file));
+            result = properties.getProperty(name);
         } catch (IOException e) {
             NnLogUtil.logException(e);
         }
         return result;
     }
     
-    static public String getSearchNnChannelServer() {
+    public static String getGooglePlayAccountEmail() {
+        return getProperty(PROPERTIES_GOOGLEPLAY, "account_email");
+    }
+    
+    public static String getGooglePlayPemFilePath() {
+        return getProperty(PROPERTIES_GOOGLEPLAY, "pem_file_path");
+    }
+    
+    public static String getAppStoreBundleId(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APPSTORE_BUNDLE_ID);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getProperty(PROPERTIES_APPSTORE, "bundle_id");
+    }
+    
+    public static String getGooglePlayPackageName(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.GOOGLEPLAY_PACKAGE_NAME);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getProperty(PROPERTIES_GOOGLEPLAY, "package_name");
+    }
+    
+    public static String getGooglePlayAppName(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.GOOGLEPLAY_APP_NAME);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getProperty(PROPERTIES_GOOGLEPLAY, "app_name");
+    }
+    
+    public static String getSearchNnChannelServer() {
         return getProperty("services.properties", "search_nncloudtv");
     }
     
-    static public String getSearchPoolServer() {
+    public static String getSearchPoolServer() {
         return getProperty("services.properties", "search_pool");
     }
    
-    static public String getValue(String key) {
+    public static String getValue(String key) {
         return getProperty("services.properties", key);
     }
     
-    static public String getP12FilePath(Mso mso, boolean isProduction) {
+    public static String getP12FilePath(Mso mso, boolean isProduction) {
         
         String path = "/var/opt/p12files/";
         
@@ -77,7 +123,7 @@ public class MsoConfigManager {
         return path + "rsa-key-" + msoName + ".der";
     }
     
-    static public String getServerDomain() {
+    public static String getServerDomain() {
         
         if (serverDomain == null) {
             serverDomain = getProperty("facebook.properties", "server_domain");
@@ -85,11 +131,11 @@ public class MsoConfigManager {
         return serverDomain;
     }
     
-    static public String getFacebookAppToken() {        
+    static public String getFacebookAppToken() {
         return getProperty("facebook.properties", "facebook_apptoken");
     }
     
-    static public String getCrawlerDomain() {
+    public static String getCrawlerDomain() {
         return getProperty("crawler.properties", "server");
     }
     

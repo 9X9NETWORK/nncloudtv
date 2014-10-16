@@ -19,6 +19,8 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.BrandInfo;
 
@@ -467,14 +469,14 @@ public class MsoManager {
         
         if (extend) {
             
-            return populateMso(mso);
+            populateMso(mso);
         }
         
         return mso;
         
     }
     
-    private Mso populateMso(Mso mso) {
+    public static void populateMso(Mso mso) {
         
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config == null) {
@@ -488,7 +490,6 @@ public class MsoManager {
             mso.setJingleUrl(config.getValue());
         }
         
-        return mso;
     }
     
     public Mso findByIdOrName(String idStr) {
@@ -526,15 +527,15 @@ public class MsoManager {
         return dao.findById(id);
     }
     
-    /** rewrite method findById, populate supportedRegion information 
-     * @param extend TODO*/
+    // TODO: to be removed
     public Mso findById(long id, boolean extend) {
         
         Mso mso = dao.findById(id);
         if (mso == null) {return null;}
         
         if (extend) {
-            mso = populateMso(mso);
+            
+            populateMso(mso);
         }
         
         return mso;
@@ -560,6 +561,7 @@ public class MsoManager {
         return dao.total(filter);
     }
     
+    //TODO: to be removed
     /** indicate which brands that channel can play on, means channel is in the brand's store */
     public List<Mso> findValidMso(NnChannel channel) {
         
@@ -732,6 +734,17 @@ public class MsoManager {
             return null;
         }
         return output;
+    }
+    
+    public Mso findByPurchase(NnPurchase purchase) {
+        
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        if (item != null) {
+            
+            return NNF.getMsoMngr().findById(item.getMsoId());
+        }
+        
+        return null;
     }
     
     public String getSystemMsoName() {

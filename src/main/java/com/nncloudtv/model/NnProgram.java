@@ -40,11 +40,12 @@ public class NnProgram implements Serializable {
     private short contentType;
     public static final short CONTENTTYPE_DIRECTLINK = 0;
     public static final short CONTENTTYPE_YOUTUBE    = 1;
-    public static final short CONTENTTYPE_SCRIPT     = 2;
-    public static final short CONTENTTYPE_RADIO      = 3;
-    public static final short CONTENTTYPE_REFERENCE  = 4;
+    public static final short CONTENTTYPE_SCRIPT     = 2; // not used
+    public static final short CONTENTTYPE_RADIO      = 3; // not used
+    public static final short CONTENTTYPE_REFERENCE  = 4; // not used
     public static final short CONTENTTYPE_PROTECTED  = 5;
     public static final short CONTENTTYPE_VIMEO      = 6;
+    public static final short CONTENTTYPE_WRAPPED    = 7;
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
