@@ -146,7 +146,7 @@ public class ApiContext {
     
     public Boolean isProductionSite() {
         
-        if (productionSite != null) return productionSite;
+        if (productionSite != null) return productionSite; // speed up
         
         if (root == null || root.isEmpty()) {
             
@@ -179,7 +179,7 @@ public class ApiContext {
         List<String> splits = new ArrayList<String>(Arrays.asList(domain.split("\\.")));
         
         if (splits.size() < 3)
-            return MsoManager.isNNMso(mso) ? "www." + domain : mso.getName() + "." + domain;
+            return MsoManager.isSystemMso(mso) ? "www." + domain : mso.getName() + "." + domain;
         
         log.info("subdomain = " + splits.get(0));
         if (NNF.getMsoMngr().findByName(splits.get(0)) == null) {
@@ -188,7 +188,7 @@ public class ApiContext {
         }
         String remain = Joiner.on(".").join(splits);
         
-        return MsoManager.isNNMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
+        return MsoManager.isSystemMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
     }
     
     public boolean isAndroid() {

@@ -546,7 +546,7 @@ public class PlayerApiService {
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
         categories.addAll(NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId()));
         
-        if (!disableAll && !MsoManager.isNNMso(mso)) {
+        if (!disableAll && !MsoManager.isSystemMso(mso)) {
             List<SysTagDisplay> systemCategories = NNF.getDisplayMngr().findPlayerCategories(lang, MsoManager.getSystemMsoId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
