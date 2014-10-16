@@ -245,54 +245,65 @@ public class ApiMisc extends ApiGeneric {
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
-		
-		return userResponse(user);
-	}
-	
-	@RequestMapping("echo")
-	public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
-		
-		Map<String, String[]> names = req.getParameterMap();
-		Map<String, String> result = new TreeMap<String, String>();
-		
-		ApiContext context = new ApiContext(req);
-		
+        
+        return userResponse(user);
+    }
+    
+    @RequestMapping("sysinfo")
+    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        ApiContext ctx = new ApiContext(req);
+        
+        result.put("isProduction", ctx.isProductionSite());
+        
+        return result;
+    }
+    
+    @RequestMapping("echo")
+    public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Map<String, String[]> names = req.getParameterMap();
+        Map<String, String> result = new TreeMap<String, String>();
+        
+        ApiContext context = new ApiContext(req);
+        
         log.info("isProductionSite = " + context.isProductionSite());
-		
-		for (String name : names.keySet()) {
-			
-			String value = names.get(name)[0];
-			log.info(name + " = " + value);
-			result.put(name, value);
-		}
-		
-		if (result.isEmpty()) {
-			
-			badRequest(resp, MISSING_PARAMETER);
-			
-			return null;
-		}
-		
-		(new Thread() {
-		    public void run() {
-		        log.info("I am a thread.");
-		        try {
+        
+        for (String name : names.keySet()) {
+            
+            String value = names.get(name)[0];
+            log.info(name + " = " + value);
+            result.put(name, value);
+        }
+        
+        if (result.isEmpty()) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            
+            return null;
+        }
+        
+        (new Thread() {
+            public void run() {
+                log.info("I am a thread.");
+                try {
                     Thread.sleep(5000);
                     log.info("I am still awake.");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
                 log.info("bye~");
-		    }
-		}).start();
-		
-		if(req.getMethod().equalsIgnoreCase("POST")) {
-			resp.setStatus(HTTP_201);
-		}
-		
-		return result;
-	}
-	
+            }
+        }).start();
+        
+        if (req.getMethod().equalsIgnoreCase("POST")) {
+            resp.setStatus(HTTP_201);
+        }
+        
+        return result;
+    }
+    
     @RequestMapping("i18n")
     public @ResponseBody
     Map<String, String> i18n(HttpServletRequest req, HttpServletResponse resp) {

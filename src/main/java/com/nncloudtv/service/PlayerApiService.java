@@ -3314,14 +3314,6 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
     
-    public String getAppDomain() {
-        
-        if (context == null)
-            return null;
-        
-        return context.getAppDomain();
-    }
-    
     public Boolean isProductionSite() {
         
         if (context == null)
