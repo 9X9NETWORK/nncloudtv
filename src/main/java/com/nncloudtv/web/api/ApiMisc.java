@@ -254,9 +254,20 @@ public class ApiMisc extends ApiGeneric {
         
         HashMap<String, Object> result = new HashMap<String, Object>();
         ApiContext ctx = new ApiContext(req);
+        Runtime runtime = Runtime.getRuntime();
         
-        result.put("isProduction", ctx.isProductionSite());
-        result.put("mso", ctx.getMsoName());
+        result.put("isProduction",        ctx.isProductionSite());
+        result.put("mso",                 ctx.getMsoName());
+        result.put("availableProcessors", runtime.availableProcessors());
+        result.put("freeMemory",          runtime.freeMemory());
+        result.put("maxMemory",           runtime.maxMemory());
+        result.put("totalMemory",         runtime.totalMemory());
+        
+        result.put("java.version",        System.getProperty("java.version"));
+        result.put("java.vendor",         System.getProperty("java.vendor"));
+        result.put("os.arch",             System.getProperty("os.arch"));
+        result.put("os.name",             System.getProperty("os.name"));
+        result.put("os.version",          System.getProperty("os.version"));
         
         return result;
     }
