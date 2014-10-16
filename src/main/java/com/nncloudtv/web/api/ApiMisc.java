@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -262,6 +263,8 @@ public class ApiMisc extends ApiGeneric {
         result.put("freeMemory",          runtime.freeMemory());
         result.put("maxMemory",           runtime.maxMemory());
         result.put("totalMemory",         runtime.totalMemory());
+        
+        result.put("systemLoad",          ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
         
         result.put("java.version",        System.getProperty("java.version"));
         result.put("java.vendor",         System.getProperty("java.vendor"));
