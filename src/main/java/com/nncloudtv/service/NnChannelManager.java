@@ -36,6 +36,7 @@ import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
 import com.nncloudtv.model.Tag;
 import com.nncloudtv.model.TagMap;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.player.ChannelLineup;
 
@@ -807,36 +808,36 @@ public class NnChannelManager {
     
     //return List<ChannelLineup>
     @SuppressWarnings("unchecked")
-    public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, int version, short format, List<String> result) {
+    public Object getPlayerChannelLineup(List<NnChannel>channels, boolean channelPos, boolean programInfo, boolean isReduced, ApiContext ctx, List<String> result) {
         
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
-            if (format == PlayerApiService.FORMAT_PLAIN) {
-                channelOutput += (String)this.composeReducedChannelLineup(channels, format);
+            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+                channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFormat());
             } else {
-                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, format);
+                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFormat());
             }
         } else {
-            if (format == PlayerApiService.FORMAT_PLAIN)
-                channelOutput += this.composeChannelLineup(channels, version, format);
+            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)
+                channelOutput += this.composeChannelLineup(channels, ctx);
             else
-                channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, version, format));
+                channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, ctx));
         }
         
         if (channelPos) {
-            if (format == PlayerApiService.FORMAT_PLAIN)
-                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, format);
+            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)
+                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
             else
-                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, format);
+                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
             
         }
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, format);
+                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFormat());
                 result.add(programStr);
             } 
             String size[] = new String[result.size()];
@@ -847,17 +848,17 @@ public class NnChannelManager {
     }
     
     //List<ChannelLineup> or String
-    public Object composeChannelLineup(List<NnChannel> channels, int version, short format) {
+    public Object composeChannelLineup(List<NnChannel> channels, ApiContext ctx) {
         String output = "";
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (format == PlayerApiService.FORMAT_PLAIN)  {
-                output += this.composeEachChannelLineup(c, version, format) + "\n";
+            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)  {
+                output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
-                lineups.add((ChannelLineup)this.composeEachChannelLineup(c, version, format));
+                lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
         }
-        if (format == PlayerApiService.FORMAT_PLAIN)  {
+        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)  {
             return output;
         } else {
             return lineups;
@@ -1004,21 +1005,21 @@ public class NnChannelManager {
     }
     
     //ChannelLineup or String
-    public Object composeEachChannelLineup(NnChannel channel, int version, short format) {
+    public Object composeEachChannelLineup(NnChannel channel, ApiContext ctx) {
         Object result = null;
-        log.info("version number: " + version);
-
-        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), version, format);
+        log.info("version number: " + ctx.getVersion());
+        
+        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVersion(), ctx.getFormat());
         try {
             result = CacheFactory.get(cacheKey);
         } catch (Exception e) {
             log.info("memcache error");
         }
         if (result != null && channel.getId() != 0) { //id = 0 means fake channel, it is dynamic
-            log.info("get channel lineup from cache" + ". v=" + version +";channel=" + channel.getId());
+            log.info("get channel lineup from cache" + ". v=" + ctx.getVersion() +";channel=" + channel.getId());
             return result;
         }
-       
+        
         log.info("channel lineup NOT from cache:" + channel.getId());
         //name and last episode title
         //favorite channel name will be overwritten later
@@ -1030,11 +1031,11 @@ public class NnChannelManager {
         
         //image url, favorite channel image will be overwritten later
         String imageUrl = channel.getPlayerPrefImageUrl();
-        if (version < 32) {
+        if (ctx.getVersion() < 32) {
                 imageUrl = imageUrl.indexOf("|") < 0 ? imageUrl : imageUrl.substring(0, imageUrl.indexOf("|"));
                 log.info("v31 imageUrl:" + imageUrl);
         }
-        if (version > 31 && (
+        if (ctx.getVersion() > 31 && (
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP       ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY    ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MIXED            ||
@@ -1110,7 +1111,7 @@ public class NnChannelManager {
             contentType = NnChannel.CONTENTTYPE_FAVORITE;
         //poi
         String poiStr = "";
-        if (version > 32) {
+        if (ctx.getVersion() > 32) {
             List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(channel.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
@@ -1135,7 +1136,7 @@ public class NnChannelManager {
                 log.info("poi output:" + poiStr);
             }
         }
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(channel.getIdStr());
@@ -1149,7 +1150,7 @@ public class NnChannelManager {
             ori.add(channel.getPlayerPrefSource());
             ori.add(String.valueOf(channel.getUpdateDate().getTime()));
             ori.add(String.valueOf(getPlayerDefaultSorting(channel))); //use default sorting for all
-            ori.add(""); // piwik
+            ori.add(String.valueOf(channel.isPaidChannel())); //paid channel reference
             ori.add(""); //recently watched program
             ori.add(channel.getOriName());
             ori.add(String.valueOf(channel.getCntSubscribe())); //cnt subscribe, replace
@@ -1159,13 +1160,13 @@ public class NnChannelManager {
             ori.add(""); //userName
             ori.add(""); //userIntro
             ori.add(""); //userImageUrl
-            ori.add(""); //subscriberProfile, used to be subscriber profile urls, will be removed
-            ori.add(""); //subscriberImage, used to be subscriber image urls
-            if (version == 32)
+            ori.add(""); //social network, ex: "twitter NBA;facebook ETtoday"
+            ori.add(""); //banner image url
+            if (ctx.getVersion() == 32)
                 ori.add(" ");
             else
                 ori.add(lastEpisodeTitle); //lastEpisodeTitle
-            if (version > 32)
+            if (ctx.getVersion() > 32)
                 ori.add(poiStr);
             String size[] = new String[ori.size()];    
             String output = NnStringUtil.getDelimitedStr(ori.toArray(size));

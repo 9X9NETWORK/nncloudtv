@@ -76,7 +76,7 @@ public class AmazonLib {
             // base64-encode the hmac            
             byte[] policy;
             try {
-                policy = Base64.encode(rawHmac);
+                policy = Base64.encodeBase64(rawHmac);
                 result = new String(policy, "UTF8");            
             } catch (UnsupportedEncodingException e) {
                 log.info("unsupported encoding:" + e.getMessage());        
@@ -108,7 +108,7 @@ public class AmazonLib {
         byte[] policy;
         String roundTrip = "";
         try {
-            policy = Base64.encode(result.getBytes("UTF8"));
+            policy = Base64.encodeBase64(result.getBytes("UTF8"));
             roundTrip = new String(policy, "UTF8");
         } catch (UnsupportedEncodingException e) {
             log.info("unsupported encoding:" + e.getMessage());
@@ -135,7 +135,7 @@ public class AmazonLib {
         byte[] policy;
         String roundTrip = "";
         try {
-            policy = Base64.encode(result.getBytes("UTF8"));
+            policy = Base64.encodeBase64(result.getBytes("UTF8"));
             roundTrip = new String(policy, "UTF8");            
         } catch (UnsupportedEncodingException e) {
             log.info("unsupported encoding:" + e.getMessage());        

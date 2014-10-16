@@ -6,6 +6,8 @@ import javax.jdo.PersistenceManagerFactory;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.NnUserSubscribeGroup;
@@ -28,7 +30,8 @@ public final class PMF {
     public static PersistenceManagerFactory get(@SuppressWarnings("rawtypes") Class c) {
         if (c.equals(Pdr.class)) {
             return PMF.getAnalytics();
-        } else if (c.equals(BillingOrder.class) || c.equals(BillingPackage.class) || c.equals(BillingProfile.class)) {
+        } else if (c.equals(BillingOrder.class) || c.equals(BillingPackage.class) || c.equals(BillingProfile.class) ||
+                   c.equals(NnPurchase.class)   || c.equals(NnItem.class)) {
             return PMF.getBilling();
         } else if (c.equals(NnUser.class) || c.equals(NnUserSubscribe.class) || c.equals(NnUserSubscribeGroup.class)) {
             throw new IllegalArgumentException("user related db are sharded.");

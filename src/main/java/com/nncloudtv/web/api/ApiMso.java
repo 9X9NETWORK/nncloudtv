@@ -1099,6 +1099,7 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
+        MsoManager.populateMso(mso);
         MsoManager.normalize(mso);
         
         // check if push notification was enabled

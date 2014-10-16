@@ -26,6 +26,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
+import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -73,6 +74,39 @@ public class BillingController {
         }
         
         return NnNetUtil.textReturn(NnStatusCode.SUCCESS + "\n\n--\n\n" + result);
+    }
+    
+    @RequestMapping("verifyPurchases")
+    public ResponseEntity<String> verifyPurchases(HttpServletRequest req) {
+        
+        List<NnPurchase> purchases = (req.getParameter("all") == null) ? NNF.getPurchaseMngr().findAllActive() : NNF.getPurchaseMngr().findAll();
+        ApiContext ctx = new ApiContext(req);
+        
+        int cntVerified = 0;
+        int cntTotal    = 0;
+        int cntInactive = 0;
+        int cntInvalid  = 0;
+        
+        for (NnPurchase purchase : purchases) {
+            
+            NNF.getPurchaseMngr().verifyPurchase(purchase, ctx.isProductionSite());
+            if (purchase.isVerified()) {
+                
+                cntVerified ++;
+            }
+            if (purchase.getStatus() == NnPurchase.INACTIVE) {
+                
+                cntInactive++;
+                
+            } else if (purchase.getStatus() == NnPurchase.INVALID) {
+                
+                cntInvalid++;
+            }
+            
+            cntTotal++;
+        }
+        
+        return NnNetUtil.textReturn(String.format("OK\n--\ntotal\t%d\nverified\t%d\ninactive\t%d\ninvalid\t%d", cntTotal, cntVerified, cntInactive, cntInvalid));
     }
     
     @RequestMapping("recurringCharge")

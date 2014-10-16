@@ -11,12 +11,14 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Joiner;
+import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.PlayerApiService;
 
 
 public class ApiContext {
@@ -33,6 +35,7 @@ public class ApiContext {
     public final static String PARAM_LANG = "lang";
     public final static String PARAM_SPHERE = "shpere";
     public final static String PARAM_VERSION = "v";
+    public final static String PARAM_FORMAT = "format";
     
     HttpServletRequest httpReq;
     Locale locale;
@@ -42,6 +45,12 @@ public class ApiContext {
     String root;
     Mso mso;
     Boolean productionSite = null;
+    short format;
+    
+    public short getFormat() {
+        
+        return format;
+    }
     
     public Integer getVersion() {
         
@@ -49,21 +58,23 @@ public class ApiContext {
     }
     
     public String getAppVersion() {
+        
     	return appVersion;
     }
     
     public String getOs() {
-    	return os;
-    }
-    
-    public Locale getLocale() {
         
-        return locale;
+    	return os;
     }
     
     public Mso getMso() {
     
         return mso;
+    }
+    
+    public long getMsoId() {
+        
+        return mso.getId();
     }
     
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
@@ -79,6 +90,13 @@ public class ApiContext {
         MsoManager msoMngr = NNF.getMsoMngr();
         httpReq = req;
         log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
+        
+        String returnFormat = httpReq.getParameter(ApiContext.PARAM_FORMAT);
+        if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
+            this.format = PlayerApiService.FORMAT_PLAIN;
+        } else {
+            this.format = PlayerApiService.FORMAT_JSON;
+        }
         
         String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
         if (LangTable.isValidLanguage(lang)) {
@@ -99,7 +117,7 @@ public class ApiContext {
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
             os = ApiContext.DEFAULT_OS;        	
-
+        
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
             appVersion = os + " " + appVersion;
@@ -186,8 +204,8 @@ public class ApiContext {
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
             log.info("request from ios");
-            return true;            
-        }        
+            return true;
+        }
         return false;
     }
     
@@ -196,8 +214,14 @@ public class ApiContext {
         return httpReq;
     }
     
-    public long getMsoId() {
+    public String getLang() {
         
-        return mso.getId();
+        return locale.getLanguage();
     }
+    
+    public String getCookie(String cookieName) {
+        
+        return CookieHelper.getCookie(httpReq, cookieName);
+    }
+    
 }
