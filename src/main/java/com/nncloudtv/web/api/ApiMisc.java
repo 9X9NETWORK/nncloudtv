@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -520,6 +521,164 @@ public class ApiMisc extends ApiGeneric {
         }
         
         return empty;
+    }
+    
+    @RequestMapping(value = "cors", method = RequestMethod.GET)
+    public void cors(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            log.warning("missing parameter");
+            badRequest(resp);
+            return;
+        }
+        
+        try {
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
+            InputStream in = conn.getInputStream();
+            
+            Map<String, List<String>> headerFields = conn.getHeaderFields();
+            
+            for (Entry<String, List<String>> entry : headerFields.entrySet()) {
+                
+                String key = entry.getKey();
+                if (key == null) continue;
+                List<String> values = entry.getValue();
+                
+                for (String value : values) {
+                    
+                    resp.setHeader(key, value);
+                    System.out.println(key + ": " + value);
+                }
+            }
+            
+            resp.setStatus(conn.getResponseCode());
+            IOUtils.copy(in, resp.getOutputStream());
+            resp.flushBuffer();
+            
+        } catch (MalformedURLException e) {
+            
+            log.info("invalid url");
+            badRequest(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
+    @RequestMapping(value = "stream", method = RequestMethod.GET)
+    public void stream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
+        
+        if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
+            ApiContext ctx = new ApiContext(req);
+            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                if (feed == null) {
+                    log.info("failed to get feed");
+                    return;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+                List<PlaylistEntry> entries = feed.getEntries();
+                Long duration = feed.getMediaGroup().getDuration();
+                if (duration == null) {
+                    
+                    duration = (long) 0;
+                    for (PlaylistEntry entry : entries) {
+                        
+                        duration += entry.getMediaGroup().getDuration();
+                    }
+                }
+                log.info("playlist duration = " + duration);
+                writer.println("#EXTM3U");
+                writer.println("#EXT-X-TARGETDURATION:" + duration);
+                writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+                for (PlaylistEntry entry : entries) {
+                    
+                    String href = entry.getHtmlLink().getHref();
+                    
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                }
+                writer.println("#EXT-X-ENDLIST");
+                writer.flush();
+                
+                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentLength(baos.size());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            } finally {
+                
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                }
+            }
+            
+            return;
+        }
+        
+        try {
+            
+            UstreamLib.steaming(videoUrl, resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
