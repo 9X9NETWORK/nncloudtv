@@ -79,7 +79,7 @@ public class ApiContext {
         return mso.getId();
     }
     
-    public Object getMsoName() {
+    public String getMsoName() {
         
         return mso.getName();
     }

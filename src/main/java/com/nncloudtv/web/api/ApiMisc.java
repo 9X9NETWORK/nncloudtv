@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -251,23 +250,17 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping("sysinfo")
-    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody Map<String, String> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
-        HashMap<String, Object> result = new HashMap<String, Object>();
+        HashMap<String, String> result = new HashMap<String, String>();
         ApiContext ctx = new ApiContext(req);
-        Runtime runtime = Runtime.getRuntime();
         
-        result.put("isProduction",        ctx.isProductionSite());
+        result.put("isProduction",        String.valueOf(ctx.isProductionSite()));
         result.put("mso",                 ctx.getMsoName());
-        result.put("availableProcessors", runtime.availableProcessors());
-        result.put("freeMemory",          runtime.freeMemory());
-        result.put("maxMemory",           runtime.maxMemory());
-        result.put("totalMemory",         runtime.totalMemory());
-        
-        result.put("systemLoad",          ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
         
         result.put("java.version",        System.getProperty("java.version"));
         result.put("java.vendor",         System.getProperty("java.vendor"));
+        
         result.put("os.arch",             System.getProperty("os.arch"));
         result.put("os.name",             System.getProperty("os.name"));
         result.put("os.version",          System.getProperty("os.version"));
