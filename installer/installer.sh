@@ -24,7 +24,7 @@ test "$1" != "-n" \
 
 cd ..
 
-if test "$1" == "-x"; then # speed up
+if test "$1" = "-x"; then # speed up
     mvn -Dmaven.test.skip=true compile twar:war \
     && sudo cp -v target/root.war /usr/share/$jetty/webapps/root.war \
     && sudo service $jetty restart
