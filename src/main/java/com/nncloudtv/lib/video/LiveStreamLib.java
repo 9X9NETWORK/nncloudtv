@@ -24,24 +24,28 @@ public class LiveStreamLib implements VideoLib {
     
     protected final static Logger log = Logger.getLogger(LiveStreamLib.class.getName());
     
-    public static final String REGEX_LIVESTREAM_URL1 = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/(.+)$";
-    public static final String REGEX_LIVESTREAM_URL2 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(accounts\\/([0-9]+)|.+)\\/events\\/([0-9]+)$";
-    public static final String REGEX_LIVESTREAM_URL3 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(accounts\\/([0-9]+)|.+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
+    public static final String REGEX_LIVESTREAM_URL1   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/(.+)$";
+    public static final String REGEX_LIVESTREAM_URL2   = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
+    public static final String REGEX_LIVESTREAM_URL2_1 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(.+)\\/events\\/([0-9]+)$";
+    public static final String REGEX_LIVESTREAM_URL3   = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
+    public static final String REGEX_LIVESTREAM_URL3_1 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(.+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
     
     public boolean isUrlMatched(String url) {
         
         return (url == null) ? null : (url.matches(REGEX_LIVESTREAM_URL1) ||
-                                       url.matches(REGEX_LIVESTREAM_URL2) ||
-                                       url.matches(REGEX_LIVESTREAM_URL3));
+                                       url.matches(REGEX_LIVESTREAM_URL2) || url.matches(REGEX_LIVESTREAM_URL2_1) ||
+                                       url.matches(REGEX_LIVESTREAM_URL3) || url.matches(REGEX_LIVESTREAM_URL3_1));
     }
     
     public String getDirectVideoUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
         
-        Matcher matcher1 = Pattern.compile(REGEX_LIVESTREAM_URL1).matcher(urlStr);
-        Matcher matcher2 = Pattern.compile(REGEX_LIVESTREAM_URL2).matcher(urlStr);
-        Matcher matcher3 = Pattern.compile(REGEX_LIVESTREAM_URL3).matcher(urlStr);
+        Matcher matcher1  = Pattern.compile(REGEX_LIVESTREAM_URL1).matcher(urlStr);
+        Matcher matcher2  = Pattern.compile(REGEX_LIVESTREAM_URL2).matcher(urlStr);
+        Matcher matcher21 = Pattern.compile(REGEX_LIVESTREAM_URL2_1).matcher(urlStr);
+        Matcher matcher3  = Pattern.compile(REGEX_LIVESTREAM_URL3).matcher(urlStr);
+        Matcher matcher31 = Pattern.compile(REGEX_LIVESTREAM_URL3_1).matcher(urlStr);
         
         if (matcher1.find()) {
             
@@ -85,7 +89,7 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (matcher2.find()) {
+        } else if (matcher2.find() || matcher21.find()) {
             
             log.info("livestream format 2");
             
@@ -144,7 +148,7 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (matcher3.find()) {
+        } else if (matcher3.find() || matcher31.find()) {
             
             log.info("livestream format 3");
             
