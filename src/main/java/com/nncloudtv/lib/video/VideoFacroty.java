@@ -25,7 +25,15 @@ public class VideoFacroty {
         
         if (url == null) { return null; }
         
-        VideoLib[] videoLibs = { new YouTubeLib(), new VimeoLib(), new UstreamLib(), new S3VideoLib(), new HttpsVideoLib() };
+        VideoLib[] videoLibs = {
+                
+                new YouTubeLib(),
+                new VimeoLib(),
+                new UstreamLib(),
+                new LiveStreamLib(),
+                new S3VideoLib(),
+                new HttpsVideoLib(),
+        };
         
         for (VideoLib lib : videoLibs) {
             

@@ -108,15 +108,16 @@ public class NnNetUtil {
     }
     
     public static String urlGet (String urlStr) {
-        URL url;
+        
         try {
-            url = new URL(urlStr);
+            
+            URL url = new URL(urlStr);
             HttpURLConnection connection;
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Accept-Charset", "UTF-8");
             connection.setDoOutput(true);
             connection.setRequestMethod("GET");
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {                
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 log.info("response not ok!" + connection.getResponseCode());
                 return null;
             }            
