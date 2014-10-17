@@ -173,18 +173,24 @@ public class LiveStreamLib implements VideoLib {
                         String appArgument = attr[1].trim();
                         log.info("app-argument = " + appArgument);
                         
-                        if (appArgument != null && appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL) || appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
+                        if (appArgument != null) {
                             
-                            String videoId = null;
-                            Matcher matcher = Pattern.compile(REGEX_LIVESTREAM_PAN_VIDEO).matcher(urlStr);
-                            if (matcher.find()) {
-                                videoId = matcher.group(1);
+                            if (appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
+                                
+                                return getDirectVideoUrl(appArgument);
+                                
+                            } else if (appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
+                                
+                                Matcher matcher = Pattern.compile(REGEX_LIVESTREAM_PAN_VIDEO).matcher(urlStr);
+                                
+                                if (matcher.find()) {
+                                    
+                                    appArgument += "/videos/" + matcher.group(1);
+                                    log.info(appArgument);
+                                }
+                                
+                                return getDirectVideoUrl(appArgument);
                             }
-                            if (videoId != null) {
-                                appArgument += "/videos/" + videoId;
-                            }
-                            
-                            return getDirectVideoUrl(appArgument);
                         }
                     }
                 }
