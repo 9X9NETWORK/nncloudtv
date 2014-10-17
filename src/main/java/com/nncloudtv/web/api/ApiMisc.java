@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,6 +27,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +43,9 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
+import com.google.gdata.data.youtube.PlaylistEntry;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -660,7 +666,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            UstreamLib.steaming(videoUrl, resp.getOutputStream());
+            UstreamLib.streaming(videoUrl, resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
@@ -730,7 +736,6 @@ public class ApiMisc extends ApiGeneric {
                 log.info("parsing ustream url failed");
                 return empty;
             }
-            
         } else if (vimeoMatcher.find()) {
             
             log.info("vimeo url format");
@@ -755,7 +760,7 @@ public class ApiMisc extends ApiGeneric {
             } catch(AmazonS3Exception e) {
                 log.info(e.getMessage());
             }
-        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+        } else if (videoUrl.matches(YouTubeLib.REGEX_VIDEO_URL)) {
             
             log.info("youtube url format");
             String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
@@ -766,7 +771,7 @@ public class ApiMisc extends ApiGeneric {
                 Process process = Runtime.getRuntime().exec(cmd);
                 videoIn = process.getInputStream();
                 // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
                 pipingTask.start();
                 
             } catch (IOException e) {
@@ -798,18 +803,15 @@ public class ApiMisc extends ApiGeneric {
             InputStream thumbIn = process.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             
-            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            PipingTask pipingTask = new PipingTask(thumbIn, baos, 0);
             pipingTask.start();
             
             if (videoIn != null) {
-                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 30);
                 feedingAvconvTask.start();
             }
             
             pipingTask.join();
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
-            }
             log.info("thumbnail size = " + baos.size());
             if (baos.size() > 0) {
                 

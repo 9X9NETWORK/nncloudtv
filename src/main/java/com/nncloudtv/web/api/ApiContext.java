@@ -231,4 +231,7 @@ public class ApiContext {
         return CookieHelper.getCookie(httpReq, cookieName);
     }
     
+    public String getRoot() {
+        return root;
+    }
 }
