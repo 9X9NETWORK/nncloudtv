@@ -68,11 +68,14 @@ public class VideoFacroty {
         }
         
         InputStream videoIn = null;
+        log.info("Q0");
         VideoLib videoLib = getVideoLib(videoUrl);
+        log.info("Q1");
         String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
+        log.info("Q3");
         if (directVideoUrl != null) {
             
-            log.info("direct video url");
+            log.info("direct video url = " + directVideoUrl);
             videoUrl = directVideoUrl;
             
         } else {
@@ -84,7 +87,7 @@ public class VideoFacroty {
                 videoIn = directVideoStream;
             }
         }
-        
+        log.info("Q4");
         FeedingAvconvTask feedingAvconvTask = null;
         PipingTask pipingTask = null;
         
