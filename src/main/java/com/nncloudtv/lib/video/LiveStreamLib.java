@@ -25,8 +25,8 @@ public class LiveStreamLib implements VideoLib {
     protected final static Logger log = Logger.getLogger(LiveStreamLib.class.getName());
     
     public static final String REGEX_LIVESTREAM_URL1 = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/(.+)$";
-    public static final String REGEX_LIVESTREAM_URL2 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
-    public static final String REGEX_LIVESTREAM_URL3 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
+    public static final String REGEX_LIVESTREAM_URL2 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(accounts\\/([0-9]+)|.+)\\/events\\/([0-9]+)$";
+    public static final String REGEX_LIVESTREAM_URL3 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(accounts\\/([0-9]+)|.+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
     
     public boolean isUrlMatched(String url) {
         
