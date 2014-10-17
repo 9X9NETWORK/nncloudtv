@@ -24,62 +24,58 @@ public class LiveStreamLib implements VideoLib {
     
     protected final static Logger log = Logger.getLogger(LiveStreamLib.class.getName());
     
-    public static final String REGEX_LIVESTREAM_URL1   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/(.+)$";
-    public static final String REGEX_LIVESTREAM_URL2   = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
-    public static final String REGEX_LIVESTREAM_URL2_1 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(.+)\\/events\\/([0-9]+)$";
-    public static final String REGEX_LIVESTREAM_URL3   = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
-    public static final String REGEX_LIVESTREAM_URL3_1 = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/(.+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
+    public static final String REGEX_LIVESTREAM_VIDEO_URL = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+))";
+    public static final String REGEX_LIVESTREAM_EVENT_URL = "^https?:\\/\\/(api|new)\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
+    public static final String REGEX_LIVESTREAM_PAN_URL   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/(.+))+$";
     
     public boolean isUrlMatched(String url) {
         
-        return (url == null) ? null : (url.matches(REGEX_LIVESTREAM_URL1) ||
-                                       url.matches(REGEX_LIVESTREAM_URL2) || url.matches(REGEX_LIVESTREAM_URL2_1) ||
-                                       url.matches(REGEX_LIVESTREAM_URL3) || url.matches(REGEX_LIVESTREAM_URL3_1));
+        return (url == null) ? null : (url.matches(REGEX_LIVESTREAM_PAN_URL) ||
+                                       url.matches(REGEX_LIVESTREAM_EVENT_URL) ||
+                                       url.matches(REGEX_LIVESTREAM_VIDEO_URL));
     }
     
     public String getDirectVideoUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
         
-        Matcher matcher1  = Pattern.compile(REGEX_LIVESTREAM_URL1).matcher(urlStr);
-        Matcher matcher2  = Pattern.compile(REGEX_LIVESTREAM_URL2).matcher(urlStr);
-        Matcher matcher21 = Pattern.compile(REGEX_LIVESTREAM_URL2_1).matcher(urlStr);
-        Matcher matcher3  = Pattern.compile(REGEX_LIVESTREAM_URL3).matcher(urlStr);
-        Matcher matcher31 = Pattern.compile(REGEX_LIVESTREAM_URL3_1).matcher(urlStr);
+        Matcher panMatcher  = Pattern.compile(REGEX_LIVESTREAM_PAN_URL).matcher(urlStr);
+        Matcher eventUrlMatcher  = Pattern.compile(REGEX_LIVESTREAM_EVENT_URL).matcher(urlStr);
+        Matcher videoUrlMatcher  = Pattern.compile(REGEX_LIVESTREAM_VIDEO_URL).matcher(urlStr);
         
-        if (matcher1.find()) {
+        if (videoUrlMatcher.find()) {
             
-            log.info("livestream format 1");
+            log.info("livestream video url format matched");
+            
+            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "\\/\\/api\\.");
             
             try {
                 
-                String metaTag = "meta[name=apple-itunes-app]";
-                Document doc = Jsoup.connect(urlStr).get();
-                Element element = doc.select(metaTag).first();
-                if (element == null) {
-                    log.warning("meta tag is not found " + metaTag);
-                    return null;
-                }
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                IOUtils.copy(conn.getInputStream(), baos);
+                JSONObject videoJson = new JSONObject(new String(baos.toByteArray(), NnStringUtil.UTF8));
                 
-                String contentStr = element.attr("content");
-                if (contentStr == null) {
-                    log.warning("contentStr is null");
-                    return null;
-                }
-                log.info(contentStr);
-                String[] split = contentStr.split(",");
-                for (String str : split) {
-                    
-                    str = str.trim();
-                    String[] attr = str.split("=");
-                    if (attr.length >= 2 && attr[0].trim().equals("app-argument")) {
-                        
-                        String appArgument = attr[1].trim();
-                        log.info("app-argument = " + appArgument);
-                        
-                        return getDirectVideoUrl(appArgument);
-                    }
-                }
+                String progressiveUrl = videoJson.getString("progressive_url");
+                log.info("progressive_url = " + progressiveUrl);
+                
+                return progressiveUrl;
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getClass().getName());
+                log.warning(e.getMessage());
+                
+                return null;
+                
+            } catch (JSONException e) {
+                
+                log.warning(e.getClass().getName());
+                log.warning(e.getMessage());
+                
+                return null;
                 
             } catch (IOException e) {
                 
@@ -89,9 +85,9 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (matcher2.find() || matcher21.find()) {
+        } else if (eventUrlMatcher.find()) {
             
-            log.info("livestream format 2");
+            log.info("livestream event url format matched");
             
             urlStr = urlStr.replaceFirst("\\/\\/new\\.", "\\/\\/api\\.");
             
@@ -148,39 +144,44 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (matcher3.find() || matcher31.find()) {
+        } else if (panMatcher.find()) {
             
-            log.info("livestream format 3");
-            
-            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "\\/\\/api\\.");
+            log.info("livestream pan url format matched");
             
             try {
                 
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                IOUtils.copy(conn.getInputStream(), baos);
-                JSONObject videoJson = new JSONObject(new String(baos.toByteArray(), NnStringUtil.UTF8));
+                String metaTag = "meta[name=apple-itunes-app]";
+                Document doc = Jsoup.connect(urlStr).get();
+                Element element = doc.select(metaTag).first();
+                if (element == null) {
+                    log.warning("meta tag is not found " + metaTag);
+                    return null;
+                }
                 
-                String progressiveUrl = videoJson.getString("progressive_url");
-                log.info("progressive_url = " + progressiveUrl);
+                String contentStr = element.attr("content");
+                if (contentStr == null) {
+                    log.warning("contentStr is null");
+                    return null;
+                }
+                log.info(contentStr);
+                String[] split = contentStr.split(",");
+                for (String str : split) {
+                    
+                    str = str.trim();
+                    String[] attr = str.split("=");
+                    if (attr.length >= 2 && attr[0].trim().equals("app-argument")) {
+                        
+                        String appArgument = attr[1].trim();
+                        log.info("app-argument = " + appArgument);
+                        
+                        if (appArgument != null && appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL) || appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
+                            
+                            return getDirectVideoUrl(appArgument);
+                        }
+                    }
+                }
                 
-                return progressiveUrl;
-                
-            } catch (MalformedURLException e) {
-                
-                log.warning(e.getClass().getName());
-                log.warning(e.getMessage());
-                
-                return null;
-                
-            } catch (JSONException e) {
-                
-                log.warning(e.getClass().getName());
-                log.warning(e.getMessage());
-                
-                return null;
+                log.info("no proper app-argument found");
                 
             } catch (IOException e) {
                 
@@ -189,7 +190,10 @@ public class LiveStreamLib implements VideoLib {
                 
                 return null;
             }
+            
         }
+        
+        log.info("does not match any");
         
         return null;
     }
