@@ -7,6 +7,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +27,7 @@ public class LiveStreamLib implements VideoLib {
     public static final String REGEX_LIVESTREAM_VIDEO_URL = "^https?:\\/\\/new\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+)$";
     public static final String REGEX_LIVESTREAM_EVENT_URL = "^https?:\\/\\/new\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
     public static final String REGEX_LIVESTREAM_PAN_URL   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/(.+))+$";
+    public static final String REGEX_LIVESTREAM_PAN_VIDEO = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/videos\\/[0-9]+$";
     
     public boolean isUrlMatched(String url) {
         
@@ -171,6 +174,15 @@ public class LiveStreamLib implements VideoLib {
                         log.info("app-argument = " + appArgument);
                         
                         if (appArgument != null && appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL) || appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
+                            
+                            String videoId = null;
+                            Matcher matcher = Pattern.compile(REGEX_LIVESTREAM_PAN_VIDEO).matcher(urlStr);
+                            if (matcher.find()) {
+                                videoId = matcher.group(1);
+                            }
+                            if (videoId != null) {
+                                appArgument += "/videos/" + videoId;
+                            }
                             
                             return getDirectVideoUrl(appArgument);
                         }
