@@ -30,20 +30,14 @@ public class LiveStreamLib implements VideoLib {
     
     public boolean isUrlMatched(String url) {
         
-        return (url == null) ? null : (url.matches(REGEX_LIVESTREAM_PAN_URL) ||
-                                       url.matches(REGEX_LIVESTREAM_EVENT_URL) ||
-                                       url.matches(REGEX_LIVESTREAM_VIDEO_URL));
+        return (url == null) ? null : url.matches(REGEX_LIVESTREAM_PAN_URL);
     }
     
     public String getDirectVideoUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
         
-        Matcher panMatcher  = Pattern.compile(REGEX_LIVESTREAM_PAN_URL).matcher(urlStr);
-        Matcher eventUrlMatcher  = Pattern.compile(REGEX_LIVESTREAM_EVENT_URL).matcher(urlStr);
-        Matcher videoUrlMatcher  = Pattern.compile(REGEX_LIVESTREAM_VIDEO_URL).matcher(urlStr);
-        
-        if (videoUrlMatcher.find()) {
+        if (urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
             
             log.info("livestream video url format matched");
             
@@ -85,7 +79,7 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (eventUrlMatcher.find()) {
+        } else if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL)) {
             
             log.info("livestream event url format matched");
             
@@ -144,7 +138,7 @@ public class LiveStreamLib implements VideoLib {
                 return null;
             }
             
-        } else if (panMatcher.find()) {
+        } else if (urlStr.matches(REGEX_LIVESTREAM_PAN_URL)) {
             
             log.info("livestream pan url format matched");
             

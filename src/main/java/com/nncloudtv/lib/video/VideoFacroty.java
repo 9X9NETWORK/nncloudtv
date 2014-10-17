@@ -72,6 +72,7 @@ public class VideoFacroty {
         String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             
+            log.info("direct video url");
             videoUrl = directVideoUrl;
             
         } else {
@@ -79,6 +80,7 @@ public class VideoFacroty {
             InputStream directVideoStream = videoLib.getDirectVideoStream(videoUrl);
             if (directVideoStream != null) {
                 
+                log.info("direct video stream");
                 videoIn = directVideoStream;
             }
         }
