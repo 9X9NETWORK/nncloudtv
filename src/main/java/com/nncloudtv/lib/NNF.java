@@ -11,7 +11,9 @@ import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.dao.NnItemDao;
 import com.nncloudtv.dao.NnProgramDao;
+import com.nncloudtv.dao.NnPurchaseDao;
 import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.dao.NnUserPrefDao;
@@ -40,8 +42,10 @@ import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnDeviceManager;
 import com.nncloudtv.service.NnDeviceNotificationManager;
 import com.nncloudtv.service.NnEpisodeManager;
+import com.nncloudtv.service.NnItemManager;
 import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.MyLibraryManager;
+import com.nncloudtv.service.NnPurchaseManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
@@ -85,6 +89,8 @@ public class NNF {
     protected static YtProgramManager       ytProgramMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
     protected static MyLibraryManager       libraryMngr         = null;
+    protected static NnPurchaseManager      purchaseMngr        = null;
+    protected static NnItemManager          itemMngr            = null;
     
     protected static SetService      setService      = null;
     protected static CategoryService categoryService = null;
@@ -113,6 +119,8 @@ public class NNF {
     protected static SysTagMapDao      sysTagMapDao      = null;
     protected static AdPlacementDao    adDao             = null;
     protected static MyLibraryDao      libraryDao        = null;
+    protected static NnPurchaseDao     purchaseDao       = null;
+    protected static NnItemDao         itemDao           = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -354,6 +362,28 @@ public class NNF {
         }
         
         return libraryDao;
+    }
+    
+    public static NnPurchaseDao getPurchaseDao() {
+        
+        if (purchaseDao == null) {
+            
+            log.info("create purchaseDao");
+            purchaseDao = new NnPurchaseDao();
+        }
+        
+        return purchaseDao;
+    }
+    
+    public static NnItemDao getItemDao() {
+        
+        if (itemDao == null) {
+            
+            log.info("create itemDao");
+            itemDao = new NnItemDao();
+        }
+        
+        return itemDao;
     }
     
     public static CategoryService getCategoryService() {
@@ -683,5 +713,27 @@ public class NNF {
         }
         
         return libraryMngr;
+    }
+    
+    public static NnPurchaseManager getPurchaseMngr() {
+        
+        if (purchaseMngr == null) {
+            
+            log.info("create purchaseMngr");
+            purchaseMngr = new NnPurchaseManager();
+        }
+        
+        return purchaseMngr;
+    }
+    
+    public static NnItemManager getItemMngr() {
+        
+        if (itemMngr == null) {
+            
+            log.info("create itemMngr");
+            itemMngr = new NnItemManager();
+        }
+        
+        return itemMngr;
     }
 }

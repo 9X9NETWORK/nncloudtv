@@ -82,9 +82,9 @@ public class NnUserProfileManager {
                         }
                     }
                 }
-                return 0;
+                // finally compare msoId
+                return (int) (profile1.getMsoId() - profile2.getMsoId());
             }
-            
         };
     }
     

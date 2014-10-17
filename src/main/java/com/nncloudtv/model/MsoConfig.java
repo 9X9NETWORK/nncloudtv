@@ -29,12 +29,16 @@ public class MsoConfig implements Serializable  {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String item;
+    
+    // System wide config
+    public static String RO                    = "read-only";
+    public static String MEMCACHE_SERVER       = "memcache-server";
+    public static String DEBUG                 = "debug";
+    
     public static String CDN                   = "cdn";
     public static String VIDEO                 = "video";
-    public static String DEBUG                 = "debug";
     public static String FBTOKEN               = "fbtoken";                  //regardless of the brand, for player parsing feed data 
     public static String REALFBTOKEN           = "realfbtoken";
-    public static String RO                    = "read-only";
     public static String FORCE_UPGRADE         = "force-upgrade";
     public static String APP_EXPIRE            = "app-expire";               //format: "January 2, 2014" [note, with ","]
     public static String APP_VERSION_EXPIRE    = "app-version-expire";       //format: "ios 3.0.2;ios 3.0.7;android 4.0" 
@@ -43,7 +47,6 @@ public class MsoConfig implements Serializable  {
     public static String SUPPORTED_REGION      = "supported-region"; //zh, en
     public static String API_MINIMAL           = "api-minimal";
     public static String SYSTEM_CATEGORY_MASK  = "system-category-mask";
-    public static String MEMCACHE_SERVER       = "memcache-server";
     public static String STORE_ANDROID         = "store-android";            //android store url
     public static String STORE_IOS             = "store-ios";                //ios store url
     public static String FAVICON_URL           = "favicon-url";
@@ -95,6 +98,11 @@ public class MsoConfig implements Serializable  {
     public static String CF_SUBDOMAIN     = "cf-subdomain";
     public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
     public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
+    
+    // In App Purchase configurations
+    public static String GOOGLEPLAY_APP_NAME     = "googleplay-app-name";
+    public static String GOOGLEPLAY_PACKAGE_NAME = "googleplay-package-name";
+    public static String APPSTORE_BUNDLE_ID      = "appstore-bundle-id";
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

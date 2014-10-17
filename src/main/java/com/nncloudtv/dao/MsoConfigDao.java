@@ -42,13 +42,12 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(msoId, item);
             if (results.size() > 0) {
-                config = results.get(0);
-                config = pm.detachCopy(config);
+                config = pm.detachCopy(results.get(0));
             }
         } finally {
             pm.close();
         }
-        return config; 
+        return config;
     }
     
     public MsoConfig findByItemAndValue(String item, String value) {
@@ -61,13 +60,12 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(item, value);
             if (results.size() > 0) {
-                config = results.get(0);
-                config = pm.detachCopy(config);
+                config = pm.detachCopy(results.get(0));
             }
         } finally {
             pm.close();
         }
-        return config; 
+        return config;
     }
     
     public MsoConfig findByItem(String item) {
@@ -80,30 +78,29 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(item);
             if (results.size() > 0) {
-                config = results.get(0);
-                config = pm.detachCopy(config);
+                config = pm.detachCopy(results.get(0));
             }
         } finally {
             pm.close();
         }
-        return config;        
+        return config;
     }
-
+    
     public List<MsoConfig> findByMso(Mso mso) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
-
+        
         List<MsoConfig> detached = new ArrayList<MsoConfig>();
         try {
             Query query = pm.newQuery(MsoConfig.class);
-            query.setFilter("msoId == msoIdParam");        
-            query.declareParameters("long msoIdParam");                
+            query.setFilter("msoId == msoIdParam");
+            query.declareParameters("long msoIdParam");
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(mso.getId());
             detached = (List<MsoConfig>)pm.detachCopyAll(results);
         } finally {
             pm.close();
         }
-        return detached;        
+        return detached;
     }
     
 }

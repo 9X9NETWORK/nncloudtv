@@ -62,6 +62,12 @@ public class NnChannel implements Serializable {
     @Persistent
     private boolean isPublic;
     
+    @Persistent
+    private boolean paidChannel;
+    
+    @Persistent
+    private boolean readonly;
+    
     //used for testing without changing the program logic
     //isTemp set to true means it can be wiped out
     @Persistent
@@ -204,10 +210,6 @@ public class NnChannel implements Serializable {
     
     @NotPersistent
     private boolean featured;
-    
-    // used in YouTube Sync Channel, true means back-end is sync with YouTube and Channel can't modify at this moment 
-    @Persistent
-    private boolean readonly;
     
     // used in YouTube Sync Channel, true means back-end will auto sync with YouTube in a fixed time 
     @NotPersistent
@@ -655,5 +657,13 @@ public class NnChannel implements Serializable {
 
     public void setFeatured(boolean featured) {
         this.featured = featured;
+    }
+
+    public boolean isPaidChannel() {
+        return paidChannel;
+    }
+
+    public void setPaidChannel(boolean paidChannel) {
+        this.paidChannel = paidChannel;
     }
 }

@@ -1137,6 +1137,26 @@ public class PlayerApiServiceTest {
             defaultMso = null;
         }
         
+        private Object getPrivateField(String field) {
+            
+            try {
+                Field format = service.getClass().getDeclaredField(field);
+                format.setAccessible(true);
+                return format.get(service);
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+            
+            return null;
+        }
+        
         @Test
         public void notProvideVersionNorDatabaseSetting() {
             
@@ -1206,21 +1226,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("format");
-                format.setAccessible(true);
-                assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
-                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
-            }
+            short format = (Short) getPrivateField("format");
+            assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
+                    PlayerApiService.FORMAT_PLAIN, format);
         }
         
         @Test
@@ -1230,21 +1238,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("format");
-                format.setAccessible(true);
-                assertEquals("parameter format not provide should see as default format=text to access.",
-                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
-            }
+            short format = (Short) getPrivateField("format");
+            assertEquals("parameter format not provide should see as default format=text to access.",
+                    PlayerApiService.FORMAT_PLAIN, format);
         }
         
         @Test
@@ -1254,22 +1250,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != Mso.NAME_9X9) {
-                    fail("Not exist mso should see as default(mso=9x9) to access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                fail("Not exist mso should see as default(mso=9x9) to access.");
             }
         }
         
@@ -1280,22 +1263,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != Mso.NAME_9X9) {
-                    fail("Not provide mso should see as default(mso=9x9) to access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                fail("Not provide mso should see as default(mso=9x9) to access.");
             }
         }
         
@@ -1316,22 +1286,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != brandName) {
-                    fail("Provide exist mso from root domain should set it to further access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != brandName) {
+                fail("Provide exist mso from root domain should set it to further access.");
             }
         }
     }
