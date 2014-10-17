@@ -28,11 +28,12 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
-import com.nncloudtv.lib.YouTubeLib.MyFeed;
-import com.nncloudtv.lib.YouTubeLib.Thumbnail;
-import com.nncloudtv.lib.YouTubeLib.Video;
-import com.nncloudtv.lib.YouTubeLib.VideoFeed;
-import com.nncloudtv.lib.YouTubeLib.YouTubeUrl;
+import com.nncloudtv.lib.video.YouTubeLib;
+import com.nncloudtv.lib.video.YouTubeLib.MyFeed;
+import com.nncloudtv.lib.video.YouTubeLib.Thumbnail;
+import com.nncloudtv.lib.video.YouTubeLib.Video;
+import com.nncloudtv.lib.video.YouTubeLib.VideoFeed;
+import com.nncloudtv.lib.video.YouTubeLib.YouTubeUrl;
 import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.web.api.NnStatusCode;
 
@@ -413,7 +414,7 @@ public class YouTubeLibTest {
     @Test
     public void testIsVideoUrlNormalized() {
         
-        assertTrue("Wrong format.", YouTubeLib.isVideoUrlNormalized("http://www.youtube.com/watch?v=-dQltKG3NlI"));
+        assertTrue("Wrong format.", (new YouTubeLib()).isUrlMatched("http://www.youtube.com/watch?v=-dQltKG3NlI"));
     }
     
     @Test
@@ -422,6 +423,6 @@ public class YouTubeLibTest {
         final String videoIdStr = "-dQltKG3NlI";
         final String videoUrlPrefix = "http://www.youtube.com/watch?v=";
         
-        assertEquals("Wrong format.", videoIdStr, YouTubeLib.getYouTubeVideoIdStr(videoUrlPrefix + videoIdStr));
+        assertEquals("Wrong format.", videoIdStr, (new YouTubeLib()).getVideoId(videoUrlPrefix + videoIdStr));
     }
 }

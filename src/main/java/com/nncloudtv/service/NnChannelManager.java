@@ -23,7 +23,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.video.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;

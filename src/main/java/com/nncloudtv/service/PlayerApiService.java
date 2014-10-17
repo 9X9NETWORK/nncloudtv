@@ -41,8 +41,8 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.lib.VimeoLib;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.video.VimeoLib;
+import com.nncloudtv.lib.video.YouTubeLib;
 import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
 import com.nncloudtv.model.EndPoint;
@@ -3338,7 +3338,7 @@ public class PlayerApiService {
     public Object getVimeoDirectUrl(String url) {
         if (url == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        String videoUrl = VimeoLib.getDirectVideoUrl(url);
+        String videoUrl = (new VimeoLib()).getDirectVideoUrl(url);
         if (videoUrl == null)
            this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
         log.info("vimeo url:" + videoUrl);

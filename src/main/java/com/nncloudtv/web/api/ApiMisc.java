@@ -34,14 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
 import com.google.gdata.data.youtube.PlaylistEntry;
 import com.google.gdata.data.youtube.PlaylistFeed;
@@ -54,9 +47,10 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.UstreamLib;
-import com.nncloudtv.lib.VimeoLib;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.video.UstreamLib;
+import com.nncloudtv.lib.video.VideoFacroty;
+import com.nncloudtv.lib.video.VideoLib;
+import com.nncloudtv.lib.video.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
@@ -666,7 +660,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            UstreamLib.streaming(videoUrl, resp.getOutputStream());
+            VideoFacroty.streaming(videoUrl, resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
@@ -692,8 +686,6 @@ public class ApiMisc extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
-        URL url = null;
-        HttpURLConnection conn = null;
         
         Double offset = 5.0;
         if (req.getParameter("t") != null) {
@@ -709,11 +701,11 @@ public class ApiMisc extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
+        
+        // check url format
         try {
-            url = new URL(videoUrl);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            
+            URL url = new URL(videoUrl);
+            url.openConnection();
         } catch (MalformedURLException e) {
             log.info("bad url format");
             return empty;
@@ -724,68 +716,19 @@ public class ApiMisc extends ApiGeneric {
         
         InputStream videoIn = null;
         String thumbnailUrl = null;
-        Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
-        Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
-        Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
         
-        if (ustreamMatcher.find()) {
+        VideoLib videoLib = VideoFacroty.getVideoLib(videoUrl);
+        String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
+        if (directVideoUrl != null) {
             
-            log.info("ustream url format");
-            videoUrl = UstreamLib.getDirectVideoUrl(videoUrl);
-            if (videoUrl == null) {
-                log.info("parsing ustream url failed");
-                return empty;
-            }
-        } else if (vimeoMatcher.find()) {
+            videoUrl = directVideoUrl;
             
-            log.info("vimeo url format");
+        } else {
             
-            videoUrl = VimeoLib.getDirectVideoUrl(videoUrl);
-            if (videoUrl == null) {
-                log.info("parsing vimeo url failed");
-                return empty;
-            }
-        } else if (s3Matcher.find()) {
-            
-            log.info("S3 url format");
-            String bucket = s3Matcher.group(1);
-            String filename = s3Matcher.group(2);
-            Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
-            AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
-                                                                 MsoConfigManager.getAWSKey(mso));
-            AmazonS3 s3 = new AmazonS3Client(credentials);
-            try {
-                S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
-                videoIn = s3Object.getObjectContent();
-            } catch(AmazonS3Exception e) {
-                log.info(e.getMessage());
-            }
-        } else if (videoUrl.matches(YouTubeLib.REGEX_VIDEO_URL)) {
-            
-            log.info("youtube url format");
-            String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
-                       + NnStringUtil.escapeURLInShellArg(videoUrl);
-            log.info("[exec] " + cmd);
-            
-            try {
-                Process process = Runtime.getRuntime().exec(cmd);
-                videoIn = process.getInputStream();
-                // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
-                pipingTask.start();
+            InputStream directVideoStream = videoLib.getDirectVideoStream(videoUrl);
+            if (directVideoStream != null) {
                 
-            } catch (IOException e) {
-                log.warning(e.getMessage());
-                return empty;
-            }
-        } else if (url.getProtocol().equals("https")) {
-            
-            log.info("https url format");
-            try {
-                videoIn = conn.getInputStream();
-            } catch (IOException e) {
-                log.info(e.getMessage());
-                return empty;
+                videoIn = directVideoStream;
             }
         }
         

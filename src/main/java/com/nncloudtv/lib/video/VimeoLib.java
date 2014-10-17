@@ -1,6 +1,7 @@
-package com.nncloudtv.lib;
+package com.nncloudtv.lib.video;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -9,17 +10,19 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-public class VimeoLib {
+import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.NnNetUtil;
+
+public class VimeoLib implements VideoLib {
     
     protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     
     public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/([0-9]+)$";
     
-    public static String getDirectVideoUrl(String url) {
+    public String getDirectVideoUrl(String url) {
         
         if (url == null) { return null; }
         
-        // TODO: cache?
         String dataConfigUrl = null;
         String videoUrl = null;
         //step 1, get <div.player data-config-url>
@@ -47,5 +50,17 @@ public class VimeoLib {
             NnLogUtil.logException(e);
         }
         return videoUrl;
+    }
+    
+    public boolean isUrlMatched(String url) {
+        
+        return (url == null) ? null : url.matches(REGEX_VIMEO_VIDEO_URL);
+    }
+    
+    public InputStream getDirectVideoStream(String url) {
+        
+        // need implement
+        
+        return null;
     }
 }

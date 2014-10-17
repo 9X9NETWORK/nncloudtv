@@ -1,6 +1,7 @@
-package com.nncloudtv.lib;
+package com.nncloudtv.lib.video;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,9 +23,12 @@ import com.google.api.client.util.Key;
 import com.google.gdata.client.youtube.YouTubeService;
 import com.google.gdata.data.youtube.PlaylistFeed;
 import com.google.gdata.util.ServiceException;
+import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 
-public class YouTubeLib {
+public class YouTubeLib  implements VideoLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     
@@ -107,7 +111,7 @@ public class YouTubeLib {
             //log.info("match:(p|list)=(PL)?(\\w+)");
             url = "http://www.youtube.com/view_play_list?p=" + m.group(6);
         }
-
+        
         // http://www.youtube.com/playlist?list=03D59E2ECDDA66DF
         // http://www.youtube.com/playlist?list=PL03D59E2ECDDA66DF               
         reg = "^(http|https)://?(www.)?youtube.com/playlist?list=(PL)?(\\w+)";
@@ -117,7 +121,7 @@ public class YouTubeLib {
             //log.info("match playlist?list=(PL)?(\\w+)");
             url = "http://www.youtube.com/view_play_list?p=" + m.group(5);
         }
-
+        
         if (url != null) { 
             //url = url.toLowerCase();
             if (url.equals("http://www.youtube.com/user/watch")) {
@@ -128,56 +132,56 @@ public class YouTubeLib {
         //if (!youTubeCheck(result)) {return null;} //till the function is fixed        
         return url;        
     }
-
+    
      public static class YouTubeUrl extends GenericUrl {
-        @Key final String alt = "jsonc";
-        @Key String author;
-        @Key String q;
-        @Key("max-results") Integer maxResults;
-        YouTubeUrl(String url) {
+        @Key public final String alt = "jsonc";
+        @Key public String author;
+        @Key public String q;
+        @Key("max-results") public Integer maxResults;
+        public YouTubeUrl(String url) {
           super(url);
         }
     }
-
+     
     public static class VideoFeed {
-       @Key String title;
-       @Key String subtitle;
-       @Key String logo;
-       @Key String description;
-       @Key String author;
-       @Key int totalItems;
-       @Key List<Video> items;
+       @Key public String title;
+       @Key public String subtitle;
+       @Key public String logo;
+       @Key public String description;
+       @Key public String author;
+       @Key public int totalItems;
+       @Key public List<Video> items;
     }
-
+    
     public static class Author {
-        @Key String name;
+        @Key public String name;
     }
     
     public static class MyFeed {
-       @Key List<Video> items;
+       @Key public List<Video> items;
     }
     
     public static class Video {
-        @Key String id;
-        @Key String title;
-        @Key String description;
-        @Key Thumbnail thumbnail;
-        @Key Player player;
-        @Key Video video;
+        @Key public String id;
+        @Key public String title;
+        @Key public String description;
+        @Key public Thumbnail thumbnail;
+        @Key public Player player;
+        @Key public Video video;
     }
     
     public static class Thumbnail {
-        @Key String sqDefault;                    
+        @Key public String sqDefault;
     }
     
     public static class ProfileFeed {
-        @Key List<String> items;
+        @Key public List<String> items;
     }
         
     public static class Player {
-        @Key("default") String defaultUrl;
+        @Key("default") public String defaultUrl;
     }
-        
+    
     public static HttpRequestFactory getFactory() {
         HttpTransport transport = new NetHttpTransport();
         HttpRequestFactory factory = transport.createRequestFactory();
@@ -326,22 +330,20 @@ public class YouTubeLib {
         return true;
     }
     
-    public static boolean isVideoUrlNormalized(String url) {
+    public boolean isUrlMatched(String url) {
         
-        if (url == null) {
-            return false;
-        }
+        if (url == null) { return false; }
         
         return url.matches(REGEX_VIDEO_URL);
     }
     
-    public static String getYouTubeVideoIdStr(String url) {
+    public String getVideoId(String url) {
         
         if (url == null || url.length() == 0) {
             return url;
         }
         
-        if (!isVideoUrlNormalized(url)) {
+        if (!isUrlMatched(url)) {
             return null;
         }
         
@@ -361,5 +363,36 @@ public class YouTubeLib {
         YouTubeService service = new YouTubeService("FLIPr.tv");
         
         return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
+    }
+    
+    public String getDirectVideoUrl(String url) {
+        
+        // leave it null
+        return null;
+    }
+    
+    public InputStream getDirectVideoStream(String url) {
+        
+        if (url == null) { return null; }
+        
+        String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
+                   + NnStringUtil.escapeURLInShellArg(url);
+        log.info("[exec] " + cmd);
+        
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            // piping error message to stdout
+            PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
+            pipingTask.start();
+            
+            return process.getInputStream();
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            
+            return null;
+        }
+        
     }
 }

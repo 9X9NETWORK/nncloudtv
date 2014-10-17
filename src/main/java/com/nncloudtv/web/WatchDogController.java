@@ -32,7 +32,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.video.YouTubeLib;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
