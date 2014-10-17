@@ -38,7 +38,7 @@ public class LiveStreamLib implements VideoLib {
             
             log.info("livestream video url format matched");
             
-            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "\\/\\/api\\.");
+            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "//api.new.");
             
             try {
                 
@@ -80,7 +80,7 @@ public class LiveStreamLib implements VideoLib {
             
             log.info("livestream event url format matched");
             
-            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "\\/\\/api\\.");
+            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "//api.new.");
             
             try {
                 
