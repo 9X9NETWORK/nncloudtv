@@ -209,6 +209,8 @@ public class ApiContext {
     public boolean isIos() {
         
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent == null)
+            return false;
         if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
             log.info("request from ios");
             return true;
