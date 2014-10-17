@@ -27,7 +27,7 @@ public class LiveStreamLib implements VideoLib {
     public static final String REGEX_LIVESTREAM_VIDEO_URL = "^https?:\\/\\/new\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)\\/videos\\/([0-9]+)$";
     public static final String REGEX_LIVESTREAM_EVENT_URL = "^https?:\\/\\/new\\.livestream\\.com\\/accounts\\/([0-9]+)\\/events\\/([0-9]+)$";
     public static final String REGEX_LIVESTREAM_PAN_URL   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/(.+))+$";
-    public static final String REGEX_LIVESTREAM_PAN_VIDEO = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)\\/videos\\/[0-9]+$";
+    public static final String REGEX_LIVESTREAM_PAN_VIDEO = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/videos\\/[0-9]+)$";
     
     public boolean isUrlMatched(String url) {
         
@@ -185,8 +185,8 @@ public class LiveStreamLib implements VideoLib {
                                 
                                 if (matcher.find()) {
                                     
-                                    appArgument += "/videos/" + matcher.group(1);
-                                    log.info(appArgument);
+                                    appArgument += matcher.group(2);
+                                    log.info("pan video");
                                 }
                                 
                                 return getDirectVideoUrl(appArgument);
