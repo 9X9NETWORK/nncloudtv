@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
-    <version>4.7.2-RELEASE</version>
+    <version>4.7.3-RELEASE</version>
     <name>nncloudtv</name>
     <reporting>
         <outputDirectory>doc</outputDirectory>
@@ -325,6 +325,11 @@
             <version>2.3</version>
         </dependency>
         <!-- Google -->
+        <dependency>
+            <groupId>com.google.gdata</groupId>
+            <artifactId>core</artifactId>
+            <version>1.47.1</version>
+        </dependency>
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>

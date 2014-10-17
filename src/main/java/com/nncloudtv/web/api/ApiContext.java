@@ -23,19 +23,21 @@ import com.nncloudtv.service.PlayerApiService;
 
 public class ApiContext {
     
-    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/(www\\.)?(9x9|flipr)\\.tv$";
-    public final static String DEFAULT_VERSION = "31";
-    public final static String DEFAULT_OS = "web";
+    public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
+    
+    public final static String DEFAULT_VERSION   = "31";
+    public final static String DEFAULT_OS        = "web";
+    
     public final static String HEADER_USER_AGENT = "user-agent";
-    public final static String HEADER_REFERRER = "referer";
+    public final static String HEADER_REFERRER   = "referer";
     
     public final static String PARAM_APP_VERSION = "appver";
-    public final static String PARAM_OS = "os";
-    public final static String PARAM_MSO = "mso";
-    public final static String PARAM_LANG = "lang";
-    public final static String PARAM_SPHERE = "shpere";
-    public final static String PARAM_VERSION = "v";
-    public final static String PARAM_FORMAT = "format";
+    public final static String PARAM_OS          = "os";
+    public final static String PARAM_MSO         = "mso";
+    public final static String PARAM_LANG        = "lang";
+    public final static String PARAM_SPHERE      = "shpere";
+    public final static String PARAM_VERSION     = "v";
+    public final static String PARAM_FORMAT      = "format";
     
     HttpServletRequest httpReq;
     Locale locale;
@@ -77,6 +79,11 @@ public class ApiContext {
         return mso.getId();
     }
     
+    public String getMsoName() {
+        
+        return mso.getName();
+    }
+    
     protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
     
     @Autowired
@@ -113,10 +120,10 @@ public class ApiContext {
             } catch (NumberFormatException e) {
             }
         }
-                
+        
         os = httpReq.getParameter(PARAM_OS);
         if (os == null || os.length() == 0)
-            os = ApiContext.DEFAULT_OS;        	
+            os = ApiContext.DEFAULT_OS;
         
         appVersion = httpReq.getParameter(PARAM_APP_VERSION);
         if (appVersion != null)
@@ -144,7 +151,7 @@ public class ApiContext {
     
     public Boolean isProductionSite() {
         
-        if (productionSite != null) return productionSite;
+        if (productionSite != null) return productionSite; // speed up
         
         if (root == null || root.isEmpty()) {
             
@@ -172,21 +179,21 @@ public class ApiContext {
     
     public String getAppDomain() {
         
-        String domain = root.replaceAll("^http(s)?:\\/\\/(www\\.)?", "");
+        String domain = root.replaceAll("^http(s)?:\\/\\/((cc|api|www)\\.)?", "");
         log.info("domain = " + domain);
         List<String> splits = new ArrayList<String>(Arrays.asList(domain.split("\\.")));
         
         if (splits.size() < 3)
-            return MsoManager.isNNMso(mso) ? "www." + domain : mso.getName() + "." + domain;
+            return MsoManager.isSystemMso(mso) ? "www." + domain : mso.getName() + "." + domain;
         
         log.info("subdomain = " + splits.get(0));
-        if (NNF.getMsoMngr().findByName(splits.get(0)) != null) {
+        if (NNF.getMsoMngr().findByName(splits.get(0)) == null) {
             
             splits.remove(0);
         }
         String remain = Joiner.on(".").join(splits);
         
-        return MsoManager.isNNMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
+        return MsoManager.isSystemMso(mso) ? (splits.size() < 3 ? "www." + remain : remain) : mso.getName() + "." + remain;
     }
     
     public boolean isAndroid() {
@@ -224,4 +231,7 @@ public class ApiContext {
         return CookieHelper.getCookie(httpReq, cookieName);
     }
     
+    public String getRoot() {
+        return root;
+    }
 }

@@ -77,7 +77,7 @@ public class NnUser implements Serializable {
     
     public static String GUEST_EMAIL = "guest@9x9.com";    
     public static String GUEST_NAME = "Guest";
-    public static String ANONYMOUS_EMAIL = "anonymous@9x9.com";
+    public static String ANONYMOUS_EMAIL = "anonymous@flipr.tv";
     public static String ANONYMOUS_NAME = "Anonymous";
     
     //used to store facebook account email

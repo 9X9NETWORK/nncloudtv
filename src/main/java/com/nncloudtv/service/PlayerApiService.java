@@ -546,7 +546,7 @@ public class PlayerApiService {
         List<SysTagDisplay> categories = new ArrayList<SysTagDisplay>();
         categories.addAll(NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId()));
         
-        if (!disableAll && !MsoManager.isNNMso(mso)) {
+        if (!disableAll && !MsoManager.isSystemMso(mso)) {
             List<SysTagDisplay> systemCategories = NNF.getDisplayMngr().findPlayerCategories(lang, MsoManager.getSystemMsoId());
             categories.addAll(systemCategories);
             for (SysTagDisplay d : systemCategories) {
@@ -3312,14 +3312,6 @@ public class PlayerApiService {
         String programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
         result[3] = programStr;        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
-    }
-    
-    public String getAppDomain() {
-        
-        if (context == null)
-            return null;
-        
-        return context.getAppDomain();
     }
     
     public Boolean isProductionSite() {

@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -24,6 +27,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,6 +43,9 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
+import com.google.gdata.data.youtube.PlaylistEntry;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -243,54 +250,73 @@ public class ApiMisc extends ApiGeneric {
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
-		
-		return userResponse(user);
-	}
-	
-	@RequestMapping("echo")
-	public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
-		
-		Map<String, String[]> names = req.getParameterMap();
-		Map<String, String> result = new TreeMap<String, String>();
-		
-		ApiContext context = new ApiContext(req);
-		
+        
+        return userResponse(user);
+    }
+    
+    @RequestMapping("sysinfo")
+    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        ApiContext ctx = new ApiContext(req);
+        
+        result.put("flipr.isProduction", ctx.isProductionSite());
+        result.put("flipr.mso",          ctx.getMsoName());
+        
+        result.put("java.version",       System.getProperty("java.version"));
+        result.put("java.vendor",        System.getProperty("java.vendor"));
+        
+        result.put("os.arch",            System.getProperty("os.arch"));
+        result.put("os.name",            System.getProperty("os.name"));
+        result.put("os.version",         System.getProperty("os.version"));
+        
+        return result;
+    }
+    
+    @RequestMapping("echo")
+    public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Map<String, String[]> names = req.getParameterMap();
+        Map<String, String> result = new TreeMap<String, String>();
+        
+        ApiContext context = new ApiContext(req);
+        
         log.info("isProductionSite = " + context.isProductionSite());
-		
-		for (String name : names.keySet()) {
-			
-			String value = names.get(name)[0];
-			log.info(name + " = " + value);
-			result.put(name, value);
-		}
-		
-		if (result.isEmpty()) {
-			
-			badRequest(resp, MISSING_PARAMETER);
-			
-			return null;
-		}
-		
-		(new Thread() {
-		    public void run() {
-		        log.info("I am a thread.");
-		        try {
+        
+        for (String name : names.keySet()) {
+            
+            String value = names.get(name)[0];
+            log.info(name + " = " + value);
+            result.put(name, value);
+        }
+        
+        if (result.isEmpty()) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            
+            return null;
+        }
+        
+        (new Thread() {
+            public void run() {
+                log.info("I am a thread.");
+                try {
                     Thread.sleep(5000);
                     log.info("I am still awake.");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
                 log.info("bye~");
-		    }
-		}).start();
-		
-		if(req.getMethod().equalsIgnoreCase("POST")) {
-			resp.setStatus(HTTP_201);
-		}
-		
-		return result;
-	}
-	
+            }
+        }).start();
+        
+        if (req.getMethod().equalsIgnoreCase("POST")) {
+            resp.setStatus(HTTP_201);
+        }
+        
+        return result;
+    }
+    
     @RequestMapping("i18n")
     public @ResponseBody
     Map<String, String> i18n(HttpServletRequest req, HttpServletResponse resp) {
@@ -410,6 +436,164 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
+    @RequestMapping(value = "cors", method = RequestMethod.GET)
+    public void cors(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            log.warning("missing parameter");
+            badRequest(resp);
+            return;
+        }
+        
+        try {
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            
+            InputStream in = conn.getInputStream();
+            
+            Map<String, List<String>> headerFields = conn.getHeaderFields();
+            
+            for (Entry<String, List<String>> entry : headerFields.entrySet()) {
+                
+                String key = entry.getKey();
+                if (key == null) continue;
+                List<String> values = entry.getValue();
+                
+                for (String value : values) {
+                    
+                    resp.setHeader(key, value);
+                    System.out.println(key + ": " + value);
+                }
+            }
+            
+            resp.setStatus(conn.getResponseCode());
+            IOUtils.copy(in, resp.getOutputStream());
+            resp.flushBuffer();
+            
+        } catch (MalformedURLException e) {
+            
+            log.info("invalid url");
+            badRequest(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
+    @RequestMapping(value = "stream", method = RequestMethod.GET)
+    public void stream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
+        
+        if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
+            ApiContext ctx = new ApiContext(req);
+            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                if (feed == null) {
+                    log.info("failed to get feed");
+                    return;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+                List<PlaylistEntry> entries = feed.getEntries();
+                Long duration = feed.getMediaGroup().getDuration();
+                if (duration == null) {
+                    
+                    duration = (long) 0;
+                    for (PlaylistEntry entry : entries) {
+                        
+                        duration += entry.getMediaGroup().getDuration();
+                    }
+                }
+                log.info("playlist duration = " + duration);
+                writer.println("#EXTM3U");
+                writer.println("#EXT-X-TARGETDURATION:" + duration);
+                writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+                for (PlaylistEntry entry : entries) {
+                    
+                    String href = entry.getHtmlLink().getHref();
+                    
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                }
+                writer.println("#EXT-X-ENDLIST");
+                writer.flush();
+                
+                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentLength(baos.size());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            } finally {
+                
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                }
+            }
+            
+            return;
+        }
+        
+        try {
+            
+            UstreamLib.streaming(videoUrl, resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
+    }
+    
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
     public @ResponseBody List<Map<String, String>> thumbnails(
             HttpServletRequest req, HttpServletResponse resp) {
@@ -459,7 +643,6 @@ public class ApiMisc extends ApiGeneric {
                 log.info("parsing ustream url failed");
                 return empty;
             }
-            
         } else if (vimeoMatcher.find()) {
             
             log.info("vimeo url format");
@@ -484,7 +667,7 @@ public class ApiMisc extends ApiGeneric {
             } catch(AmazonS3Exception e) {
                 log.info(e.getMessage());
             }
-        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
+        } else if (videoUrl.matches(YouTubeLib.REGEX_VIDEO_URL)) {
             
             log.info("youtube url format");
             String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
@@ -495,7 +678,7 @@ public class ApiMisc extends ApiGeneric {
                 Process process = Runtime.getRuntime().exec(cmd);
                 videoIn = process.getInputStream();
                 // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
+                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
                 pipingTask.start();
                 
             } catch (IOException e) {
@@ -527,18 +710,15 @@ public class ApiMisc extends ApiGeneric {
             InputStream thumbIn = process.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             
-            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            PipingTask pipingTask = new PipingTask(thumbIn, baos, 0);
             pipingTask.start();
             
             if (videoIn != null) {
-                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 30);
                 feedingAvconvTask.start();
             }
             
             pipingTask.join();
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
-            }
             log.info("thumbnail size = " + baos.size());
             if (baos.size() > 0) {
                 
