@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,12 +96,16 @@ public class LiveStreamLib implements VideoLib {
                     
                     JSONObject feedJson = respJson.getJSONObject("feed");
                     JSONArray dataJson = feedJson.getJSONArray("data");
-                    if (dataJson.length() > 0) {
+                    
+                    for (int i = 0; i < dataJson.length(); i++) {
                         
-                        String progressiveUrl = dataJson.getJSONObject(0).getString("progressive_url");
-                        log.info("progressive_url = " + progressiveUrl);
-                        
-                        return progressiveUrl;
+                        if (dataJson.getJSONObject(i).getString("type").equals("video")) {
+                            
+                            String  progressiveUrl = dataJson.getJSONObject(i).getJSONObject("data").getString("progressive_url");
+                            log.info("progressive_url = " + progressiveUrl);
+                            
+                            return progressiveUrl;
+                        }
                     }
                     
                 } else {
