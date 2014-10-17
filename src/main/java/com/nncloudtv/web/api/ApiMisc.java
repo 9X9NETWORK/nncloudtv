@@ -255,15 +255,15 @@ public class ApiMisc extends ApiGeneric {
         HashMap<String, String> result = new HashMap<String, String>();
         ApiContext ctx = new ApiContext(req);
         
-        result.put("isProduction",        String.valueOf(ctx.isProductionSite()));
-        result.put("mso",                 ctx.getMsoName());
+        result.put("flipr.isProduction", String.valueOf(ctx.isProductionSite()));
+        result.put("flipr.mso",          ctx.getMsoName());
         
-        result.put("java.version",        System.getProperty("java.version"));
-        result.put("java.vendor",         System.getProperty("java.vendor"));
+        result.put("java.version",       System.getProperty("java.version"));
+        result.put("java.vendor",        System.getProperty("java.vendor"));
         
-        result.put("os.arch",             System.getProperty("os.arch"));
-        result.put("os.name",             System.getProperty("os.name"));
-        result.put("os.version",          System.getProperty("os.version"));
+        result.put("os.arch",            System.getProperty("os.arch"));
+        result.put("os.name",            System.getProperty("os.name"));
+        result.put("os.version",         System.getProperty("os.version"));
         
         return result;
     }
