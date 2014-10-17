@@ -250,12 +250,12 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping("sysinfo")
-    public @ResponseBody Map<String, String> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
-        HashMap<String, String> result = new HashMap<String, String>();
+        HashMap<String, Object> result = new HashMap<String, Object>();
         ApiContext ctx = new ApiContext(req);
         
-        result.put("flipr.isProduction", String.valueOf(ctx.isProductionSite()));
+        result.put("flipr.isProduction", ctx.isProductionSite());
         result.put("flipr.mso",          ctx.getMsoName());
         
         result.put("java.version",       System.getProperty("java.version"));
