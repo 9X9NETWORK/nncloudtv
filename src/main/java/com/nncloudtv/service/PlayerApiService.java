@@ -2746,9 +2746,23 @@ public class PlayerApiService {
         
         if (type == null)
            type = "portal";
-        if (type != null && type.equals("whatson"))
-            return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerWhatson(baseTime, minimal, context));
-        
+       
+        if (type != null && type.equals("whatson")) {
+           String whatsOnResult[] = (String[])NNF.getDisplayMngr().getPlayerWhatson(baseTime, minimal, context);
+           String regularResult[] = (String[])NNF.getDisplayMngr().getPlayerPortal(lang, minimal, context);
+           String set = "";
+           String channel = "";
+           String program = "";
+           if (whatsOnResult.length == 3 && regularResult.length == 3) {
+              set = whatsOnResult[0] + regularResult[0];
+              channel = whatsOnResult[1] + regularResult[1];
+              program = whatsOnResult[2] + regularResult[2];
+              String result[] = {set, channel, program};
+              return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+           }
+           //return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerWhatson(baseTime, minimal, context));
+        }
+ 
         return this.assembleMsgs(NnStatusCode.SUCCESS, NNF.getDisplayMngr().getPlayerPortal(lang, minimal, context));
     }
     
