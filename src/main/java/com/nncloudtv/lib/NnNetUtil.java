@@ -107,7 +107,7 @@ public class NnNetUtil {
         return pattern.matcher(ip).matches();
     }
     
-    public static String urlGet (String urlStr) {
+    public static String urlGet(String urlStr) {
         
         try {
             
@@ -121,7 +121,7 @@ public class NnNetUtil {
                 log.info("response not ok!" + connection.getResponseCode());
                 return null;
             }            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), NnStringUtil.UTF8));
             String line;
             String result = "";
             while ((line = reader.readLine()) != null) {

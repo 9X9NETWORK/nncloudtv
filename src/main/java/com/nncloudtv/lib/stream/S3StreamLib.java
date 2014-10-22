@@ -25,16 +25,41 @@ public class S3StreamLib implements StreamLib {
         return (url == null) ? null : url.matches(AmazonLib.REGEX_S3_URL);
     }
     
-    public String getDirectVideoUrl(String url) {
+    public String normalizeUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(urlStr);
+        if (matcher.find()) {
+            
+            return "http://" + matcher.group(1) + ".s3.amazonaws.com/" + matcher.group(2);
+        }
+        
+        return null;
+    }
+    
+    public String getSignedUrl(String urlStr) {
+        
+        // need to implement
+        return null;
+    }
+    
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr);
+    }
+    
+    public String getDirectVideoUrl(String urlStr) {
         
         // always return null, because video hosted on S3 should be private
         return null;
     }
     
-    public InputStream getDirectVideoStream(String url) {
+    public InputStream getDirectVideoStream(String urlStr) {
         
-        if (url == null) { return null; }
-        Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(url);
+        if (urlStr == null) { return null; }
+        
+        Matcher matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(urlStr);
         if (matcher.find()) {
             
             String bucket = matcher.group(1);

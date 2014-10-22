@@ -4,10 +4,16 @@ import java.io.InputStream;
 
 public interface StreamLib {
     
-    boolean isUrlMatched(String url);
+    boolean isUrlMatched(String urlStr);
     
-    String getDirectVideoUrl(String url);
+    //String checkHealth(String urlStr);
     
-    InputStream getDirectVideoStream(String url);
+    String normalizeUrl(String urlStr);
+    
+    String getDirectVideoUrl(String urlStr);
+    
+    String getHtml5DirectVideoUrl(String urlStr);
+    
+    InputStream getDirectVideoStream(String urlStr);
     
 }

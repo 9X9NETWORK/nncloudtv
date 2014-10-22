@@ -508,7 +508,7 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        String idStr = UstreamLib.getUstreamChannelId(url);
+        String idStr = UstreamLib.getUstreamId(url);
         
         if (idStr != null) {
             

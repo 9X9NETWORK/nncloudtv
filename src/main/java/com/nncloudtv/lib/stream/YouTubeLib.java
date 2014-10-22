@@ -385,7 +385,7 @@ public class YouTubeLib  implements StreamLib {
         return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
     }
     
-    public String getHtml5VideoUrl(String urlStr) {
+    public String getHtml5DirectVideoUrl(String urlStr) {
         
         return getDirectVideoUrl(urlStr);
     }

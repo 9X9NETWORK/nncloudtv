@@ -12,6 +12,12 @@ public class HttpsStreamLib implements StreamLib {
     
     protected final static Logger log = Logger.getLogger(HttpsStreamLib.class.getName());
     
+    public String normalizeUrl(String urlStr) {
+        
+        // always return null
+        return null;
+    }
+    
     public boolean isUrlMatched(String urlStr) {
         
         if (urlStr == null) { return false; }
@@ -27,7 +33,12 @@ public class HttpsStreamLib implements StreamLib {
         }
     }
     
-    public String getDirectVideoUrl(String url) {
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr);
+    }
+    
+    public String getDirectVideoUrl(String urlStr) {
         
         // always return null
         return null;
