@@ -112,11 +112,13 @@ public class LiveStreamLib implements StreamLib {
     
     public String getDirectVideoUrl(String urlStr) {
         
+        log.info("non-html5");
         return getDirectVideoUrl(urlStr, false);
     }
     
     public String getHtml5DirectVideoUrl(String urlStr) {
         
+        log.info("html5!");
         return getDirectVideoUrl(urlStr, true);
     }
     
