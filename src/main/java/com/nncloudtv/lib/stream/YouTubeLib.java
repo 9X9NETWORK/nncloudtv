@@ -412,7 +412,7 @@ public class YouTubeLib  implements StreamLib {
             if (baos.size() > 0) {
                 
                 String rawUrl = baos.toString(NnStringUtil.UTF8);
-                log.info("fetched youtube raw url = " + rawUrl);
+                log.info(rawUrl);
                 if (rawUrl != null && !rawUrl.isEmpty()) {
                     
                     return rawUrl.trim();

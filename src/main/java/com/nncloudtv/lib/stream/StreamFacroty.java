@@ -70,9 +70,8 @@ public class StreamFacroty {
         InputStream videoIn = null;
         StreamLib streamLib = getStreamLib(videoUrl);
         String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-        if (directVideoUrl != null) {
+        if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
             
-            log.info("direct video url = " + directVideoUrl);
             videoUrl = directVideoUrl;
             
         } else {
