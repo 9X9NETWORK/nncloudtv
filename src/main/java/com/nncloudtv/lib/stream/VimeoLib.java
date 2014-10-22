@@ -10,7 +10,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 
 public class VimeoLib implements StreamLib {
@@ -60,17 +59,17 @@ public class VimeoLib implements StreamLib {
             JSONObject h264Json = json.getJSONObject("request").getJSONObject("files").getJSONObject("h264");
             if (h264Json.isNull("hd")) {
                 
-                videoUrl = h264Json.getJSONObject("hd").getString("url");
+                log.info("fallback to sd resolution");
+                videoUrl = h264Json.getJSONObject("sd").getString("url");
                 
             } else {
                 
-                log.info("fallback to sd");
-                videoUrl = h264Json.getJSONObject("sd").getString("url");
+                videoUrl = h264Json.getJSONObject("hd").getString("url");
             }
             
         } catch (JSONException e) {
             
-            log.warning("vimeo hd/sd failed");
+            log.warning("vimeo json parsing failed");
             log.warning(e.getMessage());
         }
         
