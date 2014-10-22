@@ -50,7 +50,7 @@ public class NnEpisode implements Serializable {
     public static final short DEFAULT_HEIGHT = 405;
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_LONG_STRING_LENGTH)
     private String intro;
     
     @Persistent
@@ -58,8 +58,8 @@ public class NnEpisode implements Serializable {
     
     @Persistent
     public short contentType;
-    public static final short CONTENTTYPE_GENERAL    = 0;
-    public static final short CONTENTTYPE_UPLOADED   = 5; // this episdoe contains only uploaded video (for CMS)
+    public static final short CONTENTTYPE_GENERAL  = 0;
+    public static final short CONTENTTYPE_UPLOADED = 5; // this episdoe contains only uploaded video (for CMS)
     
     @Persistent
     private Date scheduleDate;

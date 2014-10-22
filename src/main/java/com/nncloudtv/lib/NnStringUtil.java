@@ -25,6 +25,7 @@ public class NnStringUtil {
     public static final int NORMAL_STRING_LENGTH     =  255;
     public static final int EXTENDED_STRING_LENGTH   =  500;
     public static final int LONG_STRING_LENGTH       = 1500;
+    public static final int VERY_LONG_STRING_LENGTH  = 5000;
     
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
     

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
 
 @Service
@@ -85,7 +86,7 @@ public class ApiContentService {
             channel.setName(name);
         }
         if (intro != null) {
-            channel.setIntro(intro);
+            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         if (lang != null) {
             channel.setLang(lang);

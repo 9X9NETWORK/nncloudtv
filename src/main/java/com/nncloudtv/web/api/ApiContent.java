@@ -1523,8 +1523,7 @@ public class ApiContent extends ApiGeneric {
         
         for (NnEpisode episode : results) {
             
-            episode.setName(NnStringUtil.revertHtml(episode.getName()));
-            episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
+            NNF.getEpisodeMngr().normalize(episode);
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
@@ -1595,8 +1594,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        episode.setName(NnStringUtil.revertHtml(episode.getName()));
-        episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
+        NNF.getEpisodeMngr().normalize(episode);
         
         return episode;
     }
@@ -1646,7 +1644,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
-            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
+            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // contentType
@@ -1839,7 +1837,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null && intro.length() > 0) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro);
+            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // contentType
