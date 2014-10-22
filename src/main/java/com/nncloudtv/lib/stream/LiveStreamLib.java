@@ -197,9 +197,13 @@ public class LiveStreamLib implements StreamLib {
                     // check 301 status
                     url = new URL(m3u8Url);
                     conn = (HttpURLConnection) url.openConnection();
-                    if (conn.getResponseCode() == 301) {
+                    conn.setInstanceFollowRedirects(false);
+                    int code = conn.getResponseCode();
+                    log.info("m3u8 status code = " + code);
+                    if (code == 301) {
                         
                         String location = conn.getHeaderField("Location");
+                        log.info("fetch redirection");
                         if (location != null) {
                             
                             return location;
