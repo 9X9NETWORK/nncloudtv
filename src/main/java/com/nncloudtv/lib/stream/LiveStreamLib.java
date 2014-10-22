@@ -203,10 +203,11 @@ public class LiveStreamLib implements StreamLib {
                     
                     String m3u8Url = streamInfoJson.getString("m3u8_url");
                     log.info("m3u8_url = " + m3u8Url);
-                    
+                    log.info("html5 = " + html5);
                     if (html5) {
                         
                         // check 301 status
+                        log.info("fetch furthur url");
                         url = new URL(m3u8Url);
                         conn = (HttpURLConnection) url.openConnection();
                         conn.setInstanceFollowRedirects(false);
