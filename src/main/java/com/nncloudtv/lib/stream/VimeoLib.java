@@ -3,6 +3,8 @@ package com.nncloudtv.lib.stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,16 +20,34 @@ public class VimeoLib implements StreamLib {
     
     public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/([0-9]+)$";
     
-    public String getDirectVideoUrl(String url) {
+    public String normalizeUrl(String urlStr) {
         
-        if (url == null) { return null; }
+        if (urlStr == null) { return null; }
+        
+        Matcher matcher = Pattern.compile(REGEX_VIMEO_VIDEO_URL).matcher(urlStr);
+        if (matcher.find()) {
+            
+            return "https://vimeo.com/" + matcher.group(1);
+        }
+        
+        return null;
+    }
+    
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr);
+    }
+    
+    public String getDirectVideoUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
         
         String dataConfigUrl = null;
         String videoUrl = null;
         //step 1, get <div.player data-config-url>
         try {
             
-            Document doc = Jsoup.connect(url).get();
+            Document doc = Jsoup.connect(urlStr).get();
             Element element = doc.select("div.player").first();
             if (element != null) {
                 
@@ -76,12 +96,12 @@ public class VimeoLib implements StreamLib {
         return videoUrl;
     }
     
-    public boolean isUrlMatched(String url) {
+    public boolean isUrlMatched(String urlStr) {
         
-        return (url == null) ? null : url.matches(REGEX_VIMEO_VIDEO_URL);
+        return (urlStr == null) ? null : urlStr.matches(REGEX_VIMEO_VIDEO_URL);
     }
     
-    public InputStream getDirectVideoStream(String url) {
+    public InputStream getDirectVideoStream(String urlStr) {
         
         // need implement
         
