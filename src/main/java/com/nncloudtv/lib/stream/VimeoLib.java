@@ -93,6 +93,8 @@ public class VimeoLib implements StreamLib {
             log.warning(e.getMessage());
         }
         
+        log.info("video url = " + videoUrl);
+        
         return videoUrl;
     }
     

@@ -715,12 +715,18 @@ public class NnChannelManager {
     }
     
     public static short getPlayerDefaultSorting(NnChannel c) {
-        //short sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
-        short sorting = c.getSorting(); 
+        
+        short sorting = c.getSorting();
+        if (sorting == NnChannel.SORT_TIMED_LINEAR) {
+            
+            return sorting;
+        }
         if (c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP || 
             c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY || 
-            c.getContentType() == NnChannel.CONTENTTYPE_MIXED)
+            c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
+            
             sorting = NnChannel.SORT_DESIGNATED;
+        }
         if (c.getSorting() == 0) {
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL)
                 sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
@@ -728,7 +734,7 @@ public class NnChannelManager {
                 sorting = NnChannel.SORT_POSITION_FORWARD;            
         }
         return sorting;
-    }           
+    }
     
     public void resetCache(List<NnChannel> channels) {
         for (NnChannel c : channels) {
@@ -1020,6 +1026,17 @@ public class NnChannelManager {
             return result;
         }
         
+        // channel banner, social feeds
+        String sns = null, banner = null;
+        List<NnChannelPref> bannerPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+        if (bannerPrefs.size() > 0) {
+            banner = bannerPrefs.get(0).getValue();
+        }
+        List<NnChannelPref> snsPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.SOCIAL_FEEDS);
+        if (snsPrefs.size() > 0) {
+            sns = snsPrefs.get(0).getValue();
+        }
+        
         log.info("channel lineup NOT from cache:" + channel.getId());
         //name and last episode title
         //favorite channel name will be overwritten later
@@ -1160,8 +1177,8 @@ public class NnChannelManager {
             ori.add(""); //userName
             ori.add(""); //userIntro
             ori.add(""); //userImageUrl
-            ori.add(""); //social network, ex: "twitter NBA;facebook ETtoday"
-            ori.add(""); //banner image url
+            ori.add(sns == null ? "" : sns); //social network, ex: "twitter NBA;facebook ETtoday"
+            ori.add(banner == null ? "" : banner); //banner image url
             if (ctx.getVersion() == 32)
                 ori.add(" ");
             else
