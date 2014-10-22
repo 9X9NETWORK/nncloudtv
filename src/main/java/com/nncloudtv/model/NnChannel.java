@@ -35,7 +35,7 @@ public class NnChannel implements Serializable {
     private String oriName; //original podcast/youtube name 
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_LONG_STRING_LENGTH)
     private String intro;
     
     @NotPersistent
@@ -296,8 +296,8 @@ public class NnChannel implements Serializable {
         if (intro != null) {
             intro = intro.replaceAll("\n", " ");
             intro = intro.replaceAll("\t", " ");
-            int introLenth = (intro.length() > 256 ? 256 : intro.length()); 
-            intro = intro.substring(0, introLenth);
+            //int introLenth = (intro.length() > 256 ? 256 : intro.length()); 
+            //intro = intro.substring(0, introLenth);
         }
         this.intro = intro;
     }
