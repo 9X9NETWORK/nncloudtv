@@ -3353,7 +3353,7 @@ public class PlayerApiService {
         if (url == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         String videoUrl = (new VimeoLib()).getDirectVideoUrl(url);
-        if (videoUrl == null)
+        if (videoUrl == null || videoUrl.isEmpty())
            this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
         log.info("vimeo url:" + videoUrl);
         String data = PlayerApiService.assembleKeyValue("url", videoUrl);
