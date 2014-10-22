@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 
-public class YouTubeLib  implements VideoLib {
+public class YouTubeLib  implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     

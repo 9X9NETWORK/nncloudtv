@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,11 +21,11 @@ public class VideoFacroty {
     
     protected final static Logger log = Logger.getLogger(VideoFacroty.class.getName());
     
-    public static VideoLib getVideoLib(String url) {
+    public static StreamLib getVideoLib(String url) {
         
         if (url == null) { return null; }
         
-        VideoLib[] videoLibs = {
+        StreamLib[] videoLibs = {
                 
                 new YouTubeLib(),
                 new VimeoLib(),
@@ -35,7 +35,7 @@ public class VideoFacroty {
                 new HttpsVideoLib(),
         };
         
-        for (VideoLib lib : videoLibs) {
+        for (StreamLib lib : videoLibs) {
             
             if (lib.isUrlMatched(url)) {
                 
@@ -68,7 +68,7 @@ public class VideoFacroty {
         }
         
         InputStream videoIn = null;
-        VideoLib videoLib = getVideoLib(videoUrl);
+        StreamLib videoLib = getVideoLib(videoUrl);
         String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             

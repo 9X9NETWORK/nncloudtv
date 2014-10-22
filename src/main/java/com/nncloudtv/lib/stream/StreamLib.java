@@ -1,8 +1,8 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.InputStream;
 
-public interface VideoLib {
+public interface StreamLib {
     
     boolean isUrlMatched(String url);
     

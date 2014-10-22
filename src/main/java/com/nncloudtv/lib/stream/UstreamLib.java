@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 
 import com.nncloudtv.lib.NnNetUtil;
 
-public class UstreamLib implements VideoLib {
+public class UstreamLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(UstreamLib.class.getName());
     

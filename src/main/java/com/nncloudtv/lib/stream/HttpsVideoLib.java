@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 // helper to streaming HTTPS video
-public class HttpsVideoLib implements VideoLib {
+public class HttpsVideoLib implements StreamLib {
     
     protected final static Logger log = Logger.getLogger(HttpsVideoLib.class.getName());
     

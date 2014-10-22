@@ -28,12 +28,12 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
-import com.nncloudtv.lib.video.YouTubeLib;
-import com.nncloudtv.lib.video.YouTubeLib.MyFeed;
-import com.nncloudtv.lib.video.YouTubeLib.Thumbnail;
-import com.nncloudtv.lib.video.YouTubeLib.Video;
-import com.nncloudtv.lib.video.YouTubeLib.VideoFeed;
-import com.nncloudtv.lib.video.YouTubeLib.YouTubeUrl;
+import com.nncloudtv.lib.stream.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib.MyFeed;
+import com.nncloudtv.lib.stream.YouTubeLib.Thumbnail;
+import com.nncloudtv.lib.stream.YouTubeLib.Video;
+import com.nncloudtv.lib.stream.YouTubeLib.VideoFeed;
+import com.nncloudtv.lib.stream.YouTubeLib.YouTubeUrl;
 import com.nncloudtv.support.NnTestAll;
 import com.nncloudtv.web.api.NnStatusCode;
 

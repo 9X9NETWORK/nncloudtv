@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ import org.jsoup.nodes.Element;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 
-public class VimeoLib implements VideoLib {
+public class VimeoLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     

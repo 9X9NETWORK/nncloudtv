@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ import org.jsoup.nodes.Element;
 import com.google.api.client.util.IOUtils;
 import com.nncloudtv.lib.NnStringUtil;
 
-public class LiveStreamLib implements VideoLib {
+public class LiveStreamLib implements StreamLib {
     
     protected final static Logger log = Logger.getLogger(LiveStreamLib.class.getName());
     

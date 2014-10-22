@@ -1,4 +1,4 @@
-package com.nncloudtv.lib.video;
+package com.nncloudtv.lib.stream;
 
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -16,7 +16,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 
-public class S3VideoLib implements VideoLib {
+public class S3VideoLib implements StreamLib {
     
     protected final static Logger log = Logger.getLogger(S3VideoLib.class.getName());
     

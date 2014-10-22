@@ -47,10 +47,10 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.video.UstreamLib;
-import com.nncloudtv.lib.video.VideoFacroty;
-import com.nncloudtv.lib.video.VideoLib;
-import com.nncloudtv.lib.video.YouTubeLib;
+import com.nncloudtv.lib.stream.UstreamLib;
+import com.nncloudtv.lib.stream.VideoFacroty;
+import com.nncloudtv.lib.stream.StreamLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
@@ -717,7 +717,7 @@ public class ApiMisc extends ApiGeneric {
         InputStream videoIn = null;
         String thumbnailUrl = null;
         
-        VideoLib videoLib = VideoFacroty.getVideoLib(videoUrl);
+        StreamLib videoLib = VideoFacroty.getVideoLib(videoUrl);
         String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             

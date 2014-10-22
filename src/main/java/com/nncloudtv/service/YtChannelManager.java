@@ -8,7 +8,7 @@ import com.nncloudtv.dao.YtChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.video.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.YtChannel;
 import com.nncloudtv.web.json.player.ChannelLineup;

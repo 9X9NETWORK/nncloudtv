@@ -12,7 +12,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.video.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 
 /**
  * a Channel
