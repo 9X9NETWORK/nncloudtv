@@ -394,7 +394,7 @@ public class YouTubeLib  implements StreamLib {
         
         if (urlStr == null) { return null; }
         
-        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir -o - "
+        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir"
                    + NnStringUtil.escapeURLInShellArg(urlStr);
         log.info("[exec] " + cmd);
         
@@ -412,9 +412,11 @@ public class YouTubeLib  implements StreamLib {
             if (baos.size() > 0) {
                 
                 String rawUrl = baos.toString(NnStringUtil.UTF8);
-                log.info("fetched raw url = " + rawUrl);
-                
-                return rawUrl.trim();
+                log.info("fetched youtube raw url = " + rawUrl);
+                if (rawUrl != null && !rawUrl.isEmpty()) {
+                    
+                    return rawUrl.trim();
+                }
             }
             
         } catch (IOException e) {
