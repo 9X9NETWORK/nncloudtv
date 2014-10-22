@@ -25,7 +25,7 @@ public class StreamFacroty {
         
         if (url == null) { return null; }
         
-        StreamLib[] videoLibs = {
+        StreamLib[] StreamLibs = {
                 
                 new YouTubeLib(),
                 new VimeoLib(),
@@ -35,7 +35,7 @@ public class StreamFacroty {
                 new HttpsStreamLib(),
         };
         
-        for (StreamLib lib : videoLibs) {
+        for (StreamLib lib : StreamLibs) {
             
             if (lib.isUrlMatched(url)) {
                 
@@ -45,7 +45,7 @@ public class StreamFacroty {
             }
         }
         
-        log.info("no videoLib matched");
+        log.info("no StreamLib matched");
         
         return null;
     }
@@ -68,8 +68,8 @@ public class StreamFacroty {
         }
         
         InputStream videoIn = null;
-        StreamLib videoLib = getStreamLib(videoUrl);
-        String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
+        StreamLib streamLib = getStreamLib(videoUrl);
+        String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             
             log.info("direct video url = " + directVideoUrl);
@@ -77,7 +77,7 @@ public class StreamFacroty {
             
         } else {
             
-            InputStream directVideoStream = videoLib.getDirectVideoStream(videoUrl);
+            InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
             if (directVideoStream != null) {
                 
                 log.info("direct video stream");

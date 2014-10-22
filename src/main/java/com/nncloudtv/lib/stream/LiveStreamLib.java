@@ -29,9 +29,85 @@ public class LiveStreamLib implements StreamLib {
     public static final String REGEX_LIVESTREAM_PAN_URL   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/(.+))+$";
     public static final String REGEX_LIVESTREAM_PAN_VIDEO = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/videos\\/[0-9]+)$";
     
-    public boolean isUrlMatched(String url) {
+    public boolean isUrlMatched(String urlStr) {
         
-        return (url == null) ? null : url.matches(REGEX_LIVESTREAM_PAN_URL);
+        return (urlStr == null) ? null : urlStr.matches(REGEX_LIVESTREAM_PAN_URL);
+    }
+    
+    public String normalizeUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
+            
+            // already normalized
+            return urlStr;
+        }
+        
+        if (urlStr.matches(REGEX_LIVESTREAM_PAN_URL)) {
+            
+            log.info("livestream pan url format matched");
+            
+            try {
+                
+                String metaTag = "meta[name=apple-itunes-app]";
+                Document doc = Jsoup.connect(urlStr).get();
+                Element element = doc.select(metaTag).first();
+                if (element == null) {
+                    log.warning("meta tag is not found " + metaTag);
+                    return null;
+                }
+                
+                String contentStr = element.attr("content");
+                if (contentStr == null) {
+                    log.warning("contentStr is null");
+                    return null;
+                }
+                log.info(contentStr);
+                String[] split = contentStr.split(",");
+                for (String str : split) {
+                    
+                    str = str.trim();
+                    String[] attr = str.split("=");
+                    if (attr.length >= 2 && attr[0].trim().equals("app-argument")) {
+                        
+                        String appArgument = attr[1].trim();
+                        log.info("app-argument = " + appArgument);
+                        
+                        if (appArgument != null) {
+                            
+                            if (appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
+                                
+                                return appArgument;
+                                
+                            } else if (appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
+                                
+                                Matcher matcher = Pattern.compile(REGEX_LIVESTREAM_PAN_VIDEO).matcher(urlStr);
+                                
+                                if (matcher.find()) {
+                                    
+                                    appArgument += matcher.group(2);
+                                    log.info("pan video");
+                                }
+                                
+                                return appArgument;
+                            }
+                        }
+                    }
+                }
+                
+                log.info("no proper app-argument found");
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getClass().getName());
+                log.warning(e.getMessage());
+                
+                return null;
+            }
+        }
+        
+        return null;
     }
     
     public String getDirectVideoUrl(String urlStr) {
@@ -118,6 +194,18 @@ public class LiveStreamLib implements StreamLib {
                     String m3u8Url = streamInfoJson.getString("m3u8_url");
                     log.info("m3u8_url = " + m3u8Url);
                     
+                    // check 301 status
+                    url = new URL(m3u8Url);
+                    conn = (HttpURLConnection) url.openConnection();
+                    if (conn.getResponseCode() == 301) {
+                        
+                        String location = conn.getHeaderField("Location");
+                        if (location != null) {
+                            
+                            return location;
+                        }
+                    }
+                    
                     return m3u8Url;
                 }
                 
@@ -145,65 +233,7 @@ public class LiveStreamLib implements StreamLib {
             
         } else if (urlStr.matches(REGEX_LIVESTREAM_PAN_URL)) {
             
-            log.info("livestream pan url format matched");
-            
-            try {
-                
-                String metaTag = "meta[name=apple-itunes-app]";
-                Document doc = Jsoup.connect(urlStr).get();
-                Element element = doc.select(metaTag).first();
-                if (element == null) {
-                    log.warning("meta tag is not found " + metaTag);
-                    return null;
-                }
-                
-                String contentStr = element.attr("content");
-                if (contentStr == null) {
-                    log.warning("contentStr is null");
-                    return null;
-                }
-                log.info(contentStr);
-                String[] split = contentStr.split(",");
-                for (String str : split) {
-                    
-                    str = str.trim();
-                    String[] attr = str.split("=");
-                    if (attr.length >= 2 && attr[0].trim().equals("app-argument")) {
-                        
-                        String appArgument = attr[1].trim();
-                        log.info("app-argument = " + appArgument);
-                        
-                        if (appArgument != null) {
-                            
-                            if (appArgument.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
-                                
-                                return getDirectVideoUrl(appArgument);
-                                
-                            } else if (appArgument.matches(REGEX_LIVESTREAM_EVENT_URL)) {
-                                
-                                Matcher matcher = Pattern.compile(REGEX_LIVESTREAM_PAN_VIDEO).matcher(urlStr);
-                                
-                                if (matcher.find()) {
-                                    
-                                    appArgument += matcher.group(2);
-                                    log.info("pan video");
-                                }
-                                
-                                return getDirectVideoUrl(appArgument);
-                            }
-                        }
-                    }
-                }
-                
-                log.info("no proper app-argument found");
-                
-            } catch (IOException e) {
-                
-                log.warning(e.getClass().getName());
-                log.warning(e.getMessage());
-                
-                return null;
-            }
+            return getDirectVideoUrl(normalizeUrl(urlStr));
             
         }
         
@@ -212,7 +242,7 @@ public class LiveStreamLib implements StreamLib {
         return null;
     }
     
-    public InputStream getDirectVideoStream(String url) {
+    public InputStream getDirectVideoStream(String urlStr) {
         
         // need implement
         
