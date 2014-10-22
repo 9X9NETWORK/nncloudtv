@@ -38,7 +38,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.lib.stream.StreamFacroty;
+import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -462,7 +462,7 @@ public class ApiContent extends ApiGeneric {
         
         try {
             
-            StreamFacroty.streaming(program.getFileUrl(), resp.getOutputStream());
+            StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             

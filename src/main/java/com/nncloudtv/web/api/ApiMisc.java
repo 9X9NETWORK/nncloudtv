@@ -48,7 +48,7 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.UstreamLib;
-import com.nncloudtv.lib.stream.StreamFacroty;
+import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.lib.stream.StreamLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
@@ -577,6 +577,34 @@ public class ApiMisc extends ApiGeneric {
         
     }
     
+    @RequestMapping(value = "302")
+    public void http302(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("url = " + urlStr);
+        if (urlStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        StreamLib streamLib = StreamFactory.getStreamLib(urlStr);
+        if (streamLib == null) {
+            badRequest(resp, "NOT_SUPPORTED_URL");
+            return;
+        }
+        
+        String directLink = streamLib.getHtml5DirectVideoUrl(urlStr);
+        if (directLink == null) {
+            badRequest(resp, "DIRECT_LINK_NOT_SUPPORTED");
+            return;
+        }
+        
+        resp.setContentLength(0);
+        resp.setStatus(302);
+        resp.setHeader("Location", directLink);
+        
+    }
+    
     @RequestMapping(value = "stream", method = RequestMethod.GET)
     public void stream(HttpServletRequest req, HttpServletResponse resp) {
         
@@ -660,7 +688,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            StreamFacroty.streaming(videoUrl, resp.getOutputStream());
+            StreamFactory.streaming(videoUrl, resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
@@ -717,7 +745,7 @@ public class ApiMisc extends ApiGeneric {
         InputStream videoIn = null;
         String thumbnailUrl = null;
         
-        StreamLib streamLib = StreamFacroty.getStreamLib(videoUrl);
+        StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
         String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             

@@ -17,9 +17,9 @@ import com.nncloudtv.task.PipingTask;
  * @author louis
  *
  */
-public class StreamFacroty {
+public class StreamFactory {
     
-    protected final static Logger log = Logger.getLogger(StreamFacroty.class.getName());
+    protected final static Logger log = Logger.getLogger(StreamFactory.class.getName());
     
     public static StreamLib getStreamLib(String url) {
         
@@ -69,18 +69,22 @@ public class StreamFacroty {
         
         InputStream videoIn = null;
         StreamLib streamLib = getStreamLib(videoUrl);
-        String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-        if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
+        String directVideoUrl = null;
+        if (streamLib != null) {
             
-            videoUrl = directVideoUrl;
-            
-        } else {
-            
-            InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
-            if (directVideoStream != null) {
+            directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
                 
-                log.info("direct video stream");
-                videoIn = directVideoStream;
+                videoUrl = directVideoUrl;
+                
+            } else {
+                
+                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
+                if (directVideoStream != null) {
+                    
+                    log.info("direct video stream");
+                    videoIn = directVideoStream;
+                }
             }
         }
         FeedingAvconvTask feedingAvconvTask = null;
