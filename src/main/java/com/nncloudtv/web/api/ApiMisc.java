@@ -48,7 +48,7 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.UstreamLib;
-import com.nncloudtv.lib.stream.VideoFacroty;
+import com.nncloudtv.lib.stream.StreamFacroty;
 import com.nncloudtv.lib.stream.StreamLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
@@ -660,7 +660,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            VideoFacroty.streaming(videoUrl, resp.getOutputStream());
+            StreamFacroty.streaming(videoUrl, resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
@@ -717,15 +717,15 @@ public class ApiMisc extends ApiGeneric {
         InputStream videoIn = null;
         String thumbnailUrl = null;
         
-        StreamLib videoLib = VideoFacroty.getVideoLib(videoUrl);
-        String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
+        StreamLib streamLib = StreamFacroty.getStreamLib(videoUrl);
+        String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             
             videoUrl = directVideoUrl;
             
         } else {
             
-            InputStream directVideoStream = videoLib.getDirectVideoStream(videoUrl);
+            InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
             if (directVideoStream != null) {
                 
                 videoIn = directVideoStream;

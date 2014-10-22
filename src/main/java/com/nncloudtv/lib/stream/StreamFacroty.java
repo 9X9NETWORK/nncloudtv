@@ -12,16 +12,16 @@ import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 
 /**
- * Video Factory
+ * Stream Factory
  * 
  * @author louis
  *
  */
-public class VideoFacroty {
+public class StreamFacroty {
     
-    protected final static Logger log = Logger.getLogger(VideoFacroty.class.getName());
+    protected final static Logger log = Logger.getLogger(StreamFacroty.class.getName());
     
-    public static StreamLib getVideoLib(String url) {
+    public static StreamLib getStreamLib(String url) {
         
         if (url == null) { return null; }
         
@@ -31,8 +31,8 @@ public class VideoFacroty {
                 new VimeoLib(),
                 new UstreamLib(),
                 new LiveStreamLib(),
-                new S3VideoLib(),
-                new HttpsVideoLib(),
+                new S3StreamLib(),
+                new HttpsStreamLib(),
         };
         
         for (StreamLib lib : videoLibs) {
@@ -68,7 +68,7 @@ public class VideoFacroty {
         }
         
         InputStream videoIn = null;
-        StreamLib videoLib = getVideoLib(videoUrl);
+        StreamLib videoLib = getStreamLib(videoUrl);
         String directVideoUrl = videoLib.getDirectVideoUrl(videoUrl);
         if (directVideoUrl != null) {
             
