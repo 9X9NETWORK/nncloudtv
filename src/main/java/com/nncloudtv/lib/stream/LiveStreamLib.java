@@ -112,6 +112,16 @@ public class LiveStreamLib implements StreamLib {
     
     public String getDirectVideoUrl(String urlStr) {
         
+        return getDirectVideoUrl(urlStr, false);
+    }
+    
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr, true);
+    }
+    
+    public String getDirectVideoUrl(String urlStr, boolean html5) {
+        
         if (urlStr == null) { return null; }
         
         if (urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
@@ -194,19 +204,22 @@ public class LiveStreamLib implements StreamLib {
                     String m3u8Url = streamInfoJson.getString("m3u8_url");
                     log.info("m3u8_url = " + m3u8Url);
                     
-                    // check 301 status
-                    url = new URL(m3u8Url);
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setInstanceFollowRedirects(false);
-                    int code = conn.getResponseCode();
-                    log.info("m3u8 status code = " + code);
-                    if (code == 301) {
+                    if (html5) {
                         
-                        String location = conn.getHeaderField("Location");
-                        log.info("fetch redirection");
-                        if (location != null) {
+                        // check 301 status
+                        url = new URL(m3u8Url);
+                        conn = (HttpURLConnection) url.openConnection();
+                        conn.setInstanceFollowRedirects(false);
+                        int code = conn.getResponseCode();
+                        log.info("m3u8 status code = " + code);
+                        if (code == 301) {
                             
-                            return location;
+                            String location = conn.getHeaderField("Location");
+                            log.info("fetch redirection");
+                            if (location != null) {
+                                
+                                return location;
+                            }
                         }
                     }
                     

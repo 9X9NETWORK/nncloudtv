@@ -27,28 +27,53 @@ public class VimeoLib implements StreamLib {
         String videoUrl = null;
         //step 1, get <div.player data-config-url>
         try {
+            
             Document doc = Jsoup.connect(url).get();
             Element element = doc.select("div.player").first();
             if (element != null) {
+                
                 dataConfigUrl = element.attr("data-config-url");
-                log.info("vimeo data-config-url=" + dataConfigUrl);
+                log.info("vimeo data-config-url = " + dataConfigUrl);
             }
+            
         } catch (IOException e) {
-            log.info("vimeo div.player data-config-url not exisiting");
-            NnLogUtil.logException(e);
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return null;
         }
-        if (dataConfigUrl == null)
+        if (dataConfigUrl == null) {
+            
+            log.info("vimeo div.player data-config-url not exisiting");
             return null;
+        }
         //step 2, get json data
         String jsonStr = NnNetUtil.urlGet(dataConfigUrl);
+        if (jsonStr == null) {
+            
+            log.warning("failed to get json data");
+            return null;
+        }
         JSONObject json = new JSONObject(jsonStr);
         try {
-            videoUrl = json.getJSONObject("request").getJSONObject("files").getJSONObject("h264").getJSONObject("hd").get("url").toString();
+            
+            JSONObject h264Json = json.getJSONObject("request").getJSONObject("files").getJSONObject("h264");
+            if (h264Json.isNull("hd")) {
+                
+                videoUrl = h264Json.getJSONObject("hd").getString("url");
+                
+            } else {
+                
+                log.info("fallback to sd");
+                videoUrl = h264Json.getJSONObject("sd").getString("url");
+            }
+            
         } catch (JSONException e) {
-            log.info("vimeo hd failed");
-            NnLogUtil.logException(e);
+            
+            log.warning("vimeo hd/sd failed");
+            log.warning(e.getMessage());
         }
+        
         return videoUrl;
     }
     
