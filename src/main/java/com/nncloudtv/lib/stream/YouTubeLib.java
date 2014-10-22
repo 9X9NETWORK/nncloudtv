@@ -1,5 +1,6 @@
 package com.nncloudtv.lib.stream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -19,6 +20,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.IOUtils;
 import com.google.api.client.util.Key;
 import com.google.gdata.client.youtube.YouTubeService;
 import com.google.gdata.data.youtube.PlaylistFeed;
@@ -383,9 +385,41 @@ public class YouTubeLib  implements StreamLib {
         return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
     }
     
+    public String getHtml5VideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr);
+    }
+    
     public String getDirectVideoUrl(String urlStr) {
         
-        // leave it null
+        if (urlStr == null) { return null; }
+        
+        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir -o - "
+                   + NnStringUtil.escapeURLInShellArg(urlStr);
+        log.info("[exec] " + cmd);
+        
+        try {
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            // piping error message to stdout
+            PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
+            pipingTask.start();
+            
+            InputStream dataIn = process.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(dataIn, baos);
+            
+            if (baos.size() > 0) {
+                
+                return baos.toString(NnStringUtil.UTF8);
+            }
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            return null;
+        }
+        
         return null;
     }
     
@@ -410,6 +444,5 @@ public class YouTubeLib  implements StreamLib {
             log.warning(e.getMessage());
             return null;
         }
-        
     }
 }
