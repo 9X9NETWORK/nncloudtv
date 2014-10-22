@@ -330,25 +330,38 @@ public class YouTubeLib  implements StreamLib {
         return true;
     }
     
-    public boolean isUrlMatched(String url) {
+    public String normalizeUrl(String urlStr) {
         
-        if (url == null) { return false; }
+        if (urlStr == null) { return null; }
         
-        return url.matches(REGEX_VIDEO_URL);
-    }
-    
-    public String getVideoId(String url) {
-        
-        if (url == null || url.length() == 0) {
-            return url;
+        Matcher matcher = Pattern.compile(REGEX_VIDEO_URL).matcher(urlStr);
+        if (matcher.find()) {
+            
+            return "https://www.youtube.com/watch?v=" + matcher.group(1);
         }
         
-        if (!isUrlMatched(url)) {
+        return null;
+    }
+    
+    public boolean isUrlMatched(String urlStr) {
+        
+        if (urlStr == null) { return false; }
+        
+        return urlStr.matches(REGEX_VIDEO_URL);
+    }
+    
+    public String getVideoId(String urlStr) {
+        
+        if (urlStr == null || urlStr.length() == 0) {
+            return urlStr;
+        }
+        
+        if (!isUrlMatched(urlStr)) {
             return null;
         }
         
         Pattern pattern = Pattern.compile(REGEX_VIDEO_ID_STR);
-        Matcher matcher = pattern.matcher(url);
+        Matcher matcher = pattern.matcher(urlStr);
         
         if (matcher.find()) {
             return matcher.group(1);
@@ -357,26 +370,31 @@ public class YouTubeLib  implements StreamLib {
         return null;
     }
     
+    static YouTubeService getYTService() {
+        
+        return new YouTubeService("FLIPr.tv");
+    }
+    
     public static PlaylistFeed getPlaylistFeed(String playlistId) throws MalformedURLException, IOException, ServiceException {
         
         if (playlistId == null) { return null; }
-        YouTubeService service = new YouTubeService("FLIPr.tv");
+        YouTubeService service = getYTService();
         
         return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
     }
     
-    public String getDirectVideoUrl(String url) {
+    public String getDirectVideoUrl(String urlStr) {
         
         // leave it null
         return null;
     }
     
-    public InputStream getDirectVideoStream(String url) {
+    public InputStream getDirectVideoStream(String urlStr) {
         
-        if (url == null) { return null; }
+        if (urlStr == null) { return null; }
         
         String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
-                   + NnStringUtil.escapeURLInShellArg(url);
+                   + NnStringUtil.escapeURLInShellArg(urlStr);
         log.info("[exec] " + cmd);
         
         try {
@@ -390,7 +408,6 @@ public class YouTubeLib  implements StreamLib {
         } catch (IOException e) {
             
             log.warning(e.getMessage());
-            
             return null;
         }
         
