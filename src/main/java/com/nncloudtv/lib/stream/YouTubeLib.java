@@ -394,7 +394,7 @@ public class YouTubeLib  implements StreamLib {
         
         if (urlStr == null) { return null; }
         
-        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir"
+        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir "
                    + NnStringUtil.escapeURLInShellArg(urlStr);
         log.info("[exec] " + cmd);
         
