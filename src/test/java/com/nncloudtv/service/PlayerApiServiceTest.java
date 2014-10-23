@@ -48,6 +48,7 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
@@ -663,6 +664,7 @@ public class PlayerApiServiceTest {
             
             defaultMso = null;
             defaultOS = null;
+            ad = null;
         }
         
         // all config available from database
@@ -949,8 +951,136 @@ public class PlayerApiServiceTest {
             }
         }
         
-        // TODO third part 'ad' section test case
+        private AdPlacement ad;
+        private void setupAdData() {
+            
+            NnTestUtil.emptyTable(AdPlacement.class);
+            
+            ad = new AdPlacement(defaultMso.getId(), "url", AdPlacement.DIRECT);
+            ad.setStatus(AdPlacement.ON); // this is a data driven condition
+            ad.setName("this is test ad");
+            ad = NNF.getAdDao().save(ad);
+        }
         
+        @Test
+        public void adAndroidText() {
+            
+            req.setParameter("format", "text");
+            String os = ApiContext.OS_ANDROID;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_ANDROID);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            String respText = (String) actual;
+            assertTrue("AD section should properly set", respText.contains(
+                    ad.getId() + "\t" + ad.getType() + "\t" +ad.getName() + "\t" + ad.getUrl() + "\n"));
+        }
+        
+        @Test
+        public void adIosText() {
+            
+            req.setParameter("format", "text");
+            String os = ApiContext.OS_IOS;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_IOS);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            String respText = (String) actual;
+            assertTrue("AD section should properly set", respText.contains(
+                    ad.getId() + "\t" + ad.getType() + "\t" +ad.getName() + "\t" + ad.getUrl() + "\n"));
+        }
+        
+        @Test
+        public void adAndroidJson() {
+            
+            req.setParameter("format", "json");
+            String os = ApiContext.OS_ANDROID;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_ANDROID);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
+            assertTrue("parameter format=json should return json format response.",
+                    ((ApiStatus) actual).getData() instanceof BrandInfo);
+            BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
+            if (actualBrandInfo.getAdPlacements() == null || actualBrandInfo.getAdPlacements().isEmpty()) {
+                fail("AD section should properly set");
+            }
+            AdPlacement actualAd = actualBrandInfo.getAdPlacements().get(0);
+            assertEquals("AD section should properly set", ad.getId(), actualAd.getId());
+            assertEquals("AD section should properly set", ad.getType(), actualAd.getType());
+            assertEquals("AD section should properly set", ad.getName(), actualAd.getName());
+            assertEquals("AD section should properly set", ad.getUrl(), actualAd.getUrl());
+        }
+        
+        @Test
+        public void adIosJson() {
+            
+            req.setParameter("format", "json");
+            String os = ApiContext.OS_IOS;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_IOS);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
+            assertTrue("parameter format=json should return json format response.",
+                    ((ApiStatus) actual).getData() instanceof BrandInfo);
+            BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
+            if (actualBrandInfo.getAdPlacements() == null || actualBrandInfo.getAdPlacements().isEmpty()) {
+                fail("AD section should properly set");
+            }
+            AdPlacement actualAd = actualBrandInfo.getAdPlacements().get(0);
+            assertEquals("AD section should properly set", ad.getId(), actualAd.getId());
+            assertEquals("AD section should properly set", ad.getType(), actualAd.getType());
+            assertEquals("AD section should properly set", ad.getName(), actualAd.getName());
+            assertEquals("AD section should properly set", ad.getUrl(), actualAd.getUrl());
+        }
     }
     
     @RunWith(MockitoJUnitRunner.class)
