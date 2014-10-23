@@ -80,14 +80,14 @@ public class MsoManager {
         
         if (mso == null) { return; }
         
-        String keyAdInfoPlain  = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
-        String keyAdInfoJson   = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON);
-        String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_JSON);
-        String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
-        String keyIosJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_JSON);
-        String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
-        String keyWebJson      = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_JSON);
-        String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_WEB, PlayerApiService.FORMAT_PLAIN);
+        String keyAdInfoPlain  = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
+        String keyAdInfoJson   = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_JSON);
+        String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_ANDROID, ApiContext.FORMAT_JSON);
+        String keyAndroidPlain = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_ANDROID, ApiContext.FORMAT_PLAIN);
+        String keyIosJson      = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_IOS, ApiContext.FORMAT_JSON);
+        String keyIosPlain     = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_IOS, ApiContext.FORMAT_PLAIN);
+        String keyWebJson      = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_JSON);
+        String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_PLAIN);
         
         String appConfig        = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_EXPIRE);
         String appVersionConfig = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
@@ -174,10 +174,10 @@ public class MsoManager {
                 chromecastId = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.CHROMECAST_ID, c.getValue());
             }
-            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
+            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(ApiContext.OS_ANDROID)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.GCM_SENDER_ID, c.getValue());
             }
-            if (c.getItem().equals(MsoConfig.SHAKE_DISCOVER) && (!os.equals(PlayerService.OS_WEB)) && c.getValue() != null && c.getValue().equals("on")) {
+            if (c.getItem().equals(MsoConfig.SHAKE_DISCOVER) && (!os.equals(ApiContext.OS_WEB)) && c.getValue() != null && c.getValue().equals("on")) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.SHAKE_DISCOVER, c.getValue());
             }
             if (c.getItem().equals(MsoConfig.ABOUT_US)) {
@@ -200,7 +200,7 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.STORE)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.STORE, c.getValue());
             }
-            if (c.getItem().equals(MsoConfig.AUDIO_BACKGROUND) && !os.equals(PlayerService.OS_WEB)) {
+            if (c.getItem().equals(MsoConfig.AUDIO_BACKGROUND) && !os.equals(ApiContext.OS_WEB)) {
                 audioSet = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, c.getValue());
             }
@@ -218,7 +218,7 @@ public class MsoManager {
             result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, "361253423962738");
         if (searchSet == false)
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SEARCH, "all");
-        if (audioSet == false && !os.equals(PlayerService.OS_WEB))
+        if (audioSet == false && !os.equals(ApiContext.OS_WEB))
         	result += PlayerApiService.assembleKeyValue(MsoConfig.AUDIO_BACKGROUND, "off");
         //add ga based on device
         String gaKeyName = configMngr.getKeyNameByOs(os, "google");
@@ -244,7 +244,7 @@ public class MsoManager {
         String ad = configMngr.getAdConfig(mso, os);
         if (ad != null) {
             result += PlayerApiService.assembleKeyValue("ad", ad);
-            if (os.equals(PlayerService.OS_IOS) && adIosType != null)
+            if (os.equals(ApiContext.OS_IOS) && adIosType != null)
             	result += PlayerApiService.assembleKeyValue("ad-type", adIosType);
         }
         
@@ -267,7 +267,7 @@ public class MsoManager {
             }
         }
         
-        if (!os.equals(PlayerService.OS_WEB)) {
+        if (!os.equals(ApiContext.OS_WEB)) {
             MsoConfig homepage = configMngr.findByMsoAndItem(mso, MsoConfig.HOMEPAGE);
             if (homepage != null)
                 result += PlayerApiService.assembleKeyValue("homepage", homepage.getValue());
@@ -285,7 +285,7 @@ public class MsoManager {
             result += PlayerApiService.assembleKeyValue(MsoConfig.SIGNUP_ENFORCE, value);
         }
         
-        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_PLAIN), result);
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, ApiContext.FORMAT_PLAIN), result);
         return result;
     }
     
@@ -318,30 +318,30 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.VIDEO)) {
                 info.setTutorialVideo(c.getValue());
             }
-            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(PlayerService.OS_ANDROID)) {
+            if (c.getItem().equals(MsoConfig.GCM_SENDER_ID) && os.equals(ApiContext.OS_ANDROID)) {
                 info.setGcmSenderId(c.getValue());
             }
             if (c.getItem().equals(MsoConfig.ABOUT_US)) {
                 info.setAboutus(c.getValue());
             }
         }
-        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, PlayerApiService.FORMAT_JSON), info);
+        CacheFactory.set(CacheFactory.getBrandInfoKey(mso, os, ApiContext.FORMAT_JSON), info);
         return info;
     }    
     
     private String checkOs(String os, HttpServletRequest req) {
         if (os != null) {
-            if (!os.equals(PlayerService.OS_ANDROID) && !os.equals(PlayerService.OS_IOS)) {
-                return PlayerService.OS_WEB;
+            if (!os.equals(ApiContext.OS_ANDROID) && !os.equals(ApiContext.OS_IOS)) {
+                return ApiContext.OS_WEB;
             }
             return os;
         }
         ApiContext service = new ApiContext(req);
-        os = PlayerService.OS_WEB;
+        os = ApiContext.OS_WEB;
         if (service.isIos()) {
-            os = PlayerService.OS_IOS;
+            os = ApiContext.OS_IOS;
         } else if (service.isAndroid()) { 
-            os = PlayerService.OS_ANDROID;
+            os = ApiContext.OS_ANDROID;
         }
         return os;
     }
@@ -357,7 +357,7 @@ public class MsoManager {
         } catch (Exception e) {
             log.info("memcache error");
         }
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
             
             BrandInfo json = (BrandInfo) cached;
             if (cached == null) {
@@ -436,9 +436,9 @@ public class MsoManager {
         String adInfo = "";
         List<AdPlacement> ads = NNF.getAdMngr().findByMso(mso.getId());
         
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
             
-            CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_JSON), ads);
+            CacheFactory.set(CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_JSON), ads);
             
             return ads;
         }
@@ -454,7 +454,7 @@ public class MsoManager {
             adInfo += NnStringUtil.getDelimitedStr(ori) + "\n";
         }
         
-        CacheFactory.set(CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN), adInfo);
+        CacheFactory.set(CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN), adInfo);
         
         return adInfo;
     }

@@ -8,6 +8,7 @@ import com.nncloudtv.dao.NnGuestDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.UserInfo;
 
 public class NnGuestManager {
@@ -35,7 +36,7 @@ public class NnGuestManager {
     public Object getPlayerGuestRegister(NnGuest guest, short format, HttpServletRequest req) {
         
         String sphere = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             String[] result = {""};
             result[0] += PlayerApiService.assembleKeyValue("token", guest.getToken());
             result[0] += PlayerApiService.assembleKeyValue("name", NnUser.GUEST_NAME);

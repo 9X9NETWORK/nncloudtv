@@ -20,6 +20,7 @@ import net.spy.memcached.internal.CheckedOperationTimeoutException;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.web.api.ApiContext;
 
 public class CacheFactory {
     
@@ -286,7 +287,7 @@ public class CacheFactory {
 	//example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
     	String key = "";
-    	if (format == PlayerApiService.FORMAT_PLAIN) {
+    	if (format == ApiContext.FORMAT_PLAIN) {
     		key = "brandInfo(" + mso.getName() + ")(" + os + ")";
     	} else {
     		key = "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
@@ -306,7 +307,7 @@ public class CacheFactory {
     		return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
     	}
         String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
         	str += "json";
         } else {
         	str += "text";
@@ -323,7 +324,7 @@ public class CacheFactory {
         
         for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
             
-            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == PlayerApiService.FORMAT_JSON) ? "json" : "text"); 
+            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == ApiContext.FORMAT_JSON) ? "json" : "text"); 
             
             keys.add(str);
         }
@@ -340,7 +341,7 @@ public class CacheFactory {
      */
     public static String getLatestProgramInfoKey(long channelId, short format) {
         String str = "nnprogramLatest-" + channelId + "-";
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
         	str += "json";
         } else {
         	str += "text";
@@ -365,7 +366,7 @@ public class CacheFactory {
     		//nnchannel(1)
             key = "nnchannel-v40-" + channelId;
     	}
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
         	key += "-json";
         } else {
         	key += "-text";
@@ -398,7 +399,7 @@ public class CacheFactory {
 
     public static String getAdInfoKey(Mso mso, short format) {
         String key = "";
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             key = "adInfo(" + mso.getName() + ")";
         } else {
             key = "adInfo(" + mso.getName() + ")[json]";

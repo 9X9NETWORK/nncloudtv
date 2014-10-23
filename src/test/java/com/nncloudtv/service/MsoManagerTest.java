@@ -37,6 +37,7 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.support.NnTestAll;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.BrandInfo;
 import com.nncloudtv.wrapper.NNFWrapper;
 
@@ -72,14 +73,14 @@ public class MsoManagerTest {
         MockHttpServletRequest req = new MockHttpServletRequest();
         Mso mso = new Mso("name", "intro", "email", Mso.TYPE_NN);
         final String os = "os";
-        final short format = PlayerApiService.FORMAT_JSON;
+        final short format = ApiContext.FORMAT_JSON;
         final String locale = "tw";
         final long counter = 1;
         final String piwik = "piwik";
         final String acceptLang = "zh";
         
         // mock data
-        String mockOs = PlayerService.OS_ANDROID;
+        String mockOs = ApiContext.OS_ANDROID;
         String cacheKey = "cacheKey";
         Object cached = new BrandInfo();
         
@@ -127,14 +128,14 @@ public class MsoManagerTest {
         MockHttpServletRequest req = new MockHttpServletRequest();
         Mso mso = new Mso("name", "intro", "email", Mso.TYPE_NN);
         final String os = "os";
-        final short format = PlayerApiService.FORMAT_JSON;
+        final short format = ApiContext.FORMAT_JSON;
         final String locale = "tw";
         final long counter = 1;
         final String piwik = "piwik";
         final String acceptLang = "zh";
         
         // mock data
-        String mockOs = PlayerService.OS_ANDROID;
+        String mockOs = ApiContext.OS_ANDROID;
         //String cacheKey = "cacheKey";
         Object cached = new BrandInfo();
         

@@ -97,16 +97,13 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
-    public final static int   LATEST_VERSION = 42;
-    public final static short FORMAT_JSON    = 1;
-    public final static short FORMAT_PLAIN   = 2;
     public final static int   PAGING_ROWS    = 50;
     public final static int   MAX_EPISODES   = 200;
     
     private Mso    mso;
     private int    version = 32;
     private String appVersion = null;
-    private short  format  = FORMAT_PLAIN;
+    private short  format  = ApiContext.FORMAT_PLAIN;
     private ApiContext context = null;
     HttpServletResponse resp;
     
@@ -173,7 +170,7 @@ public class PlayerApiService {
     
     public Object response(Object output) {
         
-        if (this.format == FORMAT_PLAIN) {
+        if (this.format == ApiContext.FORMAT_PLAIN) {
             try {
                 resp.setContentType("text/plain;charset=utf-8");                
                 resp.getWriter().print(output);
@@ -219,7 +216,7 @@ public class PlayerApiService {
      * 2. raw: for each section needs to be separated by separator string, "--\n"
      */
     public Object assembleMsgs(int status, Object data) {
-        if (this.format == FORMAT_JSON) {
+        if (this.format == ApiContext.FORMAT_JSON) {
             ApiStatus apiStatus = new ApiStatus();
             apiStatus.setCode(status);
             apiStatus.setMessage(NnStatusMsg.getPlayerMsgText(status));
@@ -302,7 +299,7 @@ public class PlayerApiService {
                  result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
            }         
         }
-        if (format == PlayerApiService.FORMAT_JSON)
+        if (format == ApiContext.FORMAT_JSON)
             return this.assembleMsgs(NnStatusCode.SUCCESS, new RelatedApp());
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
      }
@@ -371,7 +368,7 @@ public class PlayerApiService {
         
         Object result = this.prepareUserInfo(user, null, req, true);
         this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-        if (this.format == PlayerApiService.FORMAT_PLAIN) {
+        if (this.format == ApiContext.FORMAT_PLAIN) {
             String[] value = {(String) result};
             return this.assembleMsgs(NnStatusCode.SUCCESS, value);                        
         }
@@ -440,7 +437,7 @@ public class PlayerApiService {
         
         Object result = this.prepareUserInfo(user, guest, req, true);
         this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-        if (this.format == PlayerApiService.FORMAT_PLAIN) {
+        if (this.format == ApiContext.FORMAT_PLAIN) {
             String[] value = {(String) result};
             return this.assembleMsgs(NnStatusCode.SUCCESS, value);                        
         }
@@ -503,7 +500,7 @@ public class PlayerApiService {
             userMngr.save(user); //FIXME: change last login time (ie updateTime)
         }
         Object result = this.prepareUserInfo(user, guest, req, true);
-        if (this.format == PlayerApiService.FORMAT_PLAIN) {
+        if (this.format == ApiContext.FORMAT_PLAIN) {
             String[] value = {(String) result};
             return this.assembleMsgs(NnStatusCode.SUCCESS, value);                        
         }
@@ -563,7 +560,7 @@ public class PlayerApiService {
             String name = display.getName();
             int cntChannel = display.getCntChannel();
             String subItemHint = "ch"; //what's under this level
-            if (format == PlayerApiService.FORMAT_PLAIN) {
+            if (format == ApiContext.FORMAT_PLAIN) {
                 String[] str = {cId, 
                                 name, 
                                 String.valueOf(cntChannel), 
@@ -579,7 +576,7 @@ public class PlayerApiService {
         }
                          
         //flatten result process
-        if (id.equals("0") && flatten && format == PlayerApiService.FORMAT_PLAIN) {
+        if (id.equals("0") && flatten && format == ApiContext.FORMAT_PLAIN) {
             log.info("return flatten data");
             List<String> flattenResult = new ArrayList<String>();
             flattenResult.add(result[0]);
@@ -587,7 +584,7 @@ public class PlayerApiService {
             String size[] = new String[flattenResult.size()];
             return this.assembleMsgs(NnStatusCode.SUCCESS, flattenResult.toArray(size));
         } else {
-            if (format == PlayerApiService.FORMAT_PLAIN)
+            if (format == ApiContext.FORMAT_PLAIN)
                 return this.assembleMsgs(NnStatusCode.SUCCESS, result);
             else
                 return this.assembleMsgs(NnStatusCode.SUCCESS, playerCategories);
@@ -811,7 +808,7 @@ public class PlayerApiService {
             
             String output = "";
             if (isReduced) {
-                output = (String) NNF.getChannelMngr().composeReducedChannelLineup(chs, PlayerApiService.FORMAT_PLAIN);
+                output = (String) NNF.getChannelMngr().composeReducedChannelLineup(chs, ApiContext.FORMAT_PLAIN);
             } else {
                 output = (String) NNF.getChannelMngr().composeChannelLineup(chs, context);
             }
@@ -877,7 +874,7 @@ public class PlayerApiService {
         //user info
         if (userInfo) {
             log.info("userInfo is added");
-            if (this.format == PlayerApiService.FORMAT_PLAIN)
+            if (this.format == ApiContext.FORMAT_PLAIN)
                 result.add((String) this.prepareUserInfo(user, guest, req, true));
             else
                 playerChannelLineup.setUserInfo(((UserInfo)this.prepareUserInfo(user, guest, req, true)));
@@ -892,7 +889,7 @@ public class PlayerApiService {
                 String[] list = new String[9];
                 if (user != null) {
                     groups.addAll(groupMngr.findByUser(user));
-                    if (format == PlayerApiService.FORMAT_PLAIN) {
+                    if (format == ApiContext.FORMAT_PLAIN) {
                         for (NnUserSubscribeGroup g : groups) {
                             String[] obj = {
                                     String.valueOf(g.getSeq()),
@@ -994,7 +991,7 @@ public class PlayerApiService {
                 }
             }
         }
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
             @SuppressWarnings("unchecked")
             List<ChannelLineup> lineup = (List<ChannelLineup>) NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, new ApiContext(req), null);
             playerChannelLineup.setChannelLineup(lineup);
@@ -1092,7 +1089,7 @@ public class PlayerApiService {
             Object result = this.prepareUserInfo(user, null, req, true);
             NNF.getUserMngr().save(user); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-            if (this.format == PlayerApiService.FORMAT_PLAIN) {
+            if (this.format == ApiContext.FORMAT_PLAIN) {
                 String[] raw = {(String)result};
                 return this.assembleMsgs(NnStatusCode.SUCCESS, raw);            
             }
@@ -1269,7 +1266,7 @@ public class PlayerApiService {
                 if (version < 32) {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
-                    if (format == PlayerApiService.FORMAT_PLAIN) {
+                    if (format == ApiContext.FORMAT_PLAIN) {
                         programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, context);
                         if (pagination) {
                             NnChannel c = NNF.getChannelMngr().findById(l);
@@ -1285,7 +1282,7 @@ public class PlayerApiService {
             
             long cId = Long.parseLong(channelIds);
             NnChannel channel = NNF.getChannelMngr().findById(cId);
-            if (format == PlayerApiService.FORMAT_PLAIN) {
+            if (format == ApiContext.FORMAT_PLAIN) {
                 
                 programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, format);
                 if (pagination && channel != null) {
@@ -1312,7 +1309,7 @@ public class PlayerApiService {
                     log.info("ios program info debug string:" + debugStr);
                 }
             } else {
-                if (format == PlayerApiService.FORMAT_PLAIN) {
+                if (format == ApiContext.FORMAT_PLAIN) {
                     long cId = Long.parseLong(channelIds);
                     programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, context);
                     if (pagination) {
@@ -1332,7 +1329,7 @@ public class PlayerApiService {
         if (userInfo) {
             if (user == null && userToken != null)  {
                 user = NNF.getUserMngr().findByToken(userToken, mso.getId());
-                if (this.format == PlayerApiService.FORMAT_PLAIN) {
+                if (this.format == ApiContext.FORMAT_PLAIN) {
                     userInfoStr = (String) this.prepareUserInfo(user, null, context.getHttpRequest(), true);
                     result.add(userInfoStr);
                 } else {
@@ -1340,10 +1337,10 @@ public class PlayerApiService {
                 }
             }
         }
-        if (pagination && this.format == PlayerApiService.FORMAT_PLAIN)
+        if (pagination && this.format == ApiContext.FORMAT_PLAIN)
             result.add(paginationStr);
             
-        if (this.format == PlayerApiService.FORMAT_JSON) {
+        if (this.format == ApiContext.FORMAT_JSON) {
             return this.assembleMsgs(NnStatusCode.SUCCESS, playerProgramInfo);
         } else {
             result.add(programInfoStr);
@@ -2165,7 +2162,7 @@ public class PlayerApiService {
         int numOfCuratorTotal = users.size();
         int numOfSuggestTotal = suggestion.size();
         
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             String[] result = {"", "", "", ""}; //count, curator, curator's channels, channels, suggestion channels
             //matched curators && their channels [important, two sections]
             result[1] = (String) NNF.getUserMngr().composeCuratorInfo(users, true, false, req, version);
@@ -2252,7 +2249,7 @@ public class PlayerApiService {
         if (token == null || token.length() == 0 || name == null || name.length() == 0 ||  imageUrl == null || imageUrl.length() == 0) {
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
         }
-        if (this.format == PlayerApiService.FORMAT_JSON) {
+        if (this.format == ApiContext.FORMAT_JSON) {
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         }
         NnUser user = NNF.getUserMngr().findByToken(token, mso.getId());
@@ -2700,7 +2697,7 @@ public class PlayerApiService {
             }
         }
         if (!isPrograms) {
-            String channelInfo = (String)NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
+            String channelInfo = (String)NNF.getChannelMngr().composeReducedChannelLineup(channels, ApiContext.FORMAT_PLAIN);
             if (chPos)
                 channelInfo = (String)NNF.getChannelMngr().chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), this.format);
             log.info("virtual channel, return channel only");
@@ -2725,10 +2722,10 @@ public class PlayerApiService {
             output += "\n";
             programInfo += output;
         }
-        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, ApiContext.FORMAT_PLAIN);
         if (chPos) {
             log.info("adjust sequence of channellineup for user:" + user.getId());
-            channelInfo = (String) NNF.getChannelMngr().chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), PlayerApiService.FORMAT_PLAIN);
+            channelInfo = (String) NNF.getChannelMngr().chAdjust(channels, channelInfo, new ArrayList<ChannelLineup>(), ApiContext.FORMAT_PLAIN);
         }
         result.add(channelInfo);                
         result.add(programInfo);
@@ -2945,7 +2942,7 @@ public class PlayerApiService {
                 }
             }
         }
-        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, ApiContext.FORMAT_PLAIN);        
         return this.assembleMsgs(NnStatusCode.SUCCESS, new String[] {channelInfo});
     }
     
@@ -2973,7 +2970,7 @@ public class PlayerApiService {
                 }
             }
         }
-        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, PlayerApiService.FORMAT_PLAIN);        
+        String channelInfo = (String) NNF.getChannelMngr().composeReducedChannelLineup(channels, ApiContext.FORMAT_PLAIN);        
         //subscribe
         NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
         List<NnUserSubscribe> list = subMngr.findAllByUser(user);
@@ -3323,7 +3320,7 @@ public class PlayerApiService {
         log.info("channels = " + channels.size());
         result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, context);
         //program info
-        String programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, PlayerApiService.FORMAT_PLAIN);
+        String programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ApiContext.FORMAT_PLAIN);
         result[3] = programStr;        
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
     }
