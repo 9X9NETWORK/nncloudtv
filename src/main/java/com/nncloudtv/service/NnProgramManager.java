@@ -303,7 +303,7 @@ public class NnProgramManager {
             return NnProgram.CONTENTTYPE_RADIO;
         if (program.getFileUrl().contains("youtube.com"))
             return NnProgram.CONTENTTYPE_YOUTUBE;
-        return NnProgram.CONTENTTYPE_DIRECTLINK;
+        return NnProgram.CONTENTTYPE_MP4;
     }
     
     public YtProgram findYtProgramById(Long ytProgramId) {
@@ -893,8 +893,8 @@ public class NnProgramManager {
                 String imageLargeUrl = episode.getImageUrl();
                 String intro         = getNotPipedProgramInfoData(episode.getIntro());
                 String card          = "";
-                String contentType   = "";
-                int    iAmHere       = 1;
+                String contentType   = String.valueOf(episode.getContentType());
+                int    iCounter      = 1;
                 String poiStr        = "";
                 ProgramInfo info = new ProgramInfo();
                 if (imageUrl != null) {
@@ -939,7 +939,7 @@ public class NnProgramManager {
                         String context = NnStringUtil.urlencode(event.getContext());
                         if (format == ApiContext.FORMAT_PLAIN) {
                             
-                            String poiStrHere = iAmHere + ";" + point.getStartTime() + ";" + point.getEndTime() + ";" + event.getType() + ";" + context + "|";
+                            String poiStrHere = iCounter + ";" + point.getStartTime() + ";" + point.getEndTime() + ";" + event.getType() + ";" + context + "|";
                             log.info("poi output:" + poiStrHere);
                             poiStr += poiStrHere;
                             
@@ -964,11 +964,11 @@ public class NnProgramManager {
                                 key = cardKey2;
                             String syntax = cardMap.get(key).getPlayerSyntax();
                             if (format == ApiContext.FORMAT_PLAIN) {
-                                card += "subepisode" + "%3A%20" + iAmHere + "%0A";
+                                card += "subepisode" + "%3A%20" + iCounter + "%0A";
                                 card += syntax + "%0A--%0A";
                             } else {
                                 PlayerTitleCard titleCard = new PlayerTitleCard();
-                                titleCard.setKey(String.valueOf(iAmHere));
+                                titleCard.setKey(String.valueOf(iCounter));
                                 titleCard.setSyntax(syntax);
                                 playerTitleCards.add(titleCard);
                             }
@@ -1021,7 +1021,7 @@ public class NnProgramManager {
                         subEpisode.setPois(playerPois);
                         subEpisodes.add(subEpisode);
                     }
-                    iAmHere++;
+                    iCounter++;
                 }
                 //////// start of episode magic \\\\\\\\
                 // use referenced episode to rewrite current episode

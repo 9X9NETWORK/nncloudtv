@@ -596,17 +596,13 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        // TODO poiPoint collision
-        /*
-        if (programMngr.isPoiCollision(program, program.getStartTimeInt(), program.getEndTimeInt())) {
-            badRequest(resp, INVALID_PARAMETER);
-            return null;
-        }
-        */
-        
         // update duration = endTime - startTime
-        if (program.getEndTimeInt() - program.getStartTimeInt() >= 0) {
+        if (program.getEndTimeInt() == program.getStartTimeInt()) {
+            
+        } else if (program.getEndTimeInt() - program.getStartTimeInt() > 0) {
+            
             program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
+            
         } else {
             // ex : new start = 10, old end = 5
             badRequest(resp, INVALID_PARAMETER);
@@ -822,6 +818,7 @@ public class ApiContent extends ApiGeneric {
             program.setDuration((short) 0);
             
         } else {
+            
             Short duration = evaluateShort(durationStr);
             if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
@@ -851,6 +848,7 @@ public class ApiContent extends ApiGeneric {
         if (endTimeStr == null) {
             
             program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
+            
         } else {
             
             Short endTime = evaluateShort(endTimeStr);
