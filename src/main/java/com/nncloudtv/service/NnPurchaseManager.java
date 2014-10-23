@@ -90,7 +90,7 @@ public class NnPurchaseManager {
                     return;
                 }
                 
-                purchase.setExpireDate(new Date(receipt.getLong("expires_date")));
+                purchase.setExpireDate(new Date(Long.valueOf(receipt.getString("expires_date"))));
                 String productIdRef = receipt.getString("product_id");
                 // check productId
                 if (item.getProductIdRef().equals(productIdRef) == false) {
@@ -105,7 +105,7 @@ public class NnPurchaseManager {
                 // check bundleId
                 Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
                 String bundleId = MsoConfigManager.getAppStoreBundleId(mso);
-                if (bundleId.equals(receipt.getString("app_item_id")) == false) {
+                if (bundleId.equals(receipt.getString("bid")) == false) {
                     
                     log.warning("bundleId not matched");
                     purchase.setVerified(false);
@@ -119,6 +119,7 @@ public class NnPurchaseManager {
                 checkExpireDate(purchase);
                 
             } catch (JSONException e) {
+                
                 log.warning("JSONException");
                 log.warning(e.getMessage());
                 

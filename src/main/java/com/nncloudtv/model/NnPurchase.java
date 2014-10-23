@@ -34,7 +34,7 @@ public class NnPurchase {
     private String userIdStr; //format: shard-userId, example: 1-1234
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_LONG_STRING_LENGTH)
     private String purchaseToken;
     
     @Persistent
