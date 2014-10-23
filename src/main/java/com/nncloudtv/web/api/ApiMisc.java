@@ -47,6 +47,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.stream.LiveStreamLib;
 import com.nncloudtv.lib.stream.UstreamLib;
 import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.lib.stream.StreamLib;
@@ -497,7 +498,42 @@ public class ApiMisc extends ApiGeneric {
         return ok(resp);
     }
     
-    @RequestMapping(value = "ustream", method = RequestMethod.GET)
+    @RequestMapping(value = "livestream")
+    public @ResponseBody void livestream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String urlStr = req.getParameter("url");
+        if (urlStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        StreamLib streamLib = StreamFactory.getStreamLib(urlStr);
+        if (streamLib == null || streamLib.getClass() != LiveStreamLib.class) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+        }
+        LiveStreamLib livestreamLib = (LiveStreamLib) streamLib; 
+        String normalizedUrl = livestreamLib.normalizeUrl(urlStr);
+        if (normalizedUrl == null) {
+            
+            log.warning("fail to normalize url");
+            internalError(resp);
+            return;
+        }
+        String livestreamApiUrl = livestreamLib.getLiveStreamApiUrl(normalizedUrl);
+        if (livestreamApiUrl == null) {
+            
+            log.warning("fail to livestream api url");
+            internalError(resp);
+            return;
+        }
+        
+        req.setAttribute("url", livestreamApiUrl);
+        cors(resp, req);
+    }
+    
+    @RequestMapping(value = "ustream")
     public @ResponseBody List<Map<String, String>> ustream(HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
@@ -530,8 +566,7 @@ public class ApiMisc extends ApiGeneric {
         log.info("urlStr = " + urlStr);
         if (urlStr == null) {
             
-            log.warning("missing parameter");
-            badRequest(resp);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         

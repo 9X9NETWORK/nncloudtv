@@ -29,6 +29,32 @@ public class LiveStreamLib implements StreamLib {
     public static final String REGEX_LIVESTREAM_PAN_URL   = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/(.+))+$";
     public static final String REGEX_LIVESTREAM_PAN_VIDEO = "^https?:\\/\\/new\\.livestream\\.com\\/(.+)(\\/videos\\/[0-9]+)$";
     
+    public String getLiveStreamApiUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        String normalizedUrl = null;
+        
+        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_PAN_VIDEO)) {
+            
+            normalizedUrl = urlStr;
+            
+        } else if (urlStr.matches(REGEX_LIVESTREAM_PAN_URL)) {
+            
+            normalizedUrl = normalizeUrl(urlStr);
+            
+        }
+        
+        if (normalizedUrl != null) {
+            
+            return normalizedUrl.replaceFirst("\\/\\/new\\.", "//api.new.");
+            
+        } else {
+            
+            return null;
+        }
+    }
+    
     public boolean isUrlMatched(String urlStr) {
         
         return (urlStr == null) ? null : urlStr.matches(REGEX_LIVESTREAM_PAN_URL);
@@ -128,7 +154,7 @@ public class LiveStreamLib implements StreamLib {
             
             log.info("livestream video url format matched");
             
-            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "//api.new.");
+            urlStr = getLiveStreamApiUrl(urlStr);
             
             try {
                 
@@ -170,7 +196,7 @@ public class LiveStreamLib implements StreamLib {
             
             log.info("livestream event url format matched");
             
-            urlStr = urlStr.replaceFirst("\\/\\/new\\.", "//api.new.");
+            urlStr = getLiveStreamApiUrl(urlStr);
             
             try {
                 
