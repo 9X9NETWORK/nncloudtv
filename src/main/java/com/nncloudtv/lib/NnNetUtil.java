@@ -63,13 +63,11 @@ public class NnNetUtil {
             String key = entry.getKey();
             if (key == null) continue;
             List<String> values = entry.getValue();
-            System.out.println("--------");
             for (String value : values) {
                 
                 resp.setHeader(key, value);
-                System.out.println(key + ": " + value);
+                System.out.println("[header] " + key + ": " + value);
             }
-            System.out.println("--------");
         }
         
         resp.setStatus(conn.getResponseCode());
