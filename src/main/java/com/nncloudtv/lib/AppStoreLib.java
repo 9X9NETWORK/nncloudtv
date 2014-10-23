@@ -58,7 +58,7 @@ public class AppStoreLib {
             int status = json.getInt("status");
             if (status != 0) {
                 
-                log.info("appstore resturns status = " + status);
+                log.info("appstore resturn status = " + status);
                 throw new AppStoreFailedVerifiedException();
             }
             JSONObject receipt = json.getJSONObject("receipt");
