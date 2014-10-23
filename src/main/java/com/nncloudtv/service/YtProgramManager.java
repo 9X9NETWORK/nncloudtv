@@ -11,6 +11,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.YtProgram;
+import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class YtProgramManager {
@@ -40,7 +41,7 @@ public class YtProgramManager {
         String result = "";
         List<YtProgram> programs = dao.findByChannels(channels);
         for (YtProgram program : programs) {
-            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(channel, program, PlayerApiService.FORMAT_PLAIN);
+            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(channel, program, ApiContext.FORMAT_PLAIN);
         }
         CacheFactory.set(cacheKey, result);
         return result;
@@ -60,7 +61,7 @@ public class YtProgramManager {
         channels.add(c);
         List<YtProgram> programs = dao.findByChannels(channels);
         for (YtProgram p : programs) {
-            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(c, p, PlayerApiService.FORMAT_PLAIN);
+            result += (String) NNF.getProgramMngr().composeEachYtProgramInfo(c, p, ApiContext.FORMAT_PLAIN);
         }
         CacheFactory.set(cacheKey, result);
         return result;

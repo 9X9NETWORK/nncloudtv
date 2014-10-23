@@ -84,7 +84,7 @@ Detail for each step can be found in the following sections.
         # http://localhost:8080/hello/fanout?exchange_name=hello (test rabbitq, nnqueue should output a hello message)
 
 -   ready to go,  
-    go to ***http://localhost:8080/admin/index***, click on initialize link
+    <s>go to ***http://localhost:8080/admin/index***, click on initialize link</s> (removed)
 
 mvn
 --------------------------------

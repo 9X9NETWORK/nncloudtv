@@ -12,6 +12,7 @@ import com.nncloudtv.dao.NnUserProfileDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.PlayerUserProfile;
 
 @Service
@@ -134,7 +135,7 @@ public class NnUserProfileManager {
         String sphere = profile.getSphere();
         String uiLang = profile.getLang();
         String phone = profile.getPhoneNumber();
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             String[] result = {""};     
 	        result[0] += PlayerApiService.assembleKeyValue("name", name);
 	        result[0] += PlayerApiService.assembleKeyValue("email", email);

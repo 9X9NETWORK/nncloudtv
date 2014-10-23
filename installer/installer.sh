@@ -23,6 +23,15 @@ test "$1" != "-n" \
     && echo
 
 cd ..
+
+if test "$1" = "-x"; then # speed up
+    mvn -Dmaven.test.skip=true compile war:war \
+    install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
+    && sudo cp -v target/root.war /usr/share/$jetty/webapps/root.war \
+    && sudo service $jetty restart
+    exit
+fi
+
 mvn -Dmaven.test.skip=true clean\
     install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar \
     compile \

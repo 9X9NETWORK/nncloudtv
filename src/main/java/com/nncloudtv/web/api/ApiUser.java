@@ -396,7 +396,7 @@ public class ApiUser extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null && intro.isEmpty() == false) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro);
+            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // imageUrl

@@ -1,6 +1,8 @@
-package com.nncloudtv.lib;
+package com.nncloudtv.lib.stream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,13 +20,17 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.IOUtils;
 import com.google.api.client.util.Key;
 import com.google.gdata.client.youtube.YouTubeService;
 import com.google.gdata.data.youtube.PlaylistFeed;
 import com.google.gdata.util.ServiceException;
+import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 
-public class YouTubeLib {
+public class YouTubeLib  implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(YouTubeLib.class.getName());
     
@@ -107,7 +113,7 @@ public class YouTubeLib {
             //log.info("match:(p|list)=(PL)?(\\w+)");
             url = "http://www.youtube.com/view_play_list?p=" + m.group(6);
         }
-
+        
         // http://www.youtube.com/playlist?list=03D59E2ECDDA66DF
         // http://www.youtube.com/playlist?list=PL03D59E2ECDDA66DF               
         reg = "^(http|https)://?(www.)?youtube.com/playlist?list=(PL)?(\\w+)";
@@ -117,7 +123,7 @@ public class YouTubeLib {
             //log.info("match playlist?list=(PL)?(\\w+)");
             url = "http://www.youtube.com/view_play_list?p=" + m.group(5);
         }
-
+        
         if (url != null) { 
             //url = url.toLowerCase();
             if (url.equals("http://www.youtube.com/user/watch")) {
@@ -128,56 +134,56 @@ public class YouTubeLib {
         //if (!youTubeCheck(result)) {return null;} //till the function is fixed        
         return url;        
     }
-
+    
      public static class YouTubeUrl extends GenericUrl {
-        @Key final String alt = "jsonc";
-        @Key String author;
-        @Key String q;
-        @Key("max-results") Integer maxResults;
-        YouTubeUrl(String url) {
+        @Key public final String alt = "jsonc";
+        @Key public String author;
+        @Key public String q;
+        @Key("max-results") public Integer maxResults;
+        public YouTubeUrl(String url) {
           super(url);
         }
     }
-
+     
     public static class VideoFeed {
-       @Key String title;
-       @Key String subtitle;
-       @Key String logo;
-       @Key String description;
-       @Key String author;
-       @Key int totalItems;
-       @Key List<Video> items;
+       @Key public String title;
+       @Key public String subtitle;
+       @Key public String logo;
+       @Key public String description;
+       @Key public String author;
+       @Key public int totalItems;
+       @Key public List<Video> items;
     }
-
+    
     public static class Author {
-        @Key String name;
+        @Key public String name;
     }
     
     public static class MyFeed {
-       @Key List<Video> items;
+       @Key public List<Video> items;
     }
     
     public static class Video {
-        @Key String id;
-        @Key String title;
-        @Key String description;
-        @Key Thumbnail thumbnail;
-        @Key Player player;
-        @Key Video video;
+        @Key public String id;
+        @Key public String title;
+        @Key public String description;
+        @Key public Thumbnail thumbnail;
+        @Key public Player player;
+        @Key public Video video;
     }
     
     public static class Thumbnail {
-        @Key String sqDefault;                    
+        @Key public String sqDefault;
     }
     
     public static class ProfileFeed {
-        @Key List<String> items;
+        @Key public List<String> items;
     }
         
     public static class Player {
-        @Key("default") String defaultUrl;
+        @Key("default") public String defaultUrl;
     }
-        
+    
     public static HttpRequestFactory getFactory() {
         HttpTransport transport = new NetHttpTransport();
         HttpRequestFactory factory = transport.createRequestFactory();
@@ -326,27 +332,38 @@ public class YouTubeLib {
         return true;
     }
     
-    public static boolean isVideoUrlNormalized(String url) {
+    public String normalizeUrl(String urlStr) {
         
-        if (url == null) {
-            return false;
+        if (urlStr == null) { return null; }
+        
+        Matcher matcher = Pattern.compile(REGEX_VIDEO_URL).matcher(urlStr);
+        if (matcher.find()) {
+            
+            return "https://www.youtube.com/watch?v=" + matcher.group(1);
         }
         
-        return url.matches(REGEX_VIDEO_URL);
+        return null;
     }
     
-    public static String getYouTubeVideoIdStr(String url) {
+    public boolean isUrlMatched(String urlStr) {
         
-        if (url == null || url.length() == 0) {
-            return url;
+        if (urlStr == null) { return false; }
+        
+        return urlStr.matches(REGEX_VIDEO_URL);
+    }
+    
+    public String getVideoId(String urlStr) {
+        
+        if (urlStr == null || urlStr.length() == 0) {
+            return urlStr;
         }
         
-        if (!isVideoUrlNormalized(url)) {
+        if (!isUrlMatched(urlStr)) {
             return null;
         }
         
         Pattern pattern = Pattern.compile(REGEX_VIDEO_ID_STR);
-        Matcher matcher = pattern.matcher(url);
+        Matcher matcher = pattern.matcher(urlStr);
         
         if (matcher.find()) {
             return matcher.group(1);
@@ -355,11 +372,82 @@ public class YouTubeLib {
         return null;
     }
     
+    static YouTubeService getYTService() {
+        
+        return new YouTubeService("FLIPr.tv");
+    }
+    
     public static PlaylistFeed getPlaylistFeed(String playlistId) throws MalformedURLException, IOException, ServiceException {
         
         if (playlistId == null) { return null; }
-        YouTubeService service = new YouTubeService("FLIPr.tv");
+        YouTubeService service = getYTService();
         
         return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
+    }
+    
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        return getDirectVideoUrl(urlStr);
+    }
+    
+    public String getDirectVideoUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        String cmd = "/usr/bin/youtube-dl -g -v --no-cache-dir "
+                   + NnStringUtil.escapeURLInShellArg(urlStr);
+        log.info("[exec] " + cmd);
+        
+        try {
+            
+            Process process = Runtime.getRuntime().exec(cmd);
+            // piping error message to stdout
+            PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
+            pipingTask.start();
+            
+            InputStream dataIn = process.getInputStream();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(dataIn, baos);
+            
+            if (baos.size() > 0) {
+                
+                String rawUrl = baos.toString(NnStringUtil.UTF8);
+                log.info(rawUrl);
+                if (rawUrl != null && !rawUrl.isEmpty()) {
+                    
+                    return rawUrl.trim();
+                }
+            }
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            return null;
+        }
+        
+        return null;
+    }
+    
+    public InputStream getDirectVideoStream(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
+                   + NnStringUtil.escapeURLInShellArg(urlStr);
+        log.info("[exec] " + cmd);
+        
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            // piping error message to stdout
+            PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
+            pipingTask.start();
+            
+            return process.getInputStream();
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            return null;
+        }
     }
 }

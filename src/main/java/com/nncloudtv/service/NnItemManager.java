@@ -13,6 +13,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
+import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class NnItemManager {
@@ -62,9 +63,9 @@ public class NnItemManager {
     public List<NnItem> findByMsoAndOs(Mso mso, String os) {
         
         short platform = NnItem.UNKNOWN;
-        if (os.equals(PlayerService.OS_ANDROID)) {
+        if (os.equals(ApiContext.OS_ANDROID)) {
             platform = NnItem.GOOGLEPLAY;
-        } else if (os.equals(PlayerService.OS_IOS)) {
+        } else if (os.equals(ApiContext.OS_IOS)) {
             platform = NnItem.APPSTORE;
         }
         

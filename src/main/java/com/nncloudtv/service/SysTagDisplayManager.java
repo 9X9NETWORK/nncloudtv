@@ -155,7 +155,7 @@ public class SysTagDisplayManager {
         //在Store裡, "最新上架"就是"alwaysOnTop".            
         String latest = this.getTag(display.getSystagId(), "store");
         //1. category info                
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             List<String> result = new ArrayList<String>();            
             String categoryInfo = "";
             categoryInfo += PlayerApiService.assembleKeyValue("id", id);
@@ -362,7 +362,7 @@ public class SysTagDisplayManager {
             String bannerImageUrl = display.getBannerImageUrl();
             String bannerImageUrl2 = display.getBannerImageUrl2();
             String channeltag = this.getTag(display.getSystagId(), "portal");
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
                 String[] obj = {
                     id,
                     name,
@@ -404,19 +404,19 @@ public class SysTagDisplayManager {
                 }
                 channels.addAll(NNF.getSysTagMngr().findPlayerChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
             }
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
                 channelStr = (String)NNF.getChannelMngr().composeChannelLineup(channels, ctx);
             } else {
                 channelLineup = (List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels, ctx);
             }
             //3. list of the latest episode of each channel of the first set
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
                 programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFormat());
             } else {
                 programInfo = (List<ProgramInfo>) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFormat());
             }
         }
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             if (minimal) {
                 String result[] = {""};
                 result[0] = setStr;
@@ -453,7 +453,7 @@ public class SysTagDisplayManager {
         String bannerImageUrl = display.getBannerImageUrl();
         String bannerImageUrl2 = display.getBannerImageUrl2();
         
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             
             String result[] = { "", "", "", "" };
             //mso info

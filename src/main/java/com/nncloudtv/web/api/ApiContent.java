@@ -38,7 +38,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.lib.UstreamLib;
+import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -167,7 +167,7 @@ public class ApiContent extends ApiGeneric {
         
         try {
             
-            UstreamLib.streaming(program.getFileUrl(), resp.getOutputStream());
+            StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
             
         } catch (MalformedURLException e) {
             
@@ -301,17 +301,13 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        // TODO poiPoint collision
-        /*
-        if (programMngr.isPoiCollision(program, program.getStartTimeInt(), program.getEndTimeInt())) {
-            badRequest(resp, INVALID_PARAMETER);
-            return null;
-        }
-        */
-        
         // update duration = endTime - startTime
-        if (program.getEndTimeInt() - program.getStartTimeInt() >= 0) {
+        if (program.getEndTimeInt() == program.getStartTimeInt()) {
+            
+        } else if (program.getEndTimeInt() - program.getStartTimeInt() > 0) {
+            
             program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
+            
         } else {
             // ex : new start = 10, old end = 5
             badRequest(resp, INVALID_PARAMETER);
@@ -527,6 +523,7 @@ public class ApiContent extends ApiGeneric {
             program.setDuration((short) 0);
             
         } else {
+            
             Short duration = evaluateShort(durationStr);
             if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
@@ -556,6 +553,7 @@ public class ApiContent extends ApiGeneric {
         if (endTimeStr == null) {
             
             program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
+            
         } else {
             
             Short endTime = evaluateShort(endTimeStr);
@@ -1350,8 +1348,7 @@ public class ApiContent extends ApiGeneric {
         
         for (NnEpisode episode : results) {
             
-            episode.setName(NnStringUtil.revertHtml(episode.getName()));
-            episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
+            NNF.getEpisodeMngr().normalize(episode);
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
@@ -1482,8 +1479,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        episode.setName(NnStringUtil.revertHtml(episode.getName()));
-        episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
+        NNF.getEpisodeMngr().normalize(episode);
         
         return episode;
     }
@@ -1533,7 +1529,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
-            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
+            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // contentType
@@ -1716,7 +1712,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null && intro.length() > 0) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro);
+            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // contentType

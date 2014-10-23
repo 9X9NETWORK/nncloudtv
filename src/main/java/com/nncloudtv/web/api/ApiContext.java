@@ -18,15 +18,22 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.PlayerApiService;
 
 
 public class ApiContext {
     
     public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
     
-    public final static String DEFAULT_VERSION   = "31";
-    public final static String DEFAULT_OS        = "web";
+    public final static short  FORMAT_PLAIN      = 2;
+    public final static short  FORMAT_JSON       = 1;
+    public final static int    LATEST_VERSION    = 42;
+    
+    public final static String OS_ANDROID        = "android";
+    public final static String OS_IOS            = "ios";
+    public final static String OS_WEB            = "web";
+    
+    public final static int    DEFAULT_VERSION   = 31;
+    public final static String DEFAULT_OS        = OS_WEB;
     
     public final static String HEADER_USER_AGENT = "user-agent";
     public final static String HEADER_REFERRER   = "referer";
@@ -100,9 +107,9 @@ public class ApiContext {
         
         String returnFormat = httpReq.getParameter(ApiContext.PARAM_FORMAT);
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
-            this.format = PlayerApiService.FORMAT_PLAIN;
+            this.format = FORMAT_PLAIN;
         } else {
-            this.format = PlayerApiService.FORMAT_JSON;
+            this.format = FORMAT_JSON;
         }
         
         String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
@@ -112,7 +119,7 @@ public class ApiContext {
             locale = Locale.ENGLISH; // TODO: from http request
         }
         
-        version = Integer.parseInt(ApiContext.DEFAULT_VERSION);
+        version = ApiContext.DEFAULT_VERSION;
         String versionStr = httpReq.getParameter(PARAM_VERSION);
         if (versionStr != null) {
             try {
@@ -209,6 +216,8 @@ public class ApiContext {
     public boolean isIos() {
         
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent == null)
+            return false;
         if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
             log.info("request from ios");
             return true;
