@@ -31,8 +31,8 @@ public class StreamFactory {
                 new VimeoLib(),
                 new UstreamLib(),
                 new LiveStreamLib(),
-                new S3StreamLib(),
-                new HttpsStreamLib(),
+                new S3Helper(),
+                new HttpsHelper(),
         };
         
         for (StreamLib lib : StreamLibs) {

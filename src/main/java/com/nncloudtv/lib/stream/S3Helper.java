@@ -16,9 +16,9 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 
-public class S3StreamLib implements StreamLib {
+public class S3Helper implements StreamLib {
     
-    protected final static Logger log = Logger.getLogger(S3StreamLib.class.getName());
+    protected final static Logger log = Logger.getLogger(S3Helper.class.getName());
     
     public boolean isUrlMatched(String url) {
         

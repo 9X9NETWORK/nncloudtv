@@ -8,9 +8,9 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 // helper to streaming HTTPS video
-public class HttpsStreamLib implements StreamLib {
+public class HttpsHelper implements StreamLib {
     
-    protected final static Logger log = Logger.getLogger(HttpsStreamLib.class.getName());
+    protected final static Logger log = Logger.getLogger(HttpsHelper.class.getName());
     
     public String normalizeUrl(String urlStr) {
         
