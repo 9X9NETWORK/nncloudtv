@@ -46,6 +46,7 @@ import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.LiveStreamLib;
 import com.nncloudtv.lib.stream.UstreamLib;
@@ -529,8 +530,20 @@ public class ApiMisc extends ApiGeneric {
             return;
         }
         
-        req.setAttribute("url", livestreamApiUrl);
-        cors(resp, req);
+        log.info("livestream api url = " + livestreamApiUrl);
+        
+        try {
+            
+            NnNetUtil.openStreamTo(livestreamApiUrl, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
     }
     
     @RequestMapping(value = "ustream")
@@ -572,39 +585,11 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            
-            InputStream in = conn.getInputStream();
-            
-            Map<String, List<String>> headerFields = conn.getHeaderFields();
-            
-            for (Entry<String, List<String>> entry : headerFields.entrySet()) {
-                
-                String key = entry.getKey();
-                if (key == null) continue;
-                List<String> values = entry.getValue();
-                
-                for (String value : values) {
-                    
-                    resp.setHeader(key, value);
-                    System.out.println(key + ": " + value);
-                }
-            }
-            
-            resp.setStatus(conn.getResponseCode());
-            IOUtils.copy(in, resp.getOutputStream());
-            resp.flushBuffer();
-            
-        } catch (MalformedURLException e) {
-            
-            log.info("invalid url");
-            badRequest(resp);
-            return;
+            NnNetUtil.openStreamTo(urlStr, resp);
             
         } catch (IOException e) {
             
+            log.info(e.getClass().getName());
             log.warning(e.getMessage());
             internalError(resp);
             return;

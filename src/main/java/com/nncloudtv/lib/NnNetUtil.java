@@ -10,14 +10,19 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.poi.util.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,7 +36,7 @@ public class NnNetUtil {
     protected final static Logger log = Logger.getLogger(NnNetUtil.class.getName());
     public static String STATUS = "status"; // respose http status code
     public static String TEXT = "text"; // response content
-
+    
     public static void logUrl(HttpServletRequest req) {
         String url = req.getRequestURL().toString();        
         String queryStr = req.getQueryString();        
@@ -41,6 +46,35 @@ public class NnNetUtil {
             queryStr = "";
         url = url + queryStr;
         log.info(url);
+    }
+    
+    public static void openStreamTo(String urlStr, HttpServletResponse resp) throws IOException {
+        
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setInstanceFollowRedirects(true);
+        
+        InputStream in = conn.getInputStream();
+        
+        Map<String, List<String>> headerFields = conn.getHeaderFields();
+        
+        for (Entry<String, List<String>> entry : headerFields.entrySet()) {
+            
+            String key = entry.getKey();
+            if (key == null) continue;
+            List<String> values = entry.getValue();
+            System.out.println("--------");
+            for (String value : values) {
+                
+                resp.setHeader(key, value);
+                System.out.println(key + ": " + value);
+            }
+            System.out.println("--------");
+        }
+        
+        resp.setStatus(conn.getResponseCode());
+        IOUtils.copy(in, resp.getOutputStream());
+        resp.flushBuffer();
     }
     
     public static ResponseEntity<String> textReturn(String output) {
