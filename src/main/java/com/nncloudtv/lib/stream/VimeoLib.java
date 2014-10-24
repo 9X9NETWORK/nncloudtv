@@ -18,7 +18,7 @@ public class VimeoLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     
-    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/([0-9]+)$";
+    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/(channels\\/.+\\/)?([0-9]+)$";
     
     public String normalizeUrl(String urlStr) {
         
