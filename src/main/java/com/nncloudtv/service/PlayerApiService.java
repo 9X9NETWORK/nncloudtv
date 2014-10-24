@@ -43,7 +43,6 @@ import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.lib.stream.StreamLib;
-import com.nncloudtv.lib.stream.VimeoLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
@@ -3356,7 +3355,7 @@ public class PlayerApiService {
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);
         String videoUrl = streamLib.getHtml5DirectVideoUrl(url);
         if (videoUrl == null || videoUrl.isEmpty())
-           this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
+           return this.assembleMsgs(NnStatusCode.PROGRAM_ERROR, null);
         log.info("video url:" + videoUrl);
         String data = PlayerApiService.assembleKeyValue("url", videoUrl);
         String[] result = {data};
