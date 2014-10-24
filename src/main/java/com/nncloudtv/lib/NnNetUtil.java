@@ -60,6 +60,22 @@ public class NnNetUtil {
         conn.setInstanceFollowRedirects(true);
         conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
         
+        Map<String, List<String>> requestProperties = conn.getRequestProperties();
+        for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
+            
+            String key = entry.getKey();
+            if (key == null) {
+                
+                System.out.println("[request] " + entry.getValue());
+                continue;
+            }
+            List<String> values = entry.getValue();
+            for (String value : values) {
+                
+                System.out.println("[request] " + key + ": " + value);
+            }
+        }
+        
         InputStream in = conn.getInputStream();
         
         Map<String, List<String>> headerFields = conn.getHeaderFields();
@@ -76,22 +92,6 @@ public class NnNetUtil {
                 
                 resp.setHeader(key, value);
                 System.out.println("[header] " + key + ": " + value);
-            }
-        }
-        
-        Map<String, List<String>> requestProperties = conn.getRequestProperties();
-        for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
-            
-            String key = entry.getKey();
-            if (key == null) {
-                
-                System.out.println("[request] " + entry.getValue());
-                continue;
-            }
-            List<String> values = entry.getValue();
-            for (String value : values) {
-                
-                System.out.println("[request] " + key + ": " + value);
             }
         }
         
