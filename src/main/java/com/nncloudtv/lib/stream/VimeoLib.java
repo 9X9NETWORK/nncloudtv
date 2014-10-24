@@ -100,7 +100,7 @@ public class VimeoLib implements StreamLib {
     
     public boolean isUrlMatched(String urlStr) {
         
-        return (urlStr == null) ? null : urlStr.matches(REGEX_VIMEO_VIDEO_URL);
+        return (urlStr == null) ? false : urlStr.matches(REGEX_VIMEO_VIDEO_URL);
     }
     
     public InputStream getDirectVideoStream(String urlStr) {

@@ -3000,7 +3000,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }
-            output = playerApiService.getDirectUrl(url);
+            output = playerApiService.getDirectUrl(url.trim());
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
