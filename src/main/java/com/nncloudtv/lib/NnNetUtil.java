@@ -31,15 +31,15 @@ public class NnNetUtil {
     
     protected final static Logger log = Logger.getLogger(NnNetUtil.class.getName());
     
-    public static final String DEFAULT_USER_AGENT = String.format("FLIPr/4.0 (%s %s; %s; JAVA %s)",
+    public static final String DEFAULT_USER_AGENT = String.format("FLIPr API/4.0 (%s %s %s; JAVA %s)",
                                                                   System.getProperty("os.name"),
                                                                   System.getProperty("os.version"),
                                                                   System.getProperty("os.arch"),
                                                                   System.getProperty("java.version"));
     
     public static void logUrl(HttpServletRequest req) {
-        String url = req.getRequestURL().toString();        
-        String queryStr = req.getQueryString();        
+        String url = req.getRequestURL().toString();
+        String queryStr = req.getQueryString();
         if (queryStr != null && !queryStr.equals("null"))
             queryStr = "?" + queryStr;
         else 
@@ -60,22 +60,6 @@ public class NnNetUtil {
         conn.setInstanceFollowRedirects(true);
         conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
         
-        Map<String, List<String>> requestProperties = conn.getRequestProperties();
-        for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
-            
-            String key = entry.getKey();
-            if (key == null) {
-                
-                System.out.println("[request] " + entry.getValue());
-                continue;
-            }
-            List<String> values = entry.getValue();
-            for (String value : values) {
-                
-                System.out.println("[request] " + key + ": " + value);
-            }
-        }
-        
         InputStream in = conn.getInputStream();
         
         Map<String, List<String>> headerFields = conn.getHeaderFields();
@@ -95,6 +79,22 @@ public class NnNetUtil {
             }
         }
         
+        Map<String, List<String>> requestProperties = conn.getRequestProperties();
+        for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
+            
+            String key = entry.getKey();
+            if (key == null) {
+                
+                System.out.println("[request] " + entry.getValue());
+                continue;
+            }
+            List<String> values = entry.getValue();
+            for (String value : values) {
+                
+                System.out.println("[request] " + key + ": " + value);
+            }
+        }
+        
         resp.setStatus(conn.getResponseCode());
         IOUtils.copy(in, resp.getOutputStream());
         resp.flushBuffer();
@@ -110,7 +110,7 @@ public class NnNetUtil {
     
     public static ResponseEntity<String> htmlReturn(String output) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf("text/html;charset=utf-8"));                                                                
+        headers.setContentType(MediaType.valueOf("text/html;charset=utf-8"));
         return new ResponseEntity<String>(output, headers, HttpStatus.OK);
     }    
     
