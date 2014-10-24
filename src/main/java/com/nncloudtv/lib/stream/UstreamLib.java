@@ -173,17 +173,24 @@ public class UstreamLib implements StreamLib {
             }
             
             JSONObject jsonObj = new JSONObject(jsonStr);
-            String m3u8 = jsonObj.getJSONObject("channel").getJSONObject("stream").get("hls").toString();
+            if (jsonObj.getJSONObject("channel").isNull("stream")) {
+                
+                log.info("no live stream available");
+                return null;
+            }
+            String m3u8 = jsonObj.getJSONObject("channel").getJSONObject("stream").getString("hls");
             log.info("m3u8 = " + m3u8);
             
             return m3u8;
             
         } catch (JSONException e) {
             
+            log.warning(e.getClass().getName());
             log.warning(e.getMessage());
             
         } catch (NullPointerException e) {
             
+            log.warning(e.getClass().getName());
             log.warning(e.getMessage());
             
         }
