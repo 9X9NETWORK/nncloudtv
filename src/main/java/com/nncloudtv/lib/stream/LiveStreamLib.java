@@ -35,7 +35,7 @@ public class LiveStreamLib implements StreamLib {
         
         String normalizedUrl = null;
         
-        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_PAN_VIDEO)) {
+        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
             
             normalizedUrl = urlStr;
             
@@ -155,6 +155,7 @@ public class LiveStreamLib implements StreamLib {
             log.info("livestream video url format matched");
             
             urlStr = getLiveStreamApiUrl(urlStr);
+            log.info("api url = " + urlStr);
             
             try {
                 
@@ -197,6 +198,7 @@ public class LiveStreamLib implements StreamLib {
             log.info("livestream event url format matched");
             
             urlStr = getLiveStreamApiUrl(urlStr);
+            log.info("api url = " + urlStr);
             
             try {
                 
