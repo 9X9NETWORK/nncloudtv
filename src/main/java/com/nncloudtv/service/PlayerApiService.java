@@ -3349,7 +3349,7 @@ public class PlayerApiService {
     public Object getDirectUrl(String url) {
         if (url == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        //String videoUrl = (new VimeoLib()).getDirectVideoUrl(url);
+        log.info("url = " + url);
         StreamLib streamLib = StreamFactory.getStreamLib(url);
         if (streamLib == null)
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);

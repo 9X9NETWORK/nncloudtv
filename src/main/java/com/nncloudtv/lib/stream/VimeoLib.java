@@ -27,7 +27,7 @@ public class VimeoLib implements StreamLib {
         Matcher matcher = Pattern.compile(REGEX_VIMEO_VIDEO_URL).matcher(urlStr);
         if (matcher.find()) {
             
-            return "https://vimeo.com/" + matcher.group(1);
+            return "https://vimeo.com/" + matcher.group(2);
         }
         
         return null;
