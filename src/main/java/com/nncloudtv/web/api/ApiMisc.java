@@ -613,7 +613,7 @@ public class ApiMisc extends ApiGeneric {
         
         String directLink = streamLib.getHtml5DirectVideoUrl(urlStr);
         if (directLink == null) {
-            badRequest(resp, "DIRECT_LINK_NOT_SUPPORTED");
+            badRequest(resp, "NO_DIRECT_LINK_SUPPORTED");
             return;
         }
         
@@ -817,12 +817,19 @@ public class ApiMisc extends ApiGeneric {
                                                   metadata);
             }
         } catch (InterruptedException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } catch (IOException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } finally {
+            
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
             }
