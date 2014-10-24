@@ -1,15 +1,11 @@
 package com.nncloudtv.lib;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,13 +24,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 
 public class NnNetUtil {
     
     protected final static Logger log = Logger.getLogger(NnNetUtil.class.getName());
-    public static String STATUS = "status"; // respose http status code
-    public static String TEXT = "text"; // response content
+    
+    public static final String DEFAULT_USER_AGENT = String.format("FLIPr/4.0 (%s %s; %s; JAVA %s)",
+                                                                  System.getProperty("os.name"),
+                                                                  System.getProperty("os.version"),
+                                                                  System.getProperty("os.arch"),
+                                                                  System.getProperty("java.version"));
     
     public static void logUrl(HttpServletRequest req) {
         String url = req.getRequestURL().toString();        
@@ -47,20 +48,45 @@ public class NnNetUtil {
         log.info(url);
     }
     
-    public static void openStreamTo(String urlStr, HttpServletResponse resp) throws IOException {
+    public static void prerender() {
+        
+        // to be ...
+    }
+    
+    public static void proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
         
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setInstanceFollowRedirects(true);
+        conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
+        
+        Map<String, List<String>> requestProperties = conn.getRequestProperties();
+        for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
+            
+            String key = entry.getKey();
+            if (key == null) {
+                
+                System.out.println("[request] " + entry.getValue());
+                continue;
+            }
+            List<String> values = entry.getValue();
+            for (String value : values) {
+                
+                System.out.println("[request] " + key + ": " + value);
+            }
+        }
         
         InputStream in = conn.getInputStream();
         
         Map<String, List<String>> headerFields = conn.getHeaderFields();
-        
         for (Entry<String, List<String>> entry : headerFields.entrySet()) {
             
             String key = entry.getKey();
-            if (key == null) continue;
+            if (key == null) {
+                
+                System.out.println("[header] " + entry.getValue());
+                continue;
+            }
             List<String> values = entry.getValue();
             for (String value : values) {
                 
@@ -99,7 +125,7 @@ public class NnNetUtil {
         }
         return host;
     }
-
+    
     public static String getIp(HttpServletRequest req) {
         String ip;
         boolean found = false;
@@ -116,7 +142,7 @@ public class NnNetUtil {
         if (!found) {
           ip = req.getRemoteAddr();
         }
-        return ip;        
+        return ip;
     }
     
     public static boolean isIPv4Private(String ip) {
@@ -130,7 +156,7 @@ public class NnNetUtil {
         String[] octets = ip.split("\\.");
         return (Long.parseLong(octets[0]) << 24) + (Integer.parseInt(octets[1]) << 16) +
             (Integer.parseInt(octets[2]) << 8) + Integer.parseInt(octets[3]);
-    }    
+    }
     
     public static boolean isIPv4Valid(String ip) {
         String _255 = "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
@@ -143,92 +169,97 @@ public class NnNetUtil {
         try {
             
             URL url = new URL(urlStr);
-            HttpURLConnection connection;
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("Accept-Charset", "UTF-8");
-            connection.setDoOutput(true);
-            connection.setRequestMethod("GET");
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                log.info("response not ok!" + connection.getResponseCode());
-                return null;
-            }            
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), NnStringUtil.UTF8));
-            String line;
-            String result = "";
-            while ((line = reader.readLine()) != null) {
-            	result += line + "\n";
+            HttpURLConnection conn;
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            conn.setRequestProperty("Accept-Charset", NnStringUtil.UTF8);
+            conn.setDoOutput(true);
+            conn.setRequestMethod("GET");
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                
+                log.warning("response not ok!" + conn.getResponseCode());
             }
-            reader.close();
-            return result;            
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(conn.getInputStream(), baos);
+            
+            return baos.toString(NnStringUtil.UTF8);
+            
         } catch (IOException e) {
-            e.printStackTrace();
-        }        
-        return null;
-    }
-   
-    public static void urlPost(String urlStr, String params) {
-        URL url;
-        try {
-            url = new URL(urlStr);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setRequestProperty("charset", "utf-8");
-            connection.setRequestProperty("Content-Length", "" + Integer.toString(urlStr.getBytes().length));
-            DataOutputStream writer = new DataOutputStream(connection.getOutputStream ());            
-            writer.writeBytes(params);
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {                
-                log.info("response not ok!" + connection.getResponseCode());
-            }            
-            writer.flush();
-            writer.close();
-            connection.disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }        
-    }
-    
-    public static Map<String, String> urlPostWithJson(String urlStr, Object obj) {
-        
-        log.info("post to " + urlStr);
-        Map<String, String> response = new HashMap<String, String>();
-        URL url;
-        
-        try {
-            url = new URL(urlStr);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(writer, obj);
-            log.info("url fetch-json:" + mapper.writeValueAsString(obj));
             
-            InputStream input = connection.getInputStream();
-            byte[] data = new byte[1024];
-            int index = input.read(data);
-            String str = new String(data, 0, index);
-            
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                log.info("response not ok!" + connection.getResponseCode());
-                log.info("text = " + str);
-            }
-            
-            response.put(STATUS, String.valueOf(connection.getResponseCode()));
-            response.put(TEXT, str);
-            
-            writer.close();            
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put(STATUS, String.valueOf(HttpURLConnection.HTTP_INTERNAL_ERROR));
-            response.put(TEXT, e.getMessage());
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         }
         
-        return response;
+        return null;
+    }
+    /**
+    public static void urlPost(String urlStr, String params) {
+        
+        try {
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Charset", NnStringUtil.UTF8);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Length", "" + Integer.toString(params.length()));
+            
+            DataOutputStream writer = new DataOutputStream(conn.getOutputStream());
+            writer.writeBytes(params);
+            writer.flush();
+            writer.close();
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {  
+                
+                log.info("response not ok!" + conn.getResponseCode());
+            }
+            
+            conn.disconnect();
+            
+        } catch (Exception e) {
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
+        }
+    }
+    */
+    public static String urlPostWithJson(String urlStr, Object obj) {
+        
+        log.info("post with json to " + urlStr);
+        
+        try {
+            
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
+            
+            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(writer, obj);
+            System.out.println(mapper.writeValueAsString(obj));
+            writer.close();
+            
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                
+                log.warning("response not ok!" + conn.getResponseCode());
+            }
+            
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(conn.getInputStream(), baos);
+            
+            conn.disconnect();
+            
+            return baos.toString(NnStringUtil.UTF8);
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
+        }
+        
+        return null;
     }
     
 }

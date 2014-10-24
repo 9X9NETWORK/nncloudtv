@@ -2552,7 +2552,7 @@ public class PlayerApiController {
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);
         return "redirect:" + url;
     }
-
+    
     /**
      * @deprecated 
      */

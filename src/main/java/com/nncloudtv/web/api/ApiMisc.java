@@ -532,7 +532,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.openStreamTo(livestreamApiUrl, resp);
+            NnNetUtil.proxyTo(livestreamApiUrl, resp);
             
         } catch (IOException e) {
             
@@ -583,7 +583,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.openStreamTo(urlStr, resp);
+            NnNetUtil.proxyTo(urlStr, resp);
             
         } catch (IOException e) {
             
@@ -764,17 +764,21 @@ public class ApiMisc extends ApiGeneric {
         String thumbnailUrl = null;
         
         StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
-        String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-        if (directVideoUrl != null) {
+        if (streamLib != null) {
             
-            videoUrl = directVideoUrl;
-            
-        } else {
-            
-            InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
-            if (directVideoStream != null) {
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null) {
                 
-                videoIn = directVideoStream;
+                videoUrl = directVideoUrl;
+                
+            } else {
+                
+                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
+                if (directVideoStream != null) {
+                    
+                    videoIn = directVideoStream;
+                }
+                
             }
         }
         
