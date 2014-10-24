@@ -570,6 +570,31 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
+    @RequestMapping(value = "prerender", method = RequestMethod.GET)
+    public void prerender(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        try {
+            
+            NnNetUtil.prerenderTo(urlStr, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
     @RequestMapping(value = "cors", method = RequestMethod.GET)
     public void cors(HttpServletResponse resp, HttpServletRequest req) {
         
@@ -778,7 +803,6 @@ public class ApiMisc extends ApiGeneric {
                     
                     videoIn = directVideoStream;
                 }
-                
             }
         }
         

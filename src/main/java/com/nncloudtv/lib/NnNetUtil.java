@@ -31,6 +31,7 @@ public class NnNetUtil {
     
     protected final static Logger log = Logger.getLogger(NnNetUtil.class.getName());
     
+    public static final String PRERENDER_SERVICE  = "http://service.prerender.io/";
     public static final String DEFAULT_USER_AGENT = String.format("FLIPr API/4.0 (%s %s %s; JAVA %s)",
                                                                   System.getProperty("os.name"),
                                                                   System.getProperty("os.version"),
@@ -48,9 +49,10 @@ public class NnNetUtil {
         log.info(url);
     }
     
-    public static void prerender() {
+    public static void prerenderTo(String urlStr, HttpServletResponse resp) throws IOException {
         
-        // to be ...
+        proxyTo(PRERENDER_SERVICE + urlStr, resp);
+        
     }
     
     public static void proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
