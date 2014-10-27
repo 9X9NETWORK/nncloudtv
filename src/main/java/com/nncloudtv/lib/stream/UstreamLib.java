@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -95,6 +96,7 @@ public class UstreamLib implements StreamLib {
             
         } catch (Exception e) {
             
+            log.warning(e.getClass().getName());
             log.warning(e.getMessage());
         }
         
@@ -105,65 +107,97 @@ public class UstreamLib implements StreamLib {
         
         if (urlStr == null) { return null; }
         
-        String firstUrl = getDirectVideoUrl(urlStr);
-        if (firstUrl == null) {
-            
-            log.info("fail to get first step url");
+        String ustreamId = getUstreamId(urlStr);
+        if (ustreamId == null) {
             return null;
         }
-        
-        try {
+        String firstUrl = getLive(ustreamId);
+        if (firstUrl == null) {
             
-            URL url = new URL(firstUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            log.info("live is not available, fallback to get archive");
+            firstUrl = getArchive(ustreamId);
+            
+            if (firstUrl == null) {
                 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), NnStringUtil.UTF8));
-                String buf = null, last = null;
-                
-                while ((buf = reader.readLine()) != null) {
-                    
-                    System.out.println(buf);
-                    
-                    if (buf.isEmpty() || buf.startsWith("#")) {
-                        
-                        continue;
-                    }
-                    
-                    last = buf;
-                }
-                
-                if (last != null) {
-                    
-                    return last;
-                }
-            }
-            
-        } catch (MalformedURLException e) {
-            
-            log.warning(e.getMessage());
-            
-        } catch (IOException e) {
-            
-            log.warning(e.getClass().getName());
-            log.warning(e.getMessage());
-        }
-        
-        return firstUrl;
-    }
-    
-    public String getDirectVideoUrl(String urlStr) {
-        
-        if (urlStr == null) { return null; }
-        
-        try {
-            
-            String idStr = getUstreamId(urlStr);
-            if (idStr == null) {
+                log.info("fail to get archive url");
                 return null;
             }
-            String jsonUrl = "http://api.ustream.tv/channels/" + idStr + ".json";
+            
+            try {
+                // check 30X status
+                URL url = new URL(firstUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(false);
+                int code = conn.getResponseCode();
+                log.info("flv status code = " + code);
+                if (code == 301) {
+                    
+                    String location = conn.getHeaderField("Location");
+                    log.info("fetch redirection location = " + location);
+                    if (location != null) {
+                        
+                        return location;
+                    }
+                }
+                
+            } catch (IOException e) {
+                
+                log.info(e.getClass().getName());
+                log.info(e.getMessage());
+            }
+            
+            log.info("return the first step url");
+            return firstUrl;
+            
+        } else {
+            
+            try {
+                
+                URL url = new URL(firstUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setInstanceFollowRedirects(true);
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), NnStringUtil.UTF8));
+                    String buf = null, last = null;
+                    
+                    while ((buf = reader.readLine()) != null) {
+                        
+                        System.out.println(buf);
+                        
+                        if (buf.isEmpty() || buf.startsWith("#")) {
+                            
+                            continue;
+                        }
+                        
+                        last = buf;
+                    }
+                    
+                    if (last != null) {
+                        
+                        return last;
+                    }
+                }
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getClass().getName());
+                log.warning(e.getMessage());
+            }
+            
+            log.info("return the first step url");
+            return firstUrl;
+        }
+        
+    }
+    
+    public String getLive(String ustreamId) {
+        
+        if (ustreamId == null) { return null; }
+        
+        try {
+            
+            String jsonUrl = "http://api.ustream.tv/channels/" + ustreamId + ".json";
             log.info("json url = " + jsonUrl);
             String jsonStr = NnNetUtil.urlGet(jsonUrl);
             if (jsonStr == null) {
@@ -178,24 +212,76 @@ public class UstreamLib implements StreamLib {
                 log.info("no live stream available");
                 return null;
             }
-            String m3u8 = jsonObj.getJSONObject("channel").getJSONObject("stream").getString("hls");
-            log.info("m3u8 = " + m3u8);
+            String hls = jsonObj.getJSONObject("channel").getJSONObject("stream").getString("hls");
+            log.info("hls = " + hls);
             
-            return m3u8;
+            return hls;
             
         } catch (JSONException e) {
             
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
+            return null;
+        }
+    }
+    
+    public String getArchive(String ustreamId) {
+        
+        if (ustreamId == null) { return null; }
+        
+        try {
             
-        } catch (NullPointerException e) {
+            String jsonUrl = "http://api.ustream.tv/channels/" + ustreamId + "/videos.json";
+            log.info("json url = " + jsonUrl);
+            String jsonStr = NnNetUtil.urlGet(jsonUrl);
+            if (jsonStr == null) {
+                
+                log.warning("fail to get json data");
+                return null;
+            }
+            
+            JSONObject dataJson = new JSONObject(jsonStr);
+            JSONArray videosJson = dataJson.getJSONArray("videos");
+            String flv = null;
+            
+            for (int i = 0; i < videosJson.length(); i++) {
+                
+                JSONObject videoJson = videosJson.getJSONObject(i);
+                if (!videoJson.isNull("medial_urls")) {
+                    
+                    flv = videoJson.getJSONObject("medial_urls").getString("flv");
+                    log.info("flv = " + flv);
+                    return flv;
+                }
+                
+            }
+            
+            log.info("no archive video available");
+            return null;
+            
+        } catch (JSONException e) {
             
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-            
+            return null;
+        }
+    }
+    
+    public String getDirectVideoUrl(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        String ustreamId = getUstreamId(urlStr);
+        if (ustreamId == null) {
+            return null;
+        }
+        String live = getLive(ustreamId);
+        if (live == null) {
+            log.info("live is not available, fallback to get archive");
+            live = getArchive(ustreamId);
         }
         
-        return null;
+        return live;
     }
     
     public InputStream getDirectVideoStream(String url) {
