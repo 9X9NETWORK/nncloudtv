@@ -79,7 +79,7 @@ public class PlayerApiControllerTest {
         when(mockMsoMngr.getByNameFromCache(anyString())).thenReturn(mso);
         
         PowerMockito.mockStatic(MsoManager.class);
-        when(MsoManager.isNNMso((Mso) anyObject())).thenReturn(true);
+        when(MsoManager.isSystemMso((Mso) anyObject())).thenReturn(true);
         
         when(mockMsoMngr.findOneByName(anyString())).thenReturn(mso);
         
@@ -93,7 +93,7 @@ public class PlayerApiControllerTest {
         verify(mockMsoMngr).getByNameFromCache(anyString());
         
         PowerMockito.verifyStatic();
-        MsoManager.isNNMso(mso);
+        MsoManager.isSystemMso(mso);
         
         verify(mockMsoMngr).findOneByName(null);
         

@@ -5,7 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SignatureException;
@@ -24,21 +25,18 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.poi.util.IOUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.google.api.client.util.ArrayMap;
+import com.google.gdata.data.youtube.PlaylistEntry;
+import com.google.gdata.data.youtube.PlaylistFeed;
+import com.google.gdata.util.ServiceException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -46,10 +44,13 @@ import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.UstreamLib;
-import com.nncloudtv.lib.VimeoLib;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.stream.LiveStreamLib;
+import com.nncloudtv.lib.stream.UstreamLib;
+import com.nncloudtv.lib.stream.StreamFactory;
+import com.nncloudtv.lib.stream.StreamLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
@@ -245,54 +246,73 @@ public class ApiMisc extends ApiGeneric {
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
         }
-		
-		return userResponse(user);
-	}
-	
-	@RequestMapping("echo")
-	public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
-		
-		Map<String, String[]> names = req.getParameterMap();
-		Map<String, String> result = new TreeMap<String, String>();
-		
-		ApiContext context = new ApiContext(req);
-		
+        
+        return userResponse(user);
+    }
+    
+    @RequestMapping("sysinfo")
+    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        ApiContext ctx = new ApiContext(req);
+        
+        result.put("flipr.isProduction", ctx.isProductionSite());
+        result.put("flipr.mso",          ctx.getMsoName());
+        
+        result.put("java.version",       System.getProperty("java.version"));
+        result.put("java.vendor",        System.getProperty("java.vendor"));
+        
+        result.put("os.arch",            System.getProperty("os.arch"));
+        result.put("os.name",            System.getProperty("os.name"));
+        result.put("os.version",         System.getProperty("os.version"));
+        
+        return result;
+    }
+    
+    @RequestMapping("echo")
+    public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
+        
+        Map<String, String[]> names = req.getParameterMap();
+        Map<String, String> result = new TreeMap<String, String>();
+        
+        ApiContext context = new ApiContext(req);
+        
         log.info("isProductionSite = " + context.isProductionSite());
-		
-		for (String name : names.keySet()) {
-			
-			String value = names.get(name)[0];
-			log.info(name + " = " + value);
-			result.put(name, value);
-		}
-		
-		if (result.isEmpty()) {
-			
-			badRequest(resp, MISSING_PARAMETER);
-			
-			return null;
-		}
-		
-		(new Thread() {
-		    public void run() {
-		        log.info("I am a thread.");
-		        try {
+        
+        for (String name : names.keySet()) {
+            
+            String value = names.get(name)[0];
+            log.info(name + " = " + value);
+            result.put(name, value);
+        }
+        
+        if (result.isEmpty()) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            
+            return null;
+        }
+        
+        (new Thread() {
+            public void run() {
+                log.info("I am a thread.");
+                try {
                     Thread.sleep(5000);
                     log.info("I am still awake.");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
                 log.info("bye~");
-		    }
-		}).start();
-		
-		if(req.getMethod().equalsIgnoreCase("POST")) {
-			resp.setStatus(HTTP_201);
-		}
-		
-		return result;
-	}
-	
+            }
+        }).start();
+        
+        if (req.getMethod().equalsIgnoreCase("POST")) {
+            resp.setStatus(HTTP_201);
+        }
+        
+        return result;
+    }
+    
     @RequestMapping("i18n")
     public @ResponseBody
     Map<String, String> i18n(HttpServletRequest req, HttpServletResponse resp) {
@@ -477,7 +497,54 @@ public class ApiMisc extends ApiGeneric {
         return ok(resp);
     }
     
-    @RequestMapping(value = "ustream", method = RequestMethod.GET)
+    @RequestMapping(value = "livestream")
+    public @ResponseBody void livestream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String urlStr = req.getParameter("url");
+        if (urlStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        StreamLib streamLib = StreamFactory.getStreamLib(urlStr);
+        if (streamLib == null || streamLib.getClass() != LiveStreamLib.class) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+        }
+        LiveStreamLib livestreamLib = (LiveStreamLib) streamLib; 
+        String normalizedUrl = livestreamLib.normalizeUrl(urlStr);
+        if (normalizedUrl == null) {
+            
+            log.warning("fail to normalize url");
+            internalError(resp);
+            return;
+        }
+        String livestreamApiUrl = livestreamLib.getLiveStreamApiUrl(normalizedUrl);
+        if (livestreamApiUrl == null) {
+            
+            log.warning("fail to livestream api url");
+            internalError(resp);
+            return;
+        }
+        
+        log.info("livestream api url = " + livestreamApiUrl);
+        
+        try {
+            
+            NnNetUtil.proxyTo(livestreamApiUrl, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
+    @RequestMapping(value = "ustream")
     public @ResponseBody List<Map<String, String>> ustream(HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
@@ -488,7 +555,7 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        String idStr = UstreamLib.getUstreamChannelId(url);
+        String idStr = UstreamLib.getUstreamId(url);
         
         if (idStr != null) {
             
@@ -503,13 +570,193 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
+    @RequestMapping(value = "prerender", method = RequestMethod.GET)
+    public void prerender(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        try {
+            
+            NnNetUtil.prerenderTo(urlStr, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
+    @RequestMapping(value = "cors", method = RequestMethod.GET)
+    public void cors(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        try {
+            
+            NnNetUtil.proxyTo(urlStr, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
+    @RequestMapping(value = "302")
+    public void http302(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("url = " + urlStr);
+        if (urlStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        StreamLib streamLib = StreamFactory.getStreamLib(urlStr);
+        if (streamLib == null) {
+            badRequest(resp, "NOT_SUPPORTED_URL");
+            return;
+        }
+        
+        String directLink = streamLib.getHtml5DirectVideoUrl(urlStr);
+        if (directLink == null) {
+            badRequest(resp, "NO_DIRECT_LINK_SUPPORTED");
+            return;
+        }
+        
+        resp.setContentLength(0);
+        resp.setStatus(302);
+        resp.setHeader("Location", directLink);
+        
+    }
+    
+    @RequestMapping(value = "stream", method = RequestMethod.GET)
+    public void stream(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String videoUrl = req.getParameter("url");
+        log.info("videoUrl = " + videoUrl);
+        if (videoUrl == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
+        
+        if (ytPlaylistMatcher.find()) {
+            
+            log.info("youtube playlist format");
+            String playlistId = ytPlaylistMatcher.group(1);
+            log.info("playlistId = " + playlistId);
+            ApiContext ctx = new ApiContext(req);
+            
+            try {
+                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
+                if (feed == null) {
+                    log.info("failed to get feed");
+                    return;
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+                List<PlaylistEntry> entries = feed.getEntries();
+                Long duration = feed.getMediaGroup().getDuration();
+                if (duration == null) {
+                    
+                    duration = (long) 0;
+                    for (PlaylistEntry entry : entries) {
+                        
+                        duration += entry.getMediaGroup().getDuration();
+                    }
+                }
+                log.info("playlist duration = " + duration);
+                writer.println("#EXTM3U");
+                writer.println("#EXT-X-TARGETDURATION:" + duration);
+                writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+                for (PlaylistEntry entry : entries) {
+                    
+                    String href = entry.getHtmlLink().getHref();
+                    
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                }
+                writer.println("#EXT-X-ENDLIST");
+                writer.flush();
+                
+                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentLength(baos.size());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+                
+            } catch (MalformedURLException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (IOException e) {
+                
+                log.warning(e.getMessage());
+                return;
+                
+            } catch (ServiceException e) {
+                
+                log.warning("ServiceException");
+                log.warning(e.getMessage());
+                return;
+            } finally {
+                
+                try {
+                    resp.flushBuffer();
+                } catch (IOException e) {
+                }
+            }
+            
+            return;
+        }
+        
+        try {
+            
+            StreamFactory.streaming(videoUrl, resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
+    }
+    
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
     public @ResponseBody List<Map<String, String>> thumbnails(
             HttpServletRequest req, HttpServletResponse resp) {
         
         List<Map<String, String>> empty = new ArrayList<Map<String, String>>();
-        URL url = null;
-        HttpURLConnection conn = null;
         
         Double offset = 5.0;
         if (req.getParameter("t") != null) {
@@ -525,11 +772,11 @@ public class ApiMisc extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
+        
+        // check url format
         try {
-            url = new URL(videoUrl);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            
+            URL url = new URL(videoUrl);
+            url.openConnection();
         } catch (MalformedURLException e) {
             log.info("bad url format");
             return empty;
@@ -540,69 +787,22 @@ public class ApiMisc extends ApiGeneric {
         
         InputStream videoIn = null;
         String thumbnailUrl = null;
-        Matcher s3Matcher = Pattern.compile(AmazonLib.REGEX_S3_URL).matcher(videoUrl);
-        Matcher vimeoMatcher = Pattern.compile(VimeoLib.REGEX_VIMEO_VIDEO_URL).matcher(videoUrl);
-        Matcher ustreamMatcher = Pattern.compile(UstreamLib.REGEX_USTREAM_URL).matcher(videoUrl);
         
-        if (ustreamMatcher.find()) {
+        StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
+        if (streamLib != null) {
             
-            log.info("ustream url format");
-            videoUrl = UstreamLib.getDirectVideoUrl(videoUrl);
-            if (videoUrl == null) {
-                log.info("parsing ustream url failed");
-                return empty;
-            }
-            
-        } else if (vimeoMatcher.find()) {
-            
-            log.info("vimeo url format");
-            
-            videoUrl = VimeoLib.getDirectVideoUrl(videoUrl);
-            if (videoUrl == null) {
-                log.info("parsing vimeo url failed");
-                return empty;
-            }
-        } else if (s3Matcher.find()) {
-            
-            log.info("S3 url format");
-            String bucket = s3Matcher.group(1);
-            String filename = s3Matcher.group(2);
-            Mso mso = NNF.getConfigMngr().findMsoByVideoBucket(bucket);
-            AWSCredentials credentials = new BasicAWSCredentials(MsoConfigManager.getAWSId(mso),
-                                                                 MsoConfigManager.getAWSKey(mso));
-            AmazonS3 s3 = new AmazonS3Client(credentials);
-            try {
-                S3Object s3Object = s3.getObject(new GetObjectRequest(bucket, filename));
-                videoIn = s3Object.getObjectContent();
-            } catch(AmazonS3Exception e) {
-                log.info(e.getMessage());
-            }
-        } else if (videoUrl.matches(YouTubeLib.regexNormalizedVideoUrl)) {
-            
-            log.info("youtube url format");
-            String cmd = "/usr/bin/youtube-dl -v --no-cache-dir -o - "
-                       + NnStringUtil.escapeURLInShellArg(videoUrl);
-            log.info("[exec] " + cmd);
-            
-            try {
-                Process process = Runtime.getRuntime().exec(cmd);
-                videoIn = process.getInputStream();
-                // piping error message to stdout
-                PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out);
-                pipingTask.start();
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null) {
                 
-            } catch (IOException e) {
-                log.warning(e.getMessage());
-                return empty;
-            }
-        } else if (url.getProtocol().equals("https")) {
-            
-            log.info("https url format");
-            try {
-                videoIn = conn.getInputStream();
-            } catch (IOException e) {
-                log.info(e.getMessage());
-                return empty;
+                videoUrl = directVideoUrl;
+                
+            } else {
+                
+                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
+                if (directVideoStream != null) {
+                    
+                    videoIn = directVideoStream;
+                }
             }
         }
         
@@ -620,18 +820,15 @@ public class ApiMisc extends ApiGeneric {
             InputStream thumbIn = process.getInputStream();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             
-            PipingTask pipingTask = new PipingTask(thumbIn, baos);
+            PipingTask pipingTask = new PipingTask(thumbIn, baos, 0);
             pipingTask.start();
             
             if (videoIn != null) {
-                feedingAvconvTask = new FeedingAvconvTask(videoIn, process);
+                feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 30);
                 feedingAvconvTask.start();
             }
             
             pipingTask.join();
-            if (feedingAvconvTask != null) {
-                feedingAvconvTask.stopCopying();
-            }
             log.info("thumbnail size = " + baos.size());
             if (baos.size() > 0) {
                 
@@ -644,12 +841,19 @@ public class ApiMisc extends ApiGeneric {
                                                   metadata);
             }
         } catch (InterruptedException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } catch (IOException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } finally {
+            
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
             }

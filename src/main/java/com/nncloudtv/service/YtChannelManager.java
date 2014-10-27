@@ -8,9 +8,10 @@ import com.nncloudtv.dao.YtChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.YtChannel;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.ChannelLineup;
 
 public class YtChannelManager {
@@ -53,12 +54,12 @@ public class YtChannelManager {
         String output = "";
         for (YtChannel c : channels) {
             Object o = this.composeEachChannelLineup(c, version, format);
-            if (format == PlayerApiService.FORMAT_JSON)
+            if (format == ApiContext.FORMAT_JSON)
                 objs.add((ChannelLineup)o);
             else
                 output += (String) o + "\n";
         }        
-        if (format == PlayerApiService.FORMAT_JSON) {
+        if (format == ApiContext.FORMAT_JSON) {
             return objs;
         } else {
             List<String> result = new ArrayList<String>();
@@ -100,7 +101,7 @@ public class YtChannelManager {
         short sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
         long updateTime = c.getUpdateDate().getTime();
         String tag = c.getTag();
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(id);

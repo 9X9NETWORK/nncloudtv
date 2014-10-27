@@ -274,27 +274,15 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         
     }
     
-    
     //based on one program id to find all sub-episodes belong to the same episode
     //use scenario: such as "reference" lookup
     public List<NnProgram> findProgramsByEpisode(long episodeId) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnProgram> detached = new ArrayList<NnProgram>(); 
-        try {
-            String sql = "select id " +
-            		       "from nnprogram " +
-            		      "where episodeId = " + episodeId + " " +
-            		      "order by subSeq"; // seq is not be maintain anymore
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnProgram.class);
-            @SuppressWarnings("unchecked")
-            List<NnProgram> programs = (List<NnProgram>) q.execute();
-            detached = (List<NnProgram>)pm.detachCopyAll(programs);
-        } finally {
-            pm.close();
-        }
-        return detached;        
+        
+        String query = "select id from nnprogram "
+                     + "         where episodeId = " + episodeId
+                     + "      order by subSeq"; // seq is not be maintain anymore
+        
+        return sql(query);
     }
     
     public List<NnProgram> findByChannels(List<NnChannel> channels) {

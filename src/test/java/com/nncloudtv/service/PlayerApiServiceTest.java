@@ -48,6 +48,7 @@ import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnGuest;
@@ -136,8 +137,8 @@ public class PlayerApiServiceTest {
             brandInfo9x9 = "";
             brandInfo9x9 += PlayerApiService.assembleKeyValue("key", String.valueOf(mso9x9.getId()));
             brandInfo9x9 += PlayerApiService.assembleKeyValue("name", mso9x9.getName());
-            defaultOS = PlayerService.OS_WEB;
-            cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_PLAIN);
+            defaultOS = ApiContext.OS_WEB;
+            cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo9x9);
             
             // default input
@@ -183,7 +184,7 @@ public class PlayerApiServiceTest {
             String cacheKey = "mso(" + brandName + ")";
             CacheFactory.set(cacheKey, mso);
             // brandInfo=cts from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getBrandInfoKey(mso, defaultOS, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo);
             
             // execute
@@ -223,7 +224,7 @@ public class PlayerApiServiceTest {
             
             // stubs
             // brandInfo(format=json) from cache
-            String cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, PlayerApiService.FORMAT_JSON);
+            String cacheKey = CacheFactory.getBrandInfoKey(mso9x9, defaultOS, ApiContext.FORMAT_JSON);
             CacheFactory.set(cacheKey, brandInfo);
             
             // execute
@@ -243,7 +244,7 @@ public class PlayerApiServiceTest {
         public void osAndroid() {
             
             // input
-            String os = PlayerService.OS_ANDROID;
+            String os = ApiContext.OS_ANDROID;
             req.setParameter("os", os);
             
             // mock data
@@ -255,7 +256,7 @@ public class PlayerApiServiceTest {
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
-            String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
+            String adKeyName = configMngr.getKeyNameByOs(ApiContext.OS_ANDROID, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
             configMngr.save(mso, adConfig);
@@ -271,10 +272,10 @@ public class PlayerApiServiceTest {
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_ANDROID, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
-            cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, adInfo);
             
             // execute
@@ -304,7 +305,7 @@ public class PlayerApiServiceTest {
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
-            String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_ANDROID, "ad");
+            String adKeyName = configMngr.getKeyNameByOs(ApiContext.OS_ANDROID, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
             configMngr.save(mso, adConfig);
@@ -320,10 +321,10 @@ public class PlayerApiServiceTest {
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_ANDROID, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_ANDROID, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
-            cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, adInfo);
             
             // execute
@@ -340,7 +341,7 @@ public class PlayerApiServiceTest {
         public void osIos() {
             
             // input
-            String os = PlayerService.OS_IOS;
+            String os = ApiContext.OS_IOS;
             req.setParameter("os", os);
             
             // mock data
@@ -352,7 +353,7 @@ public class PlayerApiServiceTest {
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
-            String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
+            String adKeyName = configMngr.getKeyNameByOs(ApiContext.OS_IOS, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
             configMngr.save(mso, adConfig);
@@ -368,10 +369,10 @@ public class PlayerApiServiceTest {
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_IOS, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
-            cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, adInfo);
             
             // execute
@@ -401,7 +402,7 @@ public class PlayerApiServiceTest {
             
             MsoConfig adConfig = new MsoConfig();
             adConfig.setMsoId(mso.getId());
-            String adKeyName = configMngr.getKeyNameByOs(PlayerService.OS_IOS, "ad");
+            String adKeyName = configMngr.getKeyNameByOs(ApiContext.OS_IOS, "ad");
             adConfig.setItem(adKeyName);
             adConfig.setValue(MsoConfig.AD_DIRECT_VIDEO);
             configMngr.save(mso, adConfig);
@@ -417,10 +418,10 @@ public class PlayerApiServiceTest {
             String cacheKey = "mso(" + Mso.NAME_9X9 + ")";
             CacheFactory.set(cacheKey, mso);
             // brandInfo from cache
-            cacheKey = CacheFactory.getBrandInfoKey(mso, PlayerService.OS_IOS, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_IOS, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, brandInfo);
             // adInfo from cache
-            cacheKey = CacheFactory.getAdInfoKey(mso, PlayerApiService.FORMAT_PLAIN);
+            cacheKey = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
             CacheFactory.set(cacheKey, adInfo);
             
             // execute
@@ -437,7 +438,7 @@ public class PlayerApiServiceTest {
         public void osWeb() {
             
             // input
-            String os = PlayerService.OS_WEB;
+            String os = ApiContext.OS_WEB;
             req.setParameter("os", os);
             
             // execute
@@ -647,7 +648,7 @@ public class PlayerApiServiceTest {
             MsoDao msoDao = NNF.getMsoDao();
             defaultMso = msoDao.save(defaultMso);
             
-            defaultOS = PlayerService.OS_WEB;
+            defaultOS = ApiContext.OS_WEB;
             // default input
             req.setParameter("v", "40");
             req.setParameter("format", "text");
@@ -663,6 +664,7 @@ public class PlayerApiServiceTest {
             
             defaultMso = null;
             defaultOS = null;
+            ad = null;
         }
         
         // all config available from database
@@ -741,7 +743,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_WEB;
+            String os = ApiContext.OS_WEB;
             req.setParameter("os", os);
             
             // stubs
@@ -780,7 +782,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_WEB;
+            String os = ApiContext.OS_WEB;
             req.setParameter("os", os);
             
             // execute
@@ -816,7 +818,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_IOS;
+            String os = ApiContext.OS_IOS;
             req.setParameter("os", os);
             
             // stubs
@@ -855,7 +857,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_IOS;
+            String os = ApiContext.OS_IOS;
             req.setParameter("os", os);
             
             // execute
@@ -891,7 +893,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_ANDROID;
+            String os = ApiContext.OS_ANDROID;
             req.setParameter("os", os);
             
             // stubs
@@ -930,7 +932,7 @@ public class PlayerApiServiceTest {
             notExist.removeAll(exist.keySet());
             
             // input
-            String os = PlayerService.OS_ANDROID;
+            String os = ApiContext.OS_ANDROID;
             req.setParameter("os", os);
             
             // execute
@@ -949,8 +951,136 @@ public class PlayerApiServiceTest {
             }
         }
         
-        // TODO third part 'ad' section test case
+        private AdPlacement ad;
+        private void setupAdData() {
+            
+            NnTestUtil.emptyTable(AdPlacement.class);
+            
+            ad = new AdPlacement(defaultMso.getId(), "url", AdPlacement.DIRECT);
+            ad.setStatus(AdPlacement.ON); // this is a data driven condition
+            ad.setName("this is test ad");
+            ad = NNF.getAdDao().save(ad);
+        }
         
+        @Test
+        public void adAndroidText() {
+            
+            req.setParameter("format", "text");
+            String os = ApiContext.OS_ANDROID;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_ANDROID);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            String respText = (String) actual;
+            assertTrue("AD section should properly set", respText.contains(
+                    ad.getId() + "\t" + ad.getType() + "\t" +ad.getName() + "\t" + ad.getUrl() + "\n"));
+        }
+        
+        @Test
+        public void adIosText() {
+            
+            req.setParameter("format", "text");
+            String os = ApiContext.OS_IOS;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_IOS);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=text should return text format response.", actual instanceof String);
+            String respText = (String) actual;
+            assertTrue("AD section should properly set", respText.contains(
+                    ad.getId() + "\t" + ad.getType() + "\t" +ad.getName() + "\t" + ad.getUrl() + "\n"));
+        }
+        
+        @Test
+        public void adAndroidJson() {
+            
+            req.setParameter("format", "json");
+            String os = ApiContext.OS_ANDROID;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_ANDROID);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
+            assertTrue("parameter format=json should return json format response.",
+                    ((ApiStatus) actual).getData() instanceof BrandInfo);
+            BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
+            if (actualBrandInfo.getAdPlacements() == null || actualBrandInfo.getAdPlacements().isEmpty()) {
+                fail("AD section should properly set");
+            }
+            AdPlacement actualAd = actualBrandInfo.getAdPlacements().get(0);
+            assertEquals("AD section should properly set", ad.getId(), actualAd.getId());
+            assertEquals("AD section should properly set", ad.getType(), actualAd.getType());
+            assertEquals("AD section should properly set", ad.getName(), actualAd.getName());
+            assertEquals("AD section should properly set", ad.getUrl(), actualAd.getUrl());
+        }
+        
+        @Test
+        public void adIosJson() {
+            
+            req.setParameter("format", "json");
+            String os = ApiContext.OS_IOS;
+            req.setParameter("os", os);
+            
+            // this is a data driven condition
+            MsoConfigManager configMngr = NNF.getConfigMngr();
+            MsoConfig config = new MsoConfig();
+            config.setMsoId(defaultMso.getId());
+            config.setItem(MsoConfig.AD_IOS);
+            config.setValue(MsoConfig.AD_DIRECT_VIDEO);
+            configMngr.save(defaultMso, config);
+            
+            setupAdData();
+            
+            service.prepService(req, resp, true);
+            Object actual = service.brandInfo(os, req);
+            
+            assertTrue("parameter format=json should return json format response.", actual instanceof ApiStatus);
+            assertTrue("parameter format=json should return json format response.",
+                    ((ApiStatus) actual).getData() instanceof BrandInfo);
+            BrandInfo actualBrandInfo = (BrandInfo) ((ApiStatus) actual).getData();
+            if (actualBrandInfo.getAdPlacements() == null || actualBrandInfo.getAdPlacements().isEmpty()) {
+                fail("AD section should properly set");
+            }
+            AdPlacement actualAd = actualBrandInfo.getAdPlacements().get(0);
+            assertEquals("AD section should properly set", ad.getId(), actualAd.getId());
+            assertEquals("AD section should properly set", ad.getType(), actualAd.getType());
+            assertEquals("AD section should properly set", ad.getName(), actualAd.getName());
+            assertEquals("AD section should properly set", ad.getUrl(), actualAd.getUrl());
+        }
     }
     
     @RunWith(MockitoJUnitRunner.class)
@@ -1137,6 +1267,26 @@ public class PlayerApiServiceTest {
             defaultMso = null;
         }
         
+        private Object getPrivateField(String field) {
+            
+            try {
+                Field format = service.getClass().getDeclaredField(field);
+                format.setAccessible(true);
+                return format.get(service);
+                
+            } catch (SecurityException e) {
+                fail(e.toString());
+            } catch (NoSuchFieldException e) {
+                fail(e.toString());
+            } catch (IllegalArgumentException e) {
+                fail(e.toString());
+            } catch (IllegalAccessException e) {
+                fail(e.toString());
+            }
+            
+            return null;
+        }
+        
         @Test
         public void notProvideVersionNorDatabaseSetting() {
             
@@ -1206,21 +1356,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("format");
-                format.setAccessible(true);
-                assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
-                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
-            }
+            short format = (Short) getPrivateField("format");
+            assertEquals("parameter format=xyz(unknown format) should see as default format=text to access.",
+                    ApiContext.FORMAT_PLAIN, format);
         }
         
         @Test
@@ -1230,21 +1368,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("format");
-                format.setAccessible(true);
-                assertEquals("parameter format not provide should see as default format=text to access.",
-                        PlayerApiService.FORMAT_PLAIN, format.getShort(service));
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
-            }
+            short format = (Short) getPrivateField("format");
+            assertEquals("parameter format not provide should see as default format=text to access.",
+                    ApiContext.FORMAT_PLAIN, format);
         }
         
         @Test
@@ -1254,22 +1380,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != Mso.NAME_9X9) {
-                    fail("Not exist mso should see as default(mso=9x9) to access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                fail("Not exist mso should see as default(mso=9x9) to access.");
             }
         }
         
@@ -1280,22 +1393,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != Mso.NAME_9X9) {
-                    fail("Not provide mso should see as default(mso=9x9) to access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != Mso.NAME_9X9) {
+                fail("Not provide mso should see as default(mso=9x9) to access.");
             }
         }
         
@@ -1316,22 +1416,9 @@ public class PlayerApiServiceTest {
             
             service.prepService(req, resp);
             
-            try {
-                Field format = service.getClass().getDeclaredField("mso");
-                format.setAccessible(true);
-                Mso actual = (Mso) format.get(service);
-                if (actual == null || actual.getName() != brandName) {
-                    fail("Provide exist mso from root domain should set it to further access.");
-                }
-                
-            } catch (SecurityException e) {
-                fail(e.toString());
-            } catch (NoSuchFieldException e) {
-                fail(e.toString());
-            } catch (IllegalArgumentException e) {
-                fail(e.toString());
-            } catch (IllegalAccessException e) {
-                fail(e.toString());
+            Mso actual = (Mso) getPrivateField("mso");
+            if (actual == null || actual.getName() != brandName) {
+                fail("Provide exist mso from root domain should set it to further access.");
             }
         }
     }

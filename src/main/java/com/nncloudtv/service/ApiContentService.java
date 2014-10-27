@@ -1,19 +1,15 @@
 package com.nncloudtv.service;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnChannel;
 
@@ -127,38 +123,4 @@ public class ApiContentService {
         return savedChannel;
     }
     
-    public Map<String, String> channelYoutubeDataSync(Long channelId) {
-        
-        if (channelId == null) {
-            return null;
-        }
-        NnChannel channel = channelMngr.findById(channelId);
-        if (channel == null) {
-            return null;
-        }
-        
-        channel.setReadonly(true);
-        channel = channelMngr.save(channel);
-        
-        Map<String, String> obj = new HashMap<String, String>();
-        obj.put("id", channel.getIdStr());
-        obj.put("sourceUrl", channel.getSourceUrl());
-        obj.put("contentType", String.valueOf(channel.getContentType()));
-        obj.put("isRealtime", "true");
-        
-        Map<String, String> response = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
-        
-        // roll back
-        if (String.valueOf(HttpURLConnection.HTTP_OK).equals(response.get(NnNetUtil.STATUS)) == false ||
-                "Ack\n".equals(response.get(NnNetUtil.TEXT)) == false) {
-            
-            channel.setReadonly(false);
-            channelMngr.save(channel);
-            
-            log.info("response status = " + response.get(NnNetUtil.STATUS));
-            log.info("response content = " + response.get(NnNetUtil.TEXT));
-        }
-        
-        return response;
-    }
 }

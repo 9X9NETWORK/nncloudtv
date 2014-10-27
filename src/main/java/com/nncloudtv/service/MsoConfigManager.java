@@ -21,6 +21,7 @@ import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.SysTag;
+import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class MsoConfigManager {
@@ -206,26 +207,26 @@ public class MsoConfigManager {
         if (os == null || function == null)
             return null;
         if (function.contains("flurry")) {
-            if (os.equals(PlayerService.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS)) 
                 return "J6GPGNMBR7GRDJVSCCN8";
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return "CJGQT59JKHN4MWBQFXZN";
         }
         if (function.contains("google")) {
-            if (os.equals(PlayerService.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS)) 
                 return "UA-47454448-3";
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return "UA-47454448-2";
-            if (os.equals(PlayerService.OS_WEB)) {
+            if (os.equals(ApiContext.OS_WEB)) {
                 return "UA-47454448-1";
             }
         }
         if (function.contains("youtube")) {
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return "AI39si5HrNx2gxiCnGFlICK4Bz0YPYzGDBdJHfZQnf-fClL2i7H_A6Fxz6arDBriAMmnUayBoxs963QLxfo-5dLCO9PCX-DTrA";
         }
         if (function.contains("notify")) {
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return "758834427689";
         }
         return null;
@@ -236,34 +237,34 @@ public class MsoConfigManager {
         if (os == null || function == null)
             return null;
         if (function.contains("flurry")) {
-            if (os.equals(PlayerService.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS)) 
                 return MsoConfig.FLURRY_ANALYTICS_IOS;
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.FLURRY_ANALYTICS_ANDROID;
         }
         if (function.contains("google")) {
-            if (os.equals(PlayerService.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS)) 
                 return MsoConfig.GOOGLE_ANALYTICS_IOS;
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.GOOGLE_ANALYTICS_ANDROID;
-            if (os.equals(PlayerService.OS_WEB)) {
+            if (os.equals(ApiContext.OS_WEB)) {
                 return MsoConfig.GOOGLE_ANALYTICS_WEB;
             }
         }
         if (function.contains("youtube")) {
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.YOUTUBE_ID_ANDROID;
         }
         if (function.equals("ad")) {
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.AD_ANDROID;
-            if (os.equals(PlayerService.OS_IOS))
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.AD_IOS;
         }
         if (function.contains("admobkey")) {
-            if (os.equals(PlayerService.OS_ANDROID))
+            if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.ADMOBKEY_ANDROID;
-            if (os.equals(PlayerService.OS_IOS))
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.ADMOBKEY_IOS;            
         }
         return null;

@@ -266,7 +266,7 @@ public class NnStringUtil {
             schema = "flipr";
             if (context != null) {
                 Mso mso = context.getMso();
-                schema += MsoManager.isNNMso(mso) ? "" : "-" + mso.getName();
+                schema += MsoManager.isSystemMso(mso) ? "" : "-" + mso.getName();
             }
         }
         

@@ -526,7 +526,7 @@ public class NnUserManager {
             if (user.isFbUser())
                 fbUser = "1";
             //format
-            if (format == PlayerApiService.FORMAT_JSON) {
+            if (format == ApiContext.FORMAT_JSON) {
         		UserInfo json = new UserInfo();
                 json.setToken(token);
                 json.setUserIdStr(userIdStr);

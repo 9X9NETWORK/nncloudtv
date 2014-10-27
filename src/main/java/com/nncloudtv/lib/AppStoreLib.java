@@ -1,27 +1,17 @@
 package com.nncloudtv.lib;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.google.api.client.util.IOUtils;
 import com.nncloudtv.exception.AppStoreFailedVerifiedException;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.web.api.ApiGeneric;
 
 public class AppStoreLib {
     
@@ -42,29 +32,19 @@ public class AppStoreLib {
             requestObj.put("password", sharedSecret);
             log.info("shared secret = " + sharedSecret);
             log.info("receipt validation url = " + requestUrl);
-            URL url = new URL(requestUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setDoOutput(true);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
-            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(writer, requestObj);
-            writer.flush();
             
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            String jsonStr = NnNetUtil.urlPostWithJson(requestUrl, requestObj);
+            if (jsonStr == null) {
                 
-                log.warning(String.format("appstore returns not ok, %d %s", conn.getResponseCode(), conn.getResponseMessage()));
+                log.warning("appstore returns empty");
                 return null;
             }
             
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(conn.getInputStream(), baos);
-            JSONObject json = new JSONObject(new String(baos.toByteArray(), NnStringUtil.UTF8));
+            JSONObject json = new JSONObject(jsonStr);
             int status = json.getInt("status");
+            log.info("appstore resturn status = " + status);
             if (status != 0) {
                 
-                log.info("appstore resturn status = " + status);
                 throw new AppStoreFailedVerifiedException();
             }
             JSONObject receipt = null;
@@ -88,20 +68,6 @@ public class AppStoreLib {
             log.warning(e.getMessage());
             return null;
             
-        } catch (UnsupportedEncodingException e) {
-            
-            log.warning(e.getMessage());
-            return null;
-            
-        } catch (MalformedURLException e) {
-            
-            log.warning(e.getMessage());
-            return null;
-            
-        } catch (IOException e) {
-            
-            log.warning(e.getMessage());
-            return null;
         }
     }
 }

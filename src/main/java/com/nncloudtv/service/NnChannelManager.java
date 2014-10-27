@@ -23,7 +23,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
@@ -745,22 +745,22 @@ public class NnChannelManager {
     public void resetCache(long channelId) {        
         log.info("reset channel info cache: " + channelId);
         String cId = String.valueOf(channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, PlayerApiService.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, PlayerApiService.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, ApiContext.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
+        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {
         String output = "";
         List<ChannelLineup> channelLineup = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (format == PlayerApiService.FORMAT_PLAIN)
+            if (format == ApiContext.FORMAT_PLAIN)
                 output += (String)this.composeEachReducedChannelLineup(c, format) + "\n";
             else 
                 channelLineup.add((ChannelLineup)this.composeEachReducedChannelLineup(c, format));
         }
-        if (format == PlayerApiService.FORMAT_PLAIN)
+        if (format == ApiContext.FORMAT_PLAIN)
             return output;
         else
             return channelLineup;
@@ -793,7 +793,7 @@ public class NnChannelManager {
     }
     
     public Object chAdjust(List<NnChannel> channels, String channelInfo, List<ChannelLineup>channelLineup, short format) {
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             String adjust = "";            
             String[] lines = channelInfo.split("\n");
             if (channels.size() > 0) {
@@ -820,26 +820,26 @@ public class NnChannelManager {
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
                 channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFormat());
             } else {
                 channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFormat());
             }
         } else {
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
                 channelOutput += this.composeChannelLineup(channels, ctx);
             else
                 channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, ctx));
         }
         
         if (channelPos) {
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
                 channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
             else
                 channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
             
         }
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
@@ -858,13 +858,13 @@ public class NnChannelManager {
         String output = "";
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)  {
+            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
                 output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
         }
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN)  {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
             return output;
         } else {
             return lineups;
@@ -1153,7 +1153,7 @@ public class NnChannelManager {
                 log.info("poi output:" + poiStr);
             }
         }
-        if (ctx.getFormat() == PlayerApiService.FORMAT_PLAIN) {
+        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(channel.getIdStr());

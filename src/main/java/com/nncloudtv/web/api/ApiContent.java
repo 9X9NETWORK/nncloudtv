@@ -1,9 +1,16 @@
 package com.nncloudtv.web.api;
 
-import java.net.HttpURLConnection;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +38,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
+import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -430,6 +439,51 @@ public class ApiContent extends ApiGeneric {
         return ytProgram;
     }
     
+    @RequestMapping(value = "programs/{programId}.ts", method = RequestMethod.GET)
+    public void programStream(@PathVariable("programId") String programIdStr,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Long programId = null;
+        try {
+            programId = Long.valueOf(programIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (programId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        NnProgram program = NNF.getProgramMngr().findById(programId);
+        if (program == null) {
+            notFound(resp, "Pogram Not Found");
+            return;
+        }
+        
+        resp.setContentType("video/mpegts");;
+        
+        try {
+            
+            StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
+            
+        } catch (MalformedURLException e) {
+            
+            log.warning("MalformedURLException");
+            log.warning(e.getMessage());
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info("IOException");
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
+    }
+    
     @RequestMapping(value = "programs/{programId}", method = RequestMethod.GET)
     public @ResponseBody
     NnProgram program(@PathVariable("programId") String programIdStr,
@@ -542,17 +596,13 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        // TODO poiPoint collision
-        /*
-        if (programMngr.isPoiCollision(program, program.getStartTimeInt(), program.getEndTimeInt())) {
-            badRequest(resp, INVALID_PARAMETER);
-            return null;
-        }
-        */
-        
         // update duration = endTime - startTime
-        if (program.getEndTimeInt() - program.getStartTimeInt() >= 0) {
+        if (program.getEndTimeInt() == program.getStartTimeInt()) {
+            
+        } else if (program.getEndTimeInt() - program.getStartTimeInt() > 0) {
+            
             program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
+            
         } else {
             // ex : new start = 10, old end = 5
             badRequest(resp, INVALID_PARAMETER);
@@ -768,6 +818,7 @@ public class ApiContent extends ApiGeneric {
             program.setDuration((short) 0);
             
         } else {
+            
             Short duration = evaluateShort(durationStr);
             if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
@@ -797,6 +848,7 @@ public class ApiContent extends ApiGeneric {
         if (endTimeStr == null) {
             
             program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
+            
         } else {
             
             Short endTime = evaluateShort(endTimeStr);
@@ -1156,8 +1208,7 @@ public class ApiContent extends ApiGeneric {
     
     // TODO: fix me
     @RequestMapping(value = "channels/{channelId}/youtubeSyncData", method = RequestMethod.PUT)
-    public @ResponseBody
-    String channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
+    public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
         Date now = new Date();
@@ -1167,37 +1218,49 @@ public class ApiContent extends ApiGeneric {
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         } else if (verifiedUserId != channel.getUserId()) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        Map<String, String> response = apiContentService.channelYoutubeDataSync(channel.getId());
-        if (response == null || String.valueOf(HttpURLConnection.HTTP_OK).equals(response.get(NnNetUtil.STATUS)) == false ||
-                "Ack\n".equals(response.get(NnNetUtil.TEXT)) == false) {
-            msgResponse(resp, "NOT OK");
-            log.info(printExitState(now, req, "not ok"));
-            return null;
-        }
+        channel.setReadonly(true);
+        channel = NNF.getChannelMngr().save(channel);
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        Map<String, String> obj = new HashMap<String, String>();
+        obj.put("id",          channel.getIdStr());
+        obj.put("sourceUrl",   channel.getSourceUrl());
+        obj.put("contentType", String.valueOf(channel.getContentType()));
+        obj.put("isRealtime",  "true");
+        
+        String response = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
+        
+        if (response != null && response.trim().equalsIgnoreCase("Ack")) {
+            
+            channel.setReadonly(false);
+            NNF.getChannelMngr().save(channel);
+            
+            ok(resp);
+            
+        } else {
+            
+            msgResponse(resp, "NOT_OK");
+        }
     }
     
     @RequestMapping(value = "tags", method = RequestMethod.GET)
@@ -1310,6 +1373,74 @@ public class ApiContent extends ApiGeneric {
         }
         log.info(printExitState(now, req, "ok"));
         return channelIds;
+    }
+    
+    @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
+    public void channelStream(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        Long channelId = evaluateLong(channelIdStr);
+        if (channelId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
+        if (channel == null) {
+            notFound(resp, "Channel Not Found");
+            return;
+        }
+        
+        ApiContext ctx = new ApiContext(req);
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channelId);
+        if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("reverse"));
+        } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("timedLinear"));
+        } else {
+            Collections.sort(episodes, NnEpisodeManager.getComparator("seq"));
+        }
+        
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+            
+            int totalDuration = 0;
+            for (NnEpisode episode : episodes) {
+                totalDuration += episode.getDuration();
+            }
+            
+            writer.println("#EXTM3U");
+            writer.println("#EXT-X-TARGETDURATION:" + totalDuration);
+            writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+            for (NnEpisode episode : episodes) {
+                
+                writer.println("#EXTINF:" + episode.getDuration() + "," + episode.getName());
+                writer.println(ctx.getRoot() + "/api/episodes/" + episode.getId() + ".m3u8");
+            }
+            writer.println("#EXT-X-ENDLIST");
+            writer.flush();
+            resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+            resp.setContentLength(baos.size());
+            IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+            
+        } catch (UnsupportedEncodingException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "channels/{channelId}/episodes", method = RequestMethod.GET)
@@ -1573,6 +1704,66 @@ public class ApiContent extends ApiGeneric {
         }
         
         return ok(resp);
+    }
+    
+    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
+    public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
+        
+        ApiContext ctx = new ApiContext(req);
+        Long episodeId = null;
+        try {
+            episodeId = Long.valueOf(episodeIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (episodeId == null) {
+            notFound(resp, INVALID_PATH_PARAMETER);
+            return;
+        }
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        if (episode == null) {
+            
+            notFound(resp, "Episode Not Found");
+            return;
+        }
+        
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeId);
+        
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
+            
+            writer.println("#EXTM3U");
+            writer.println("#EXT-X-TARGETDURATION:" + episode.getDuration());
+            writer.println("#EXT-X-MEDIA-SEQUENCE:1");
+            for (NnProgram program : programs) {
+                
+                writer.println("#EXTINF:" + program.getDurationInt() + "," + program.getName());
+                writer.println(ctx.getRoot() + "/api/programs/" + program.getId() + ".ts");
+            }
+            writer.println("#EXT-X-ENDLIST");
+            writer.flush();
+            
+            resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+            resp.setContentLength(baos.size());
+            IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
+            
+        } catch (UnsupportedEncodingException e) {
+            
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+            
+        } catch (IOException e) {
+            
+            log.info(e.getMessage());
+            
+        } finally {
+            
+            try {
+                resp.flushBuffer();
+            } catch (IOException e) {
+            }
+        }
     }
     
     @RequestMapping(value = "episodes/{episodeId}", method = RequestMethod.GET)

@@ -33,10 +33,15 @@ public class ApiGeneric {
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
     public static final String INVALID_PARAMETER      = "Invalid Parameter";
     public static final String INVALID_YOUTUBE_URL    = "Invalid YouTube URL";
+    
     public static final String PLAIN_TEXT_UTF8        = "text/plain; charset=utf-8";
     public static final String APPLICATION_JSON_UTF8  = "application/json; charset=utf-8";
-    public static final String API_DOC                = "API-DOC";
+    public static final String VND_APPLE_MPEGURL      = "application/vnd.apple.mpegurl";
+    
+    public static final String API_DOC                = "X-API-DOC";
     public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
+    public static final String API_REF                = "X-API-REF";
+    public static final String API_REF_URL            = "http://goo.gl/necjp"; // API reference document url
     public static final String BLACK_HOLE             = "Black Hole!";
     public static final String NULL                   = "null";
     
@@ -56,6 +61,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -76,6 +82,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -97,6 +104,7 @@ public class ApiGeneric {
 		    resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
 			if (message != null) {
 				log.warning(message);
 				resp.getWriter().println(message);
@@ -123,6 +131,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -135,29 +144,29 @@ public class ApiGeneric {
         
     }
     
-	public void internalError(HttpServletResponse resp) {
-	    internalError(resp, null);
-	}
-	
+    public void internalError(HttpServletResponse resp) {
+        internalError(resp, null);
+    }
+    
     @ExceptionHandler(Exception.class)
-	public void internalError(HttpServletResponse resp, Exception e) {
-		
-		try {
-		    resp.resetBuffer();
+    public void internalError(HttpServletResponse resp, Exception e) {
+        
+        try {
+            resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
-			PrintWriter writer = resp.getWriter();
-			if (e != null) {
+            resp.setHeader(API_REF, API_REF_URL);
+            PrintWriter writer = resp.getWriter();
+            if (e != null) {
                 NnLogUtil.logException(e);
-	            writer.println(e.getMessage());
-			}
-			resp.setStatus(HTTP_500);
-			resp.flushBuffer();
-		} catch (IOException ex) {
-			NnLogUtil.logException(ex);
-		}
-	}
-	
+                writer.println(e.getMessage());
+            }
+            resp.setStatus(HTTP_500);
+            resp.flushBuffer();
+        } catch (Exception ex) {
+        }
+    }
+    
     // TODO: rewrite
 	public Long userIdentify(HttpServletRequest req) {
 	    

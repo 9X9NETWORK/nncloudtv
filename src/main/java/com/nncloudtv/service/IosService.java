@@ -10,13 +10,14 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.YouTubeLib;
+import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 
 @Service
@@ -156,7 +157,7 @@ public class IosService {
         log.info("request from != v32");
         String result = null;
         try {
-            result = (String) CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN));
+            result = (String) CacheFactory.get(CacheFactory.getProgramInfoKey(channelId, 0, 31, ApiContext.FORMAT_PLAIN));
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -167,7 +168,7 @@ public class IosService {
         List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channelId);
         log.info("retrieve v31 from db, channel id:" + channelId + "; program size:" + programs.size());
         String str = this.composeProgramInfoStr(programs);
-        CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 31, PlayerApiService.FORMAT_PLAIN), str);
+        CacheFactory.set(CacheFactory.getProgramInfoKey(channelId, 0, 31, ApiContext.FORMAT_PLAIN), str);
         return str;
     }    
     

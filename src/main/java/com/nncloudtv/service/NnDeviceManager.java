@@ -14,6 +14,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.PlayerDevice;
 
 @Service
@@ -132,7 +133,7 @@ public class NnDeviceManager {
     
     public Object getPlayerDeviceInfo(NnDevice device, short format, List<NnUser> users) {
     	String token = device.getToken();
-        if (format == PlayerApiService.FORMAT_PLAIN) {
+        if (format == ApiContext.FORMAT_PLAIN) {
             String[] result = {token};
         	if (users != null) {
                 for (NnUser u : users) {
