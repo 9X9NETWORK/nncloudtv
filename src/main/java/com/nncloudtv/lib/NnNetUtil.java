@@ -236,16 +236,18 @@ public class NnNetUtil {
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
+            conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
             
             OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(writer, obj);
             System.out.println(mapper.writeValueAsString(obj));
+            writer.flush();
             writer.close();
             
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
-                log.warning("response not ok!" + conn.getResponseCode());
+                log.warning(String.format("response not ok, %d %s", conn.getResponseCode(), conn.getResponseMessage()));
             }
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
