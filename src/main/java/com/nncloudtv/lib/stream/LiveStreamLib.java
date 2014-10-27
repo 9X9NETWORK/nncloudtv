@@ -239,7 +239,7 @@ public class LiveStreamLib implements StreamLib {
                         conn.setInstanceFollowRedirects(false);
                         int code = conn.getResponseCode();
                         log.info("m3u8 status code = " + code);
-                        if (code == 301) {
+                        if (code == 301 || code == 302) {
                             
                             String location = conn.getHeaderField("Location");
                             log.info("fetch redirection location = " + location);

@@ -130,7 +130,7 @@ public class UstreamLib implements StreamLib {
                 conn.setInstanceFollowRedirects(false);
                 int code = conn.getResponseCode();
                 log.info("flv status code = " + code);
-                if (code == 301) {
+                if (code == 301 || code == 302) {
                     
                     String location = conn.getHeaderField("Location");
                     log.info("fetch redirection location = " + location);
