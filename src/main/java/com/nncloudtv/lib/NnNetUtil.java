@@ -175,7 +175,8 @@ public class NnNetUtil {
             conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);
             conn.setRequestProperty("Accept-Charset", NnStringUtil.UTF8);
-            conn.setDoOutput(true);
+            conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
+            conn.setDoInput(true);
             conn.setRequestMethod("GET");
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 

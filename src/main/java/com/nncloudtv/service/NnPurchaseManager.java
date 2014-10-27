@@ -66,7 +66,7 @@ public class NnPurchaseManager {
             } catch (GeneralSecurityException e) {
                 
                 purchase.setVerified(false);
-                log.warning("GeneralSecurityException");
+                log.warning(e.getClass().getName());
                 log.warning(e.getMessage());
                 
             } catch (IOException e) {
@@ -129,6 +129,7 @@ public class NnPurchaseManager {
                 
                 log.warning("AppStoreFailedVerifiedException");
                 purchase.setVerified(false);
+                purchase.setStatus(NnPurchase.INVALID);
                 
             } finally {
                 
