@@ -247,9 +247,9 @@ public class UstreamLib implements StreamLib {
             for (int i = 0; i < videosJson.length(); i++) {
                 
                 JSONObject videoJson = videosJson.getJSONObject(i);
-                if (!videoJson.isNull("medial_urls")) {
+                if (!videoJson.isNull("media_urls")) {
                     
-                    flv = videoJson.getJSONObject("medial_urls").getString("flv");
+                    flv = videoJson.getJSONObject("media_urls").getString("flv");
                     log.info("flv = " + flv);
                     return flv;
                 }
