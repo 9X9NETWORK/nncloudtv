@@ -233,6 +233,7 @@ public class NnNetUtil {
             
             URL url = new URL(urlStr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
@@ -242,8 +243,8 @@ public class NnNetUtil {
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(writer, obj);
             System.out.println(mapper.writeValueAsString(obj));
-            writer.flush();
-            writer.close();
+            //writer.flush();
+            //writer.close();
             
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
@@ -253,7 +254,7 @@ public class NnNetUtil {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(conn.getInputStream(), baos);
             
-            conn.disconnect();
+            //conn.disconnect();
             
             return baos.toString(NnStringUtil.UTF8);
             
