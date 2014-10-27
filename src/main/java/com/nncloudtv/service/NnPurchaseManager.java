@@ -47,6 +47,7 @@ public class NnPurchaseManager {
         
         if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
             
+            log.info("googleplay");
             try {
                 
                 SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
@@ -81,6 +82,7 @@ public class NnPurchaseManager {
             
         } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
             
+            log.info("appstore");
             try {
                 
                 JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
@@ -200,5 +202,10 @@ public class NnPurchaseManager {
     public List<NnPurchase> findAll() {
         
         return dao.findAll();
+    }
+    
+    public NnPurchase findById(String idStr) {
+        
+        return dao.findById(idStr);
     }
 }
