@@ -175,7 +175,8 @@ public class NnNetUtil {
             conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);
             conn.setRequestProperty("Accept-Charset", NnStringUtil.UTF8);
-            conn.setDoOutput(true);
+            conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
+            conn.setDoInput(true);
             conn.setRequestMethod("GET");
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
@@ -233,25 +234,24 @@ public class NnNetUtil {
             
             URL url = new URL(urlStr);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
+            conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
             
             OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(writer, obj);
             System.out.println(mapper.writeValueAsString(obj));
-            writer.close();
             
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
-                log.warning("response not ok!" + conn.getResponseCode());
+                log.warning(String.format("response not ok, %d %s", conn.getResponseCode(), conn.getResponseMessage()));
             }
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(conn.getInputStream(), baos);
-            
-            conn.disconnect();
             
             return baos.toString(NnStringUtil.UTF8);
             
