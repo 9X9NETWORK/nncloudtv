@@ -17,7 +17,10 @@ import org.json.JSONObject;
 
 import com.google.api.client.util.IOUtils;
 import com.nncloudtv.exception.AppStoreFailedVerifiedException;
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.web.api.ApiGeneric;
 
 public class AppStoreLib {
@@ -27,28 +30,31 @@ public class AppStoreLib {
     public static JSONObject getReceipt(NnPurchase purchase, boolean isProduction) throws AppStoreFailedVerifiedException {
         
         String requestUrl = "https://" + (isProduction ? "buy" : "sandbox") + ".itunes.apple.com/verifyReceipt";
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
         
         try {
             
             // doc: https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html
             Map<String, String> requestObj = new HashMap<String, String>();
+            String sharedSecret = MsoConfigManager.getAppStoreSharedSecret(mso);
             requestObj.put("receipt-data", purchase.getPurchaseToken());
-            
+            requestObj.put("password", sharedSecret);
+            log.info("shared secret = " + sharedSecret);
+            log.info("receipt validation url = " + requestUrl);
             URL url = new URL(requestUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
-            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
+            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(writer, requestObj);
             writer.flush();
             
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
-                log.warning("appstore returns not ok, " + conn.getResponseCode() + " " + conn.getResponseMessage());
-                // log more when not ok (pipe inputstream to stdout)
-                //(new PipingTask(conn.getInputStream(), System.out)).start();
+                log.warning(String.format("appstore returns not ok, %d %s", conn.getResponseCode(), conn.getResponseMessage()));
                 return null;
             }
             
@@ -61,7 +67,12 @@ public class AppStoreLib {
                 log.info("appstore resturn status = " + status);
                 throw new AppStoreFailedVerifiedException();
             }
-            JSONObject receipt = json.getJSONObject("receipt");
+            JSONObject receipt = null;
+            if (!json.isNull("latest_receipt_info")) {
+                receipt = json.getJSONObject("latest_receipt_info");
+            } else {
+                receipt = json.getJSONObject("receipt");
+            }
             if (receipt == null) {
                 
                 log.warning("receipt is null");
@@ -92,6 +103,5 @@ public class AppStoreLib {
             log.warning(e.getMessage());
             return null;
         }
-        
     }
 }
