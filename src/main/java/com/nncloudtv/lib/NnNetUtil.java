@@ -243,8 +243,6 @@ public class NnNetUtil {
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(writer, obj);
             System.out.println(mapper.writeValueAsString(obj));
-            //writer.flush();
-            //writer.close();
             
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 
@@ -253,8 +251,6 @@ public class NnNetUtil {
             
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy(conn.getInputStream(), baos);
-            
-            //conn.disconnect();
             
             return baos.toString(NnStringUtil.UTF8);
             
