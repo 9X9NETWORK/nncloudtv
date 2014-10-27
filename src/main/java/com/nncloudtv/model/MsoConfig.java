@@ -92,17 +92,18 @@ public class MsoConfig implements Serializable  {
     public static String IOS_URL_LANDING_SUGGESTED     = "ios-url-landing-suggested";
     
     // S3 related configurations
-    public static String AWS_KEY          = "aws-key";
-    public static String AWS_ID           = "aws-id";
-    public static String CF_KEY_PAIR_ID   = "cf-key-pair-id";
-    public static String CF_SUBDOMAIN     = "cf-subdomain";
-    public static String S3_UPLOAD_BUCKET = "s3-upload-bucket";
-    public static String S3_VIDEO_BUCKET  = "s3-video-bucket";
+    public static final String AWS_KEY          = "aws-key";
+    public static final String AWS_ID           = "aws-id";
+    public static final String CF_KEY_PAIR_ID   = "cf-key-pair-id";
+    public static final String CF_SUBDOMAIN     = "cf-subdomain";
+    public static final String S3_UPLOAD_BUCKET = "s3-upload-bucket";
+    public static final String S3_VIDEO_BUCKET  = "s3-video-bucket";
     
     // In App Purchase configurations
-    public static String GOOGLEPLAY_APP_NAME     = "googleplay-app-name";
-    public static String GOOGLEPLAY_PACKAGE_NAME = "googleplay-package-name";
-    public static String APPSTORE_BUNDLE_ID      = "appstore-bundle-id";
+    public static final String GOOGLEPLAY_APP_NAME     = "googleplay-app-name";
+    public static final String GOOGLEPLAY_PACKAGE_NAME = "googleplay-package-name";
+    public static final String APPSTORE_BUNDLE_ID      = "appstore-bundle-id";
+    public static final String APPSTORE_SHARED_SECRET  = "appstore-shared-secret";
     
     public static final short MAXCHPERSET_DEFAULT = 27;
     public static final short MAXSETS_DEFAULT     = 3;

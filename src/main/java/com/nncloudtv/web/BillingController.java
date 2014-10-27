@@ -1,5 +1,6 @@
 package com.nncloudtv.web;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -79,7 +80,19 @@ public class BillingController {
     @RequestMapping("verifyPurchases")
     public ResponseEntity<String> verifyPurchases(HttpServletRequest req) {
         
-        List<NnPurchase> purchases = (req.getParameter("all") == null) ? NNF.getPurchaseMngr().findAllActive() : NNF.getPurchaseMngr().findAll();
+        List<NnPurchase> purchases = new ArrayList<NnPurchase>();
+        String purchaseIdStr = req.getParameter("purchaseId");
+        if (purchaseIdStr != null) {
+            
+            NnPurchase purchase = NNF.getPurchaseMngr().findById(purchaseIdStr);
+            if (purchase != null) {
+                purchases.add(purchase);
+            }
+            
+        } else {
+            
+            purchases = (req.getParameter("all") == null) ? NNF.getPurchaseMngr().findAllActive() : NNF.getPurchaseMngr().findAll();
+        }
         ApiContext ctx = new ApiContext(req);
         
         int cntVerified = 0;
