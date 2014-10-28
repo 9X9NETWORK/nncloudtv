@@ -1,5 +1,6 @@
 package com.nncloudtv.lib;
 
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import org.ocpsoft.prettytime.PrettyTime;
@@ -131,7 +132,7 @@ public class NNF {
         if (prettyTime == null) {
             
             log.info("create prettyTime");
-            prettyTime = new PrettyTime();
+            prettyTime = new PrettyTime(Locale.ENGLISH);
         }
         
         return prettyTime;
