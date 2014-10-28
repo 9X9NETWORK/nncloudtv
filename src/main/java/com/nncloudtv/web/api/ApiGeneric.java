@@ -44,6 +44,7 @@ public class ApiGeneric {
     public static final String API_REF_URL            = "http://goo.gl/necjp"; // API reference document url
     public static final String BLACK_HOLE             = "Black Hole!";
     public static final String NULL                   = "null";
+    public static final String OK                     = "OK";
     
     public static final short HTTP_200 = 200;
     public static final short HTTP_201 = 201;
@@ -182,7 +183,7 @@ public class ApiGeneric {
         
         resp.setContentType(APPLICATION_JSON_UTF8);
         
-        return "\"OK\"";
+        return NnStringUtil.escapeDoubleQuote(OK);
     }
     
     public void msgResponse(HttpServletResponse resp, String msg) {
