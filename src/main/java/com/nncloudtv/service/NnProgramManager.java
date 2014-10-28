@@ -669,7 +669,6 @@ public class NnProgramManager {
                             
                             episodes.add(candidate);
                         }
-                        
                     }
                 }
                 
