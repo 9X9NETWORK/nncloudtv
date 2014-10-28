@@ -125,19 +125,6 @@ public class NNF {
     protected static NnPurchaseDao     purchaseDao       = null;
     protected static NnItemDao         itemDao           = null;
     
-    protected static PrettyTime        prettyTime        = null;
-    
-    public static PrettyTime getPrettyTime() {
-        
-        if (prettyTime == null) {
-            
-            log.info("create prettyTime");
-            prettyTime = new PrettyTime(Locale.ENGLISH);
-        }
-        
-        return prettyTime;
-    }
-    
     public static NnEpisodeDao getEpisodeDao() {
         
         if (episodeDao == null) {
