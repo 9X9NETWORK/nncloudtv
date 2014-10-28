@@ -78,7 +78,7 @@ public class DailyMotionLib implements StreamLib {
             log.warning("fail to get embed url");
             return null;
         }
-        
+        log.info("embed url = " + embedUrl);
         String regex = "var info = ({.+}),\\s";
         String content = NnNetUtil.urlGet(embedUrl);
         if (content == null) {
@@ -86,6 +86,7 @@ public class DailyMotionLib implements StreamLib {
             log.warning("fail to get embed content");
             return null;
         }
+        log.info("embed content size = " + content.length());
         Matcher matcher = Pattern.compile(regex).matcher(content);
         if (!matcher.find()) {
             
