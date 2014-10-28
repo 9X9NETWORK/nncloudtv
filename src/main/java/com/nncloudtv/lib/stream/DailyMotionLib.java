@@ -96,17 +96,24 @@ public class DailyMotionLib implements StreamLib {
         
         try {
             
-            JSONObject infoJson = new JSONObject(matcher.group(1));
-            System.out.println(infoJson.toString());
-            if (infoJson.isNull("stream_h264_url")) {
+            JSONObject json = new JSONObject(matcher.group(1));
+            System.out.println(json.toString());
+            String h264 = null;
+            String[] qualities = { "stream_hls_url", "stream_h264_hd_url", "stream_h264_hq_url", "stream_h264_url" };
+            for (String quality : qualities) {
+                if (json.isNull(quality) == false) {
+                    
+                    log.info(quality);
+                    h264 = json.getString(quality);
+                    break;
+                }
+            }
+            log.info("h264 = " + h264);
+            if (h264 == null) {
                 
-                log.warning("h264 url is null");
+                log.warning("fail to get h264 url");
                 return null;
             }
-            
-            String h264 = infoJson.getString("stream_h264_url");
-            log.info("h264 = " + h264);
-            
             HttpURLConnection conn = NnNetUtil.getConn(h264);
             
             return conn.getInputStream();
