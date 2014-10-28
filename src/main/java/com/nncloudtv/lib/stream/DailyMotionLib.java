@@ -88,7 +88,7 @@ public class DailyMotionLib implements StreamLib {
             JSONObject json = new JSONObject(matcher.group(1));
             System.out.println(json.toString());
             String h264 = null;
-            String[] qualities = { "stream_hls_url", "stream_h264_hd_url", "stream_h264_hq_url", "stream_h264_url" };
+            String[] qualities = { "stream_h264_hd_url", "stream_h264_hq_url", "stream_h264_url", "stream_hls_url" };
             for (String quality : qualities) {
                 if (json.isNull(quality) == false) {
                     
