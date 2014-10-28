@@ -1,9 +1,6 @@
 package com.nncloudtv.lib;
 
-import java.util.Locale;
 import java.util.logging.Logger;
-
-import org.ocpsoft.prettytime.PrettyTime;
 
 import com.nncloudtv.dao.AdPlacementDao;
 import com.nncloudtv.dao.BillingOrderDao;
