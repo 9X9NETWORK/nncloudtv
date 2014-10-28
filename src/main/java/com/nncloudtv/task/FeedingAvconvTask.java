@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+
 import com.nncloudtv.lib.NnDateUtil;
 
 public class FeedingAvconvTask extends PipingTask {
@@ -87,6 +89,6 @@ public class FeedingAvconvTask extends PipingTask {
             }
         }
         log.info("... feeding avconv finished");
-        log.info("total feeded size = " + total + ", keepGoing = " + keepGoing);
+        log.info("total feeded size = " + FileUtils.byteCountToDisplaySize(total) + ", keepGoing = " + keepGoing);
     }
 }

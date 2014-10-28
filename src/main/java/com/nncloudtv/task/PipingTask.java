@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 
 import com.nncloudtv.lib.NnDateUtil;
@@ -114,6 +115,6 @@ public class PipingTask extends Thread {
             log.info("Interrupted");
         }
         log.info("... piping finished");
-        log.info("total piped size = " + total + ", keepGoing = " + keepGoing);
+        log.info("total piped size = " + FileUtils.byteCountToDisplaySize(total) + ", keepGoing = " + keepGoing);
     }
 }
