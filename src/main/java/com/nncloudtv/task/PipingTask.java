@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 
 /**
@@ -83,9 +84,8 @@ public class PipingTask extends Thread {
                             long totalMiliSec = now.getTime() - startTime.getTime();
                             float pipingSpeed = ((float) deltaLen / deltaMiliSec) * 8;
                             float avarageSpeed = ((float) total / totalMiliSec) * 8;
-                            float lastMinutes = (float) totalMiliSec / 60 / 1000;
                             
-                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %3.1f minutes", pipingSpeed, avarageSpeed, lastMinutes));
+                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, since %s", pipingSpeed, avarageSpeed, NNF.getPrettyTime().format(startTime)));
                             
                             lastTime = now;
                             lastTotal = total;

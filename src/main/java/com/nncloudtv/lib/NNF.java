@@ -2,6 +2,8 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
 import com.nncloudtv.dao.AdPlacementDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
@@ -121,6 +123,19 @@ public class NNF {
     protected static MyLibraryDao      libraryDao        = null;
     protected static NnPurchaseDao     purchaseDao       = null;
     protected static NnItemDao         itemDao           = null;
+    
+    protected static PrettyTime        prettyTime        = null;
+    
+    public static PrettyTime getPrettyTime() {
+        
+        if (prettyTime == null) {
+            
+            log.info("create prettyTime");
+            prettyTime = new PrettyTime();
+        }
+        
+        return prettyTime;
+    }
     
     public static NnEpisodeDao getEpisodeDao() {
         

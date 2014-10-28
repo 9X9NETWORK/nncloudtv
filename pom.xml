@@ -2,7 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.nncloudtv</groupId>
     <artifactId>nncloudtv</artifactId>
@@ -11,7 +11,7 @@
     <reporting>
         <outputDirectory>doc</outputDirectory>
     </reporting>
-
+    
     <!--
         packaging commands
         packaging:
@@ -22,7 +22,7 @@
         packaging and run jetty with jetty plugin:
             mvn jetty:run-war
     -->
-
+    
     <build>
         <!-- ====================================================================== -->
         <!-- Plugins                                                                -->
@@ -160,7 +160,7 @@
             </plugins>
         </pluginManagement>
     </build>
-
+    
     <!-- ====================================================================== -->
     <!-- Dependencies                                                           -->
     <!-- ====================================================================== -->
@@ -171,7 +171,7 @@
         <org.springframework.security.version>3.2.0.RELEASE</org.springframework.security.version>
         <org.datanucleus.version>3.0.1</org.datanucleus.version>
     </properties>
-
+    
     <!--
         Repository:
         mvn repository: http://mvnrepository.com
@@ -401,7 +401,7 @@
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.7.1</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>com.google.android.gcm</groupId>
             <artifactId>gcm-server</artifactId>
@@ -446,7 +446,7 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk16</artifactId>
             <version>1.45</version>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
@@ -463,13 +463,18 @@
             <version>4.3.2</version>
         </dependency>
         <dependency>
-        	<groupId>org.hsqldb</groupId>
-        	<artifactId>hsqldb</artifactId>
-        	<version>2.2.6</version>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.2.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.ocpsoft.prettytime</groupId>
+            <artifactId>prettytime</artifactId>
+            <version>3.2.5.Final</version>
+        </dependency>
     </dependencies>
-
+    
     <!-- ====================================================================== -->
     <!-- Maven Repositories                                                     -->
     <!-- ====================================================================== -->
@@ -491,6 +496,10 @@
             <id>repository.springframework.maven.release</id>
             <name>Spring Framework Maven Release Repository</name>
             <url>http://maven.springframework.org/release</url>
+        </repository>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 </project>
