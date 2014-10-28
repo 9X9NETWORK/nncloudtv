@@ -38,10 +38,13 @@ public class ApiGeneric {
     public static final String APPLICATION_JSON_UTF8  = "application/json; charset=utf-8";
     public static final String VND_APPLE_MPEGURL      = "application/vnd.apple.mpegurl";
     
-    public static final String API_DOC                = "API-DOC";
+    public static final String API_DOC                = "X-API-DOC";
     public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
+    public static final String API_REF                = "X-API-REF";
+    public static final String API_REF_URL            = "http://goo.gl/necjp"; // API reference document url
     public static final String BLACK_HOLE             = "Black Hole!";
     public static final String NULL                   = "null";
+    public static final String OK                     = "OK";
     
     public static final short HTTP_200 = 200;
     public static final short HTTP_201 = 201;
@@ -59,6 +62,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -79,6 +83,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -100,6 +105,7 @@ public class ApiGeneric {
 		    resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
 			if (message != null) {
 				log.warning(message);
 				resp.getWriter().println(message);
@@ -126,6 +132,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             if (message != null) {
                 log.warning(message);
                 resp.getWriter().println(message);
@@ -149,6 +156,7 @@ public class ApiGeneric {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
+            resp.setHeader(API_REF, API_REF_URL);
             PrintWriter writer = resp.getWriter();
             if (e != null) {
                 NnLogUtil.logException(e);
@@ -175,7 +183,7 @@ public class ApiGeneric {
         
         resp.setContentType(APPLICATION_JSON_UTF8);
         
-        return "\"OK\"";
+        return NnStringUtil.escapeDoubleQuote(OK);
     }
     
     public void msgResponse(HttpServletResponse resp, String msg) {

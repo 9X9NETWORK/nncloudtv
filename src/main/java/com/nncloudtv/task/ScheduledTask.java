@@ -3,6 +3,7 @@ package com.nncloudtv.task;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,9 +27,9 @@ public class ScheduledTask {
         long free  = Runtime.getRuntime().freeMemory();
         
         System.gc(); // trigger garbage collection
-        log.info("[memory] max = " + max
-                   +  ", total = " + total
-                   +   ", free = " + free);
+        log.info("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
+                   +  ", total = " + FileUtils.byteCountToDisplaySize(total)
+                   +   ", free = " + FileUtils.byteCountToDisplaySize(free));
         if (max == total && free < total / 100) {
             log.warning("available memory is less than 1%");
         }

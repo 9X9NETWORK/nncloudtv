@@ -47,6 +47,7 @@ public class NnPurchaseManager {
         
         if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
             
+            log.info("googleplay");
             try {
                 
                 SubscriptionPurchase subscription = GooglePlayLib.getSubscriptionPurchase(purchase);
@@ -65,7 +66,7 @@ public class NnPurchaseManager {
             } catch (GeneralSecurityException e) {
                 
                 purchase.setVerified(false);
-                log.warning("GeneralSecurityException");
+                log.warning(e.getClass().getName());
                 log.warning(e.getMessage());
                 
             } catch (IOException e) {
@@ -81,6 +82,7 @@ public class NnPurchaseManager {
             
         } else if (item.getBillingPlatform() == NnItem.APPSTORE) {
             
+            log.info("appstore");
             try {
                 
                 JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
@@ -127,6 +129,7 @@ public class NnPurchaseManager {
                 
                 log.warning("AppStoreFailedVerifiedException");
                 purchase.setVerified(false);
+                purchase.setStatus(NnPurchase.INVALID);
                 
             } finally {
                 
@@ -200,5 +203,10 @@ public class NnPurchaseManager {
     public List<NnPurchase> findAll() {
         
         return dao.findAll();
+    }
+    
+    public NnPurchase findById(String idStr) {
+        
+        return dao.findById(idStr);
     }
 }

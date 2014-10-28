@@ -31,6 +31,7 @@ public class StreamFactory {
                 new VimeoLib(),
                 new UstreamLib(),
                 new LiveStreamLib(),
+                new DailyMotionLib(),
                 new S3Helper(),
                 new HttpsHelper(),
         };
@@ -69,10 +70,9 @@ public class StreamFactory {
         
         InputStream videoIn = null;
         StreamLib streamLib = getStreamLib(videoUrl);
-        String directVideoUrl = null;
         if (streamLib != null) {
             
-            directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
             if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
                 
                 videoUrl = directVideoUrl;

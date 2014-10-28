@@ -35,8 +35,8 @@ public class ApiContext {
     public final static int    DEFAULT_VERSION   = 31;
     public final static String DEFAULT_OS        = OS_WEB;
     
-    public final static String HEADER_USER_AGENT = "user-agent";
-    public final static String HEADER_REFERRER   = "referer";
+    public final static String HEADER_USER_AGENT = "User-Agent";
+    public final static String HEADER_REFERRER   = "Referer";
     
     public final static String PARAM_APP_VERSION = "appver";
     public final static String PARAM_OS          = "os";
@@ -207,7 +207,7 @@ public class ApiContext {
         
         String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent != null && userAgent.contains("Android")) {
-            log.info("request from Android");
+            log.info("request from android");
             return true;
         }
         return false;

@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -831,7 +831,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro);
+            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // lang
@@ -913,8 +913,7 @@ public class ApiContent extends ApiGeneric {
     
     // TODO: fix me
     @RequestMapping(value = "channels/{channelId}/youtubeSyncData", method = RequestMethod.PUT)
-    public @ResponseBody
-    String channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
+    public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
         Date now = new Date();
@@ -924,37 +923,49 @@ public class ApiContent extends ApiGeneric {
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         } else if (verifiedUserId != channel.getUserId()) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        Map<String, String> response = apiContentService.channelYoutubeDataSync(channel.getId());
-        if (response == null || String.valueOf(HttpURLConnection.HTTP_OK).equals(response.get(NnNetUtil.STATUS)) == false ||
-                "Ack\n".equals(response.get(NnNetUtil.TEXT)) == false) {
-            msgResponse(resp, "NOT OK");
-            log.info(printExitState(now, req, "not ok"));
-            return null;
-        }
+        channel.setReadonly(true);
+        channel = NNF.getChannelMngr().save(channel);
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        Map<String, String> obj = new HashMap<String, String>();
+        obj.put("id",          channel.getIdStr());
+        obj.put("sourceUrl",   channel.getSourceUrl());
+        obj.put("contentType", String.valueOf(channel.getContentType()));
+        obj.put("isRealtime",  "true");
+        
+        String response = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
+        
+        if (response != null && response.trim().equalsIgnoreCase("Ack")) {
+            
+            channel.setReadonly(false);
+            NNF.getChannelMngr().save(channel);
+            
+            msgResponse(resp, "OK");
+            
+        } else {
+            
+            msgResponse(resp, "NOT_OK");
+        }
     }
     
     @RequestMapping(value = "tags", method = RequestMethod.GET)

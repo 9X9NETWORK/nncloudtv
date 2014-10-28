@@ -251,13 +251,19 @@ public class GenericDao<T> {
         
         List<T> detached = new ArrayList<T>();
         
-        if (queryStr == null || queryStr.isEmpty())
+        if (queryStr == null || queryStr.isEmpty()) {
+            
             return detached;
-        
-        queryStr = queryStr.replaceAll(" +", " ");
+        }
+        queryStr = queryStr.replaceAll(" +", " ").trim();
+        if (queryStr.isEmpty()) {
+            
+            return detached;
+        }
         log.info("[sql] " + queryStr);
         
         try {
+            
             Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
             query.setClass(daoClass);
             @SuppressWarnings("unchecked")
@@ -266,6 +272,7 @@ public class GenericDao<T> {
             query.closeAll();
             
         } finally {
+            
             pm.close();
         }
         

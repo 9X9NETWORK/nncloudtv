@@ -439,7 +439,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.openStreamTo(livestreamApiUrl, resp);
+            NnNetUtil.proxyTo(livestreamApiUrl, resp);
             
         } catch (IOException e) {
             
@@ -477,6 +477,31 @@ public class ApiMisc extends ApiGeneric {
         return empty;
     }
     
+    @RequestMapping(value = "prerender", method = RequestMethod.GET)
+    public void prerender(HttpServletResponse resp, HttpServletRequest req) {
+        
+        String urlStr = req.getParameter("url");
+        log.info("urlStr = " + urlStr);
+        if (urlStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        
+        try {
+            
+            NnNetUtil.prerenderTo(urlStr, resp);
+            
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.warning(e.getMessage());
+            internalError(resp);
+            return;
+        }
+        
+    }
+    
     @RequestMapping(value = "cors", method = RequestMethod.GET)
     public void cors(HttpServletResponse resp, HttpServletRequest req) {
         
@@ -490,7 +515,7 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.openStreamTo(urlStr, resp);
+            NnNetUtil.proxyTo(urlStr, resp);
             
         } catch (IOException e) {
             
@@ -520,7 +545,7 @@ public class ApiMisc extends ApiGeneric {
         
         String directLink = streamLib.getHtml5DirectVideoUrl(urlStr);
         if (directLink == null) {
-            badRequest(resp, "DIRECT_LINK_NOT_SUPPORTED");
+            badRequest(resp, "NO_DIRECT_LINK_SUPPORTED");
             return;
         }
         
@@ -671,17 +696,20 @@ public class ApiMisc extends ApiGeneric {
         String thumbnailUrl = null;
         
         StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
-        String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-        if (directVideoUrl != null) {
+        if (streamLib != null) {
             
-            videoUrl = directVideoUrl;
-            
-        } else {
-            
-            InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
-            if (directVideoStream != null) {
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null) {
                 
-                videoIn = directVideoStream;
+                videoUrl = directVideoUrl;
+                
+            } else {
+                
+                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
+                if (directVideoStream != null) {
+                    
+                    videoIn = directVideoStream;
+                }
             }
         }
         
@@ -720,12 +748,19 @@ public class ApiMisc extends ApiGeneric {
                                                   metadata);
             }
         } catch (InterruptedException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } catch (IOException e) {
-            log.info(e.getMessage());
+            
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
             return empty;
+            
         } finally {
+            
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
             }

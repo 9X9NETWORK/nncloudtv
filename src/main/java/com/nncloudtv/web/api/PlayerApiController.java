@@ -2538,21 +2538,24 @@ public class PlayerApiController {
         ApiContext context = new ApiContext(req);
         String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
-        log.info("uri:" + referrer);
+        log.info("referer = " + referrer);
         
-        if (referrer == null || referrer.isEmpty())
+        if (referrer == null || referrer.isEmpty()) {
+            
             referrer = appDomain + "/tv";
-        log.info("rewrite uri:" + referrer);
+            log.info("rewrite referer = " + referrer);
+        }
         
         String fbLoginUri = appDomain + "/fb/login";
-        String mso = req.getParameter("mso");
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);   
-        String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, brand);
+        String msoName = req.getParameter("mso");
+        Mso mso = NNF.getMsoMngr().findOneByName(msoName);
+        String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, mso);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);
+        
         return "redirect:" + url;
     }
-
+    
     /**
      * @deprecated 
      */
@@ -2985,19 +2988,19 @@ public class PlayerApiController {
      *          all    http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
      *  
      */
-    @RequestMapping(value="getVimeoDirectUrl")
-    public @ResponseBody Object getVimeoDirectUrl (
-            @RequestParam(value="url", required=true) String url,            
+    @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
+    public @ResponseBody Object getDirectUrl (
+            @RequestParam(value="url", required=true) String url,
             HttpServletRequest req,
             HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.getVimeoDirectUrl(url);
+            }
+            output = playerApiService.getDirectUrl(url.trim());
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

@@ -58,6 +58,18 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_GOOGLEPLAY, "pem_file_path");
     }
     
+    public static String getAppStoreSharedSecret(Mso mso) {
+        
+        if (mso != null) {
+            MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APPSTORE_SHARED_SECRET);
+            if (config != null) {
+                return config.getValue();
+            }
+        }
+        
+        return getProperty(PROPERTIES_APPSTORE, "shared_secret");
+    }
+    
     public static String getAppStoreBundleId(Mso mso) {
         
         if (mso != null) {

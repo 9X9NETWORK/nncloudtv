@@ -2130,7 +2130,7 @@ public class ApiMso extends ApiGeneric {
             NNF.getLibraryMngr().delete(library);
         }
         
-        ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.PUT)
