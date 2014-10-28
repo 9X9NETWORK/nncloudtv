@@ -55,7 +55,7 @@ public class NnNetUtil {
         
     }
     
-    public static void proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
+    public static HttpURLConnection getConn(String urlStr) throws IOException {
         
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -78,10 +78,16 @@ public class NnNetUtil {
             }
         }
         
+        return conn;
+    }
+    
+    public static void proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
+        
+        HttpURLConnection conn = getConn(urlStr);
         InputStream in = conn.getInputStream();
         
-        Map<String, List<String>> headerFields = conn.getHeaderFields();
-        for (Entry<String, List<String>> entry : headerFields.entrySet()) {
+        Map<String, List<String>> headers = conn.getHeaderFields();
+        for (Entry<String, List<String>> entry : headers.entrySet()) {
             
             String key = entry.getKey();
             if (key == null) {
@@ -171,8 +177,7 @@ public class NnNetUtil {
         try {
             
             URL url = new URL(urlStr);
-            HttpURLConnection conn;
-            conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setInstanceFollowRedirects(true);
             conn.setRequestProperty("Accept-Charset", NnStringUtil.UTF8);
             conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);

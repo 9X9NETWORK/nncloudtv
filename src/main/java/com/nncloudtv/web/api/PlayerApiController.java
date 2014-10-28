@@ -2988,19 +2988,19 @@ public class PlayerApiController {
      *          all    http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
      *  
      */
-    @RequestMapping(value="getVimeoDirectUrl")
-    public @ResponseBody Object getVimeoDirectUrl (
-            @RequestParam(value="url", required=true) String url,            
+    @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
+    public @ResponseBody Object getDirectUrl (
+            @RequestParam(value="url", required=true) String url,
             HttpServletRequest req,
             HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.getVimeoDirectUrl(url);
+            }
+            output = playerApiService.getDirectUrl(url.trim());
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

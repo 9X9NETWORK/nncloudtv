@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
+
 import com.nncloudtv.lib.NnDateUtil;
 
 /**
@@ -83,9 +86,8 @@ public class PipingTask extends Thread {
                             long totalMiliSec = now.getTime() - startTime.getTime();
                             float pipingSpeed = ((float) deltaLen / deltaMiliSec) * 8;
                             float avarageSpeed = ((float) total / totalMiliSec) * 8;
-                            float lastMinutes = (float) totalMiliSec / 60 / 1000;
                             
-                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %3.1f minutes", pipingSpeed, avarageSpeed, lastMinutes));
+                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %s", pipingSpeed, avarageSpeed, DurationFormatUtils.formatDurationHMS(totalMiliSec)));
                             
                             lastTime = now;
                             lastTotal = total;
@@ -113,6 +115,6 @@ public class PipingTask extends Thread {
             log.info("Interrupted");
         }
         log.info("... piping finished");
-        log.info("total piped size = " + total + ", keepGoing = " + keepGoing);
+        log.info("total piped size = " + FileUtils.byteCountToDisplaySize(total) + ", keepGoing = " + keepGoing);
     }
 }

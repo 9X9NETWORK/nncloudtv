@@ -1255,7 +1255,7 @@ public class ApiContent extends ApiGeneric {
             channel.setReadonly(false);
             NNF.getChannelMngr().save(channel);
             
-            ok(resp);
+            msgResponse(resp, "OK");
             
         } else {
             

@@ -18,7 +18,7 @@ public class VimeoLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     
-    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/([0-9]+)$";
+    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/(channels\\/.+\\/)?([0-9]+)$";
     
     public String normalizeUrl(String urlStr) {
         
@@ -27,7 +27,7 @@ public class VimeoLib implements StreamLib {
         Matcher matcher = Pattern.compile(REGEX_VIMEO_VIDEO_URL).matcher(urlStr);
         if (matcher.find()) {
             
-            return "https://vimeo.com/" + matcher.group(1);
+            return "https://vimeo.com/" + matcher.group(2);
         }
         
         return null;
@@ -93,14 +93,14 @@ public class VimeoLib implements StreamLib {
             log.warning(e.getMessage());
         }
         
-        log.info("video url = " + videoUrl);
+        log.info("vimeo direct url = " + videoUrl);
         
         return videoUrl;
     }
     
     public boolean isUrlMatched(String urlStr) {
         
-        return (urlStr == null) ? null : urlStr.matches(REGEX_VIMEO_VIDEO_URL);
+        return (urlStr == null) ? false : urlStr.matches(REGEX_VIMEO_VIDEO_URL);
     }
     
     public InputStream getDirectVideoStream(String urlStr) {

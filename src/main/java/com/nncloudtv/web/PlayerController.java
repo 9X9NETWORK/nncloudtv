@@ -30,15 +30,15 @@ import com.nncloudtv.web.api.ApiContext;
 @Controller
 @RequestMapping("")
 public class PlayerController {
-
+    
     protected static final Logger log = Logger.getLogger(PlayerController.class.getName());
     
     @ExceptionHandler(Exception.class)
     public String exception(Exception e) {
         NnLogUtil.logException(e);
-        return "error/exception";                
-    }        
-
+        return "error/exception";
+    }
+    
     @RequestMapping("gwallet") 
     public @ResponseBody String gwallet(HttpServletRequest req, HttpServletResponse resp) {
     	try {

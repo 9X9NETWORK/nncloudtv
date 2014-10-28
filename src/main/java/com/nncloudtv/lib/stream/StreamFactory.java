@@ -31,6 +31,7 @@ public class StreamFactory {
                 new VimeoLib(),
                 new UstreamLib(),
                 new LiveStreamLib(),
+                new DailyMotionLib(),
                 new S3Helper(),
                 new HttpsHelper(),
         };

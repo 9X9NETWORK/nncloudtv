@@ -51,6 +51,7 @@ public class NnProgram implements Serializable {
     public static final short CONTENTTYPE_LIVESTREAM  = 10; // 3rd party
     public static final short CONTENTTYPE_DAILYMOTION = 11; // 3rd party
     public static final short CONTENTTYPE_INDIRECT    = 12; // ----------------> API assigned
+    public static final short CONTENTTYPE_FLV         = 13; // direct link
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
