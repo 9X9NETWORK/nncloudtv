@@ -79,7 +79,7 @@ public class DailyMotionLib implements StreamLib {
             return null;
         }
         log.info("embed url = " + embedUrl);
-        String regex = "var info = ({.+}),\\s";
+        String regex = " var info = (\\{.+\\}),\\s";
         String content = NnNetUtil.urlGet(embedUrl);
         if (content == null) {
             
