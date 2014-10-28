@@ -58,17 +58,6 @@ public class DailyMotionLib implements StreamLib {
     
     public String getDirectVideoUrl(String urlStr) {
         
-        // DailyMotion is IP restricted
-        return null;
-    }
-    
-    public String getHtml5DirectVideoUrl(String urlStr) {
-        
-        // DailyMotion is IP restricted
-        return null;
-    }
-    
-    public InputStream getDirectVideoStream(String urlStr) {
         
         if (urlStr == null) { return null; }
         
@@ -114,19 +103,40 @@ public class DailyMotionLib implements StreamLib {
                 log.warning("fail to get h264 url");
                 return null;
             }
-            HttpURLConnection conn = NnNetUtil.getConn(h264);
             
-            return conn.getInputStream();
+            return h264;
             
         } catch (JSONException e) {
             
             log.warning(e.getMessage());
             return null;
+        }
+    }
+    
+    public String getHtml5DirectVideoUrl(String urlStr) {
+        
+        // DailyMotion is IP restricted
+        return null;
+    }
+    
+    public InputStream getDirectVideoStream(String urlStr) {
+        
+        if (urlStr == null) { return null; }
+        
+        String embedUrl = getDirectVideoUrl(urlStr);
+        if (embedUrl == null) {
+            
+            log.warning("fail to get direct video url");
+            return null;
+        }
+        
+        try {
+            
+            return NnNetUtil.getConn(embedUrl).getInputStream();
             
         } catch (IOException e) {
             
-            log.warning(e.getClass().getName());
-            log.warning(e.getMessage());
+            log.warning("failed to get input stream");
             return null;
         }
     }
