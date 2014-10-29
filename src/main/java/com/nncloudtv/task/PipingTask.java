@@ -71,11 +71,10 @@ public class PipingTask extends Thread {
                 } else if (len > 0) {
                     
                     total += len;
-                    log.fine(total + " piped");
                     out.write(buf, 0, len);
                     
                     // progress log
-                    if (total % 17 == 0 ) {
+                    if (total % 19 == 0 ) {
                         
                         Date now = NnDateUtil.now();
                         long deltaMiliSec = (now.getTime() - lastTime.getTime());
@@ -87,7 +86,7 @@ public class PipingTask extends Thread {
                             float pipingSpeed = ((float) deltaLen / deltaMiliSec) * 8;
                             float avarageSpeed = ((float) total / totalMiliSec) * 8;
                             
-                            log.info(String.format("piping speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %s", pipingSpeed, avarageSpeed, DurationFormatUtils.formatDurationHMS(totalMiliSec)));
+                            System.out.println(String.format("[pipe] total = %s, speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %s", FileUtils.byteCountToDisplaySize(total), pipingSpeed, avarageSpeed, DurationFormatUtils.formatDurationHMS(totalMiliSec)));
                             
                             lastTime = now;
                             lastTotal = total;
@@ -98,7 +97,7 @@ public class PipingTask extends Thread {
                 yield();
                 if (in.available() == 0) {
                     log.fine("sleep a while");
-                    sleep(100);
+                    sleep(151);
                 }
                 
                 if (timeoutMili > 0 && NnDateUtil.now().getTime() - startTime.getTime() > timeoutMili) {
