@@ -22,11 +22,12 @@ public class ScheduledTask {
     @Scheduled(fixedRate = GC_INTERVAL)
     public void triggerGC() {
         
+        System.gc(); // trigger garbage collection
+        
         long max   = Runtime.getRuntime().maxMemory();
         long total = Runtime.getRuntime().totalMemory();
         long free  = Runtime.getRuntime().freeMemory();
         
-        System.gc(); // trigger garbage collection
         log.info("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
                    +  ", total = " + FileUtils.byteCountToDisplaySize(total)
                    +   ", free = " + FileUtils.byteCountToDisplaySize(free));
