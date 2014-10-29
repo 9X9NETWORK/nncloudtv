@@ -24,7 +24,7 @@ public class PipingTask extends Thread {
     protected InputStream     in = null;
     protected OutputStream   out = null;
     protected boolean  keepGoing = true;
-    protected final int  BUFSIZE = 147457;
+    protected final int  BUFSIZE = 193939;
     protected byte[]         buf = null;
     protected Date     startTime = null;
     protected int    timeoutMili = 0;
@@ -110,9 +110,9 @@ public class PipingTask extends Thread {
             } while(keepGoing);
             
         } catch (IOException e) {
-            log.info("IO");
+            log.info("pipe closed");
         } catch (InterruptedException e) {
-            log.info("Interrupted");
+            log.info("pipe interrupted");
         }
         log.info("... piping finished");
         log.info("total piped size = " + FileUtils.byteCountToDisplaySize(total) + ", keepGoing = " + keepGoing);
