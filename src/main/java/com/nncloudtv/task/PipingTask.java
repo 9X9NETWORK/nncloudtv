@@ -97,7 +97,7 @@ public class PipingTask extends Thread {
                 yield();
                 if (in.available() == 0) {
                     log.fine("sleep a while");
-                    sleep(151);
+                    sleep(53);
                 }
                 
                 if (timeoutMili > 0 && NnDateUtil.now().getTime() - startTime.getTime() > timeoutMili) {
