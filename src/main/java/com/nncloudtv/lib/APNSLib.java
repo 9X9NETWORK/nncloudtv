@@ -27,7 +27,7 @@ public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
     
-    public void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
+    public static void doPost(MsoNotification msoNotification, String fileRoot, String password, boolean isProduction) {
         
         if (msoNotification == null || fileRoot == null || password == null) {
             return ;
@@ -190,7 +190,7 @@ public class APNSLib {
                 
                 EnhancedApnsNotification notification = new EnhancedApnsNotification(
                         count,                                 /* Next ID */
-                        (int) (new Date().getTime()/1000 + 60 * 60 * 24 * 7),  /* Expire in one week */
+                        (int) (NnDateUtil.timestamp() / 1000 + 60 * 60 * 24 * 7),  /* Expire in one week */
                         device.getToken(),                     /* Device Token */
                         payloadBuilder.build());
                 
@@ -217,7 +217,7 @@ public class APNSLib {
         }
     }
     
-    private void removeInactiveDevices(ApnsService service, Long msoId) {
+    private static void removeInactiveDevices(ApnsService service, Long msoId) {
         
         if (service == null || msoId == null) {
             return ;

@@ -32,7 +32,7 @@ public class GCMLib {
     private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE  = 1000;
     
-    public void doPost(MsoNotification msoNotification, String apiKey) {
+    public static void doPost(MsoNotification msoNotification, String apiKey) {
         
         if (msoNotification == null || apiKey == null) {
             return ;
@@ -87,7 +87,7 @@ public class GCMLib {
         log.info("asynchronously sending " + tasks + " multicast messages to " + total + " devices");
     }
     
-    private void asyncSend(final Sender sender,
+    private static void asyncSend(final Sender sender,
             final List<String> devices,
             final MsoNotification msoNotification, final NnDeviceNotification msg,
             final Map<String, NnDevice> deviceMap) {
@@ -157,7 +157,7 @@ public class GCMLib {
     }
     
     // kill duplicate and keep only one, replace with canonicalRegId
-    private void updateRegistration(String regId, String canonicalRegId, MsoNotification notification) {
+    private static void updateRegistration(String regId, String canonicalRegId, MsoNotification notification) {
         
         if (regId == null || canonicalRegId == null || notification == null) {
             return ;
@@ -276,5 +276,4 @@ public class GCMLib {
         
         return longValue;
     }
-
 }

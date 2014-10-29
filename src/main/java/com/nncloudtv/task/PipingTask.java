@@ -3,7 +3,6 @@ package com.nncloudtv.task;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -26,7 +25,7 @@ public class PipingTask extends Thread {
     protected boolean  keepGoing = true;
     protected final int  BUFSIZE = 294001;
     protected byte[]         buf = null;
-    protected Date     startTime = null;
+    protected long     startTime = 0;
     protected int    timeoutMili = 0;
     
     public PipingTask(InputStream in, OutputStream out, int timeout) {
@@ -36,7 +35,7 @@ public class PipingTask extends Thread {
         this.out = out;
         this.keepGoing = true;
         this.buf = new byte[BUFSIZE];
-        this.startTime = NnDateUtil.now();
+        this.startTime = NnDateUtil.timestamp();
         this.timeoutMili = timeout * 1000;
     }
     
@@ -60,7 +59,7 @@ public class PipingTask extends Thread {
         int  len       = 0;
         long total     = 0;
         long lastTotal = 0;
-        Date lastTime  = startTime;
+        long lastTime  = startTime;
         try {
             do {
                 len = in.read(buf);
@@ -76,19 +75,19 @@ public class PipingTask extends Thread {
                     // progress log
                     if (total % 19 == 0 ) {
                         
-                        Date now = NnDateUtil.now();
-                        long deltaMiliSec = (now.getTime() - lastTime.getTime());
+                        long timestamp = NnDateUtil.timestamp();
+                        long deltaMiliSec = (timestamp - lastTime);
                         
                         if (deltaMiliSec > 2000) {
                             
                             long deltaLen = total - lastTotal;
-                            long totalMiliSec = now.getTime() - startTime.getTime();
+                            long totalMiliSec = timestamp - startTime;
                             float pipingSpeed = ((float) deltaLen / deltaMiliSec) * 8;
                             float avarageSpeed = ((float) total / totalMiliSec) * 8;
                             
                             System.out.println(String.format("[pipe] total = %s, speed = %5.1f kbits/s, avarage = %5.1f kbits/s, last %s", FileUtils.byteCountToDisplaySize(total), pipingSpeed, avarageSpeed, DurationFormatUtils.formatDurationHMS(totalMiliSec)));
                             
-                            lastTime = now;
+                            lastTime = timestamp;
                             lastTotal = total;
                         }
                     }
@@ -100,7 +99,7 @@ public class PipingTask extends Thread {
                     sleep(31);
                 }
                 
-                if (timeoutMili > 0 && NnDateUtil.now().getTime() - startTime.getTime() > timeoutMili) {
+                if (timeoutMili > 0 && NnDateUtil.timestamp() - startTime > timeoutMili) {
                     
                     log.warning("streaming is too long, give up.");
                     break;

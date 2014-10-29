@@ -819,7 +819,7 @@ public class ApiMisc extends ApiGeneric {
                 metadata.setContentType("image/png");
                 metadata.setContentLength(baos.size());
                 thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  "thumb-xx" + NnDateUtil.timestamp() + ".png",
                                                   new ByteArrayInputStream(baos.toByteArray()),
                                                   metadata);
             }

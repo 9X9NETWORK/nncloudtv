@@ -70,7 +70,7 @@ public class FeedingAvconvTask extends PipingTask {
                     sleep(100);
                 }
                 
-                if (timeoutMili > 0 && NnDateUtil.now().getTime() - startTime.getTime() > timeoutMili) {
+                if (timeoutMili > 0 && NnDateUtil.timestamp() - startTime > timeoutMili) {
                     
                     log.warning("streaming is too long, give up.");
                     break;

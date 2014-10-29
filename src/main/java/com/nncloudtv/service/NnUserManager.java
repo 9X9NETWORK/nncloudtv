@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -56,7 +57,7 @@ public class NnUserManager {
         if (user.getToken() == null)
             user.setToken(NnUserManager.generateToken(shard));
         user.setShard(shard);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         user.setCreateDate(now);
         user.setUpdateDate(now);
         if (profile.getProfileUrl() == null) {
@@ -212,7 +213,7 @@ public class NnUserManager {
     }
     
     public NnUser createGuest(Mso mso, HttpServletRequest req) {
-        String password = String.valueOf(("token" + Math.random() + new Date().getTime()).hashCode());
+        String password = String.valueOf(("token" + Math.random() + NnDateUtil.timestamp()).hashCode());
         NnUser guest = new NnUser(NnUser.GUEST_EMAIL, password, NnUser.TYPE_USER);
         this.create(guest, req, (short)0);
         return guest;
@@ -227,7 +228,7 @@ public class NnUserManager {
             user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
         }
         user.setEmail(user.getEmail().toLowerCase());
-        user.setUpdateDate(new Date());
+        user.setUpdateDate(NnDateUtil.now());
         NnUserProfile profile = user.getProfile();
         profile = NNF.getProfileMngr().save(user, profile);
         resetChannelCache(user);
@@ -237,7 +238,7 @@ public class NnUserManager {
         user.setProfile(profile);
         return user;
     }
-
+    
     public void resetChannelCache(NnUser user) {
         NnChannelManager chMngr = NNF.getChannelMngr();
         List<NnChannel> channels = chMngr.findByUser(user, 0, false);
@@ -251,14 +252,14 @@ public class NnUserManager {
     public static String generateToken(short shard) {
         if (shard == 0)
             return null;
-        String time = String.valueOf(new Date().getTime());
+        String time = String.valueOf(NnDateUtil.timestamp());
         String random = RandomStringUtils.randomAlphabetic(10);
         String result = time + random;
         result = RandomStringUtils.random(20, 0, 20, true, true, result.toCharArray());
         result = shard + "-" + result;
         return result;
     }    
-
+    
     private NnUser populateUserProfile(NnUser user) {
         if (user != null) {
             log.info("user mso id:" + user.getMsoId());

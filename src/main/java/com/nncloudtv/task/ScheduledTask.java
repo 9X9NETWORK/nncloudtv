@@ -1,6 +1,5 @@
 package com.nncloudtv.task;
 
-import java.util.Date;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -43,9 +42,9 @@ public class ScheduledTask {
         if (CacheFactory.isEnabled) {
             
             log.info("[memcache] checking memcache server(s) ...");
-            long before = NnDateUtil.now().getTime();
+            long before = NnDateUtil.timestamp();
             CacheFactory.reconfigClient();
-            log.info("[memcache] reconfig costs " + (NnDateUtil.now().getTime() - before) + " milliseconds");
+            log.info("[memcache] reconfig costs " + (NnDateUtil.timestamp() - before) + " milliseconds");
         }
         
     }

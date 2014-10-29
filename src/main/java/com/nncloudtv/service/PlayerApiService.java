@@ -36,6 +36,7 @@ import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -139,19 +140,18 @@ public class PlayerApiService {
         if (brandExpireConfig != null) {
             try {
                 //"January 2, 2019";
-            Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
-            Date now = new Date();
-            if (now.after(date)) {
-                log.info("mso " + mso.getName() + " expires!");
-            return NnStatusCode.APP_EXPIRE;
-        }
+                Date date = new SimpleDateFormat("MMMM d, yyyy").parse(brandExpireConfig.getValue());
+                if (NnDateUtil.now().after(date)) {
+                    log.info(String.format("mso %s expires!", mso.getName()));
+                    return NnStatusCode.APP_EXPIRE;
+                }
             } catch (ParseException e) {
-            NnLogUtil.logException(e);
+                NnLogUtil.logException(e);
             }
         }
         MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.APP_VERSION_EXPIRE);
         if (appExpireConfig != null) {
-            String[] str = appExpireConfig.getValue().split(";");            
+            String[] str = appExpireConfig.getValue().split(";");
             for (String s : str) {
                if (this.appVersion != null && this.appVersion.equals(s)) {
                    log.info("expire version:" + this.appVersion);
@@ -173,7 +173,7 @@ public class PlayerApiService {
         
         if (this.format == ApiContext.FORMAT_PLAIN) {
             try {
-                resp.setContentType("text/plain;charset=utf-8");                
+                resp.setContentType("text/plain;charset=utf-8");
                 resp.getWriter().print(output);
                 resp.flushBuffer();
             } catch (IOException e) {
@@ -181,9 +181,9 @@ public class PlayerApiService {
             }
             return null;
         }        
-        return output;        
+        return output;
     }
-        
+    
     public Object handleException (Exception e) {
         if (e.getClass().equals(NumberFormatException.class)) {
             return this.assembleMsgs(NnStatusCode.INPUT_BAD, null);            
@@ -193,8 +193,8 @@ public class PlayerApiService {
         } 
         NnLogUtil.logException(e);
         return this.assembleMsgs(NnStatusCode.ERROR, null);
-    }    
-
+    }
+    
     public long addMsoInfoVisitCounter(boolean readOnly) {
         if (!readOnly) {
             if (NNF.getConfigMngr().isQueueEnabled(true)) {
@@ -203,9 +203,9 @@ public class PlayerApiService {
                 return NNF.getMsoMngr().addMsoVisitCounter(readOnly);
             }
         }
-        return NNF.getMsoMngr().addMsoVisitCounter(readOnly);                                     
+        return NNF.getMsoMngr().addMsoVisitCounter(readOnly);
     }
-            
+    
     //assemble key and value string
     public static String assembleKeyValue(String key, String value) {
         return key + "\t" + value + "\n";
@@ -247,15 +247,16 @@ public class PlayerApiService {
     public Object prepareUserInfo(NnUser user, NnGuest guest, HttpServletRequest req, boolean login) {
         return NNF.getUserMngr().getPlayerUserInfo(user, guest, req, login, this.format);
     }
-
-    public void setUserCookie(HttpServletResponse resp, String cookieName, String userId) {        
+    
+    public void setUserCookie(HttpServletResponse resp, String cookieName, String userId) {
         CookieHelper.setCookie(resp, cookieName, userId);
-    }    
-    public Object relatedApps(String mso, String os, String stack, String sphere, HttpServletRequest req) {     
-        sphere = this.checkLang(sphere);    
+    }
+    
+    public Object relatedApps(String mso, String os, String stack, String sphere, HttpServletRequest req) {
+        sphere = this.checkLang(sphere);
         ApiContext context = new ApiContext(req);
         short type = App.TYPE_IOS;
-        if (os == null) {      
+        if (os == null) {
            if (context.isAndroid()) {
               type = App.TYPE_ANDROID;
            }
@@ -353,29 +354,29 @@ public class PlayerApiService {
             user = new NnUser(me.getEmail(), me.getId(), me.getAccessToken());
             NnUserProfile profile = new NnUserProfile(mso.getId(), me.getName(), null, null, null);
             user.setProfile(profile);            
-            user.setExpires(new Date().getTime() + expire);
+            user.setExpires(NnDateUtil.timestamp() + expire);
             user.setTemp(false);
             user.setMsoId(mso.getId());
             user = userMngr.setFbProfile(user, me);
             int status = userMngr.create(user, req, (short)0);
             if (status != NnStatusCode.SUCCESS)
-                return this.assembleMsgs(status, null);            
+                return this.assembleMsgs(status, null);
             //userMngr.subscibeDefaultChannels(user);
         } else {
-            user = userMngr.setFbProfile(user, me);            
+            user = userMngr.setFbProfile(user, me);
             log.info("FACEBOOK: original FB user login with fbId - " + user.getEmail() + ";email:" + user.getFbId());
             userMngr.save(user);
-        }        
+        }
         
         Object result = this.prepareUserInfo(user, null, req, true);
         this.setUserCookie(resp, CookieHelper.USER, user.getToken());
         if (this.format == ApiContext.FORMAT_PLAIN) {
             String[] value = {(String) result};
-            return this.assembleMsgs(NnStatusCode.SUCCESS, value);                        
+            return this.assembleMsgs(NnStatusCode.SUCCESS, value);
         }
-        return this.assembleMsgs(NnStatusCode.SUCCESS, result);        
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
     }
-        
+    
     //TODO move to usermanager
     public Object fbWebSignup(String accessToken, String expires, String msoString, HttpServletRequest req, HttpServletResponse resp) {
         log.info("msoString:" + msoString);
@@ -1575,8 +1576,7 @@ public class PlayerApiService {
             guestMngr.save(guest, null);
             return NnStatusCode.CAPTCHA_FAILED;
         }
-        Date now = new Date();
-        if (now.after(guest.getExpiredAt()))
+        if (NnDateUtil.now().after(guest.getExpiredAt()))
             return NnStatusCode.CAPTCHA_FAILED;
         return NnStatusCode.SUCCESS;
     }

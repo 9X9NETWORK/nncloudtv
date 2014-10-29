@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 
 @PersistenceCapable(table="user_invite", detachable="true")
@@ -111,7 +112,7 @@ public class UserInvite {
     }        
 
     public static String generateToken() {
-        String time = String.valueOf(new Date().getTime());
+        String time = String.valueOf(NnDateUtil.timestamp());
         String random = RandomStringUtils.randomAlphabetic(10);
         String result = time + random;
         result = RandomStringUtils.random(15, 0, 15, true, true, result.toCharArray());
