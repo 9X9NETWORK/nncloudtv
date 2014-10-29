@@ -75,12 +75,12 @@ public class PipingTask extends Thread {
                     out.write(buf, 0, len);
                     
                     // progress log
-                    if (total % 13 == 0 ) {
+                    if (total % 17 == 0 ) {
                         
                         Date now = NnDateUtil.now();
                         long deltaMiliSec = (now.getTime() - lastTime.getTime());
                         
-                        if (deltaMiliSec > 1000) {
+                        if (deltaMiliSec > 2000) {
                             
                             long deltaLen = total - lastTotal;
                             long totalMiliSec = now.getTime() - startTime.getTime();
