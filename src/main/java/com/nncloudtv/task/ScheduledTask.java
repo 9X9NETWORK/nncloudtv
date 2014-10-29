@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnDateUtil;
 
 @Service
 @EnableScheduling
@@ -41,10 +42,10 @@ public class ScheduledTask {
         
         if (CacheFactory.isEnabled) {
             
-            log.info("checking memcache server(s) ...");
-            long now = new Date().getTime();
+            log.info("[memcache] checking memcache server(s) ...");
+            long before = NnDateUtil.now().getTime();
             CacheFactory.reconfigClient();
-            log.info("memcache reconfig costs " + (new Date().getTime() - now) + " milliseconds");
+            log.info("[memcache] reconfig costs " + (NnDateUtil.now().getTime() - before) + " milliseconds");
         }
         
     }
