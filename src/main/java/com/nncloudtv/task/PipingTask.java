@@ -24,7 +24,7 @@ public class PipingTask extends Thread {
     protected InputStream     in = null;
     protected OutputStream   out = null;
     protected boolean  keepGoing = true;
-    protected final int  BUFSIZE = 216091;
+    protected final int  BUFSIZE = 294001;
     protected byte[]         buf = null;
     protected Date     startTime = null;
     protected int    timeoutMili = 0;
