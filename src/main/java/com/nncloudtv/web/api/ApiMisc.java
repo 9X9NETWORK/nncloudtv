@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -355,7 +353,6 @@ public class ApiMisc extends ApiGeneric {
             
             NnLogUtil.logException(e);
             internalError(resp, e);
-            
             return null;
         }
         resp.setContentType(PLAIN_TEXT_UTF8);
@@ -363,7 +360,7 @@ public class ApiMisc extends ApiGeneric {
         resp.addHeader("Cache-Control", "private, max-age=3600");
         return result;
     }
-	
+    
 	@RequestMapping("*")
 	public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
 		
@@ -392,6 +389,7 @@ public class ApiMisc extends ApiGeneric {
 				message = BLACK_HOLE;
 			}
 		} catch (IOException e) {
+            
             internalError(resp);
             return null;
         }
@@ -405,7 +403,7 @@ public class ApiMisc extends ApiGeneric {
         
         return message + "\n";
     }
-	
+    
     @RequestMapping(value = "sns/facebook", method = RequestMethod.POST)
     public @ResponseBody String postToFacebook(HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false) String mso) {
@@ -534,14 +532,16 @@ public class ApiMisc extends ApiGeneric {
             
             NnNetUtil.proxyTo(livestreamApiUrl, resp).join();
             
-        } catch (Exception e) {
+        } catch (IOException e) {
             
             log.info(e.getClass().getName());
             log.info(e.getMessage());
-            internalError(resp);
-            return;
+            
+        } catch (InterruptedException e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
         }
-        
     }
     
     @RequestMapping(value = "ustream")
@@ -610,14 +610,17 @@ public class ApiMisc extends ApiGeneric {
             
             NnNetUtil.proxyTo(urlStr, resp).join();
             
-        } catch (Exception e) {
+        } catch (IOException e) {
             
             log.info(e.getClass().getName());
             log.info(e.getMessage());
             internalError(resp);
-            return;
+            
+        } catch (InterruptedException e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
         }
-        
     }
     
     @RequestMapping(value = "302")
@@ -724,7 +727,13 @@ public class ApiMisc extends ApiGeneric {
             
             StreamFactory.streamTo(videoUrl, resp).join();;
             
-        } catch (Exception e) {
+        } catch (IOException e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
+            internalError(resp);
+            
+        } catch (InterruptedException e) {
             
             log.info(e.getClass().getName());
             log.info(e.getMessage());
@@ -752,41 +761,23 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        // check url format
-        try {
-            URL url = new URL(videoUrl);
-            url.openConnection();
-        } catch (MalformedURLException e) {
-            log.info("bad url format");
-            return empty;
-        } catch (IOException e) {
-            log.info("failed to open url");
-            return empty;
-        }
-        
         InputStream videoIn = null;
-        String thumbnailUrl = null;
-        
         StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
         if (streamLib != null) {
             
             String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-            if (directVideoUrl != null) {
+            if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
                 
                 videoUrl = directVideoUrl;
                 
             } else {
                 
-                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
-                if (directVideoStream != null) {
-                    
-                    videoIn = directVideoStream;
-                }
+                videoIn = streamLib.getDirectVideoStream(videoUrl);
             }
         }
         
         FeedingAvconvTask feedingAvconvTask = null;
-        
+        String thumbnailUrl = null;
         try {
             String cmd = "/usr/bin/avconv -v debug -i "
                        + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")

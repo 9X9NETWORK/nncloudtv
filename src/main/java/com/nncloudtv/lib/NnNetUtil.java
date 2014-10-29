@@ -90,7 +90,8 @@ public class NnNetUtil {
             List<String> values = entry.getValue();
             for (String value : values) {
                 
-                resp.setHeader(key, value);
+                if (key != null)
+                    resp.setHeader(key, value);
                 System.out.println("[header] " + ((key == null) ? value : (key + ": " + value)));
             }
         }
