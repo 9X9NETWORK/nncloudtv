@@ -74,11 +74,11 @@ public class StreamFactory {
         try {
             
             NnNetUtil.proxyTo(videoUrl, resp);
+            log.info("streamTo finished");
             
         } catch (IOException e) {
             // maybe player closed
             log.info("streamTo stopped");
-            log.info(e.getMessage());
         }
     }
     
