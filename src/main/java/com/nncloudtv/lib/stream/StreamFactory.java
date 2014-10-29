@@ -3,7 +3,6 @@ package com.nncloudtv.lib.stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -74,7 +73,7 @@ public class StreamFactory {
         return NnNetUtil.proxyTo(videoUrl, resp);
     }
     
-    public static void streaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {
+    public static void streaming(String videoUrl, OutputStream videoOut) {
         
         log.info("streamming " + videoUrl);
         if (videoUrl == null || videoOut == null) { return; }
@@ -123,13 +122,18 @@ public class StreamFactory {
             log.info("streaming done");
             
         } catch (InterruptedException e) {
+            
             log.warning(e.getMessage());
-            return;
+            
         } catch (IOException e) {
+            
             // maybe player closed
             log.info("streaming stopped");
             log.info(e.getMessage());
+            
         } finally {
+            
+            // clean up
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
             }

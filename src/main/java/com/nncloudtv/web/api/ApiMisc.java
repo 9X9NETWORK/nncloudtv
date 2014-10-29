@@ -661,6 +661,11 @@ public class ApiMisc extends ApiGeneric {
             return;
         }
         
+        boolean transcoding = true;
+        if (req.getParameter("transcoding") == null) {
+            transcoding = false;
+        }
+        
         Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
         
         if (ytPlaylistMatcher.find()) {
@@ -697,7 +702,7 @@ public class ApiMisc extends ApiGeneric {
                     String href = entry.getHtmlLink().getHref();
                     
                     writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
-                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
                 }
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
@@ -725,7 +730,15 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            StreamFactory.streamTo(videoUrl, resp).join();;
+            if (transcoding) {
+                
+                resp.setContentType("video/mp2t");;
+                StreamFactory.streaming(videoUrl, resp.getOutputStream());
+                
+            } else {
+                
+                StreamFactory.streamTo(videoUrl, resp).join();;
+            }
             
         } catch (IOException e) {
             

@@ -464,23 +464,11 @@ public class ApiContent extends ApiGeneric {
             
             StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
             
-        } catch (MalformedURLException e) {
-            
-            log.warning("MalformedURLException");
-            log.warning(e.getMessage());
-            return;
-            
         } catch (IOException e) {
             
-            log.info("IOException");
+            log.info(e.getClass().getName());
             log.info(e.getMessage());
-            
-        } finally {
-            
-            try {
-                resp.flushBuffer();
-            } catch (IOException e) {
-            }
+            internalError(resp);
         }
     }
     
