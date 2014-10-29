@@ -53,10 +53,10 @@ public class StreamFactory {
         return null;
     }
     
-    public static void streamTo(String videoUrl, HttpServletResponse resp) {
+    public static PipingTask streamTo(String videoUrl, HttpServletResponse resp) throws IOException {
         
         log.info("streamTo " + videoUrl);
-        if (videoUrl == null || resp == null) { return; }
+        if (videoUrl == null || resp == null) { throw new IllegalArgumentException(); }
         
         StreamLib streamLib = getStreamLib(videoUrl);
         if (streamLib != null) {
@@ -71,15 +71,7 @@ public class StreamFactory {
             log.info("direct link");
         }
         
-        try {
-            
-            NnNetUtil.proxyTo(videoUrl, resp);
-            log.info("streamTo finished");
-            
-        } catch (IOException e) {
-            // maybe player closed
-            log.info("streamTo stopped");
-        }
+        return NnNetUtil.proxyTo(videoUrl, resp);
     }
     
     public static void streaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {

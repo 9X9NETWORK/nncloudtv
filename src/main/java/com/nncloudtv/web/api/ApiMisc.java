@@ -532,12 +532,12 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.proxyTo(livestreamApiUrl, resp);
+            NnNetUtil.proxyTo(livestreamApiUrl, resp).join();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             
             log.info(e.getClass().getName());
-            log.warning(e.getMessage());
+            log.info(e.getMessage());
             internalError(resp);
             return;
         }
@@ -583,16 +583,16 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.prerenderTo(urlStr, resp);
+            PipingTask task = NnNetUtil.prerenderTo(urlStr, resp);
+            task.join();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             
             log.info(e.getClass().getName());
             log.warning(e.getMessage());
             internalError(resp);
             return;
         }
-        
     }
     
     @RequestMapping(value = "cors", method = RequestMethod.GET)
@@ -608,12 +608,12 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.proxyTo(urlStr, resp);
+            NnNetUtil.proxyTo(urlStr, resp).join();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             
             log.info(e.getClass().getName());
-            log.warning(e.getMessage());
+            log.info(e.getMessage());
             internalError(resp);
             return;
         }
@@ -701,12 +701,9 @@ public class ApiMisc extends ApiGeneric {
                 
                 resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
-                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
-                
-            } catch (MalformedURLException e) {
-                
-                log.warning(e.getMessage());
-                return;
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                IOUtils.copy(bais, System.out);
+                IOUtils.copy(bais, resp.getOutputStream());
                 
             } catch (IOException e) {
                 
@@ -723,7 +720,15 @@ public class ApiMisc extends ApiGeneric {
             return;
         }
         
-        StreamFactory.streamTo(videoUrl, resp);
+        try {
+            
+            StreamFactory.streamTo(videoUrl, resp).join();;
+            
+        } catch (Exception e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
+        }
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)
