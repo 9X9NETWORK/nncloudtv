@@ -718,38 +718,12 @@ public class ApiMisc extends ApiGeneric {
                 log.warning("ServiceException");
                 log.warning(e.getMessage());
                 return;
-            } finally {
-                
-                try {
-                    resp.flushBuffer();
-                } catch (IOException e) {
-                }
             }
             
             return;
         }
         
-        try {
-            
-            StreamFactory.streaming(videoUrl, resp.getOutputStream());
-            
-        } catch (MalformedURLException e) {
-            
-            badRequest(resp, INVALID_PARAMETER);
-            return;
-            
-        } catch (IOException e) {
-            
-            log.info("IOException");
-            log.info(e.getMessage());
-            
-        } finally {
-            
-            try {
-                resp.flushBuffer();
-            } catch (IOException e) {
-            }
-        }
+        StreamFactory.streamTo(videoUrl, resp);
     }
     
     @RequestMapping(value = "thumbnails", method = RequestMethod.GET)

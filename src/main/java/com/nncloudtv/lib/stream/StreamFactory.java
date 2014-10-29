@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
@@ -46,27 +48,44 @@ public class StreamFactory {
             }
         }
         
-        log.info("no StreamLib matched");
+        log.info("no streamlib matched");
         
         return null;
     }
     
+    public static void streamTo(String videoUrl, HttpServletResponse resp) {
+        
+        log.info("streamTo " + videoUrl);
+        if (videoUrl == null || resp == null) { return; }
+        
+        StreamLib streamLib = getStreamLib(videoUrl);
+        if (streamLib != null) {
+            
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null) {
+                
+                videoUrl = directVideoUrl;
+            }
+        } else {
+            
+            log.info("direct link");
+        }
+        
+        try {
+            
+            NnNetUtil.proxyTo(videoUrl, resp);
+            
+        } catch (IOException e) {
+            // maybe player closed
+            log.info("streamTo stopped");
+            log.info(e.getMessage());
+        }
+    }
+    
     public static void streaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {
         
-        log.info("videoUrl = " + videoUrl);
+        log.info("streamming " + videoUrl);
         if (videoUrl == null || videoOut == null) { return; }
-        
-        // check url format
-        try {
-            URL url = new URL(videoUrl);
-            url.openConnection();
-        } catch (MalformedURLException e) {
-            log.warning("invalid url format");
-            return;
-        } catch (IOException e) {
-            log.warning("fail to open url");
-            return;
-        }
         
         InputStream videoIn = null;
         StreamLib streamLib = getStreamLib(videoUrl);
@@ -87,6 +106,7 @@ public class StreamFactory {
                 }
             }
         }
+        
         FeedingAvconvTask feedingAvconvTask = null;
         PipingTask pipingTask = null;
         

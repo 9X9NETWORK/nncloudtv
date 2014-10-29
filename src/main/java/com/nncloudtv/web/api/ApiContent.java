@@ -458,7 +458,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("video/mpegts");;
+        resp.setContentType("video/mp2t");;
         
         try {
             
