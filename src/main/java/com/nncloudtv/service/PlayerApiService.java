@@ -1649,9 +1649,12 @@ public class PlayerApiService {
             String toEmail = "feedback@9x9.tv";
             String toName = "feedback";
             String subject = "User send a report";
+            ApiContext context = new ApiContext(req);
+            Mso mso = context.getMso();
             NnUserProfile profile = user.getProfile();
-            String body = "user ui-lang:" + profile.getLang() + "\n";                
-            body += "user region:" + profile.getSphere() + "\n\n";
+            String body = "user ui-lang:" + profile.getLang() + "\n";
+            body += "user region:" + profile.getSphere() + "\n";
+            body += "user brand:" + mso.getName() + "\n\n";
             body += content;
             try {
                 body = URLDecoder.decode(body, "utf-8");
