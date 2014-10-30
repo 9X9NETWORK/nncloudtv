@@ -34,8 +34,9 @@ public class SysTag {
     
     @Persistent
     protected short sorting; // indicate how to sort SysTagMaps that belong to this SysTag
-    public static final short SORT_SEQ = 1; //default
-    public static final short SORT_DATE = 2;
+    public static final short SORT_UNKNWON = 0;
+    public static final short SORT_SEQ     = 1; //default
+    public static final short SORT_DATE    = 2;
     
     @Persistent
     short seq;

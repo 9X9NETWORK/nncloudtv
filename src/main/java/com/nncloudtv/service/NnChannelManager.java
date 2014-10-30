@@ -797,7 +797,7 @@ public class NnChannelManager {
             String adjust = "";            
             String[] lines = channelInfo.split("\n");
             if (channels.size() > 0) {
-                for (int i=0; i<lines.length; i++) {                   
+                for (int i=0; i<lines.length; i++) {
                     lines[i] = lines[i].replaceAll("^\\d+\\t", channels.get(i).getSeq() + "\t");
                     //log.info("ch id:" + channels.get(i).getId() + "; seq = " + channels.get(i).getSeq());
                     adjust += lines[i] + "\n";
@@ -1086,9 +1086,7 @@ public class NnChannelManager {
                             episodes.add(candidates.get(0));
                         }
                     }
-                    
                     Collections.sort(episodes, NnEpisodeManager.getComparator("publishDate"));
-                    
                     for (int i = 0; i < 3 && i < episodes.size(); i++) {
                         lastEpisodeTitle += "|" + episodes.get(i).getName();
                         imageUrl += "|" + episodes.get(i).getImageUrl();
@@ -1100,7 +1098,6 @@ public class NnChannelManager {
                 Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
                 for (int i=0; i<3; i++) {
                     if (i < programs.size()) {
-                       //lastEpisodeTitle = programs.get(0).getName();
                        imageUrl += "|" + programs.get(i).getImageUrl();
                        log.info("imageUrl = " + imageUrl);
                     } else {
@@ -1113,7 +1110,6 @@ public class NnChannelManager {
                 Collections.sort(episodes, NnEpisodeManager.getComparator("isPublicFirst"));
                 for (int i=0; i<3; i++) {
                     if (i < episodes.size()) {
-                       //lastEpisodeTitle = episodes.get(0).getName();
                        lastEpisodeTitle += "|" + episodes.get(i).getName();
                        imageUrl += "|" + episodes.get(i).getImageUrl();
                        log.info("imageUrl = " + imageUrl);

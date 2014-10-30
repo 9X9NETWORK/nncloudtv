@@ -12,6 +12,7 @@ import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.SysTag;
 
 public class NnChannelDao extends GenericDao<NnChannel> {
     
@@ -20,7 +21,49 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     public NnChannelDao() {
         super(NnChannel.class);
     }    
+    
+    public long findPlayerChannelsCountBySysTag(long id, String lang, long msoId) {
         
+        return findBySysTag(id, lang, false, 0, 0, SysTag.SORT_UNKNWON, msoId, true).size();
+    }
+    
+    //player channels means status=true and isPublic=true
+    public List<NnChannel> findBySysTag(long systagId, String lang, boolean limitRows, int start, int count, short sort, long msoId, boolean isPlayer) {
+        
+        String orderStr = " order by m.alwaysOnTop desc,"
+                        + "          case m.alwaysOnTop when true then m.seq else (case c.sphere when '" + lang + "' then 1 else 2 end) end,"
+                        + "          c.updateDate desc ";
+        if (sort == SysTag.SORT_SEQ) {
+            
+            orderStr = " order by m.seq ";
+        }
+        if (limitRows){
+            
+            orderStr = " order by rand() limit 9 ";
+        }
+        if (start >= 0 && count > 0) {
+            //start = start - 1;
+            orderStr += String.format(" limit %d, %d", start, count);
+        }
+        String playerStr =    (!isPlayer) ? "" : String.format(" and c.isPublic = true and c.status = %d ", NnChannel.STATUS_SUCCESS);
+        String langStr   = (lang == null) ? "" : String.format(" and (c.sphere = %s or c.sphere = 'other') ", NnStringUtil.escapedQuote(lang));
+        String blackList =   (msoId == 0) ? "" : String.format(" and c.id not in (select channelId from store_listing where msoId = %d) ", msoId);
+        String query = "select * from nnchannel a1"
+                     + "   inner join (select distinct c.id "
+                     + "                 from systag_display d, systag_map m, nnchannel c "
+                     + "                where d.systagId = " + systagId 
+                     + "                  and d.systagId = m.systagId "
+                     + "                  and c.id = m.channelId "
+                     + "                  and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
+                     + "                  " + playerStr
+                     + "                  " + blackList
+                     + "                  " + langStr
+                     + "                  " + orderStr
+                     + "              ) a2 on a1.id = a2.id";
+        
+        return sql(query);
+    }
+    
     public List<NnChannel> findByContentType(short type) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>(); 
@@ -86,7 +129,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     @SuppressWarnings("unchecked")
     public static List<NnChannel> searchTemp(String queryStr, boolean all, int start, int limit) {
         log.info("start:" + start + ";end:" + limit);
-        if (start == 0) start = 0;            
+        if (start == 0) start = 0;
         if (limit == 0) limit = 9;
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -105,9 +148,8 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         } finally {
             pm.close();
         }
-
-        return detached;     
-    	
+        
+        return detached;
     }
     
     //replaced with Apache Lucene
@@ -152,7 +194,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         } finally {
             pm.close();
         }
-        return detached;     
+        return detached;
     }
         
     public List<NnChannel> findAllByStatus(short status) {
@@ -171,29 +213,19 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         }
         return detached;
     }    
-
+    
     //select id from nnchannel where poolType > 10 order by rand() limit 10;
     public List<NnChannel> findSpecial(short type, String lang, int limit) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>(); 
-        try {
-            String sql = "select * " +
-                          " from nnchannel " + 
-            		     " where poolType >= " + type + 
-                           " and (sphere = '" + lang + " 'or sphere = 'other')" + 
-                           " order by rand()";
-            if (limit > 0) 
-                sql += " limit " + limit;
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            @SuppressWarnings("unchecked")
-            List<NnChannel> channels = (List<NnChannel>) q.execute(type);
-            detached = (List<NnChannel>)pm.detachCopyAll(channels);
-        } finally {
-            pm.close();
-        }
-        return detached;
+        
+        String query = "SELECT * FROM nnchannel " 
+                     + "        WHERE poolType >= " + type 
+                     + "          AND (sphere = '" + lang + "' OR sphere = 'other') "
+                     + "     ORDER BY rand() ";
+        
+        if (limit > 0) 
+            query += " limit " + limit;
+        
+        return sql(query);
     }
     
     @SuppressWarnings("unchecked")
@@ -207,9 +239,9 @@ public class NnChannelDao extends GenericDao<NnChannel> {
                 q.setFilter("userIdStr == userIdStrParam");
                 q.declareParameters("String userIdStrParam");
                 if (limit != 0)
-                    q.setRange(0, limit);            
+                    q.setRange(0, limit);
                 channels = (List<NnChannel>) q.execute(userIdStr);
-            } else {                
+            } else {
                 String sql = 
                     "select * from nnchannel " +
                      "where  userIdStr = '" + userIdStr + "' " +
@@ -221,7 +253,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
                 log.info("Sql=" + sql);
                 Query q= pm.newQuery("javax.jdo.query.SQL", sql);
                 q.setClass(NnChannel.class);
-                channels = (List<NnChannel>) q.execute();                                
+                channels = (List<NnChannel>) q.execute();
             }
             
             channels = (List<NnChannel>)pm.detachCopyAll(channels);
@@ -239,13 +271,13 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             String sql = 
                 "select * from nnchannel " +
                  "where lower(sourceUrl) = lower(?)";
-
+            
             log.info("Sql=" + sql);
             Query q= pm.newQuery("javax.jdo.query.SQL", sql);
             
             q.setClass(NnChannel.class);
             @SuppressWarnings("unchecked")
-            List<NnChannel> channels = (List<NnChannel>) q.execute(url);                                
+            List<NnChannel> channels = (List<NnChannel>) q.execute(url);
             if (channels.size() > 0) {
                 channel = pm.detachCopy(channels.get(0));
             }
@@ -253,9 +285,9 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         } finally {
             pm.close();
         }
-        return channel;                
-    }        
-
+        return channel;
+    }
+    
     public NnChannel findFavorite(String userIdStr) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         NnChannel channel = null;
@@ -272,20 +304,22 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         } finally {
             pm.close();
         }
-        return channel;                
-    }        
+        return channel;
+    }
     
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
         
         String query = "select * from nncloudtv_content.nnchannel c "
-                     + "where c.id in "
-                     + "        (select channelId from nncloudtv_nnuser1.nnuser_watched "
-                     + "         where userId = " + userId
-                     + "         and msoId = " + msoId
-                     + "         and channelId not in "
-                     + "                (select channelId from nncloudtv_nnuser1.nnuser_subscribe "
-                     + "                 where userId = " + userId + " and msoId = " + msoId + ")) "
-                     + "order by updateDate desc";
+                     + "        where c.id in ("
+                     + "               select channelId from nncloudtv_nnuser1.nnuser_watched "
+                     + "                where userId = " + userId
+                     + "                  and msoId = " + msoId
+                     + "                  and channelId not in ("
+                     + "                                select channelId from nncloudtv_nnuser1.nnuser_subscribe "
+                     + "                                 where userId = " + userId + " and msoId = " + msoId
+                     + "                      )"
+                     + "              )"
+                     + "     order by updateDate desc";
         
         return sql(query);
     }

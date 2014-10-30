@@ -258,6 +258,7 @@ public class NnEpisodeManager {
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
+        
         return dao.findPlayerEpisode(channelId, sort, start, end);
     }
     

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.LangTable;
@@ -643,44 +644,37 @@ public class ApiMso extends ApiGeneric {
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
         Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long setId = evaluateLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
         else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "100") == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
         List<NnChannel> results = NNF.getSetService().getChannels(set.getId());
         results = NNF.getChannelMngr().normalize(results);
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.POST)
-    public @ResponseBody
-    String setChannelAdd(HttpServletRequest req,
+    public @ResponseBody void setChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
         Date now = new Date();
@@ -690,26 +684,28 @@ public class ApiMso extends ApiGeneric {
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Long verifiedUserId = userIdentify(req);
         if (verifiedUserId == null) {
+            
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
-            return null;
-        }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+            return;
+            
+        } else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+            
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // channelId
@@ -721,12 +717,12 @@ public class ApiMso extends ApiGeneric {
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
-                return null;
+                return;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
             log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         
         NnChannel channel = null;
@@ -734,14 +730,14 @@ public class ApiMso extends ApiGeneric {
         if (channel == null) {
             badRequest(resp, "Channel Not Found");
             log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         
         Mso mso = NNF.getMsoMngr().findById(set.getMsoId());
         if (NNF.getMsoMngr().isPlayableChannel(channel, mso.getId()) == false) {
             badRequest(resp, "Channel Cant Play On This Mso");
             log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         
         // alwaysOnTop
@@ -758,9 +754,8 @@ public class ApiMso extends ApiGeneric {
             featured = Boolean.valueOf(featuredStr);
         }
         NNF.getSysTagMngr().addChannel(setId, channelId, alwaysOnTop, featured, (short) 0);
-        log.info(printExitState(now, req, "ok"));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.DELETE)
@@ -824,7 +819,7 @@ public class ApiMso extends ApiGeneric {
     String setChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         log.info(printEnterState(now, req));
         
         Long setId = evaluateLong(setIdStr);
