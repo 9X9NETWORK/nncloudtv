@@ -70,11 +70,13 @@ public class MsoConfig implements Serializable  {
     public static String AD_ANDROID            = "ad-android"; //"admob" or "direct-video"
     public static String AUDIO_BACKGROUND      = "audio-background";
     public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
-    public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server";
+    public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server"; //soc1.flipr.tv 7708
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
     public static String SEARCH                = "search"; //all, store, off, youtube
     public static String STORE                 = "store"; //on, off
     public static String CMS_LOGO              = "cms-logo"; // private label cms logo
+    public static String CHAT                  = "chat"; //chat. values: server:irc.flipr.tv 6699;type:irc;method:none 
+    public static String BEAR                  = "bear"; //theme, ui touch up configuration. current values: grizzly, blackbear. blackbear is default
     
     public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";

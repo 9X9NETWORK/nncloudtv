@@ -1652,9 +1652,11 @@ public class PlayerApiService {
             String subject = "User send a report";
             ApiContext context = new ApiContext(req);
             Mso mso = context.getMso();
+            String os = context.getOs();
             NnUserProfile profile = user.getProfile();
             String body = "user ui-lang:" + profile.getLang() + "\n";
             body += "user region:" + profile.getSphere() + "\n";
+            body += "user os:" + os + "\n";
             body += "user brand:" + mso.getName() + "\n\n";
             body += content;
             try {
@@ -3529,4 +3531,10 @@ public class PlayerApiService {
         
         return assembleMsgs(NnStatusCode.SUCCESS, result);
     }
+
+    public Object chat(String userToken) {        
+        String[] result = { "" };        
+        return assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+
 }
