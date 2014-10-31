@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @EnableAspectJAutoProxy
 public class LoggingAspect {
     
-    @After("com.nncloudtv.web.api.ApiContext.isProductionSite(..)")
+    @After("execution(* com.nncloudtv.web.api.ApiContext.isProductionSite(..))")
     public void logApiEcho(JoinPoint joinPoint, Object result) {
         
         System.out.println("[aspect] " + joinPoint.getSignature().getName());
