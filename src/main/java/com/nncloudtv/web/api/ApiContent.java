@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -458,29 +457,17 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("video/mpegts");;
+        resp.setContentType("video/mp2t");;
         
         try {
             
             StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
             
-        } catch (MalformedURLException e) {
-            
-            log.warning("MalformedURLException");
-            log.warning(e.getMessage());
-            return;
-            
         } catch (IOException e) {
             
-            log.info("IOException");
+            log.info(e.getClass().getName());
             log.info(e.getMessage());
-            
-        } finally {
-            
-            try {
-                resp.flushBuffer();
-            } catch (IOException e) {
-            }
+            internalError(resp);
         }
     }
     
@@ -1255,7 +1242,7 @@ public class ApiContent extends ApiGeneric {
             channel.setReadonly(false);
             NNF.getChannelMngr().save(channel);
             
-            ok(resp);
+            msgResponse(resp, "OK");
             
         } else {
             

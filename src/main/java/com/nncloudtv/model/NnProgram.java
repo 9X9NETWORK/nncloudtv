@@ -38,19 +38,21 @@ public class NnProgram implements Serializable {
     
     @Persistent
     private short contentType;
-    public static final short CONTENTTYPE_MP4         = 0;  // direct link
-    public static final short CONTENTTYPE_YOUTUBE     = 1;  // 3rd party
-    public static final short CONTENTTYPE_SCRIPT      = 2;  // (not used)
-    public static final short CONTENTTYPE_RADIO       = 3;  // (not used)
-    public static final short CONTENTTYPE_REFERENCE   = 4;  // (not used)
-    public static final short CONTENTTYPE_PROTECTED   = 5;  // hosted video
-    public static final short CONTENTTYPE_VIMEO       = 6;  // 3rd party
-    public static final short CONTENTTYPE_WRAPPED     = 7;  // ----------------> API assigned
-    public static final short CONTENTTYPE_M3U8        = 8;  // direct link
-    public static final short CONTENTTYPE_USTREAM     = 9;  // 3rd party
-    public static final short CONTENTTYPE_LIVESTREAM  = 10; // 3rd party
-    public static final short CONTENTTYPE_DAILYMOTION = 11; // 3rd party
-    public static final short CONTENTTYPE_INDIRECT    = 12; // ----------------> API assigned
+    public static final short CONTENTTYPE_DIRECTLINK = 0; // direct link (not specifying type)
+    public static final short CONTENTTYPE_YOUTUBE    = 1; // 3rd party
+    public static final short CONTENTTYPE_SCRIPT     = 2; // (not used)
+    public static final short CONTENTTYPE_RADIO      = 3; // (not used)
+    public static final short CONTENTTYPE_REFERENCE  = 4; // (not used)
+    public static final short CONTENTTYPE_PROTECTED  = 5; // private video
+    public static final short CONTENTTYPE_VIMEO      = 6; // 3rd party
+    public static final short CONTENTTYPE_USTREAM    = 7; // 3rd party
+    public static final short CONTENTTYPE_LIVESTREAM = 8; // 3rd party
+    
+    public static final short CONTENTTYPE_M3U8 = 11; // direct link
+    public static final short CONTENTTYPE_MP4  = 12; // direct link
+    public static final short CONTENTTYPE_FLV  = 13; // direct link
+    // client approach only
+    public static final short CONTENTTYPE_DAILYMOTION = 101; // 3rd party
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)

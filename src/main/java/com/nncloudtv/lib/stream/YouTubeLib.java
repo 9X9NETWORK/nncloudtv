@@ -428,7 +428,7 @@ public class YouTubeLib  implements StreamLib {
         return null;
     }
     
-    public InputStream getDirectVideoStream(String urlStr) {
+    public static InputStream youtubeDL(String urlStr) {
         
         if (urlStr == null) { return null; }
         
@@ -449,5 +449,10 @@ public class YouTubeLib  implements StreamLib {
             log.warning(e.getMessage());
             return null;
         }
+    }
+    
+    public InputStream getDirectVideoStream(String urlStr) {
+        
+        return youtubeDL(urlStr);
     }
 }

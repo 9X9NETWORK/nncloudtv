@@ -49,6 +49,7 @@ import com.nncloudtv.service.NnPurchaseManager;
 import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.NotificationService;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
 import com.nncloudtv.service.PoiPointManager;
@@ -96,6 +97,7 @@ public class NNF {
     protected static CategoryService categoryService = null;
     protected static DepotService    depotService    = null;
     protected static EmailService    emailService    = null;
+    protected static NotificationService   notiService     = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -428,6 +430,17 @@ public class NNF {
         }
         
         return emailService;
+    }
+    
+    public static NotificationService getNotiService() {
+        
+        if (notiService == null) {
+            
+            log.info("create notiService");
+            notiService = new NotificationService();
+        }
+        
+        return notiService;
     }
     
     public static StoreListingManager getStoreListingMngr() {
