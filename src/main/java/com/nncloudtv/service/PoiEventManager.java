@@ -16,34 +16,25 @@ public class PoiEventManager {
     
     protected static final Logger log = Logger.getLogger(PoiEventManager.class.getName());
     
-    public PoiEvent create(PoiEvent poiEvent) {
-        Date now = new Date();
-        poiEvent.setCreateDate(now);
-        poiEvent.setUpdateDate(now);
-        poiEvent = NNF.getPoiEventDao().save(poiEvent);
-        return poiEvent;
-    }
-    
-    public PoiEvent save(PoiEvent poiEvent) {
-        Date now = new Date();
-        poiEvent.setUpdateDate(now);
-        poiEvent = NNF.getPoiEventDao().save(poiEvent);
-        return poiEvent;
+    public PoiEvent save(PoiEvent event) {
+        
+        event.setUpdateDate(new Date());
+        if (event.getCreateDate() == null) {
+            
+            event.setCreateDate(new Date());
+        }
+        event = NNF.getPoiEventDao().save(event);
+        
+        return event;
     }
     
     public void delete(PoiEvent poiEvent) {
-        if (poiEvent == null) {
-            return ;
-        }
+        
         NNF.getPoiEventDao().delete(poiEvent);
     }
     
     public void delete(List<PoiEvent> poiEvents) {
-        NNF.getPoiEventDao().deleteAll(poiEvents);
-    }
-    
-    public void deleteByIds(List<Long> eventIds) {
-        List<PoiEvent> poiEvents = NNF.getPoiEventDao().findAllByIds(eventIds); // when List too long, TODO : will need rewrite
+        
         NNF.getPoiEventDao().deleteAll(poiEvents);
     }
     
@@ -116,30 +107,6 @@ public class PoiEventManager {
         return result;
     }
     
-    public boolean isValidEventType(Short eventType) {
-        
-        if (eventType == null) {
-            return false;
-        }
-        if (eventType == PoiEvent.TYPE_POPUP) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_HYPERLINK) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_INSTANTNOTIFICATION) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_POLL) {
-            return true;
-        }
-        
-        return false;
-    }
-
     public PoiEvent findByPoi(Long poiId) {        
         PoiEvent result = NNF.getPoiEventDao().findByPoi(poiId);
         return result;

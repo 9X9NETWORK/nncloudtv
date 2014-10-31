@@ -27,15 +27,22 @@ public final class PMF {
     
     public PMF() { }
     
-    public static PersistenceManagerFactory get(@SuppressWarnings("rawtypes") Class c) {
-        if (c.equals(Pdr.class)) {
+    public static PersistenceManagerFactory get(@SuppressWarnings("rawtypes") Class cls) {
+        
+        if (cls.equals(Pdr.class)) {
+            
             return PMF.getAnalytics();
-        } else if (c.equals(BillingOrder.class) || c.equals(BillingPackage.class) || c.equals(BillingProfile.class) ||
-                   c.equals(NnPurchase.class)   || c.equals(NnItem.class)) {
+            
+        } else if (cls.equals(BillingOrder.class) || cls.equals(BillingPackage.class) || cls.equals(BillingProfile.class) ||
+                   cls.equals(NnPurchase.class)   || cls.equals(NnItem.class)) {
+            
             return PMF.getBilling();
-        } else if (c.equals(NnUser.class) || c.equals(NnUserSubscribe.class) || c.equals(NnUserSubscribeGroup.class)) {
+            
+        } else if (cls.equals(NnUser.class) || cls.equals(NnUserSubscribe.class) || cls.equals(NnUserSubscribeGroup.class)) {
+            
             throw new IllegalArgumentException("user related db are sharded.");
         }
+        
         return PMF.getContent();
     }
     

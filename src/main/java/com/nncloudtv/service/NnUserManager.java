@@ -262,7 +262,7 @@ public class NnUserManager {
     
     private NnUser populateUserProfile(NnUser user) {
         if (user != null) {
-            log.info("user mso id:" + user.getMsoId());
+            log.info("user mso = " + user.getMsoId());
             NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
             if (profile == null)
                 profile = new NnUserProfile(user.getId(), user.getMsoId());
@@ -313,6 +313,9 @@ public class NnUserManager {
     }
     
     public NnUser findByToken(String token, long msoId) {
+        
+        if (token == null) { return null; }
+        
         NnUser user = dao.findByToken(token);
         if (user != null) {
             user.setMsoId(msoId);
@@ -321,21 +324,12 @@ public class NnUserManager {
         return user;
     }
     
-    // TODO: rewrite
-    public Long findUserIdByToken(String token) {
-        NnUser user = dao.findByToken(token);
-        if (user != null) {
-            return user.getId();
-        }
-        return null;
-    }
-    
     //expect format shard-userId. example 1-1
     //if "-" is not present, assuming it's shard 1    
-    public NnUser findByIdStr(String id, long msoId) {
-        if (id == null)
+    public NnUser findByIdStr(String idStr, long msoId) {
+        if (idStr == null)
             return null;
-        String[] splits = id.split("-");
+        String[] splits = idStr.split("-");
         short shard = 1;
         long uid = 0;
         if (splits.length == 2) {
@@ -343,7 +337,7 @@ public class NnUserManager {
             if (splits[0].equals("2"))
                 shard = 2;
         } else {
-            uid = Long.parseLong(id);
+            uid = Long.parseLong(idStr);
         }
         return this.findById(uid, msoId, shard);
     }

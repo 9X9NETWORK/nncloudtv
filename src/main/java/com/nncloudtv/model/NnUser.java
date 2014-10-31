@@ -11,28 +11,30 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.AuthLib;
+import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * 9x9 User accounts
  */
-@PersistenceCapable(table="nnuser", detachable="true")
+@PersistenceCapable(table = "nnuser", detachable = "true")
 public class NnUser implements Serializable {
         
     private static final long serialVersionUID = -708171304411630395L;
-
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-        
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String token;  //each user has a unique token, could be a access_token from fb as well
     
     @Persistent
     private short shard; //which shard a user belongs to
+    public static short SHARD_UNKNWON = 0;
     public static short SHARD_DEFAULT = 1;
     public static short SHARD_CHINESE = 2;
-        
+    
     //xxx
     @NotPersistent
     private long msoId; //which mso a user belongs to
@@ -40,18 +42,18 @@ public class NnUser implements Serializable {
     //unique key, can be a facebook id
     //to get "email email", use getUserEmail
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String email; 
-
+    
     @NotPersistent
     private NnUserProfile profile;
     
     @NotPersistent
     private String password;
     
-    @Persistent (defaultFetchGroup="true")
+    @Persistent(defaultFetchGroup = "true")
     private byte[] cryptedPassword;
-
+    
     @Persistent
     private byte[] salt;
         
@@ -83,9 +85,9 @@ public class NnUser implements Serializable {
     //used to store facebook account email
     //to get "facebook id", use getUserFbId()
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String fbId;
-
+    
     @Persistent
     private long expires;
         
@@ -102,7 +104,7 @@ public class NnUser implements Serializable {
         this.type = type;
         this.profile = new NnUserProfile();
     }
-
+    
     //for facebook
     public NnUser(String email, String fbId, String fbToken) {
         this.email = fbId;
@@ -123,11 +125,11 @@ public class NnUser implements Serializable {
     public long getId() {
         return id;
     }
-
+    
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public String getIdStr() {
         return shard + "-" + this.getId();
     }
@@ -135,7 +137,7 @@ public class NnUser implements Serializable {
     public String getEmail() {
         return email;
     }
-
+    
     public String getUserEmail() {
         if (this.isFbUser()) {
             return fbId;
@@ -146,79 +148,79 @@ public class NnUser implements Serializable {
     public void setEmail(String email) {
         this.email = email;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public short getType() {
         return type;
     }
-
+    
     public void setType(short type) {
         this.type = type;
     }
-
+    
     public String getPassword() {
         return password;
     }
-
+    
     public void setPassword(String password) {
         this.password = password;
     }
-
+    
     public byte[] getCryptedPassword() {
         return cryptedPassword;
     }
-
+    
     public void setCryptedPassword(byte[] cryptedPassword) {
         this.cryptedPassword = cryptedPassword;
     }
-
+    
     public byte[] getSalt() {
         return salt;
     }
-
+    
     public void setSalt(byte[] salt) {
         this.salt = salt;
     }
-
+    
     public long getMsoId() {
         return msoId;
     }
-
+    
     public void setMsoId(long msoId) {
         this.msoId = msoId;
     }
-
+    
     public String getToken() {
         return token;
     }
-
+    
     public void setToken(String token) {
         this.token = token;
     }
-
+    
     public long getExpires() {
         return expires;
     }
-
+    
     public void setExpires(long expires) {
         this.expires = expires;
     }
-
+    
     public short getShard() {
         
         if (shard == 0) {
@@ -228,27 +230,27 @@ public class NnUser implements Serializable {
         
         return shard;
     }
-
+    
     public void setShard(short shard) {
         this.shard = shard;
     }
-
+    
     public boolean isTemp() {
         return isTemp;
     }
-
+    
     public void setTemp(boolean isTemp) {
         this.isTemp = isTemp;
     }
-
+    
     public String getFbId() {
         return fbId;
     }
-
+    
     public void setFbId(String fbId) {
         this.fbId = fbId;
     }
-
+    
     public String getUserFbId() {
         if (this.isFbUser()) {
             return email;
@@ -261,7 +263,7 @@ public class NnUser implements Serializable {
             return true;
         return false;
     }
-
+    
     public NnUserProfile getProfile() {
         
         if (profile == null) {
@@ -269,7 +271,7 @@ public class NnUser implements Serializable {
         }
         return profile;
     }
-
+    
     public void setProfile(NnUserProfile profile) {
         this.profile = profile;
     }

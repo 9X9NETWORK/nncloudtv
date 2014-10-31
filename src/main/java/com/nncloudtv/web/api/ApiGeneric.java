@@ -19,6 +19,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
@@ -168,17 +169,18 @@ public class ApiGeneric {
         }
     }
     
-    // TODO: rewrite
-	public Long userIdentify(HttpServletRequest req) {
-	    
-	    String token = CookieHelper.getCookie(req, "user");
-	    if (token == null) {
+    public NnUser identifiedUser(HttpServletRequest req) {
+        
+        String token = CookieHelper.getCookie(req, CookieHelper.USER);
+        if (token == null) {
+            
+            log.info("not logged in");
             return null;
         }
-	    Long userId = NNF.getUserMngr().findUserIdByToken(token);
-	    return userId;
-	}
-	
+        
+        return NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
+    }
+    
     public String ok(HttpServletResponse resp) {
         
         resp.setContentType(APPLICATION_JSON_UTF8);

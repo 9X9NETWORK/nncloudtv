@@ -57,13 +57,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(userId, promotion.getMsoId(), "111") == false) {
+        } else if (hasRightAccessPCS(user.getId(), promotion.getMsoId(), "111") == false) {
             
             forbidden(resp);
             return null;
@@ -124,13 +124,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(userId, promotion.getMsoId(), "111") == false) {
+        } else if (hasRightAccessPCS(user.getId(), promotion.getMsoId(), "111") == false) {
             
             forbidden(resp);
             return null;
@@ -151,13 +151,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(userId, mso.getId(), "100") == false) {
+        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
             
             forbidden(resp);
             return null;
@@ -261,13 +261,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -319,13 +319,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -437,13 +437,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -484,13 +484,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(verifiedUserId, sysTag.getMsoId(), "110") == false) {
+        } else if (hasRightAccessPCS(user.getId(), sysTag.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -621,13 +621,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -643,8 +643,6 @@ public class ApiMso extends ApiGeneric {
     List<NnChannel> setChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
-        
         Long setId = evaluateLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
@@ -657,12 +655,12 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "100") == false) {
             forbidden(resp);
             return null;
         }
@@ -694,14 +692,14 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return;
             
-        } else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+        } else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "110") == false) {
             
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
@@ -780,13 +778,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -836,12 +834,12 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
-        } else if (hasRightAccessPCS(verifiedUserId, set.getMsoId(), "110") == false) {
+        } else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -968,13 +966,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1022,13 +1020,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "110") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1136,14 +1134,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(userId, mso.getId(), "110") == false) {
+        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
             
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
@@ -1191,13 +1189,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1246,13 +1244,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1338,13 +1336,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1396,13 +1394,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "110") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1485,13 +1483,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1523,13 +1521,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1563,13 +1561,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "110") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1662,13 +1660,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, category.getMsoId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1723,13 +1721,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1762,13 +1760,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "110") == false) {
+        else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1806,12 +1804,12 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "010") == false) {
+        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
             
             forbidden(resp);
             return null;
@@ -1880,13 +1878,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        log.info("userId = " + verifiedUserId);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        log.info("userId = " + user);
+        if (user == null) {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(verifiedUserId, mso.getId(), "100") == false) {
+        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
             
             forbidden(resp);
             return null;
@@ -1953,13 +1951,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "100") == false) {
+        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "100") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -1990,13 +1988,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "110") == false) {
+        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "110") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -2070,13 +2068,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(verifiedUserId, notification.getMsoId(), "101") == false) {
+        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "101") == false) {
             forbidden(resp);
             log.info(printExitState(now, req, "403"));
             return null;
@@ -2093,8 +2091,8 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return;
         }
@@ -2109,13 +2107,8 @@ public class ApiMso extends ApiGeneric {
             internalError(resp);
             return;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
-        if (user == null) {
-            
-            notFound(resp, "User Not Found");
-            return;
-            
-        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+        
+        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
             
             forbidden(resp);
             return;
@@ -2133,8 +2126,8 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
@@ -2149,13 +2142,8 @@ public class ApiMso extends ApiGeneric {
             internalError(resp);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
-        if (user == null) {
-            
-            notFound(resp, "User Not Found");
-            return null;
-            
-        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+        
+        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
             
             forbidden(resp);
             return null;
@@ -2211,8 +2199,8 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
@@ -2221,13 +2209,8 @@ public class ApiMso extends ApiGeneric {
             badRequest(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
-        if (user == null) {
-            
-            notFound(resp, "User Not Found");
-            return null;
-            
-        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+        
+        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
             
             forbidden(resp);
             return null;
@@ -2266,8 +2249,8 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
-        Long userId = userIdentify(req);
-        if (userId == null) {
+        NnUser user = identifiedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
@@ -2276,13 +2259,8 @@ public class ApiMso extends ApiGeneric {
             badRequest(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, mso.getId());
-        if (user == null) {
-            
-            notFound(resp, "User Not Found");
-            return null;
-            
-        } else if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+        
+        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
             
             forbidden(resp);
             return null;

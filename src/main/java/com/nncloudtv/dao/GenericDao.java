@@ -2,6 +2,7 @@ package com.nncloudtv.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 
@@ -46,7 +48,7 @@ public class GenericDao<T> {
         
         if (dao == null) {return null;}
         PersistenceManager pm = getPersistenceManager();
-        
+        log.info(String.format("save %s", daoClass.getName()));
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
@@ -60,7 +62,7 @@ public class GenericDao<T> {
         
         if (list == null) { return list; }
         PersistenceManager pm = getPersistenceManager();
-        
+        log.info(String.format("saves %s", daoClass.getName()));
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -80,7 +82,7 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        
+        log.info(String.format("delete %s", daoClass.getName()));
         try {
             pm.deletePersistent(dao);
         } finally {
@@ -88,18 +90,20 @@ public class GenericDao<T> {
         }
     }
     
-    public void deleteAll(List<T> list) {
+    public void deleteAll(Collection<T> list) {
         
         if (list == null || list.isEmpty()) return;
         
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
+        log.info(String.format("deletes %s", daoClass.getName()));
         try {
             tx.begin();
             pm.deletePersistentAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {
+                log.warning("rolling back");
                 tx.rollback();
             }
             pm.close();
@@ -261,7 +265,7 @@ public class GenericDao<T> {
             return detached;
         }
         log.info("[sql] " + queryStr);
-        
+        long before = NnDateUtil.timestamp();
         try {
             
             Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
@@ -270,6 +274,7 @@ public class GenericDao<T> {
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
             query.closeAll();
+            log.info(String.format("query costs %f3.1 milliseconds", NnDateUtil.timestamp() - before));
             
         } finally {
             

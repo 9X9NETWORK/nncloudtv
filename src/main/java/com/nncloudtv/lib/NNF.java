@@ -52,6 +52,7 @@ import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.NotificationService;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
+import com.nncloudtv.service.PoiManager;
 import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.StoreListingManager;
@@ -86,6 +87,7 @@ public class NNF {
     protected static PoiPointManager        poiPointMngr        = null;
     protected static PoiEventManager        poiEventMngr        = null;
     protected static PoiCampaignManager     poiCampaignMngr     = null;
+    protected static PoiManager             poiMngr             = null;
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
@@ -498,7 +500,7 @@ public class NNF {
         return poiEventMngr;
     }
     
-    public static PoiCampaignManager getPoiCanpaignMngr() {
+    public static PoiCampaignManager getPoiCampaignMngr() {
         
         if (poiCampaignMngr == null) {
             
@@ -507,6 +509,17 @@ public class NNF {
         }
         
         return poiCampaignMngr;
+    }
+    
+    public static PoiManager getPoiMngr() {
+        
+        if (poiMngr == null) {
+            
+            log.info("create poiMngr");
+            poiMngr = new PoiManager();
+        }
+        
+        return poiMngr;
     }
     
     public static MsoNotificationManager getMsoNotiMngr() {
