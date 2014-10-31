@@ -2,11 +2,9 @@ package com.nncloudtv.aspect;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.aspectj.lang.annotation.Aspect;
 
-@Configuration
-@EnableAspectJAutoProxy
+@Aspect
 public class LoggingAspect {
     
     @After("execution(* com.nncloudtv.web.api.ApiContext.isProductionSite(..))")

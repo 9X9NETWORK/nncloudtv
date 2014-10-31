@@ -16,7 +16,9 @@
             http://www.springframework.org/schema/tx
             http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
             http://www.springframework.org/schema/task
-            http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+            http://www.springframework.org/schema/task/spring-task-3.0.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
     <mvc:annotation-driven />
 
@@ -27,6 +29,8 @@
                                          , com.nncloudtv.task
                                          , com.nncloudtv.aspect
                                          " />
+    
+    <aop:aspectj-autoproxy/>
 
     <!-- view resolver -->
     <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
