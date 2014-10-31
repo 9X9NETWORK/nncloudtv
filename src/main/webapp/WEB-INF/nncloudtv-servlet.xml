@@ -43,5 +43,6 @@
     </bean>
 
     <bean id="nnEventListener" class="com.nncloudtv.task.ApplicationListenerTask" />
+    <bean id="loggingAspect" class="com.nncloudtv.aspect.LoggingAspect" />
 
 </beans>

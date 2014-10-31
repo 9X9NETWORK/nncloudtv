@@ -2,11 +2,9 @@ package com.nncloudtv.aspect;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Aspect;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
-@Aspect
 @Configuration
 @EnableAspectJAutoProxy
 public class LoggingAspect {
