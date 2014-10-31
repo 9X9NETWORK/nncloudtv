@@ -1632,11 +1632,17 @@ public class PlayerApiService {
         if (item != null) {
             String[] key = item.split(",");
             String[] value = comment.split(",");
+            String description = "";
             if (key.length != value.length)
                 return this.assembleMsgs(NnStatusCode.INPUT_ERROR, null);
             for (int i=0; i<key.length; i++) {
-                content += key[i] + ":" + value[i] + "\n";
+            	if (!key[i].equals("description"))
+                    content += key[i] + ":" + value[i] + "\n";
+            	else
+                    description = value[i];
             }
+            if (description.length() > 0)
+        		content += "description:" + description + "\n";            	
         } else {
             content = comment; //backward compatibility
         }
