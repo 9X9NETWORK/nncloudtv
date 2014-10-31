@@ -25,6 +25,7 @@
                                          , com.nncloudtv.service
                                          , com.nncloudtv.lib
                                          , com.nncloudtv.task
+                                         , com.nncloudtv.aspect
                                          " />
 
     <!-- view resolver -->
