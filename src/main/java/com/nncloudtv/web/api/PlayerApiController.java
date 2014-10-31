@@ -3139,5 +3139,31 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
+
+    /**
+     * Get all available items
+     */
+    @RequestMapping(value="chat")
+    public @ResponseBody Object chat(
+            @RequestParam(value="user", required=false) String userToken,
+    		HttpServletRequest req, 
+    		HttpServletResponse resp) {
+        
+        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
+        PlayerApiService playerApiService = new PlayerApiService();
+        try {
+            int status = playerApiService.prepService(req, resp, true);
+            if (status != NnStatusCode.SUCCESS) {
+                return playerApiService.response(playerApiService.assembleMsgs(status, null));
+            }
+            output = playerApiService.chat(userToken);
+        } catch (Exception e) {
+            output = playerApiService.handleException(e);
+        } catch (Throwable t) {
+            NnLogUtil.logThrowable(t);
+        }
+        return playerApiService.response(output);
+    }
+
 }
 

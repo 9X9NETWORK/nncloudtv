@@ -1632,11 +1632,17 @@ public class PlayerApiService {
         if (item != null) {
             String[] key = item.split(",");
             String[] value = comment.split(",");
+            String description = "";
             if (key.length != value.length)
                 return this.assembleMsgs(NnStatusCode.INPUT_ERROR, null);
             for (int i=0; i<key.length; i++) {
-                content += key[i] + ":" + value[i] + "\n";
+            	if (!key[i].equals("description"))
+                    content += key[i] + ":" + value[i] + "\n";
+            	else
+                    description = value[i];
             }
+            if (description.length() > 0)
+        		content += "description:" + description + "\n";            	
         } else {
             content = comment; //backward compatibility
         }
@@ -1652,9 +1658,11 @@ public class PlayerApiService {
             String subject = "User send a report";
             ApiContext context = new ApiContext(req);
             Mso mso = context.getMso();
+            String os = context.getOs();
             NnUserProfile profile = user.getProfile();
             String body = "user ui-lang:" + profile.getLang() + "\n";
             body += "user region:" + profile.getSphere() + "\n";
+            body += "user os:" + os + "\n";
             body += "user brand:" + mso.getName() + "\n\n";
             body += content;
             try {
@@ -3529,4 +3537,10 @@ public class PlayerApiService {
         
         return assembleMsgs(NnStatusCode.SUCCESS, result);
     }
+
+    public Object chat(String userToken) {        
+        String[] result = { "" };        
+        return assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+
 }
