@@ -82,16 +82,12 @@
         <session-timeout>1</session-timeout>
     </session-config>
     <filter>
-        <filter-name>cors</filter-name>
-        <filter-class>com.nncloudtv.filter.CorsFilter</filter-class>
+        <filter-name>corsFilter</filter-name>
+        <filter-class>com.nncloudtv.filter.web.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>cors</filter-name>
-        <url-pattern>/playerAPI/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>cors</filter-name>
-        <url-pattern>/api/*</url-pattern>
+        <filter-name>corsFilter</filter-name>
+        <url-pattern>/(playerAPI|api)/*</url-pattern>
     </filter-mapping>
 
     <!-- ========================================================== -->
