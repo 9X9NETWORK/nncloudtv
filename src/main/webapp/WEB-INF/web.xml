@@ -87,7 +87,11 @@
     </filter>
     <filter-mapping>
         <filter-name>corsFilter</filter-name>
-        <url-pattern>/(playerAPI|api)/*</url-pattern>
+        <url-pattern>/playerAPI/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>corsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
     <!-- ========================================================== -->
