@@ -31,27 +31,18 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     }
     
     public NnUserProfile findByUser(NnUser user) {
-        if (user == null)
-            return null;
-        log.info("user id:" + user.getId() + ";mso id:" + user.getMsoId());
+        
         NnUserProfile detached = null;
         PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
-        try {
-            String sql = "select * " +
-                          " from nnuser_profile " + 
-                         " where msoId = " + user.getMsoId() +   
-                           " and userId = " + user.getId();
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnUserProfile.class);
-            @SuppressWarnings("unchecked")
-            List<NnUserProfile> results = (List<NnUserProfile>) q.execute();
-            if (results.size() > 0) {
-                detached = (NnUserProfile)pm.detachCopy(results.get(0));
-            }            
-        } finally {
-            pm.close();
+        String query = "SELECT * "
+                     + "  FROM nnuser_profile "
+                     + " WHERE msoId = " + user.getMsoId()
+                     + "   AND userId = " + user.getId();
+        List<NnUserProfile> profiles = sql(query, pm);
+        if (profiles.size() > 0) {
+            detached = profiles.get(0);
         }
+        
         return detached;
     }
     
