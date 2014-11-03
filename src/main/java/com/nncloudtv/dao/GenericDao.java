@@ -263,7 +263,7 @@ public class GenericDao<T> {
             
             return detached;
         }
-        log.info("[sql] " + queryStr);
+        log.info("[sql] " + queryStr + ";");
         long before = NnDateUtil.timestamp();
         try {
             

@@ -25,7 +25,7 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     
     public List<NnUserProfile> findByUserId(long userId, short shard) {
         
-        String query = "select * from nnuser_profile where userId = " + userId;
+        String query = "SELECT * FROM nnuser_profile WHERE userId = " + userId;
         
         return sql(query, NnUserDao.getPersistenceManager(shard, null));
     }

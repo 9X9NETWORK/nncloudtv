@@ -164,20 +164,25 @@ public class ApiMisc extends ApiGeneric {
         return result;
     }
     
-	@RequestMapping(value = "login", method = RequestMethod.DELETE)
-	public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
-		
-		CookieHelper.deleteCookie(resp, CookieHelper.USER);
-		CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
-		
-		return ok(resp);
-	}
+    @RequestMapping(value = "login", method = RequestMethod.DELETE)
+    public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
+        
+        CookieHelper.deleteCookie(resp, CookieHelper.USER);
+        CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
+        
+        return ok(resp);
+    }
     
     /** super profile's msoId priv will replace the result one if super profile exist */
     @RequestMapping(value = "login", method = RequestMethod.GET)
     public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
         
         NnUser user = identifiedUser(req);
+        
+        if (user == null) {
+            nullResponse(resp);
+            return null;
+        }
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
@@ -186,11 +191,6 @@ public class ApiMisc extends ApiGeneric {
             int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
-        }
-        
-        if (user == null) {
-            nullResponse(resp);
-            return null;
         }
         
         return userResponse(user);

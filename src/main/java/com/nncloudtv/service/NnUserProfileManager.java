@@ -24,6 +24,8 @@ public class NnUserProfileManager {
     
     public List<NnUserProfile> findAllByUser(NnUser user) {
         
+        if (user == null) { return null; }
+        
         return dao.findByUserId(user.getId(), user.getShard());
     }
     
@@ -110,6 +112,8 @@ public class NnUserProfileManager {
     
     /** pick up highest priv profile */
     public NnUserProfile pickupBestProfile(NnUser user) {
+        
+        if (user == null) { return null; }
         
         List<NnUserProfile> profiles = findAllByUser(user);
         
