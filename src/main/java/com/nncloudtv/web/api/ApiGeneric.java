@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class ApiGeneric {
 	
-	protected static Logger log = Logger.getLogger(ApiGeneric.class.getName());
+	public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
     public static final String MISSING_PARAMETER      = "Missing Parameter";
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
@@ -321,70 +321,7 @@ public class ApiGeneric {
 	public String printExitState(Date now, HttpServletRequest req, String exitState) {
 	    return req.getRequestURI() + "@" + now + "[exit-state=" + exitState + "]";
 	}
-	
-	public Long evaluateLong(String stringValue) {
-	    
-	    if (stringValue == null) {
-	        return null;
-	    }
-	    
-	    Long longValue = null;
-	    try {
-	        longValue = Long.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Long.");
-            return null;
-        }
-	    
-	    return longValue;
-	}
-	
-	public Integer evaluateInt(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Integer intValue = null;
-        try {
-            intValue = Integer.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Int.");
-            return null;
-        }
-        
-        return intValue;
-    }
-	
-	public Short evaluateShort(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Short shortValue = null;
-        try {
-            shortValue = Short.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Short.");
-            return null;
-        }
-        
-        return shortValue;
-    }
-	
-	public Boolean evaluateBoolean(String stringValue) {
-	    
-	    if ("true".equals(stringValue) == true) {
-	        return true;
-	    }
-	    if ("false".equals(stringValue) == true) {
-	        return false;
-	    }
-	    
-	    return null;
-	}
-	
+    
     /** indicate logging user has access right to target mso in PCS API
      *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
      */

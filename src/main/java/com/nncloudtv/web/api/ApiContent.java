@@ -409,7 +409,7 @@ public class ApiContent extends ApiGeneric {
         // startTime
         String startTimeStr = req.getParameter("startTime");
         if (startTimeStr != null) {
-            Integer startTime = evaluateInt(startTimeStr);
+            Integer startTime = NnStringUtil.evalInt(startTimeStr);
             if (startTime != null && startTime >= 0) {
                 program.setStartTime(startTime);
             }
@@ -418,7 +418,7 @@ public class ApiContent extends ApiGeneric {
         // endTime
         String endTimeStr = req.getParameter("endTime");
         if (endTimeStr != null) {
-            Integer endTime = evaluateInt(endTimeStr);
+            Integer endTime = NnStringUtil.evalInt(endTimeStr);
             if (endTime != null && endTime >= program.getStartTimeInt()) {
                 program.setEndTime(endTime);
             }
@@ -624,7 +624,7 @@ public class ApiContent extends ApiGeneric {
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
             
-            Short contentType = evaluateShort(contentTypeStr);
+            Short contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -640,7 +640,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short duration = evaluateShort(durationStr);
+            Short duration = NnStringUtil.evalShort(durationStr);
             if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -656,7 +656,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short startTime = evaluateShort(startTimeStr);
+            Short startTime = NnStringUtil.evalShort(startTimeStr);
             if ((startTime == null) || (startTime < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -672,7 +672,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short endTime = evaluateShort(endTimeStr);
+            Short endTime = NnStringUtil.evalShort(endTimeStr);
             if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -913,7 +913,7 @@ public class ApiContent extends ApiGeneric {
         log.info(printEnterState(now, req));
         NnChannelManager channelMngr = NNF.getChannelMngr();
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -966,7 +966,7 @@ public class ApiContent extends ApiGeneric {
         Boolean isPublic = null;
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
-            isPublic = evaluateBoolean(isPublicStr);
+            isPublic = NnStringUtil.evalBool(isPublicStr);
         }
         
         // tag
@@ -980,7 +980,7 @@ public class ApiContent extends ApiGeneric {
         String categoryIdStr = req.getParameter("categoryId");
         if (categoryIdStr != null) {
             
-            categoryId = evaluateLong(categoryIdStr);
+            categoryId = NnStringUtil.evalLong(categoryIdStr);
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 categoryId = null;
             }
@@ -997,7 +997,7 @@ public class ApiContent extends ApiGeneric {
         Short sorting = null;
         String sortingStr = req.getParameter("sorting");
         if (sortingStr != null) {
-            sorting = evaluateShort(sortingStr);
+            sorting = NnStringUtil.evalShort(sortingStr);
         }
         
         // status
@@ -1007,7 +1007,7 @@ public class ApiContent extends ApiGeneric {
             // TODO: rewrite
             //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
             //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
-                status = evaluateShort(statusStr);
+                status = NnStringUtil.evalShort(statusStr);
             //}
         }
         
@@ -1035,7 +1035,7 @@ public class ApiContent extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1200,7 +1200,7 @@ public class ApiContent extends ApiGeneric {
     public void channelStream(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -1273,7 +1273,7 @@ public class ApiContent extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1289,14 +1289,14 @@ public class ApiContent extends ApiGeneric {
         
         // page
         String pageStr = req.getParameter("page");
-        Long page = evaluateLong(pageStr);
+        Long page = NnStringUtil.evalLong(pageStr);
         if (page == null) {
             page = (long) 0;
         }
         
         // rows
         String rowsStr = req.getParameter("rows");
-        Long rows = evaluateLong(rowsStr);
+        Long rows = NnStringUtil.evalLong(rowsStr);
         if (rows == null) {
             rows = (long) 0;
         }
@@ -1662,7 +1662,7 @@ public class ApiContent extends ApiGeneric {
         // contentType
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
-            Short contentType = evaluateShort(contentTypeStr);
+            Short contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType != null) {
                 episode.setContentType(contentType);
             }
@@ -1735,7 +1735,7 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        Long storageId = evaluateLong(req.getParameter("storageId"));
+        Long storageId = NnStringUtil.evalLong(req.getParameter("storageId"));
         if (storageId != null) {
             episode.setStorageId(storageId);
         }
@@ -1763,7 +1763,7 @@ public class ApiContent extends ApiGeneric {
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
-            Integer duration = evaluateInt(durationStr);
+            Integer duration = NnStringUtil.evalInt(durationStr);
             if (duration != null && duration >= 0) {
                 episode.setDuration(duration);
             } else {
@@ -1853,7 +1853,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // contentType
-        Short contentType = evaluateShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         if (contentType == null) {
             contentType = NnEpisode.CONTENTTYPE_GENERAL;
         }
@@ -1900,7 +1900,7 @@ public class ApiContent extends ApiGeneric {
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
-            Integer duration = evaluateInt(durationStr);
+            Integer duration = NnStringUtil.evalInt(durationStr);
             if (duration != null && duration >= 0) {
                 episode.setDuration(duration);
             }
@@ -1951,7 +1951,7 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        Long storageId = evaluateLong(req.getParameter("storageId"));
+        Long storageId = NnStringUtil.evalLong(req.getParameter("storageId"));
         if (storageId != null) {
             episode.setStorageId(storageId);
         }

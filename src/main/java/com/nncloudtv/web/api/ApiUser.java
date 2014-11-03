@@ -168,11 +168,11 @@ public class ApiUser extends ApiGeneric {
             }
         }
         int rows = PlayerApiService.PAGING_ROWS;
-        Integer rowsI = evaluateInt(req.getParameter("rows"));
+        Integer rowsI = NnStringUtil.evalInt(req.getParameter("rows"));
         if (rowsI != null && rowsI > 0) {
             rows = rowsI;
         }
-        Integer page = evaluateInt(req.getParameter("page"));
+        Integer page = NnStringUtil.evalInt(req.getParameter("page"));
         if (page != null && page > 0) {
             
             List<NnChannel> empty   = new ArrayList<NnChannel>();
@@ -205,7 +205,7 @@ public class ApiUser extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -342,7 +342,7 @@ public class ApiUser extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -391,7 +391,7 @@ public class ApiUser extends ApiGeneric {
         Boolean isPublic = true; // default : true
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
-            isPublic = evaluateBoolean(isPublicStr);
+            isPublic = NnStringUtil.evalBool(isPublicStr);
             if (isPublic == null) {
                 isPublic = true;
             }
@@ -411,7 +411,7 @@ public class ApiUser extends ApiGeneric {
         String categoryIdStr = req.getParameter("categoryId");
         if (categoryIdStr != null) {
             
-            categoryId = evaluateLong(categoryIdStr);
+            categoryId = NnStringUtil.evalLong(categoryIdStr);
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 categoryId = null;
             }
@@ -424,7 +424,7 @@ public class ApiUser extends ApiGeneric {
         Short sorting = null;
         String sortingStr = req.getParameter("sorting");
         if (sortingStr != null) {
-            sorting = evaluateShort(sortingStr);
+            sorting = NnStringUtil.evalShort(sortingStr);
         }
         
         // status
@@ -433,7 +433,7 @@ public class ApiUser extends ApiGeneric {
         if (statusStr != null) {
             NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(user);
             if (hasRightAccessPCS(user.getId(), Long.valueOf(superProfile.getMsoId()), "0000001")) {
-                status = evaluateShort(statusStr);
+                status = NnStringUtil.evalShort(statusStr);
             }
         }
         
@@ -441,7 +441,7 @@ public class ApiUser extends ApiGeneric {
         Short contentType = null;
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
-            contentType = evaluateShort(contentTypeStr);
+            contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType != null &&
                     contentType != NnChannel.CONTENTTYPE_MIXED &&
                     contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {

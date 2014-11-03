@@ -89,11 +89,11 @@ public class ApiMso extends ApiGeneric {
                 }
             }
         }
-        Short type = evaluateShort(req.getParameter("type"));
+        Short type = NnStringUtil.evalShort(req.getParameter("type"));
         if (type != null) {
             promotion.setType(type);
         }
-        Short seq = evaluateShort(req.getParameter("seq"));
+        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
         if (seq != null) {
             promotion.setSeq(seq);
         }
@@ -165,7 +165,7 @@ public class ApiMso extends ApiGeneric {
         
         String link    = req.getParameter("link");
         String logoUrl = req.getParameter("logoUrl");
-        Short  type    = evaluateShort(req.getParameter("type"));
+        Short  type    = NnStringUtil.evalShort(req.getParameter("type"));
         if (link == null || logoUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -174,7 +174,7 @@ public class ApiMso extends ApiGeneric {
             badRequest(resp, INVALID_PARAMETER);
             return null;
         }
-        Short seq = evaluateShort(req.getParameter("seq"));
+        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
         if (seq == null) seq = 0;
         String title = req.getParameter("title");
         
@@ -200,7 +200,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Short type = evaluateShort(req.getParameter("type"));
+        Short type = NnStringUtil.evalShort(req.getParameter("type"));
         if (type == null) {
             results = NNF.getMsoPromotionMngr().findByMso(mso.getId());
         } else {
@@ -423,7 +423,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -470,7 +470,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -643,7 +643,7 @@ public class ApiMso extends ApiGeneric {
     List<NnChannel> setChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -678,7 +678,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -764,7 +764,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -820,7 +820,7 @@ public class ApiMso extends ApiGeneric {
         Date now = NnDateUtil.now();
         log.info(printEnterState(now, req));
         
-        Long setId = evaluateLong(setIdStr);
+        Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1322,7 +1322,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1380,7 +1380,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1469,7 +1469,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1507,7 +1507,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1547,7 +1547,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1646,7 +1646,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long categoryId = evaluateLong(categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1707,7 +1707,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
+        Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1746,7 +1746,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long msoId = evaluateLong(msoIdStr);
+        Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1784,7 +1784,7 @@ public class ApiMso extends ApiGeneric {
         for (String categoryIdStr : categoryIdsStr) {
             if (categoryIdStr.equals(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY)) { // special lock for lock all System Category
                 categoryIds.add(MsoConfig.DISABLE_ALL_SYSTEM_CATEGORY);
-            } else if (evaluateLong(categoryIdStr) != null) {
+            } else if (NnStringUtil.evalLong(categoryIdStr) != null) {
                 categoryIds.add(categoryIdStr);
             }
         }
@@ -1836,7 +1836,7 @@ public class ApiMso extends ApiGeneric {
         } else if (scheduleDateStr.equalsIgnoreCase("NOW")) {
         } else {
             
-            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            Long scheduleDateLong = NnStringUtil.evalLong(scheduleDateStr);
             if (scheduleDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -1937,7 +1937,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long notificationId = evaluateLong(notificationIdStr);
+        Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -1974,7 +1974,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long notificationId = evaluateLong(notificationIdStr);
+        Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -2015,7 +2015,7 @@ public class ApiMso extends ApiGeneric {
         // scheduleDate
         String scheduleDateStr = req.getParameter("scheduleDate");
         if (scheduleDateStr != null && !"NOW".equalsIgnoreCase(scheduleDateStr)) {
-            Long scheduleDateLong = evaluateLong(scheduleDateStr);
+            Long scheduleDateLong = NnStringUtil.evalLong(scheduleDateStr);
             if (scheduleDateLong != null) {
                 notification.setScheduleDate(new Date(scheduleDateLong));
             }
@@ -2054,7 +2054,7 @@ public class ApiMso extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long notificationId = evaluateLong(notificationIdStr);
+        Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -2156,7 +2156,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         // contentType
-        Short contentType = evaluateShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         if (contentType != null) {
             library.setContentType(contentType);
         }
@@ -2180,13 +2180,13 @@ public class ApiMso extends ApiGeneric {
         }
         
         // seq
-        Short seq = evaluateShort(req.getParameter("seq"));
+        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
         if (seq != null) {
             library.setSeq(seq);
         }
         
         // duration
-        Integer duration = evaluateInt(req.getParameter("duration"));
+        Integer duration = NnStringUtil.evalInt(req.getParameter("duration"));
         if (duration != null) {
             library.setDuration(duration);
         }
@@ -2218,7 +2218,7 @@ public class ApiMso extends ApiGeneric {
         
         String name = req.getParameter("name");
         String fileUrl = req.getParameter("fileUrl");
-        Short contentType = evaluateShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         if (contentType == null) {
             contentType = MyLibrary.CONTENTTYPE_DIRECTLINK;
         }
@@ -2226,8 +2226,8 @@ public class ApiMso extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
-        Short seq = evaluateShort(req.getParameter("seq"));
-        Integer duration = evaluateInt(req.getParameter("duration"));
+        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
+        Integer duration = NnStringUtil.evalInt(req.getParameter("duration"));
         MyLibrary library = new MyLibrary(mso, user, name, contentType, fileUrl);
         library.setIntro(req.getParameter("intro"));
         library.setImageUrl(req.getParameter("imageUrl"));

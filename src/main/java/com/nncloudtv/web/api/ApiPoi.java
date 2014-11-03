@@ -40,7 +40,7 @@ public class ApiPoi extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -81,7 +81,7 @@ public class ApiPoi extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -118,7 +118,7 @@ public class ApiPoi extends ApiGeneric {
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null) {
             
-            startDateLong = evaluateLong(startDateStr);
+            startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
@@ -131,7 +131,7 @@ public class ApiPoi extends ApiGeneric {
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null) {
             
-            endDateLong = evaluateLong(endDateStr);
+            endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
@@ -168,7 +168,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("campaignId") String campaignIdStr) {
         
-        Long campaignId = evaluateLong(campaignIdStr);
+        Long campaignId = NnStringUtil.evalLong(campaignIdStr);
         if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -203,7 +203,7 @@ public class ApiPoi extends ApiGeneric {
         Date now = new Date();
         log.info(printEnterState(now, req));
         
-        Long campaignId = evaluateLong(poiCampaignIdStr);
+        Long campaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             log.info(printExitState(now, req, "404"));
@@ -237,7 +237,7 @@ public class ApiPoi extends ApiGeneric {
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null) {
             
-            startDateLong = evaluateLong(startDateStr);
+            startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
@@ -250,7 +250,7 @@ public class ApiPoi extends ApiGeneric {
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null) {
             
-            endDateLong = evaluateLong(endDateStr);
+            endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 log.info(printExitState(now, req, "400"));
@@ -287,7 +287,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -319,7 +319,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -344,7 +344,7 @@ public class ApiPoi extends ApiGeneric {
         Long poiPointId = null;
         String poiPointIdStr = req.getParameter("poiPointId");
         if (poiPointIdStr != null) {
-            poiPointId = evaluateLong(poiPointIdStr);
+            poiPointId = NnStringUtil.evalLong(poiPointIdStr);
             if (poiPointId == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -368,7 +368,7 @@ public class ApiPoi extends ApiGeneric {
         
         // TODO: auth check
         
-        Long poiCampaignId = evaluateLong(campaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(campaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -393,7 +393,7 @@ public class ApiPoi extends ApiGeneric {
         Long pointId = null;
         String pointIdStr = req.getParameter("pointId");
         if (pointIdStr != null) {
-            pointId = evaluateLong(pointIdStr);
+            pointId = NnStringUtil.evalLong(pointIdStr);
             if (pointId == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -413,7 +413,7 @@ public class ApiPoi extends ApiGeneric {
         Long eventId = null;
         String eventIdStr = req.getParameter("eventId");
         if (eventIdStr != null) {
-            eventId = evaluateLong(eventIdStr);
+            eventId = NnStringUtil.evalLong(eventIdStr);
             if (eventId == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -438,7 +438,7 @@ public class ApiPoi extends ApiGeneric {
         // startDate
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
-            Long startDateLong = evaluateLong(startDateStr);
+            Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -452,7 +452,7 @@ public class ApiPoi extends ApiGeneric {
         // endDate
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
-            Long endDateLong = evaluateLong(endDateStr);
+            Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -492,7 +492,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -530,7 +530,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -562,7 +562,7 @@ public class ApiPoi extends ApiGeneric {
         // startDate
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
-            Long startDateLong = evaluateLong(startDateStr);
+            Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -574,7 +574,7 @@ public class ApiPoi extends ApiGeneric {
         // endDate
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
-            Long endDateLong = evaluateLong(endDateStr);
+            Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -604,7 +604,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -641,7 +641,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
-        Long programId = evaluateLong(programIdStr);
+        Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -671,7 +671,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
-        Long programId = evaluateLong(programIdStr);
+        Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -765,7 +765,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiPointId") String poiPointIdStr) {
         
-        Long poiPointId = evaluateLong(poiPointIdStr);
+        Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -786,7 +786,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("pointId") String pointIdStr) {
         
-        Long pointId = evaluateLong(pointIdStr);
+        Long pointId = NnStringUtil.evalLong(pointIdStr);
         if (pointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -890,7 +890,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiPointId") String poiPointIdStr) {
         
-        Long poiPointId = evaluateLong(poiPointIdStr);
+        Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -927,7 +927,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -1005,7 +1005,7 @@ public class ApiPoi extends ApiGeneric {
             Long timestamp = null;
             for (String timestampStr : timestampList) {
                 
-                timestamp = evaluateLong(timestampStr);
+                timestamp = NnStringUtil.evalLong(timestampStr);
                 if (timestamp == null) {
                     badRequest(resp, INVALID_PARAMETER);
                     return null;
@@ -1031,7 +1031,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
-        Long poiEventId = evaluateLong(poiEventIdStr);
+        Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -1067,7 +1067,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
-        Long poiEventId = evaluateLong(poiEventIdStr);
+        Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -1159,7 +1159,7 @@ public class ApiPoi extends ApiGeneric {
                 Long timestamp = null;
                 for (String timestampStr : timestampList) {
                     
-                    timestamp = evaluateLong(timestampStr);
+                    timestamp = NnStringUtil.evalLong(timestampStr);
                     if (timestamp == null) {
                         badRequest(resp, INVALID_PARAMETER);
                         return null;
@@ -1186,7 +1186,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiEventId") String eventIdStr) {
         
-        Long poiEventId = evaluateLong(eventIdStr);
+        Long poiEventId = NnStringUtil.evalLong(eventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -1218,7 +1218,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
@@ -1245,7 +1245,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
