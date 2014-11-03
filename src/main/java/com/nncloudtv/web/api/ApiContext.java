@@ -16,6 +16,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
@@ -242,5 +243,22 @@ public class ApiContext {
     
     public String getRoot() {
         return root;
+    }
+    
+    public static NnUser getAuthenticatedUser(HttpServletRequest req, long msoId) {
+        
+        String token = CookieHelper.getCookie(req, CookieHelper.USER);
+        if (token == null) {
+            
+            ApiGeneric.log.info("not logged in");
+            return null;
+        }
+        
+        return NNF.getUserMngr().findByToken(token, msoId);
+    }
+    
+    public static NnUser getAuthenticatedUser(HttpServletRequest req) {
+        
+        return getAuthenticatedUser(req, MsoManager.getSystemMsoId());
     }
 }

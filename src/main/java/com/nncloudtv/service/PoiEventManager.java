@@ -112,4 +112,9 @@ public class PoiEventManager {
         return result;
     }
     
+    public PoiEvent findById(String eventIdStr) {
+        
+        return NNF.getPoiEventDao().findById(eventIdStr);
+    }
+    
 }

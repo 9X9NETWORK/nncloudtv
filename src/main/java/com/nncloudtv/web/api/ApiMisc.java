@@ -55,6 +55,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
@@ -66,7 +67,7 @@ public class ApiMisc extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
     @RequestMapping(value = "feedback", method = RequestMethod.POST)
-    public @ResponseBody String feedback(HttpServletRequest req, HttpServletResponse resp,
+    public @ResponseBody void feedback(HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false) Boolean isHtml) {
         
         String subject = req.getParameter("subject");
@@ -86,17 +87,11 @@ public class ApiMisc extends ApiGeneric {
             NNF.getEmailService().sendEmail(mail, null, null);
         }
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
     public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
-        
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
         
         Mso mso = null;
         String msoIdStr = req.getParameter("mso");
@@ -107,7 +102,14 @@ public class ApiMisc extends ApiGeneric {
                 notFound(resp, INVALID_PATH_PARAMETER);
                 return null;
             }
-            if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+            
+            NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+            if (user == null) {
+                
+                unauthorized(resp);
+                return null;
+                
+            } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
                 
                 forbidden(resp);
                 return null;
@@ -165,19 +167,19 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping(value = "login", method = RequestMethod.DELETE)
-    public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody void logout(HttpServletRequest req, HttpServletResponse resp) {
         
         CookieHelper.deleteCookie(resp, CookieHelper.USER);
         CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     /** super profile's msoId priv will replace the result one if super profile exist */
     @RequestMapping(value = "login", method = RequestMethod.GET)
     public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         
         if (user == null) {
             nullResponse(resp);

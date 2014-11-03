@@ -25,6 +25,7 @@ import com.nncloudtv.dao.PoiPointDao;
 import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
@@ -59,6 +60,7 @@ import com.nncloudtv.service.StoreListingManager;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
+import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.service.YtProgramManager;
 
 public class NNF {
@@ -94,6 +96,7 @@ public class NNF {
     protected static MyLibraryManager       libraryMngr         = null;
     protected static NnPurchaseManager      purchaseMngr        = null;
     protected static NnItemManager          itemMngr            = null;
+    protected static TitleCardManager       titleCardMngr       = null;
     
     protected static SetService      setService      = null;
     protected static CategoryService categoryService = null;
@@ -125,6 +128,7 @@ public class NNF {
     protected static MyLibraryDao      libraryDao        = null;
     protected static NnPurchaseDao     purchaseDao       = null;
     protected static NnItemDao         itemDao           = null;
+    protected static TitleCardDao      titleCardDao      = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -388,6 +392,17 @@ public class NNF {
         }
         
         return itemDao;
+    }
+    
+    public static TitleCardDao getTitleCardDao() {
+        
+        if (titleCardDao == null) {
+            
+            log.info("create titleCardDao");
+            titleCardDao = new TitleCardDao();
+        }
+        
+        return titleCardDao;
     }
     
     public static CategoryService getCategoryService() {
@@ -761,5 +776,16 @@ public class NNF {
         }
         
         return itemMngr;
+    }
+    
+    public static TitleCardManager getTitleCardMngr() {
+        
+        if (titleCardMngr == null) {
+            
+            log.info("create titleCardMngr");
+            titleCardMngr = new TitleCardManager();
+        }
+        
+        return titleCardMngr;
     }
 }

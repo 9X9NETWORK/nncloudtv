@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -16,7 +15,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.web.json.cms.Set;
 import com.nncloudtv.web.json.cms.User;
 
@@ -167,25 +165,6 @@ public class ApiGeneric {
         }
     }
     
-    public NnUser identifiedUser(HttpServletRequest req) {
-        
-        String token = CookieHelper.getCookie(req, CookieHelper.USER);
-        if (token == null) {
-            
-            log.info("not logged in");
-            return null;
-        }
-        
-        return NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
-    }
-    
-    public String ok(HttpServletResponse resp) {
-        
-        resp.setContentType(APPLICATION_JSON_UTF8);
-        
-        return NnStringUtil.escapeDoubleQuote(OK);
-    }
-    
     public void msgResponse(HttpServletResponse resp, String msg) {
     
         try {
@@ -262,34 +241,5 @@ public class ApiGeneric {
         setResp.setSortingType(set.getSorting());
         
         return setResp;
-    }
-    
-    protected boolean checkPriv(long userId, long msoId, String requirePriv) {
-        
-        if (requirePriv == null || requirePriv.matches("[01]+") == false) {
-            return false;
-        }
-        
-        NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
-        if (profile == null) {
-            profile = new NnUserProfile();
-            profile.setPriv(NnUserProfile.PRIV_CMS);
-        }
-        if (profile.getPriv() == null) {
-            profile.setPriv(NnUserProfile.PRIV_CMS);
-        }
-        String priv = profile.getPriv();
-        int privLen = priv.length();
-        
-        for (int i = 0; i < requirePriv.length(); i++) {
-            
-            if (requirePriv.charAt(i) == '1' &&
-                    (privLen <= i || priv.charAt(i) != '1')) {
-                
-                return false;
-            }
-        }
-        
-        return true;
     }
 }

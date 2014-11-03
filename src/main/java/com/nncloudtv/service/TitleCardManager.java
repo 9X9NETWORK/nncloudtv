@@ -103,4 +103,9 @@ public class TitleCardManager {
         
         return titleCardsFromEpisode;
     }
+    
+    public TitleCard findById(String idStr) {
+        
+        return dao.findById(idStr);
+    }
 }

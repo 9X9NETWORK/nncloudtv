@@ -261,13 +261,15 @@ public class NnUserManager {
     }    
     
     private NnUser populateUserProfile(NnUser user) {
-        if (user != null) {
-            log.info("user mso = " + user.getMsoId());
-            NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
-            if (profile == null)
-                profile = new NnUserProfile(user.getId(), user.getMsoId());
-            user.setProfile(profile);
-        }
+        
+        if (user == null) { return null; }
+        
+        log.info("user mso = " + user.getMsoId());
+        NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
+        if (profile == null)
+            profile = new NnUserProfile(user.getId(), user.getMsoId());
+        user.setProfile(profile);
+        
         return user;
     }
     
@@ -319,7 +321,7 @@ public class NnUserManager {
         NnUser user = dao.findByToken(token);
         if (user != null) {
             user.setMsoId(msoId);
-            this.populateUserProfile(user);
+            populateUserProfile(user);
         }
         return user;
     }

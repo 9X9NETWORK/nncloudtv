@@ -43,7 +43,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -76,7 +76,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -161,7 +161,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -192,7 +192,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -271,7 +271,7 @@ public class ApiPoi extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return;
@@ -303,7 +303,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -352,7 +352,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -484,7 +484,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -522,7 +522,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -572,20 +572,20 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String poiDelete(HttpServletRequest req,
+    void poiDelete(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
         Poi poi = NNF.getPoiCampaignMngr().findPoiById(poiId);
         if (poi == null) {
             notFound(resp, "Poi Not Found");
-            return null;
+            return;
         }
         
         PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poi.getCampaignId());
@@ -593,18 +593,18 @@ public class ApiPoi extends ApiGeneric {
             // ownership crashed
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         NNF.getPoiMngr().delete(poi);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.GET)
@@ -655,7 +655,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -775,7 +775,7 @@ public class ApiPoi extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -879,7 +879,7 @@ public class ApiPoi extends ApiGeneric {
             forbidden(resp);
             return;
         }
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return;
@@ -905,7 +905,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -1015,7 +1015,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -1051,7 +1051,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -1152,36 +1152,30 @@ public class ApiPoi extends ApiGeneric {
         return result;
     }
     
-    @RequestMapping(value = "poi_events/{poiEventId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "poi_events/{eventId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String eventDelete(HttpServletRequest req,
+    void eventDelete(HttpServletRequest req,
             HttpServletResponse resp,
-            @PathVariable("poiEventId") String eventIdStr) {
+            @PathVariable("eventId") String eventIdStr) {
         
-        Long poiEventId = NnStringUtil.evalLong(eventIdStr);
-        if (poiEventId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        PoiEvent event = NNF.getPoiEventMngr().findById(poiEventId);
+        PoiEvent event = NNF.getPoiEventMngr().findById(eventIdStr);
         if (event == null) {
             notFound(resp, "PoiEvent Not Found");
-            return null;
+            return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         } else if (user.getId() != event.getUserId()) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         NNF.getPoiEventMngr().delete(event);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.GET)
@@ -1229,7 +1223,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;

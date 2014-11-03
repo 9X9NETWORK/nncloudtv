@@ -35,6 +35,7 @@ import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
@@ -58,13 +59,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, promotion.getMsoId());
         if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), promotion.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -116,30 +117,30 @@ public class ApiMso extends ApiGeneric {
     }
     
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.DELETE)
-    public @ResponseBody String msoPromotionDelete(HttpServletRequest req,
+    public @ResponseBody void msoPromotionDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("id") String promotionIdStr) {
         
         MsoPromotion promotion = NNF.getMsoPromotionMngr().findById(promotionIdStr);
         if (promotion == null) {
             nullResponse(resp);
-            return null;
+            return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, promotion.getMsoId());
         if (user == null) {
             
             unauthorized(resp);
-            return null;
+            return;
             
-        } else if (checkPriv(user.getId(), promotion.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
-            return null;
+            return;
         }
         
         NNF.getMsoPromotionMngr().delete(NNF.getMsoPromotionMngr().findById(promotionIdStr));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/promotions", method = RequestMethod.POST)
@@ -152,13 +153,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -258,16 +259,6 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
-            forbidden(resp);
-            return null;
-        }
-        
         // lang
         String lang = req.getParameter("lang");
         if (lang != null) {
@@ -308,13 +299,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -407,24 +398,20 @@ public class ApiMso extends ApiGeneric {
     Set set(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = NnStringUtil.evalLong(setIdStr);
-        if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Set set = NNF.getSetService().findById(setId);
+        Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -445,24 +432,20 @@ public class ApiMso extends ApiGeneric {
     Set setUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = NnStringUtil.evalLong(setIdStr);
-        if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        SysTag sysTag = NNF.getSysTagMngr().findById(setId);
+        SysTag sysTag = NNF.getSysTagMngr().findById(setIdStr);
         if (sysTag == null) {
             notFound(resp, "Set Not Found");
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, sysTag.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), sysTag.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -559,42 +542,35 @@ public class ApiMso extends ApiGeneric {
         }
         
         Set result = NNF.getSetService().composeSet(sysTag, display);
-        result = SetService.normalize(result);
         
-        return result;
+        return SetService.normalize(result);
     }
     
     @RequestMapping(value = "sets/{setId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String setDelete(HttpServletRequest req,
+    void setDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        long setId = 0;
-        try {
-            setId = Long.valueOf(setIdStr);
-        } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Set set = NNF.getSetService().findById(setId);
+        Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            return null;
+            return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
-            return null;
-        }
-        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            return;
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
-            return null;
+            return;
         }
-        NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(setId));;
+        NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(set.getId()));;
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.GET)
@@ -602,24 +578,20 @@ public class ApiMso extends ApiGeneric {
     List<NnChannel> setChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = NnStringUtil.evalLong(setIdStr);
-        if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Set set = NNF.getSetService().findById(setId);
+        Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -634,25 +606,19 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody void setChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = NnStringUtil.evalLong(setIdStr);
-        if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        Set set = NNF.getSetService().findById(setId);
+        Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
             
             unauthorized(resp);
             return;
             
-        } else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return;
@@ -699,7 +665,7 @@ public class ApiMso extends ApiGeneric {
         if (featuredStr != null) {
             featured = Boolean.valueOf(featuredStr);
         }
-        NNF.getSysTagMngr().addChannel(setId, channelId, alwaysOnTop, featured, (short) 0);
+        NNF.getSysTagMngr().addChannel(set.getId(), channelId, alwaysOnTop, featured, (short) 0);
         
         msgResponse(resp, OK);
     }
@@ -721,12 +687,14 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
@@ -755,23 +723,20 @@ public class ApiMso extends ApiGeneric {
     void setChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Long setId = NnStringUtil.evalLong(setIdStr);
-        if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        Set set = NNF.getSetService().findById(setId);
+        Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, set.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        } else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
@@ -884,13 +849,13 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
             
             unauthorized(resp);
             return;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return;
@@ -932,12 +897,14 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
@@ -1035,13 +1002,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
             
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -1079,16 +1046,6 @@ public class ApiMso extends ApiGeneric {
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
-            return null;
-        }
-        
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
-            forbidden(resp);
             return null;
         }
         
@@ -1130,12 +1087,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1213,12 +1172,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1261,12 +1222,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1339,16 +1302,19 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
         NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(categoryId));
+        
         msgResponse(resp, OK);
     }
     
@@ -1366,16 +1332,6 @@ public class ApiMso extends ApiGeneric {
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            return null;
-        }
-        
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
-        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
-            forbidden(resp);
             return null;
         }
         
@@ -1401,13 +1357,13 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
         if (user == null) {
             
             unauthorized(resp);
             return;
             
-        } else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return;
@@ -1492,12 +1448,14 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
@@ -1532,24 +1490,20 @@ public class ApiMso extends ApiGeneric {
     List<String> msoSystemCategoryLocks(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Long msoId = NnStringUtil.evalLong(msoIdStr);
-        if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1574,12 +1528,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1606,19 +1562,20 @@ public class ApiMso extends ApiGeneric {
     @RequestMapping(value = "mso/{msoId}/push_notifications", method = RequestMethod.POST)
     public @ResponseBody MsoNotification notificationsCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
-    
+        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -1626,7 +1583,7 @@ public class ApiMso extends ApiGeneric {
         
         String message = req.getParameter("message");
         if (message == null) {
-            badRequest(resp, "MISSING_PARAM_MESSAGE");
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -1639,7 +1596,7 @@ public class ApiMso extends ApiGeneric {
         
         String scheduleDateStr = req.getParameter("scheduleDate");
         if (scheduleDateStr == null) {
-            badRequest(resp, "MISSING_PARAM_SCHEDULE_DATE");
+            badRequest(resp, MISSING_PARAMETER);
             return null;
             
         } else if (scheduleDateStr.equalsIgnoreCase("NOW")) {
@@ -1687,13 +1644,13 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
-        log.info("userId = " + user);
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
             
-        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -1703,10 +1660,15 @@ public class ApiMso extends ApiGeneric {
         String type = req.getParameter("type");
         
         if ("history".equals(type)) {
+            
             return NNF.getMsoNotiMngr().list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
+            
         } else if ("schedule".equals(type)) {
+            
             return NNF.getMsoNotiMngr().listScheduled(1, 20, "msoId == " + mso.getId());
+            
         } else {
+            
             return NNF.getMsoNotiMngr().list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
         }
     }
@@ -1735,28 +1697,24 @@ public class ApiMso extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
-    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.GET)
+    @RequestMapping(value = "push_notifications/{notificationId}", method = RequestMethod.GET)
     public @ResponseBody MsoNotification notification(HttpServletRequest req,
-            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+            HttpServletResponse resp, @PathVariable("notificationId") String notificationIdStr) {
         
-        Long notificationId = NnStringUtil.evalLong(notificationIdStr);
-        if (notificationId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
+        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationIdStr);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, notification.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1780,12 +1738,14 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, notification.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        }
-        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return null;
         }
@@ -1836,28 +1796,24 @@ public class ApiMso extends ApiGeneric {
         return notification;
     }
     
-    @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "push_notifications/{notificationId}", method = RequestMethod.DELETE)
     public @ResponseBody void notificationDelete(HttpServletRequest req,
-            HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
+            HttpServletResponse resp, @PathVariable("notificationId") String notificationIdStr) {
         
-        Long notificationId = NnStringUtil.evalLong(notificationIdStr);
-        if (notificationId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
+        MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationIdStr);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req, notification.getMsoId());
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
             return;
         }
@@ -1872,24 +1828,18 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
         
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return;
-        }
         MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
         if (library == null) {
             notFound(resp, "Library Not Found");
             return;
         }
-        Mso mso = NNF.getMsoMngr().findById(library.getMsoId());
-        if (mso == null) {
-            log.warning("library " + library.getId() + " has a bad msoId.");
-            internalError(resp);
+        NnUser user = ApiContext.getAuthenticatedUser(req, library.getMsoId());
+        if (user == null) {
+            
+            unauthorized(resp);
             return;
-        }
-        
-        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return;
@@ -1907,24 +1857,18 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("libraryId") String libraryIdStr) {
         
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
         MyLibrary library = NNF.getLibraryMngr().findById(libraryIdStr);
         if (library == null) {
             notFound(resp, "Library Not Found");
             return null;
         }
-        Mso mso = NNF.getMsoMngr().findById(library.getMsoId());
-        if (mso == null) {
-            log.warning("library " + library.getId() + " has a bad msoId.");
-            internalError(resp);
+        NnUser user = ApiContext.getAuthenticatedUser(req, library.getMsoId());
+        if (user == null) {
+            
+            unauthorized(resp);
             return null;
-        }
-        
-        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;
@@ -1980,18 +1924,18 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            badRequest(resp, INVALID_PATH_PARAMETER);
+            badRequest(resp, MSO_NOT_FOUND);
             return null;
         }
-        
-        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;
@@ -2030,18 +1974,18 @@ public class ApiMso extends ApiGeneric {
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
-        NnUser user = identifiedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             badRequest(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        
-        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;

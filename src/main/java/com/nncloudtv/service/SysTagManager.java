@@ -191,4 +191,9 @@ public class SysTagManager {
         
         return results;
     }
+    
+    public SysTag findById(String idStr) {
+        
+        return dao.findById(idStr);
+    }
 }

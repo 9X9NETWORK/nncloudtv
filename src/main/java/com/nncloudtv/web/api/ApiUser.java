@@ -31,6 +31,7 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
@@ -64,7 +65,7 @@ public class ApiUser extends ApiGeneric {
             shard = NnUser.SHARD_UNKNWON;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -244,7 +245,7 @@ public class ApiUser extends ApiGeneric {
     
     @RequestMapping(value = "users/{userId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
-    String userChannelsSorting(HttpServletRequest req,
+    void userChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
@@ -255,22 +256,22 @@ public class ApiUser extends ApiGeneric {
         }
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         } else if (user.getId() != userId) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         String channelIdsStr = req.getParameter("channels");
         if (channelIdsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            return null;
+            return;
         }
         String[] channelIdStrList = channelIdsStr.split(",");
         
@@ -313,7 +314,7 @@ public class ApiUser extends ApiGeneric {
         // parameter should contain all channelId
         if (checkedChannelIdList.size() != 0) {
             badRequest(resp, INVALID_PARAMETER);
-            return null;
+            return;
         }
         
         short counter = 1;
@@ -324,7 +325,7 @@ public class ApiUser extends ApiGeneric {
         
         channelMngr.saveAll(orderedChannels);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
@@ -338,7 +339,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -417,8 +418,9 @@ public class ApiUser extends ApiGeneric {
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(user);
-            if (checkPriv(user.getId(), Long.valueOf(superProfile.getMsoId()), NnUserProfile.PRIV_SYSTEM_STORE)) {
+            NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
+            user.setMsoId(profile.getMsoId());
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE)) {
                 status = NnStringUtil.evalShort(statusStr);
             }
         }
@@ -531,7 +533,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return;
@@ -568,7 +570,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return;
@@ -655,7 +657,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = identifiedUser(req);
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
             unauthorized(resp);
             return;
@@ -700,7 +702,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUser verifiedUserId = identifiedUser(req);
+        NnUser verifiedUserId = ApiContext.getAuthenticatedUser(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
             return null;
