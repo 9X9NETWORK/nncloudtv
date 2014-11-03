@@ -2,7 +2,6 @@ package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +130,7 @@ public class ApiUser extends ApiGeneric {
             }
         }
         
-        return userResponse(NNF.getUserMngr().save(user));
+        return response(NNF.getUserMngr().save(user));
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
@@ -202,13 +201,9 @@ public class ApiUser extends ApiGeneric {
             @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -216,7 +211,6 @@ public class ApiUser extends ApiGeneric {
         NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
             notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -245,7 +239,6 @@ public class ApiUser extends ApiGeneric {
         
         Collections.sort(results, NnChannelManager.getComparator("seq"));
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -339,24 +332,18 @@ public class ApiUser extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         } else if (user.getId() != userId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -364,7 +351,6 @@ public class ApiUser extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null || name.isEmpty()) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -432,7 +418,7 @@ public class ApiUser extends ApiGeneric {
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
             NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(user);
-            if (hasRightAccessPCS(user.getId(), Long.valueOf(superProfile.getMsoId()), "0000001")) {
+            if (checkPriv(user.getId(), Long.valueOf(superProfile.getMsoId()), NnUserProfile.PRIV_SYSTEM_STORE)) {
                 status = NnStringUtil.evalShort(statusStr);
             }
         }

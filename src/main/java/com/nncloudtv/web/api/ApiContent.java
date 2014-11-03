@@ -124,22 +124,17 @@ public class ApiContent extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -152,67 +147,56 @@ public class ApiContent extends ApiGeneric {
         
         Map<String, Object> result = new TreeMap<String, Object>();
         result.put("brand", brand);
-        log.info(printExitState(now, req, "ok"));
+        
         return result;
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.PUT)
-    public @ResponseBody String brandAutosharingSet(HttpServletRequest req, HttpServletResponse resp,
+    public @ResponseBody void brandAutosharingSet(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         } else if (user.getId() != channel.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // brand
         String brand = req.getParameter("brand");
         if (brand == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         Mso mso = NNF.getMsoMngr().findByName(brand);
         if (mso == null) {
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         
         NNF.getChPrefMngr().setBrand(channel.getId(), mso);
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
@@ -221,22 +205,17 @@ public class ApiContent extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -253,7 +232,6 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -909,32 +887,26 @@ public class ApiContent extends ApiGeneric {
     NnChannel channelUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         NnChannelManager channelMngr = NNF.getChannelMngr();
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         } else if (user.getId() != channel.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1015,7 +987,6 @@ public class ApiContent extends ApiGeneric {
                                     imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting, status);
         if (savedChannel == null) {
             internalError(resp);
-            log.warning(printExitState(now, req, "500"));
             return null;
         }
         
@@ -1023,7 +994,6 @@ public class ApiContent extends ApiGeneric {
         channelMngr.populateAutoSync(savedChannel);
         channelMngr.normalize(savedChannel);
         
-        log.info(printExitState(now, req, "ok"));
         return savedChannel;
     }
     
@@ -1032,31 +1002,24 @@ public class ApiContent extends ApiGeneric {
     public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return;
         } else if (user.getId() != channel.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return;
         }
         
@@ -1147,9 +1110,6 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     List<Long> storeChannels(HttpServletRequest req, HttpServletResponse resp) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         // categoryId
         long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
@@ -1158,12 +1118,10 @@ public class ApiContent extends ApiGeneric {
                 categoryId = Long.valueOf(categoryIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -1181,7 +1139,6 @@ public class ApiContent extends ApiGeneric {
                     spheres.add(value);
                 } else {
                     badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
                     return null;
                 }
             }
@@ -1192,7 +1149,7 @@ public class ApiContent extends ApiGeneric {
         for (NnChannel channel : channels) {
             channelIds.add(channel.getId());
         }
-        log.info(printExitState(now, req, "ok"));
+        
         return channelIds;
     }
     
@@ -1270,20 +1227,15 @@ public class ApiContent extends ApiGeneric {
             HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -1327,7 +1279,6 @@ public class ApiContent extends ApiGeneric {
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     

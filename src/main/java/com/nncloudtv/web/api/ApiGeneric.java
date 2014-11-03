@@ -2,9 +2,6 @@ package com.nncloudtv.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,9 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class ApiGeneric {
-	
-	public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
+    
+    public static final String MSO_NOT_FOUND          = "Mso Not Found";
     public static final String MISSING_PARAMETER      = "Missing Parameter";
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
     public static final String INVALID_PARAMETER      = "Invalid Parameter";
@@ -212,7 +210,7 @@ public class ApiGeneric {
     }
     
     /** adapt response for user change to user+userProfile */
-    public User userResponse(NnUser user) {
+    public User response(NnUser user) {
         
         User userResp = new User();
         
@@ -236,7 +234,7 @@ public class ApiGeneric {
         userResp.setIdStr(user.getIdStr());
         
         if (user.getProfile().getPriv() == null) {
-            userResp.setPriv("000111"); // TODO hard coded default
+            userResp.setPriv(NnUserProfile.PRIV_CMS);
         } else {
             userResp.setPriv(user.getProfile().getPriv());
         }
@@ -250,7 +248,7 @@ public class ApiGeneric {
     }
     
     /** compose set response **/
-    public Set setResponse(SysTag set, SysTagDisplay setMeta) {
+    public Set response(SysTag set, SysTagDisplay setMeta) {
         
         Set setResp = new Set();
         
@@ -265,79 +263,20 @@ public class ApiGeneric {
         
         return setResp;
     }
-	
-	/** log the enter state
-	 *  @param now the enter time
-	 *  */
-	public String printEnterState(Date now, HttpServletRequest req) {
-	    
-	    if (now == null || req == null) {
-            return null;
-        }
-	    
-	    String result = req.getRequestURI() + "@" + now + "[";
-	    String parameterPairs = "";
-	    
-	    try {
-			Map<String, String[]> map = (Map<String, String[]>) req.getParameterMap();
-	        Enumeration<String> names = (Enumeration<String>) req.getParameterNames();
-        
-	        while(names.hasMoreElements()) {
-	            
-	            String name = names.nextElement();
-	            String[] values = map.get(name);
-	            
-	            parameterPairs += "," + name + "=";
-	            if (values.length > 1) {
-	                parameterPairs += "(";
-	            }
-	            
-	            String parameterValues = "";
-	            for (String value : values) {
-	                parameterValues += ",\"" + value + "\"";
-	            }
-	            parameterValues = parameterValues.replaceFirst(",", "");
-	            
-	            parameterPairs += parameterValues;
-	            if (values.length > 1) {
-	                parameterPairs += ")";
-	            }
-	        }
-	        parameterPairs = parameterPairs.replaceFirst(",", "");
-	        
-	    } catch (ClassCastException e) {
-	        NnLogUtil.logException(e);
-	    }
-	    
-	    result += parameterPairs + "]";
-        
-	    return result;
-	}
-	
-	/** log the exit state
-	 *  @param now the enter time, not the exit time
-	 *  @param exitState the exit state : ok, 400, 401, 403, 404
-	 *  */
-	public String printExitState(Date now, HttpServletRequest req, String exitState) {
-	    return req.getRequestURI() + "@" + now + "[exit-state=" + exitState + "]";
-	}
     
-    /** indicate logging user has access right to target mso in PCS API
-     *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
-     */
-    protected boolean hasRightAccessPCS(Long userId, Long msoId, String requirePriv) {
+    protected boolean checkPriv(long userId, long msoId, String requirePriv) {
         
-        if (userId == null || msoId == null || requirePriv == null || requirePriv.matches("[01]+") == false) {
+        if (requirePriv == null || requirePriv.matches("[01]+") == false) {
             return false;
         }
         
         NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
         if (profile == null) {
             profile = new NnUserProfile();
-            profile.setPriv("000111");
+            profile.setPriv(NnUserProfile.PRIV_CMS);
         }
         if (profile.getPriv() == null) {
-            profile.setPriv("000111");
+            profile.setPriv(NnUserProfile.PRIV_CMS);
         }
         String priv = profile.getPriv();
         int privLen = priv.length();
@@ -353,5 +292,4 @@ public class ApiGeneric {
         
         return true;
     }
-    
 }

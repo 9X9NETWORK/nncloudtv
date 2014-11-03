@@ -107,7 +107,7 @@ public class ApiMisc extends ApiGeneric {
                 notFound(resp, INVALID_PATH_PARAMETER);
                 return null;
             }
-            if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
+            if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
                 
                 forbidden(resp);
                 return null;
@@ -193,7 +193,7 @@ public class ApiMisc extends ApiGeneric {
             user.getProfile().setCntChannel(cntChannel);
         }
         
-        return userResponse(user);
+        return response(user);
     }
     
     /** super profile's msoId priv will replace the result one if super profile exist */
@@ -236,7 +236,7 @@ public class ApiMisc extends ApiGeneric {
             user.getProfile().setCntChannel(cntChannel);
         }
         
-        return userResponse(user);
+        return response(user);
     }
     
     @RequestMapping("sysinfo")

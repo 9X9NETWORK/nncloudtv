@@ -28,6 +28,7 @@ import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.MyLibrary;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -63,7 +64,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), promotion.getMsoId(), "111") == false) {
+        } else if (checkPriv(user.getId(), promotion.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -130,7 +131,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), promotion.getMsoId(), "111") == false) {
+        } else if (checkPriv(user.getId(), promotion.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -157,7 +158,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -251,25 +252,19 @@ public class ApiMso extends ApiGeneric {
     List<Set> msoSets(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -291,7 +286,6 @@ public class ApiMso extends ApiGeneric {
             result = SetService.normalize(result);
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -300,34 +294,29 @@ public class ApiMso extends ApiGeneric {
     Set msoSetCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long msoId = null;
         try {
             msoId = Long.valueOf(msoIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -335,7 +324,6 @@ public class ApiMso extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null || name.isEmpty()) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -411,7 +399,6 @@ public class ApiMso extends ApiGeneric {
         set = NNF.getSetService().create(set);
         set = SetService.normalize(set);
         
-        log.info(printExitState(now, req, "ok"));
         return set;
     }
     
@@ -420,45 +407,36 @@ public class ApiMso extends ApiGeneric {
     Set set(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "100") == false) {
+        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
         Set result = NNF.getSetService().findById(set.getId());
         if (result == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         result = SetService.normalize(result);
         
-        log.info(printExitState(now, req, "ok"));
         return result;
     }
     
@@ -467,32 +445,25 @@ public class ApiMso extends ApiGeneric {
     Set setUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         SysTag sysTag = NNF.getSysTagMngr().findById(setId);
         if (sysTag == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), sysTag.getMsoId(), "110") == false) {
+        } else if (checkPriv(user.getId(), sysTag.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -510,7 +481,6 @@ public class ApiMso extends ApiGeneric {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -530,12 +500,10 @@ public class ApiMso extends ApiGeneric {
                 sortingType = Short.valueOf(sortingTypeStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (SetService.isValidSortingType(sortingType) == false) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -593,7 +561,6 @@ public class ApiMso extends ApiGeneric {
         Set result = NNF.getSetService().composeSet(sysTag, display);
         result = SetService.normalize(result);
         
-        log.info(printExitState(now, req, "ok"));
         return result;
     }
     
@@ -602,38 +569,30 @@ public class ApiMso extends ApiGeneric {
     String setDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         long setId = 0;
         try {
             setId = Long.valueOf(setIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "101") == false) {
+        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(setId));;
-        log.info(printExitState(now, req, "ok"));
         
         return ok(resp);
     }
@@ -660,7 +619,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "100") == false) {
+        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
             return null;
         }
@@ -675,20 +634,15 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody void setChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
@@ -696,13 +650,11 @@ public class ApiMso extends ApiGeneric {
         if (user == null) {
             
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return;
             
-        } else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "110") == false) {
+        } else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return;
         }
         
@@ -714,12 +666,10 @@ public class ApiMso extends ApiGeneric {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return;
         }
         
@@ -727,14 +677,12 @@ public class ApiMso extends ApiGeneric {
         channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             badRequest(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "400"));
             return;
         }
         
         Mso mso = NNF.getMsoMngr().findById(set.getMsoId());
         if (NNF.getMsoMngr().isPlayableChannel(channel, mso.getId()) == false) {
             badRequest(resp, "Channel Cant Play On This Mso");
-            log.info(printExitState(now, req, "400"));
             return;
         }
         
@@ -758,36 +706,29 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.DELETE)
     public @ResponseBody
-    String setChannelRemove(HttpServletRequest req,
+    void setChannelRemove(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         }
-        else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "101") == false) {
+        else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         Long channelId = null;
@@ -797,58 +738,48 @@ public class ApiMso extends ApiGeneric {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
+                return;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         
         NNF.getSysTagMapMngr().delete(NNF.getSysTagMapMngr().findOne(setId, channelId));
-        log.info(printExitState(now, req, "ok"));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
-    String setChannelsSorting(HttpServletRequest req,
+    void setChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
-        
-        Date now = NnDateUtil.now();
-        log.info(printEnterState(now, req));
         
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Set set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (hasRightAccessPCS(user.getId(), set.getMsoId(), "110") == false) {
+            return;
+        } else if (checkPriv(user.getId(), set.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         String channelIdsStr = req.getParameter("channels");
         if (channelIdsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            return null;
+            return;
         }
         
         List<Long> channelIdList = new ArrayList<Long>();
@@ -868,7 +799,7 @@ public class ApiMso extends ApiGeneric {
         if (channelIdList.size() != origList.size()) {
             log.info("list size is not equal");
             badRequest(resp, INVALID_PARAMETER);
-            return null;
+            return;
         }
         for (SysTagMap map : origList) {
             
@@ -876,15 +807,13 @@ public class ApiMso extends ApiGeneric {
             if (seq < 0) {
                 log.info("list item is not match");
                 badRequest(resp, INVALID_PARAMETER);
-                return null;
+                return;
             }
             map.setSeq((short) (seq + 1));
         }
         NNF.getSysTagMapMngr().save(origList);
         
-        log.info(printExitState(now, req, "ok"));
-        
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.GET)
@@ -892,13 +821,9 @@ public class ApiMso extends ApiGeneric {
     List<Long> storeChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
@@ -910,12 +835,10 @@ public class ApiMso extends ApiGeneric {
                 categoryId = Long.valueOf(categoryIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -947,43 +870,37 @@ public class ApiMso extends ApiGeneric {
         } else if (categoryId != null) {
             results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
         }
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.DELETE)
     public @ResponseBody
-    String storeChannelRemove(HttpServletRequest req,
+    void storeChannelRemove(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            notFound(resp, MSO_NOT_FOUND);
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "101") == false) {
+            return;
+            
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         String[] channelIdsStr = channelsStr.split(",");
         List<Long> channelIds = new ArrayList<Long>();
@@ -1000,44 +917,36 @@ public class ApiMso extends ApiGeneric {
             }
         }
         NNF.getStoreListingMngr().addChannelsToBlackList(channelIds, mso.getId());
-        log.info(printExitState(now, req, "ok"));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.POST)
     public @ResponseBody
-    String storeChannelAdd(HttpServletRequest req,
+    void storeChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            notFound(resp, MSO_NOT_FOUND);
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         String[] channelIdsStr = channelsStr.split(",");
         List<Long> channelIds = new ArrayList<Long>();
@@ -1055,9 +964,8 @@ public class ApiMso extends ApiGeneric {
         }
         
         NNF.getStoreListingMngr().removeChannelsFromBlackList(channelIds, mso.getId());
-        log.info(printExitState(now, req, "ok"));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "mso/{msoId}", method = RequestMethod.GET)
@@ -1065,8 +973,6 @@ public class ApiMso extends ApiGeneric {
     Mso mso(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         ApiContext context = new ApiContext(req);
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -1115,7 +1021,6 @@ public class ApiMso extends ApiGeneric {
             mso.setCmsLogo(config.getValue());
         }
         
-        log.info(printExitState(now, req, "ok"));
         return mso;
     }
     
@@ -1124,13 +1029,9 @@ public class ApiMso extends ApiGeneric {
     Mso msoUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
@@ -1138,13 +1039,11 @@ public class ApiMso extends ApiGeneric {
         if (user == null) {
             
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1169,8 +1068,6 @@ public class ApiMso extends ApiGeneric {
             mso.setSlogan(NnStringUtil.htmlSafeAndTruncated(slogan));
         }
         
-        log.info(printExitState(now, req, "ok"));
-        
         return NNF.getMsoMngr().save(mso);
     }
     
@@ -1179,25 +1076,19 @@ public class ApiMso extends ApiGeneric {
     List<Category> msoCategories(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1225,7 +1116,6 @@ public class ApiMso extends ApiGeneric {
             result = CategoryService.normalize(result);
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -1234,25 +1124,19 @@ public class ApiMso extends ApiGeneric {
     Category msoCategoryCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1264,7 +1148,6 @@ public class ApiMso extends ApiGeneric {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         } else {
@@ -1310,7 +1193,6 @@ public class ApiMso extends ApiGeneric {
         category = CategoryService.normalize(category);
         category = NNF.getCategoryService().create(category);
         
-        log.info(printExitState(now, req, "ok"));
         return category;
     }
     
@@ -1319,32 +1201,25 @@ public class ApiMso extends ApiGeneric {
     Category category(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "100") == false) {
+        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1366,10 +1241,7 @@ public class ApiMso extends ApiGeneric {
             category.setLang(LangTable.LANG_EN);
             category.setName(category.getEnName());
         }
-        category = CategoryService.normalize(category);
-        
-        log.info(printExitState(now, req, "ok"));
-        return category;
+        return CategoryService.normalize(category);
     }
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.PUT)
@@ -1377,32 +1249,25 @@ public class ApiMso extends ApiGeneric {
     Category categoryUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "110") == false) {
+        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1415,7 +1280,6 @@ public class ApiMso extends ApiGeneric {
                 category.setSeq(seq);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -1455,48 +1319,37 @@ public class ApiMso extends ApiGeneric {
             category.setLang(LangTable.LANG_EN);
             category.setName(category.getEnName());
         }
-        category = CategoryService.normalize(category);
-        
-        log.info(printExitState(now, req, "ok"));
-        return category;
+        return CategoryService.normalize(category);
     }
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String categoryDelete(HttpServletRequest req,
+    void categoryDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "101") == false) {
+        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(categoryId));
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "category/{categoryId}/channels", method = RequestMethod.GET)
@@ -1504,73 +1357,60 @@ public class ApiMso extends ApiGeneric {
     List<NnChannel> categoryChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "100") == false) {
+        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
         List<NnChannel> results = NNF.getCategoryService().getChannels(categoryId);
-        NNF.getChannelMngr().normalize(results);
-        log.info(printExitState(now, req, "ok"));
-        return results;
+        
+        return NNF.getChannelMngr().normalize(results);
     }
     
     @RequestMapping(value = "category/{categoryId}/channels", method = RequestMethod.POST)
     public @ResponseBody
-    String categoryChannelAdd(HttpServletRequest req,
+    void categoryChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "110") == false) {
+            return;
+            
+        } else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // channels
@@ -1603,8 +1443,7 @@ public class ApiMso extends ApiGeneric {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
+                return;
             }
         }
         
@@ -1616,8 +1455,7 @@ public class ApiMso extends ApiGeneric {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
+                return;
             }
         }
         
@@ -1634,50 +1472,41 @@ public class ApiMso extends ApiGeneric {
             NNF.getCategoryService().addChannels(categoryId, channelIds);
         }
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "category/{categoryId}/channels", method = RequestMethod.DELETE)
     public @ResponseBody
-    String categoryChannelRemove(HttpServletRequest req,
+    void categoryChannelRemove(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
             notFound(resp, "Category Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         }
-        else if (hasRightAccessPCS(user.getId(), category.getMsoId(), "101") == false) {
+        else if (checkPriv(user.getId(), category.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
-            return null;
+            return;
         }
         String[] channelIdsStr = channelsStr.split(",");
         List<Long> channelIds = new ArrayList<Long>();
@@ -1694,9 +1523,8 @@ public class ApiMso extends ApiGeneric {
             }
         }
         NNF.getCategoryService().removeChannels(categoryId, channelIds);
-        log.info(printExitState(now, req, "ok"));
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store/categoryLocks", method = RequestMethod.GET)
@@ -1704,38 +1532,29 @@ public class ApiMso extends ApiGeneric {
     List<String> msoSystemCategoryLocks(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        List<String> results = NNF.getConfigMngr().getCategoryMasks(mso.getId());
-        log.info(printExitState(now, req, "ok"));
-        return results;
+        return NNF.getConfigMngr().getCategoryMasks(mso.getId());
     }
     
     @RequestMapping(value = "mso/{msoId}/store/categoryLocks", method = RequestMethod.PUT)
@@ -1743,32 +1562,25 @@ public class ApiMso extends ApiGeneric {
     List<String> msoSystemCategoryLocksUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
-            notFound(resp, "Mso Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), mso.getId(), "110") == false) {
+        else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1776,7 +1588,6 @@ public class ApiMso extends ApiGeneric {
         String categoriesStr = req.getParameter("categories");
         if (categoriesStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         String[] categoryIdsStr = categoriesStr.split(",");
@@ -1789,8 +1600,6 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        log.info(printExitState(now, req, "ok"));
-        
         return NNF.getConfigMngr().setCategoryMasks(mso.getId(), categoryIds);
     }
     
@@ -1800,7 +1609,7 @@ public class ApiMso extends ApiGeneric {
     
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "MSO_NOT_FOUND");
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
@@ -1809,7 +1618,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "010") == false) {
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -1874,7 +1683,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, "MSO_NOT_FOUND");
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
@@ -1884,7 +1693,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (hasRightAccessPCS(user.getId(), mso.getId(), "100") == false) {
+        } else if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_PCS) == false) {
             
             forbidden(resp);
             return null;
@@ -1907,13 +1716,10 @@ public class ApiMso extends ApiGeneric {
      * ex : 28,58 * * * * curl -X PUT localhost:8080/api/push_notifications/scheduled
      */
     @RequestMapping(value = "push_notifications/scheduled", method = RequestMethod.PUT)
-    public @ResponseBody String notificationsScheduled(HttpServletRequest req,
+    public @ResponseBody void notificationsScheduled(HttpServletRequest req,
             HttpServletResponse resp) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Date dueDate = new Date(now.getTime() + 60*10*1000); // 10 mins interval
+        Date dueDate = new Date(NnDateUtil.timestamp() + 60 * 10 * 1000); // 10 mins interval
         List<MsoNotification> notifications = NNF.getMsoNotiMngr().listScheduled(dueDate);
         
         for (MsoNotification notification : notifications) {
@@ -1926,44 +1732,35 @@ public class ApiMso extends ApiGeneric {
         
         NNF.getMsoNotiMngr().saveAll(notifications);
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.GET)
     public @ResponseBody MsoNotification notification(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "100") == false) {
+        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        log.info(printExitState(now, req, "ok"));
         return notification;
     }
     
@@ -1971,32 +1768,25 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody MsoNotification notificationUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
         }
-        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "110") == false) {
+        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -2043,47 +1833,38 @@ public class ApiMso extends ApiGeneric {
             notification = NNF.getMsoNotiMngr().save(notification);
         }
         
-        log.info(printExitState(now, req, "ok"));
         return notification;
     }
     
     @RequestMapping(value = "push_notifications/{push_notificationId}", method = RequestMethod.DELETE)
-    public @ResponseBody String notificationDelete(HttpServletRequest req,
+    public @ResponseBody void notificationDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("push_notificationId") String notificationIdStr) {
-        
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         
         Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         MsoNotification notification = NNF.getMsoNotiMngr().findById(notificationId);
         if (notification == null) {
             notFound(resp, "Notification Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
         NnUser user = identifiedUser(req);
         if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
+            return;
         }
-        else if (hasRightAccessPCS(user.getId(), notification.getMsoId(), "101") == false) {
+        else if (checkPriv(user.getId(), notification.getMsoId(), NnUserProfile.PRIV_PCS) == false) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
         NNF.getMsoNotiMngr().delete(notification);
         
-        log.info(printExitState(now, req, "ok"));
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.DELETE)
@@ -2108,7 +1889,7 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
+        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return;
@@ -2143,7 +1924,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
+        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;
@@ -2210,7 +1991,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
+        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;
@@ -2260,7 +2041,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        if (hasRightAccessPCS(user.getId(), mso.getId(), "00000001") == false) {
+        if (checkPriv(user.getId(), mso.getId(), NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
             
             forbidden(resp);
             return null;
