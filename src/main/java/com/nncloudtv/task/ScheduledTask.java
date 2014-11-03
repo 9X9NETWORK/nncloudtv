@@ -28,11 +28,11 @@ public class ScheduledTask {
         long total = Runtime.getRuntime().totalMemory();
         long free  = Runtime.getRuntime().freeMemory();
         
-        log.info("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
-                   +  ", total = " + FileUtils.byteCountToDisplaySize(total)
-                   +   ", free = " + FileUtils.byteCountToDisplaySize(free));
+        System.out.println("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
+                             +  ", total = " + FileUtils.byteCountToDisplaySize(total)
+                             +   ", free = " + FileUtils.byteCountToDisplaySize(free));
         if (max == total && free < total / 100) {
-            log.warning("available memory is less than 1%");
+            log.severe("available memory is less than 1%");
         }
     }
     
@@ -41,10 +41,10 @@ public class ScheduledTask {
         
         if (CacheFactory.isEnabled) {
             
-            log.info("[memcache] checking memcache server(s) ...");
+            System.out.println("[memcache] checking memcache server(s) ...");
             long before = NnDateUtil.timestamp();
             CacheFactory.reconfigClient();
-            log.info("[memcache] reconfig costs " + (NnDateUtil.timestamp() - before) + " milliseconds");
+            System.out.println(String.format("[memcache] reconfig costs %d milliseconds", NnDateUtil.timestamp() - before));
         }
         
     }
