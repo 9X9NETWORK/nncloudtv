@@ -39,7 +39,7 @@ public class CacheFactory {
     
     private static boolean checkServer(InetSocketAddress addr) {
         
-        String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
+        String key = String.format("[memcache] loop_test(%d)", NnDateUtil.timestamp());
         log.info("key = " + key);
         boolean alive = false;
         
@@ -72,14 +72,14 @@ public class CacheFactory {
             log.warning(e.getMessage());
         } finally {
             long delta = NnDateUtil.timestamp() - before;
-            log.info("it takes " + delta + " milliseconds");
+            log.info("[memcache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
                 future.cancel(false);
         }
         if (alive)
-            log.info("memcache server " + addr + " is alive");
+            log.info("[memcache] server " + addr + " is alive");
         return alive;
     }
     
