@@ -1,6 +1,5 @@
 package com.nncloudtv.lib.stream;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -17,8 +16,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.google.api.client.util.IOUtils;
-import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.NnNetUtil;
 
 public class LiveStreamLib implements StreamLib {
     
@@ -35,7 +33,7 @@ public class LiveStreamLib implements StreamLib {
         
         String normalizedUrl = null;
         
-        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_PAN_VIDEO)) {
+        if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL) || urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
             
             normalizedUrl = urlStr;
             
@@ -152,61 +150,50 @@ public class LiveStreamLib implements StreamLib {
         
         if (urlStr.matches(REGEX_LIVESTREAM_VIDEO_URL)) {
             
-            log.info("livestream video url format matched");
+            log.info("livestream video url format");
             
             urlStr = getLiveStreamApiUrl(urlStr);
-            
+            log.info("api url = " + urlStr);
+            String content = NnNetUtil.urlGet(urlStr);
+            if (content == null) {
+                
+                log.warning("livestream api return empty");
+                return null;
+            }
+            log.info("content size = " + content.length());
             try {
                 
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                IOUtils.copy(conn.getInputStream(), baos);
-                JSONObject videoJson = new JSONObject(new String(baos.toByteArray(), NnStringUtil.UTF8));
-                
+                JSONObject videoJson = new JSONObject(content);
+                System.out.println(videoJson.toString());
                 String progressiveUrl = videoJson.getString("progressive_url");
                 log.info("progressive_url = " + progressiveUrl);
                 
                 return progressiveUrl;
                 
-            } catch (MalformedURLException e) {
-                
-                log.warning(e.getClass().getName());
-                log.warning(e.getMessage());
-                
-                return null;
-                
             } catch (JSONException e) {
                 
                 log.warning(e.getClass().getName());
                 log.warning(e.getMessage());
-                
-                return null;
-                
-            } catch (IOException e) {
-                
-                log.warning(e.getClass().getName());
-                log.warning(e.getMessage());
-                
                 return null;
             }
             
         } else if (urlStr.matches(REGEX_LIVESTREAM_EVENT_URL)) {
             
-            log.info("livestream event url format matched");
+            log.info("livestream event url format");
             
             urlStr = getLiveStreamApiUrl(urlStr);
-            
+            log.info("api url = " + urlStr);
+            String content = NnNetUtil.urlGet(urlStr);
+            if (content == null) {
+                
+                log.warning("livestream api return empty");
+                return null;
+            }
+            log.info("content size = " + content.length());
             try {
                 
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setInstanceFollowRedirects(true);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                IOUtils.copy(conn.getInputStream(), baos);
-                JSONObject respJson = new JSONObject(new String(baos.toByteArray(), NnStringUtil.UTF8));
-                
+                JSONObject respJson = new JSONObject(content);
+                System.out.println(respJson.toString());
                 if (respJson.isNull("stream_info")) {
                     
                     JSONObject feedJson = respJson.getJSONObject("feed");
@@ -227,20 +214,20 @@ public class LiveStreamLib implements StreamLib {
                     
                     JSONObject streamInfoJson = respJson.getJSONObject("stream_info");
                     
-                    String m3u8Url = streamInfoJson.getString("m3u8_url");
-                    log.info("m3u8_url = " + m3u8Url);
+                    String m3u8 = streamInfoJson.getString("m3u8_url");
+                    log.info("m3u8_url = " + m3u8);
                     if (html5) {
                         
-                        // check 301 status
-                        url = new URL(m3u8Url);
-                        conn = (HttpURLConnection) url.openConnection();
+                        // check 30X status
+                        URL url = new URL(m3u8);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                         conn.setInstanceFollowRedirects(false);
                         int code = conn.getResponseCode();
                         log.info("m3u8 status code = " + code);
-                        if (code == 301) {
+                        if (code == 301 || code == 302) {
                             
                             String location = conn.getHeaderField("Location");
-                            log.info("fetch redirection");
+                            log.info("fetch redirection location = " + location);
                             if (location != null) {
                                 
                                 return location;
@@ -248,7 +235,7 @@ public class LiveStreamLib implements StreamLib {
                         }
                     }
                     
-                    return m3u8Url;
+                    return m3u8;
                 }
                 
             } catch (MalformedURLException e) {

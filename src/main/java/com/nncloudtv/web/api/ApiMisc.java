@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -355,7 +353,6 @@ public class ApiMisc extends ApiGeneric {
             
             NnLogUtil.logException(e);
             internalError(resp, e);
-            
             return null;
         }
         resp.setContentType(PLAIN_TEXT_UTF8);
@@ -363,7 +360,7 @@ public class ApiMisc extends ApiGeneric {
         resp.addHeader("Cache-Control", "private, max-age=3600");
         return result;
     }
-	
+    
 	@RequestMapping("*")
 	public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
 		
@@ -392,6 +389,7 @@ public class ApiMisc extends ApiGeneric {
 				message = BLACK_HOLE;
 			}
 		} catch (IOException e) {
+            
             internalError(resp);
             return null;
         }
@@ -405,7 +403,7 @@ public class ApiMisc extends ApiGeneric {
         
         return message + "\n";
     }
-	
+    
     @RequestMapping(value = "sns/facebook", method = RequestMethod.POST)
     public @ResponseBody String postToFacebook(HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false) String mso) {
@@ -532,16 +530,18 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.proxyTo(livestreamApiUrl, resp);
+            NnNetUtil.proxyTo(livestreamApiUrl, resp).join();
             
         } catch (IOException e) {
             
             log.info(e.getClass().getName());
-            log.warning(e.getMessage());
-            internalError(resp);
-            return;
+            log.info(e.getMessage());
+            
+        } catch (InterruptedException e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
         }
-        
     }
     
     @RequestMapping(value = "ustream")
@@ -583,16 +583,16 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.prerenderTo(urlStr, resp);
+            PipingTask task = NnNetUtil.prerenderTo(urlStr, resp);
+            task.join();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             
             log.info(e.getClass().getName());
             log.warning(e.getMessage());
             internalError(resp);
             return;
         }
-        
     }
     
     @RequestMapping(value = "cors", method = RequestMethod.GET)
@@ -608,16 +608,19 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            NnNetUtil.proxyTo(urlStr, resp);
+            NnNetUtil.proxyTo(urlStr, resp).join();
             
         } catch (IOException e) {
             
             log.info(e.getClass().getName());
-            log.warning(e.getMessage());
+            log.info(e.getMessage());
             internalError(resp);
-            return;
+            
+        } catch (InterruptedException e) {
+            
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
         }
-        
     }
     
     @RequestMapping(value = "302")
@@ -658,6 +661,11 @@ public class ApiMisc extends ApiGeneric {
             return;
         }
         
+        boolean transcoding = true;
+        if (req.getParameter("transcoding") == null) {
+            transcoding = false;
+        }
+        
         Matcher ytPlaylistMatcher = Pattern.compile(YouTubeLib.REGEX_YOUTUBE_PLAYLIST).matcher(videoUrl);
         
         if (ytPlaylistMatcher.find()) {
@@ -694,19 +702,16 @@ public class ApiMisc extends ApiGeneric {
                     String href = entry.getHtmlLink().getHref();
                     
                     writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
-                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href));
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
                 }
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
                 
                 resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
-                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
-                
-            } catch (MalformedURLException e) {
-                
-                log.warning(e.getMessage());
-                return;
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                IOUtils.copy(bais, System.out);
+                IOUtils.copy(bais, resp.getOutputStream());
                 
             } catch (IOException e) {
                 
@@ -718,12 +723,6 @@ public class ApiMisc extends ApiGeneric {
                 log.warning("ServiceException");
                 log.warning(e.getMessage());
                 return;
-            } finally {
-                
-                try {
-                    resp.flushBuffer();
-                } catch (IOException e) {
-                }
             }
             
             return;
@@ -731,24 +730,26 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             
-            StreamFactory.streaming(videoUrl, resp.getOutputStream());
-            
-        } catch (MalformedURLException e) {
-            
-            badRequest(resp, INVALID_PARAMETER);
-            return;
+            if (transcoding) {
+                
+                resp.setContentType("video/mp2t");;
+                StreamFactory.streaming(videoUrl, resp.getOutputStream());
+                
+            } else {
+                
+                StreamFactory.streamTo(videoUrl, resp).join();;
+            }
             
         } catch (IOException e) {
             
-            log.info("IOException");
+            log.info(e.getClass().getName());
             log.info(e.getMessage());
+            internalError(resp);
             
-        } finally {
+        } catch (InterruptedException e) {
             
-            try {
-                resp.flushBuffer();
-            } catch (IOException e) {
-            }
+            log.info(e.getClass().getName());
+            log.info(e.getMessage());
         }
     }
     
@@ -773,41 +774,23 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        // check url format
-        try {
-            URL url = new URL(videoUrl);
-            url.openConnection();
-        } catch (MalformedURLException e) {
-            log.info("bad url format");
-            return empty;
-        } catch (IOException e) {
-            log.info("failed to open url");
-            return empty;
-        }
-        
         InputStream videoIn = null;
-        String thumbnailUrl = null;
-        
         StreamLib streamLib = StreamFactory.getStreamLib(videoUrl);
         if (streamLib != null) {
             
             String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
-            if (directVideoUrl != null) {
+            if (directVideoUrl != null && !directVideoUrl.startsWith("https")) {
                 
                 videoUrl = directVideoUrl;
                 
             } else {
                 
-                InputStream directVideoStream = streamLib.getDirectVideoStream(videoUrl);
-                if (directVideoStream != null) {
-                    
-                    videoIn = directVideoStream;
-                }
+                videoIn = streamLib.getDirectVideoStream(videoUrl);
             }
         }
         
         FeedingAvconvTask feedingAvconvTask = null;
-        
+        String thumbnailUrl = null;
         try {
             String cmd = "/usr/bin/avconv -v debug -i "
                        + ((videoIn == null) ? NnStringUtil.escapeURLInShellArg(videoUrl) : "/dev/stdin")
@@ -836,7 +819,7 @@ public class ApiMisc extends ApiGeneric {
                 metadata.setContentType("image/png");
                 metadata.setContentLength(baos.size());
                 thumbnailUrl = AmazonLib.s3Upload(MsoConfigManager.getS3UploadBucket(),
-                                                  "thumb-xx" + NnDateUtil.now().getTime() + ".png",
+                                                  "thumb-xx" + NnDateUtil.timestamp() + ".png",
                                                   new ByteArrayInputStream(baos.toByteArray()),
                                                   metadata);
             }
