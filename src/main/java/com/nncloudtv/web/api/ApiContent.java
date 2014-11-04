@@ -802,14 +802,21 @@ public class ApiContent extends ApiGeneric {
             
             if (sphereFilter == null) {
                 
-                Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30);
-                Set<Long> userIdSet = new HashSet<Long>();
-                log.info("found profiles = " + profiles.size());
-                for (NnUserProfile profile : profiles) {
-                    userIdSet.add(profile.getUserId());
+                List<NnUser> users = new ArrayList<NnUser>();
+                short[] shards = { NnUser.SHARD_CHINESE, NnUser.SHARD_DEFAULT };
+                for (short shard : shards) {
+                    
+                    Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30, shard);
+                    Set<Long> userIdSet = new HashSet<Long>();
+                    log.info(String.format("found %d profiles in shard %d", profiles.size(), shard));
+                    for (NnUserProfile profile : profiles) {
+                        userIdSet.add(profile.getUserId());
+                    }
+                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(userIdSet, shard);
+                    log.info("found shard users = " + users.size());
+                    
+                    users.addAll(shardUsers);
                 }
-                List<NnUser> users = NNF.getUserMngr().findAllByIds(userIdSet);
-                log.info("found users = " + users.size());
                 
                 for (NnUser user : users) {
                     List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);

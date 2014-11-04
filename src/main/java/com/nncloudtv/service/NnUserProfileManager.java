@@ -104,10 +104,9 @@ public class NnUserProfileManager {
         return dao.save(user, profile);
     }
     
-    public Set<NnUserProfile> search(String keyword, int start, int limit) {
+    public Set<NnUserProfile> search(String keyword, int start, int limit, short shard) {
         
-        return dao.search(keyword, start, limit);
-        
+        return dao.search(keyword, start, limit, shard);
     }
     
     /** pick up highest priv profile */

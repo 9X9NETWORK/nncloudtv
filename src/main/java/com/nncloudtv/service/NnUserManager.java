@@ -494,8 +494,9 @@ public class NnUserManager {
         return user;
     }
     
-    public List<NnUser> findAllByIds(Set<Long> userIdSet) {    
-        return dao.findAllByIds(userIdSet);
+    public List<NnUser> findAllByIds(Set<Long> userIdSet, short shard) {
+        
+        return dao.findAllByIds(userIdSet, NnUserDao.getPersistenceManager(shard, null));
     }
     
     //UserInfo or String

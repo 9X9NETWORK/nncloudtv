@@ -181,11 +181,15 @@ public class GenericDao<T> {
         return results;
     }
     
-    @SuppressWarnings("unchecked")
     public List<T> findAllByIds(Collection<Long> ids) {
         
+        return findAllByIds(ids, getPersistenceManager());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<T> findAllByIds(Collection<Long> ids, PersistenceManager pm) {
+        
         List<T> results = new ArrayList<T>();
-        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(daoClass, ":p.contains(id)");
             results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));

@@ -11,7 +11,6 @@ import javax.jdo.Query;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 
@@ -82,20 +81,19 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
         return profile;
     }
     
-    public Set<NnUserProfile> search(String keyword, int start,
-            int limit) {
+    public Set<NnUserProfile> search(String keyword, int start, int limit, short shard) {
         
         Set<NnUserProfile> results = new HashSet<NnUserProfile>();
         
         keyword = StringEscapeUtils.escapeSql(keyword);
-        String query = "select * from nnuser_profile where lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-        query += " order by updateDate desc";
-        query += " limit " + start + ", " + limit;
+        String query = "SELECT * FROM nnuser_profile "
+                     + "        WHERE LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")"
+                     + "     ORDER BY updateDate DESC"
+                     + "        LIMIT " + start + ", " + limit;
         
-        results.addAll(sql(query, PMF.getNnUser1().getPersistenceManager()));
-        results.addAll(sql(query, PMF.getNnUser2().getPersistenceManager()));
+        results.addAll(sql(query, NnUserDao.getPersistenceManager(shard, null)));
         
         return results;
     }
-        
+    
 }
