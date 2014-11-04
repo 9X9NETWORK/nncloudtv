@@ -819,17 +819,22 @@ public class ApiContent extends ApiGeneric {
                     users.addAll(shardUsers);
                 }
                 log.info(String.format("total %d users found", users.size()));
-                for (NnUser user : users) {
-                    List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
-                    for (NnChannel channel : userChannels) {
-                        if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
-                            if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
-                                log.info("from curator = " + channel.getName());
-                                channels.add(channel);
-                            }
+                
+                List<NnChannel> userChannels = channelMngr.findByUsers(users, 150);
+                log.info(String.format("total %d channels found from users", userChannels.size()));
+                int recognized = 0;
+                for (NnChannel channel : userChannels) {
+                    
+                    if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
+                        
+                        if (sphereList.isEmpty() || sphereList.contains(channel.getSphere())) {
+                            
+                            channels.add(channel);
+                            recognized++;
                         }
                     }
                 }
+                log.info(String.format("%d user channels are recognized", recognized));
             }
             
             log.info("total channels = " + channels.size());

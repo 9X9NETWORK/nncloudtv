@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
@@ -691,6 +692,17 @@ public class NnChannelManager {
             return channels.subList(0, limit);
         }
         return channels;
+    }
+    
+    public List<NnChannel> findByUsers(List<NnUser> users, int limit) {
+        
+        List<String> idList = new ArrayList<String>();
+        for (NnUser user : users) {
+            
+            idList.add(user.getIdStr());
+        }
+        
+        return dao.findByUser(StringUtils.join(idList, ","), limit, false);
     }
     
     //TODO change to list, and merge with byUser, and subList is not real
