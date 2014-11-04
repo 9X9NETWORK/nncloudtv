@@ -246,11 +246,7 @@ public class ApiUser extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -258,69 +254,60 @@ public class ApiUser extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
+            
         } else if (user.getId() != userId) {
+            
             forbidden(resp);
             return;
         }
         
-        String channelIdsStr = req.getParameter("channels");
-        if (channelIdsStr == null) {
+        String channelsParam = req.getParameter("channels");
+        if (channelsParam == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
         }
-        String[] channelIdStrList = channelIdsStr.split(",");
-        
-        // the result should be same as userChannels but not include fake channel
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : channels) {
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                channels.remove(channel);
-                break;
-            }
-        }
-        
-        List<NnChannel> orderedChannels = new ArrayList<NnChannel>();
         List<Long> channelIdList = new ArrayList<Long>();
-        List<Long> checkedChannelIdList = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            channelIdList.add(channel.getId());
-            checkedChannelIdList.add(channel.getId());
+        for (String split : channelsParam.split(",")) {
+            
+            Long splitId = NnStringUtil.evalLong(split);
+            if (splitId != null) {
+                channelIdList.add(splitId);
+            }
         }
         
-        int index;
-        for (String channelIdStr : channelIdStrList) {
-            
-            Long channelId = null;
-            try {
-                
-                channelId = Long.valueOf(channelIdStr);
-                
-            } catch(Exception e) {
-            }
-            if (channelId != null) {
-                index = channelIdList.indexOf(channelId);
-                if (index > -1) {
-                    orderedChannels.add(channels.get(index));
-                    checkedChannelIdList.remove(channelId);
-                }
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
+        Iterator<NnChannel> it = channels.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                it.remove();
             }
         }
-        // parameter should contain all channelId
-        if (checkedChannelIdList.size() != 0) {
+        
+        if (channelIdList.size() != channels.size()) {
+            
+            log.info(String.format("%d not equal %d", channelIdList.size(), channels.size()));
             badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
-        short counter = 1;
-        for (NnChannel channel : orderedChannels) {
-            channel.setSeq(counter);
-            counter++;
+        for (NnChannel channel : channels) {
+            
+            int index = channelIdList.indexOf(Long.valueOf(channel.getId()));
+            if (index < 0) {
+                
+                log.info(String.format("channelId %d is not matched", channel.getId()));
+                badRequest(resp, INVALID_PARAMETER);
+                return;
+            }
+            
+            channel.setSeq((short)(index + 1));
         }
         
-        channelMngr.saveAll(orderedChannels);
+        NNF.getChannelMngr().save(channels, false);
         
         msgResponse(resp, OK);
     }

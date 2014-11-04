@@ -340,43 +340,53 @@ public class NnChannelManager {
         // update episode count
         favoriteCh.setCntEpisode(calcuateEpisodeCount(favoriteCh));
         save(favoriteCh);
-    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    }
     
     public NnChannel save(NnChannel channel) {
-        NnChannel original = dao.findById(channel.getId());
-        Date now = new Date();
-        if (channel.getCreateDate() == null)
+        
+        NnChannel origin = dao.findById(channel.getId());
+        Date now = NnDateUtil.now();
+        
+        if (channel.getCreateDate() == null) {
             channel.setCreateDate(now);
-        if (channel.getUpdateDate() == null)
-            channel.setUpdateDate(now);        
+        }
+        if (channel.getUpdateDate() == null) {
+            channel.setUpdateDate(now);
+        }
         if (channel.getIntro() != null) {
             channel.setIntro(channel.getIntro().replaceAll("\n", ""));
             channel.setIntro(channel.getIntro().replaceAll("\t", " "));
-            if (channel.getIntro().length() > 500)
-                channel.getIntro().substring(0, 499);
         }
         if (channel.getName() != null) {
             channel.setName(channel.getName().replaceAll("\n", ""));
             channel.setName(channel.getName().replaceAll("\t", " "));
         }
+        
         //TODO will be inconsistent with those stored in tag table
         if (channel.getTag() != null) {
             channel.setTag(this.processTagText(channel.getTag()));
         }
+        
         channel = dao.save(channel);
         
-        NnChannel[] channels = {original, channel};
+        NnChannel[] channels = { origin, channel };
         if (NNF.getConfigMngr().isQueueEnabled(true)) {
+            
         } else {
+            
             this.processChannelRelatedCounter(channels);
         }
         this.processChannelTag(channel);
         this.resetCache(channel.getId());
+        
         return channel;
     }
     
-    public List<NnChannel> saveAll(List<NnChannel> channels) {
-        resetCache(channels);
+    public List<NnChannel> save(List<NnChannel> channels, boolean resetCache) {
+        
+        if (resetCache) {
+            resetCache(channels);
+        }
         return dao.saveAll(channels);
     }
     
@@ -745,7 +755,7 @@ public class NnChannelManager {
         }
     }
     
-    public void resetCache(long channelId) {        
+    public void resetCache(long channelId) {
         log.info("reset channel info cache: " + channelId);
         String cId = String.valueOf(channelId);
         CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, ApiContext.FORMAT_PLAIN));
@@ -959,24 +969,23 @@ public class NnChannelManager {
                     channels.get(i).setSeq((short)(i + 1));
                 }
                 
-                saveAll(channels);
+                save(channels, false);
                 System.out.println(String.format("[reorder_channels] ended (%d ms)", NnDateUtil.timestamp() - before));
             }
         }).start();
         
     }
     
-    public void renewChannelUpdateDate(long channelId) {
-        Date now = new Date();
-        NnChannel channel = dao.findById(channelId);
-        if (channel == null) {
-            return ;
-        }
-        channel.setUpdateDate(now);
-        save(channel);
+    public void renewUpdateDateOnly(NnChannel channel) {
+        
+        if (channel == null) return;
+        channel.setUpdateDate(NnDateUtil.now());
+        resetCache(channel.getId());
+        dao.save(channel);
     }
     
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
+        
         return dao.findPersonalHistory(userId, msoId);
     }
     

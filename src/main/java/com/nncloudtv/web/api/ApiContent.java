@@ -1320,7 +1320,6 @@ public class ApiContent extends ApiGeneric {
         return results;
     }
     
-    // TODO: need to be optimized
     @RequestMapping(value = "channels/{channelId}/episodes/sorting", method = RequestMethod.PUT)
     public @ResponseBody
     void channelEpisodesSorting(HttpServletRequest req,
@@ -1336,12 +1335,9 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
-        
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1357,55 +1353,48 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        String episodeIdsStr = req.getParameter("episodes");
-        if (episodeIdsStr == null) {
-            episodeMngr.reorderChannelEpisodes(channelId);
+        String episodeParam = req.getParameter("episodes");
+        if (episodeParam == null) {
+            
+            NNF.getEpisodeMngr().reorderChannelEpisodes(channelId);
+            
             msgResponse(resp, OK);
             return;
         }
-        String[] episodeIdStrList = episodeIdsStr.split(",");
+        String[] splitted = episodeParam.split(",");
+        ArrayList<Long> episodeIdList = new ArrayList<Long>();
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channelId);
         
-        List<NnEpisode> episodes = episodeMngr.findByChannelId(channelId); // it must same as channelEpisodes result
-        List<NnEpisode> orderedEpisodes = new ArrayList<NnEpisode>();
-        List<Long> episodeIdList = new ArrayList<Long>();
-        List<Long> checkedEpisodeIdList = new ArrayList<Long>();
-        for (NnEpisode episode : episodes) {
-            episodeIdList.add(episode.getId());
-            checkedEpisodeIdList.add(episode.getId());
-        }
-        
-        int index;
-        for (String episodeIdStr : episodeIdStrList) {
+        for (String episodeIdStr : splitted) {
             
-            Long episodeId = null;
-            try {
-                
-                episodeId = Long.valueOf(episodeIdStr);
-                
-            } catch(Exception e) {
-            }
+            Long episodeId = NnStringUtil.evalLong(episodeIdStr);
             if (episodeId != null) {
-                index = episodeIdList.indexOf(episodeId);
-                if (index > -1) {
-                    orderedEpisodes.add(episodes.get(index));
-                    checkedEpisodeIdList.remove(episodeId);
-                }
+                episodeIdList.add(episodeId);
             }
         }
-        // parameter should contain all episodeId
-        if (checkedEpisodeIdList.size() != 0) {
+        
+        if (episodeIdList.size() != episodes.size()) {
+            
+            log.info(String.format("%d not equal %d", episodeIdList.size(), episodes.size()));
             badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
-        int counter = 1;
-        for (NnEpisode episode : orderedEpisodes) {
-            episode.setSeq(counter);
-            counter++;
+        for (NnEpisode episode : episodes) {
+            
+            int index = episodeIdList.indexOf(Long.valueOf(episode.getId()));
+            if (index < 0) {
+                
+                log.info(String.format("episodeId %d is not matched", episode.getId()));
+                badRequest(resp, INVALID_PARAMETER);
+                return;
+            }
+            
+            episode.setSeq(index + 1);
         }
         
-        episodeMngr.save(orderedEpisodes);
-        channelMngr.renewChannelUpdateDate(channel.getId());
+        NNF.getEpisodeMngr().save(episodes);
+        NNF.getChannelMngr().renewUpdateDateOnly(channel);
         
         msgResponse(resp, OK);
     }
@@ -1790,7 +1779,7 @@ public class ApiContent extends ApiGeneric {
         // mark as hook position
         if (autoShare == true) {
             episodeMngr.autoShareToFacebook(episode);
-            channelMngr.renewChannelUpdateDate(episode.getChannelId());
+            channelMngr.renewUpdateDateOnly(NNF.getChannelMngr().findById(episode.getChannelId()));
         }
         
         if (dirty) {
@@ -1986,7 +1975,7 @@ public class ApiContent extends ApiGeneric {
         // mark as hook position 
         if (autoShare == true) {
             episodeMngr.autoShareToFacebook(episode);
-            channelMngr.renewChannelUpdateDate(channelId);
+            channelMngr.renewUpdateDateOnly(channel);
         }
         
         if (dirty) {
