@@ -7,6 +7,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -494,7 +495,7 @@ public class NnUserManager {
         return user;
     }
     
-    public List<NnUser> findAllByIds(Set<Long> userIdSet, short shard) {
+    public List<NnUser> findAllByIds(Collection<Long> userIdSet, short shard) {
         
         return dao.findAllByIds(userIdSet, NnUserDao.getPersistenceManager(shard, null));
     }

@@ -110,7 +110,7 @@ public class NnUserDao extends GenericDao<NnUser> {
     
     //use either shard or token to determine partition, default shard 1 if nothing
     public static PersistenceManager getPersistenceManager(short shard, String token) {
-        if (shard != 0) {
+        if (shard > 0) {
             if (shard == NnUser.SHARD_DEFAULT) {
                 return PMF.getNnUser1().getPersistenceManager();
             } else {
