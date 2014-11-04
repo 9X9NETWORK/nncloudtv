@@ -630,8 +630,7 @@ public class MsoManager {
         }
     }
     
-    /** Get playable channels on target MSO.
-     *  The basic definition of playable should same as NnChannelDao.getStoreChannels. */
+    // TODO: remove
     public List<Long> getPlayableChannels(List<NnChannel> channels, Long msoId) {
         
         if (channels == null || channels.size() < 1 || msoId == null) {

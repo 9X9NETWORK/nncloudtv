@@ -798,7 +798,7 @@ public class ApiContent extends ApiGeneric {
             } else {
                 channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             }
-            log.info(String.format("found %d channels", channels.size()));
+            System.out.println(String.format("[channel_search] found %d channels", channels.size()));
             
             if (sphereFilter == null) {
                 
@@ -808,20 +808,18 @@ public class ApiContent extends ApiGeneric {
                     
                     Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30, shard);
                     Set<Long> userIdSet = new HashSet<Long>();
-                    log.info(String.format("found %d profiles in shard %d", profiles.size(), shard));
                     for (NnUserProfile profile : profiles) {
                         userIdSet.add(profile.getUserId());
                     }
                     
                     List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(userIdSet, shard);
-                    log.info(String.format("found %d users in shard %d", shardUsers.size(), shard));
+                    System.out.println(String.format("[channel_search] found %d profiles which in %d users from shard %d", profiles.size(), shardUsers.size(), shard));
                     
                     users.addAll(shardUsers);
                 }
-                log.info(String.format("total %d users found", users.size()));
+                System.out.println(String.format("[channel_search] total %d users found", users.size()));
                 
                 List<NnChannel> userChannels = channelMngr.findByUsers(users, 150);
-                log.info(String.format("total %d channels found from users", userChannels.size()));
                 int recognized = 0;
                 for (NnChannel channel : userChannels) {
                     
@@ -834,10 +832,10 @@ public class ApiContent extends ApiGeneric {
                         }
                     }
                 }
-                log.info(String.format("%d user channels are recognized", recognized));
+                System.out.println(String.format("[channel_search] %d channels obtained from user where %d of them are recognized", userChannels.size(), recognized));
             }
             
-            log.info("total channels = " + channels.size());
+            System.out.println("[channel_search] total channels = " + channels.size());
             if (msoName != null) {
                 List<Long> channelIdList = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
                 results = channelMngr.findByIds(channelIdList);
