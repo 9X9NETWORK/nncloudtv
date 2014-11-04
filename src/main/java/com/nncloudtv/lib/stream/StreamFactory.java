@@ -3,10 +3,11 @@ package com.nncloudtv.lib.stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
+import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
@@ -46,27 +47,36 @@ public class StreamFactory {
             }
         }
         
-        log.info("no StreamLib matched");
+        log.info("no streamlib matched");
         
         return null;
     }
     
-    public static void streaming(String videoUrl, OutputStream videoOut) throws MalformedURLException {
+    public static PipingTask streamTo(String videoUrl, HttpServletResponse resp) throws IOException {
         
-        log.info("videoUrl = " + videoUrl);
-        if (videoUrl == null || videoOut == null) { return; }
+        log.info("streamTo " + videoUrl);
+        if (videoUrl == null || resp == null) { throw new IllegalArgumentException(); }
         
-        // check url format
-        try {
-            URL url = new URL(videoUrl);
-            url.openConnection();
-        } catch (MalformedURLException e) {
-            log.warning("invalid url format");
-            return;
-        } catch (IOException e) {
-            log.warning("fail to open url");
-            return;
+        StreamLib streamLib = getStreamLib(videoUrl);
+        if (streamLib != null) {
+            
+            String directVideoUrl = streamLib.getDirectVideoUrl(videoUrl);
+            if (directVideoUrl != null) {
+                
+                videoUrl = directVideoUrl;
+            }
+        } else {
+            
+            log.info("direct link");
         }
+        
+        return NnNetUtil.proxyTo(videoUrl, resp);
+    }
+    
+    public static void streaming(String videoUrl, OutputStream videoOut) {
+        
+        log.info("streamming " + videoUrl);
+        if (videoUrl == null || videoOut == null) { return; }
         
         InputStream videoIn = null;
         StreamLib streamLib = getStreamLib(videoUrl);
@@ -87,6 +97,7 @@ public class StreamFactory {
                 }
             }
         }
+        
         FeedingAvconvTask feedingAvconvTask = null;
         PipingTask pipingTask = null;
         
@@ -111,13 +122,18 @@ public class StreamFactory {
             log.info("streaming done");
             
         } catch (InterruptedException e) {
+            
             log.warning(e.getMessage());
-            return;
+            
         } catch (IOException e) {
+            
             // maybe player closed
             log.info("streaming stopped");
             log.info(e.getMessage());
+            
         } finally {
+            
+            // clean up
             if (feedingAvconvTask != null) {
                 feedingAvconvTask.stopCopying();
             }

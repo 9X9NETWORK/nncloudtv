@@ -144,7 +144,8 @@ public class MsoManager {
         boolean facebookId = false;
         boolean searchSet = false;
         boolean audioSet = false;
-        String adIosType = null;
+        boolean bearSet = false;
+        String adIosType = null;        
         for (MsoConfig c : list) {
             if (c.getItem().equals(MsoConfig.DEBUG))
                 result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
@@ -197,6 +198,13 @@ public class MsoManager {
                 searchSet = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.SEARCH, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.CHAT)) {
+                result += PlayerApiService.assembleKeyValue(MsoConfig.CHAT, c.getValue());
+            }
+            if (c.getItem().equals(MsoConfig.BEAR)) {
+            	bearSet = true;
+                result += PlayerApiService.assembleKeyValue(MsoConfig.BEAR, c.getValue());
+            }
             if (c.getItem().equals(MsoConfig.STORE)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.STORE, c.getValue());
             }
@@ -210,6 +218,8 @@ public class MsoManager {
         	result[0] += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, "en w-YkGyubqcA;zh w-YkGyubqcA");
         }
         */
+        if (bearSet == false)
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.BEAR, "blackbear");
         if (regionSet == false)
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
         if (chromecastId == false)

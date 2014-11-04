@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -30,7 +29,7 @@ public class FacebookLib {
     protected static final Logger log = Logger.getLogger(FacebookLib.class.getName());
     
     private static String generateState() {
-        String time = String.valueOf(new Date().getTime());
+        String time = String.valueOf(NnDateUtil.timestamp());
         String random = RandomStringUtils.randomAlphabetic(10);
         String result = time + random;
         result = RandomStringUtils.random(10, 0, 10, true, true, result.toCharArray());     

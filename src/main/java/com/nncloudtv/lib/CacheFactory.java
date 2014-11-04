@@ -3,7 +3,6 @@ package com.nncloudtv.lib;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,13 +39,13 @@ public class CacheFactory {
     
     private static boolean checkServer(InetSocketAddress addr) {
         
-        String key = "loop_test(" + new Date().getTime() + ")";
+        String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
         log.info("key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
         Future<Object> future = null;
-        long now = new Date().getTime();
+        long before = NnDateUtil.timestamp();
         try {
             cache = new MemcachedClient(addr) {
                 
@@ -72,7 +71,7 @@ public class CacheFactory {
         } catch (IOException e) {
             log.warning(e.getMessage());
         } finally {
-            long delta = new Date().getTime() - now;
+            long delta = NnDateUtil.timestamp() - before;
             log.info("it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
@@ -114,7 +113,7 @@ public class CacheFactory {
         Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
         String serverStr = MsoConfigManager.getMemcacheServer();
         List<InetSocketAddress> checkedServers = new ArrayList<InetSocketAddress>();
-        log.info("memcache server = " + serverStr);
+        log.info("[memcache] server = " + serverStr);
         String[] serverList = serverStr.split(",");
         for (String server : serverList) {
             
@@ -126,7 +125,7 @@ public class CacheFactory {
         memcacheServers = checkedServers;
         isRunning = (memcacheServers == null || memcacheServers.isEmpty()) ? false : true;
         if (!isRunning)
-            log.severe("no available memcache server");
+            log.severe("[memcache] no available memcache server");
         
         // take care of current cache
         if (outdated != null)
@@ -140,10 +139,13 @@ public class CacheFactory {
             
         } catch (IOException e) {
             log.severe("memcache io exception");
+            log.severe(e.getMessage());
         } catch (NullPointerException e) {
             log.severe("memcache is missing");
+            log.severe(e.getMessage());
         } catch (Exception e) {
             log.severe("memcache exception");
+            log.severe(e.getMessage());
             e.printStackTrace();
         } finally {
             cache = newCache;
@@ -176,7 +178,7 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (obj == null)
-            log.info("cache [" + key + "] --> missed");
+            log.info(String.format("cache [%s] --> missed", key));
         return obj;
     }
     
@@ -184,7 +186,7 @@ public class CacheFactory {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
-        long now = new Date().getTime();
+        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return null;
         
@@ -208,11 +210,11 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
-        log.info("save operation costs " + (new Date().getTime() - now) + " milliseconds");
+        log.info(String.format("save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (retObj == null)
-            log.info("cache [" + key + "] --> not saved");
+            log.info(String.format("cache [%s] --> not saved", key));
         else
-            log.info("cache [" + key + "] --> saved");
+            log.info(String.format("cache [%s] --> saved", key));
         return retObj;
     }    
     
@@ -221,7 +223,7 @@ public class CacheFactory {
         if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
         
         boolean isDeleted = false;
-        long now = new Date().getTime();
+        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return;
         
@@ -244,11 +246,11 @@ public class CacheFactory {
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
-        log.info("delete operation costs " + (new Date().getTime() - now) + " milliseconds");
+        log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
-            log.info("cache [mass: " + keys.size() + "] --> deleted");
+            log.info(String.format("cache [mass: %d] --> deleted", keys.size()));
         } else {
-            log.info("cache [mass: " + keys.size() + "] --> not deleted");
+            log.info(String.format("cache [mass: %d] --> not deleted", keys.size()));
         }
     }
     
@@ -257,7 +259,7 @@ public class CacheFactory {
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
         
         boolean isDeleted = false;
-        long now = new Date().getTime();
+        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return;
         
@@ -276,11 +278,11 @@ public class CacheFactory {
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
-        log.info("delete operation costs " + (new Date().getTime() - now) + " milliseconds");
+        log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
-            log.info("cache [" + key + "] --> deleted");
+            log.info(String.format("cache [%s] --> deleted", key));
         } else {
-            log.info("cache [" + key + "] --> not deleted");
+            log.info(String.format("cache [%s] --> not deleted", key));
         }
     }
             

@@ -40,13 +40,13 @@ public class S3Helper implements StreamLib {
     
     public String getSignedUrl(String urlStr) {
         
-        // need to implement
+        // need impl.
         return null;
     }
     
     public String getHtml5DirectVideoUrl(String urlStr) {
         
-        return getDirectVideoUrl(urlStr);
+        return null;
     }
     
     public String getDirectVideoUrl(String urlStr) {

@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 
@@ -49,9 +50,9 @@ public class NnNetUtil {
         log.info(url);
     }
     
-    public static void prerenderTo(String urlStr, HttpServletResponse resp) throws IOException {
+    public static PipingTask prerenderTo(String urlStr, HttpServletResponse resp) throws IOException {
         
-        proxyTo(PRERENDER_SERVICE + urlStr, resp);
+        return proxyTo(PRERENDER_SERVICE + urlStr, resp);
         
     }
     
@@ -66,23 +67,19 @@ public class NnNetUtil {
         for (Entry<String, List<String>> entry : requestProperties.entrySet()) {
             
             String key = entry.getKey();
-            if (key == null) {
-                
-                System.out.println("[request] " + entry.getValue());
-                continue;
-            }
             List<String> values = entry.getValue();
             for (String value : values) {
                 
-                System.out.println("[request] " + key + ": " + value);
+                System.out.println("[request] " + ((key == null) ? value : (key + ": " + value)));
             }
         }
         
         return conn;
     }
     
-    public static void proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
+    public static PipingTask proxyTo(String urlStr, HttpServletResponse resp) throws IOException {
         
+        log.info("proxyTo " + urlStr);
         HttpURLConnection conn = getConn(urlStr);
         InputStream in = conn.getInputStream();
         
@@ -90,22 +87,21 @@ public class NnNetUtil {
         for (Entry<String, List<String>> entry : headers.entrySet()) {
             
             String key = entry.getKey();
-            if (key == null) {
-                
-                System.out.println("[header] " + entry.getValue());
-                continue;
-            }
             List<String> values = entry.getValue();
             for (String value : values) {
                 
-                resp.setHeader(key, value);
-                System.out.println("[header] " + key + ": " + value);
+                if (key != null)
+                    resp.setHeader(key, value);
+                System.out.println("[header] " + ((key == null) ? value : (key + ": " + value)));
             }
         }
         
         resp.setStatus(conn.getResponseCode());
-        IOUtils.copy(in, resp.getOutputStream());
-        resp.flushBuffer();
+        
+        PipingTask pipingTask = new PipingTask(in, resp.getOutputStream(), 0);
+        pipingTask.start();
+        
+        return pipingTask;
     }
     
     public static ResponseEntity<String> textReturn(String output) {
