@@ -813,7 +813,7 @@ public class ApiContent extends ApiGeneric {
                         userIdSet.add(profile.getUserId());
                     }
                     log.info("hash set = " + userIdSet.size()); // debug
-                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(userIdSet, shard);
+                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(new ArrayList<Long>(userIdSet), shard);
                     log.info(String.format("found %d users in shard %d", users.size(), shard));
                     
                     users.addAll(shardUsers);
