@@ -262,13 +262,14 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             String listStr = "";
             if (userIdStr != null) {
                 
+                List<String> list = new ArrayList<String>();
                 String[] split = userIdStr.split(",");
                 for (String str : split) {
                     
-                    str = NnStringUtil.escapedQuote(str);
+                    list.add(NnStringUtil.escapedQuote(str));
                 }
                 
-                listStr = StringUtils.join(split, ",");
+                listStr = StringUtils.join(list, ",");
             }
             
             String query = "SELECT * FROM nnchannel "
