@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
@@ -233,25 +232,6 @@ public class NnStringUtil {
                   .replaceAll(  ">", "&gt;")
                   .replaceAll( "\"", "&quot;")
                   .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
-    }
-    
-    public static String validateLangCode(String lang) {
-        
-        if (lang == null) {
-            return null;
-        }
-        
-        lang = lang.toLowerCase();
-        
-        if (lang.equals(LangTable.LANG_ZH)) {
-            return LangTable.LANG_ZH;
-        } else if (lang.equals(LangTable.LANG_EN)) {
-            return LangTable.LANG_EN;
-        } else if (lang.equals(LangTable.OTHER)) {
-            return LangTable.OTHER;
-        } else {
-            return null;
-        }
     }
     
     public static String seqToStr(int seq) {

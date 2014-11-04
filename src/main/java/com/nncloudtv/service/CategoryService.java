@@ -338,14 +338,24 @@ public class CategoryService {
         return ids;
     }
     
-    public void setupChannelCategory(Long categoryId, Long channelId) {
+    public void setupChannelCategory(long categoryId, long channelId) {
         
-        if (categoryId == null || channelId == null) { return ; }
-        
-        SysTagMapManager sysTagMapMngr = NNF.getSysTagMapMngr();
-        List<SysTagMap> tagMaps = sysTagMapMngr.findCategoryMaps(channelId, MsoManager.getSystemMsoId());
-        sysTagMapMngr.delete(tagMaps);
-        sysTagMapMngr.save(new SysTagMap(categoryId, channelId));
+        List<SysTagMap> maps = NNF.getSysTagMapMngr().findCategoryMaps(channelId, MsoManager.getSystemMsoId());
+        SysTagMap hit = null;
+        for (SysTagMap map : maps) {
+            if (map.getSysTagId() == categoryId) {
+                hit = map;
+            } else {
+                log.info(String.format("delete systagmap (%d, %d)", map.getSysTagId(), map.getChannelId()));
+                NNF.getSysTagMapMngr().delete(map);
+            }
+        }
+        if (hit == null) {
+            log.info(String.format("create systagmap (%d, %d)", categoryId, channelId));
+            NNF.getSysTagMapMngr().save(new SysTagMap(categoryId, channelId));
+        } else {
+            log.info("categoryId not changed");
+        }
     }
     
     public List<Category> getSystemCategories(String lang) {

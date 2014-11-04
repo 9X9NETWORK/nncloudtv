@@ -315,9 +315,6 @@ public class ApiMisc extends ApiGeneric {
         if (lang == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
-        } else if (NnStringUtil.validateLangCode(lang) == null) {
-            badRequest(resp, "Invalid lang");
-            return null;
         }
         
         try {

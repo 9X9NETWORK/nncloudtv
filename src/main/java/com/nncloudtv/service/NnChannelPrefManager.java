@@ -183,21 +183,4 @@ public class NnChannelPrefManager {
         return channelPref;
     }
     
-    // TODO: to be removed
-    public void setAutoSync(Long channelId, String autoSync) {
-        
-        if (channelId == null || autoSync == null) {
-            return ;
-        }
-        
-        NnChannelPref channelPref = findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
-        if (channelPref == null) {
-            
-            channelPref = new NnChannelPref(channelId, NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-        }
-        
-        channelPref.setValue(autoSync);
-        
-        save(channelPref);
-    }
 }

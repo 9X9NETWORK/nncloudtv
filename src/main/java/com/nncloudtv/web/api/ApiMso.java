@@ -261,9 +261,6 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-        }
         
         List<Set> results;
         
@@ -1051,12 +1048,8 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
+            
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
@@ -1066,7 +1059,7 @@ public class ApiMso extends ApiGeneric {
             if (lang.equals(LangTable.LANG_ZH)) {
                 result.setLang(LangTable.LANG_ZH);
                 result.setName(result.getZhName());
-            } else if (lang.equals(LangTable.LANG_EN)) {
+            } else {
                 result.setLang(LangTable.LANG_EN);
                 result.setName(result.getEnName());
             }
@@ -1127,12 +1120,7 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
@@ -1145,7 +1133,7 @@ public class ApiMso extends ApiGeneric {
         if (lang.equals(LangTable.LANG_ZH)) {
             category.setLang(LangTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
+        } else {
             category.setLang(LangTable.LANG_EN);
             category.setName(category.getEnName());
         }
@@ -1186,19 +1174,15 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
+            
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         if (lang.equals(LangTable.LANG_ZH)) {
             category.setLang(LangTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
+        } else {
             category.setLang(LangTable.LANG_EN);
             category.setName(category.getEnName());
         }
@@ -1263,12 +1247,8 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
+            
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
@@ -1278,7 +1258,7 @@ public class ApiMso extends ApiGeneric {
         if (lang.equals(LangTable.LANG_ZH)) {
             category.setLang(LangTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
+        } else {
             category.setLang(LangTable.LANG_EN);
             category.setName(category.getEnName());
         }

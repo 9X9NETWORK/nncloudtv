@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
@@ -51,12 +51,12 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -65,19 +65,6 @@ import com.nncloudtv.web.json.cms.Category;
 public class ApiContent extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
-    
-    private ApiContentService apiContentService;
-    
-    public ApiContent() {
-        
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), NNF.getChPrefMngr(), NNF.getProgramMngr());
-    }
-    
-    @Autowired
-    public ApiContent(ApiContentService apiContentService) {
-        
-        this.apiContentService = apiContentService;
-    }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)
     public @ResponseBody
@@ -847,8 +834,33 @@ public class ApiContent extends ApiGeneric {
             }
             
             Collections.sort(results, NnChannelManager.getComparator("updateDate"));
+            
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {
-            results = apiContentService.channelsSearch(mso.getId(), ytPlaylistIdStr, ytUserIdStr);
+            
+            if (ytPlaylistIdStr != null) {
+                
+                String sourceUrl = "http://www.youtube.com/view_play_list?p=" + ytPlaylistIdStr;
+                NnChannel result = channelMngr.findBySourceUrl(sourceUrl);
+                if (result != null) {
+                    results.add(result);
+                }
+                
+            } else if (ytUserIdStr != null) {
+                
+                String sourceUrl = "http://www.youtube.com/user/" + ytUserIdStr;
+                NnChannel result = channelMngr.findBySourceUrl(sourceUrl);
+                if (result != null) {
+                    results.add(result);
+                }
+                
+            }
+            
+            // filter part
+            // TODO: rewrite
+            List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, mso.getId());
+            results = channelMngr.findByIds(verifiedChannel);
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
+            
         }
         
         results = channelMngr.normalize(results);
@@ -911,25 +923,25 @@ public class ApiContent extends ApiGeneric {
         // name
         String name = req.getParameter("name");
         if (name != null) {
-            name = NnStringUtil.htmlSafeAndTruncated(name);
+            channel.setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
+            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // lang
         String lang = req.getParameter("lang");
         if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
+            channel.setLang(lang);
         }
         
         // sphere
         String sphere = req.getParameter("sphere");
         if (sphere != null) {
-            sphere = NnStringUtil.validateLangCode(sphere);
+            channel.setSphere(sphere);
         }
         
         // isPublic
@@ -937,13 +949,22 @@ public class ApiContent extends ApiGeneric {
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
             isPublic = NnStringUtil.evalBool(isPublicStr);
+            if (isPublic != null) {
+                channel.setPublic(isPublic);
+            }
         }
         
         // tag
         String tag = req.getParameter("tag");
+        if (tag != null) {
+            channel.setTag(tag);
+        }
         
         // imageUrl
         String imageUrl = req.getParameter("imageUrl");
+        if (imageUrl != null) {
+            channel.setImageUrl(imageUrl);
+        }
         
         // categoryId
         Long categoryId = null;
@@ -951,16 +972,16 @@ public class ApiContent extends ApiGeneric {
         if (categoryIdStr != null) {
             
             categoryId = NnStringUtil.evalLong(categoryIdStr);
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                categoryId = null;
+            if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
+                
+                NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
             }
         }
         
         // updateDate
-        Date updateDate = null;
         String updateDateStr = req.getParameter("updateDate");
         if (updateDateStr != null) {
-            updateDate = new Date();
+            channel.setUpdateDate(NnDateUtil.now());
         }
         
         // sorting
@@ -968,31 +989,47 @@ public class ApiContent extends ApiGeneric {
         String sortingStr = req.getParameter("sorting");
         if (sortingStr != null) {
             sorting = NnStringUtil.evalShort(sortingStr);
+            if (sorting != null) {
+                channel.setSorting(sorting);
+                NNF.getProgramMngr().resetCache(channel.getId());
+            }
         }
         
         // status
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            // TODO: rewrite
-            //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
-            //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+            NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
+            user.setMsoId(profile.getMsoId());
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE)) {
                 status = NnStringUtil.evalShort(statusStr);
-            //}
+                if (status != null) {
+                    channel.setStatus(status);
+                }
+            }
         }
         
-        NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,
-                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting, status);
-        if (savedChannel == null) {
-            internalError(resp);
-            return null;
+        String autoSync = req.getParameter("autoSync");
+        if (autoSync != null) {
+            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+            if (autosyncPref == null) {
+                
+                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+            }
+            if (!autoSync.equals(autosyncPref.getValue())) {
+                
+                autosyncPref.setValue(autoSync);
+                NNF.getChPrefMngr().save(autosyncPref);
+            }
         }
         
-        channelMngr.populateCategoryId(savedChannel);
-        channelMngr.populateAutoSync(savedChannel);
-        channelMngr.normalize(savedChannel);
+        channel = NNF.getChannelMngr().save(channel);
         
-        return savedChannel;
+        channelMngr.populateCategoryId(channel);
+        channelMngr.populateAutoSync(channel);
+        channelMngr.normalize(channel);
+        
+        return channel;
     }
     
     // TODO: fix me

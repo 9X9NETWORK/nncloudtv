@@ -24,6 +24,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
@@ -124,11 +125,7 @@ public class ApiUser extends ApiGeneric {
         String lang = req.getParameter("lang");
         if (lang != null) {
             
-            if (NnStringUtil.validateLangCode(lang) == null) {
-                log.warning("lang is not valid");
-            } else {
-                user.getProfile().setLang(lang);
-            }
+            user.getProfile().setLang(lang);
         }
         
         return response(NNF.getUserMngr().save(user));
@@ -370,7 +367,7 @@ public class ApiUser extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang == null || NnStringUtil.validateLangCode(lang) == null) {
+        if (lang == null) {
             lang = LangTable.LANG_EN; // default : en
         }
         
@@ -389,7 +386,7 @@ public class ApiUser extends ApiGeneric {
         
         // sphere
         String sphere = req.getParameter("sphere");
-        if (sphere == null || NnStringUtil.validateLangCode(sphere) == null) {
+        if (sphere == null) {
             sphere = LangTable.LANG_EN; // default : en
         }
         
@@ -489,7 +486,13 @@ public class ApiUser extends ApiGeneric {
         
         String autoSync = req.getParameter("autoSync");
         if (autoSync != null) {
-            NNF.getChPrefMngr().setAutoSync(channel.getId(), autoSync);
+            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+            if (autosyncPref == null) {
+                
+                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+            }
+            autosyncPref.setValue(autoSync);
+            NNF.getChPrefMngr().save(autosyncPref);
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
