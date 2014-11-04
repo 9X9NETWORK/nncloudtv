@@ -25,6 +25,7 @@ public class ApiGeneric {
     
     public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
     public static final String MSO_NOT_FOUND          = "Mso Not Found";
     public static final String MISSING_PARAMETER      = "Missing Parameter";
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";

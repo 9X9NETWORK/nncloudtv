@@ -31,8 +31,14 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
+import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.json.cms.CreditCard;
+import com.nncloudtv.web.json.cms.IapInfo;
 
 @Controller
 @RequestMapping("api/billing")
@@ -305,5 +311,194 @@ public class ApiBilling extends ApiGeneric {
         
         resp.setStatus(HTTP_201);
         return NNF.getOrderMngr().save(orders);
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.POST)
+    public @ResponseBody IapInfo iapInfoUpdate(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        IapInfo iap = new IapInfo();
+        
+        // title
+        String title = req.getParameter("title");
+        NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_TITLE);
+        if (title != null) {
+            if (titlePref != null) {
+                titlePref.setValue(title);
+            } else {
+                titlePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_TITLE, title);
+            }
+            NNF.getChPrefMngr().save(titlePref);
+            
+        }
+        if (titlePref != null) {
+            iap.setTitle(titlePref.getValue());
+        }
+        
+        // description
+        String description = req.getParameter("description");
+        NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_DESC);
+        if (description != null) {
+            if (descPref != null) {
+                descPref.setValue(description);
+            } else {
+                descPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_DESC, description);
+            }
+            
+        }
+        if (descPref != null) {
+            iap.setDescription(descPref.getValue());
+        }
+        
+        // price
+        String price = req.getParameter("price");
+        NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_PRICE);
+        if (price != null) {
+            if (pricePref != null) {
+                pricePref.setValue(price);
+            } else {
+                pricePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_PRICE, price);
+            }
+        }
+        if (pricePref != null) {
+            iap.setPrice(pricePref.getValue());
+        }
+        
+        // thumbnail
+        String thumbnail = req.getParameter("thumbnail");
+        NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_THUMB);
+        if (thumbnail != null) {
+            if (thumbPref != null) {
+                thumbPref.setValue(thumbnail);
+            } else {
+                thumbPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_THUMB, thumbnail);
+            }
+        }
+        if (thumbPref != null) {
+            iap.setThumbnail(thumbPref.getValue());
+        }
+        
+        return iap;
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.POST)
+    public @ResponseBody void itemsCreate(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return;
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
+            forbidden(resp);
+            return;
+        }
+        
+        String msoIdStr = req.getParameter("msoId");
+        if (msoIdStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        Mso mso = NNF.getMsoMngr().findById(msoIdStr);
+        if (mso == null) {
+            
+            badRequest(resp, MSO_NOT_FOUND);
+            return;
+        }
+        
+        NnItem ios = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_IOS);
+        if (ios == null) {
+            
+            ios = new NnItem(mso.getId(), channel.getId(), NnItem.APPSTORE);
+            NNF.getItemMngr().save(ios);
+        }
+        
+        NnItem android = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_ANDROID);
+        if (android == null) {
+            
+            android = new NnItem(mso.getId(), channel.getId(), NnItem.GOOGLEPLAY);
+            NNF.getItemMngr().save(android);
+        }
+        
+        msgResponse(resp, OK);
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.GET)
+    public @ResponseBody List<NnItem> items(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        return NNF.getItemMngr().findByChannelId(channel.getId());
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.GET)
+    public @ResponseBody IapInfo iapInfo(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        // title
+        IapInfo iap = new IapInfo();
+        NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_TITLE);
+        if (titlePref != null) {
+            iap.setTitle(titlePref.getValue());
+        }
+        
+        // description
+        NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_DESC);
+        if (descPref != null) {
+            iap.setDescription(descPref.getValue());
+        }
+        
+        // price
+        NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_PRICE);
+        if (pricePref != null) {
+            iap.setPrice(pricePref.getValue());
+        }
+        
+        // thumbnail
+        NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_THUMB);
+        if (thumbPref != null) {
+            iap.setThumbnail(thumbPref.getValue());
+        }
+        
+        return iap;
     }
 }

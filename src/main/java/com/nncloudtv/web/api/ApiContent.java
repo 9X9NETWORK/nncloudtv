@@ -103,9 +103,12 @@ public class ApiContent extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return;
         }
@@ -172,7 +175,7 @@ public class ApiContent extends ApiGeneric {
         if (user == null) {
             unauthorized(resp);
             return;
-        } else if (user.getId() != channel.getUserId()) {
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
             forbidden(resp);
             return;
         }
@@ -344,7 +347,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -449,7 +452,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return;
         }
@@ -487,7 +490,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return;
         }
@@ -559,7 +562,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -887,23 +890,20 @@ public class ApiContent extends ApiGeneric {
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         
-        Long channelId = NnStringUtil.evalLong(channelIdStr);
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return null;
         }
@@ -1014,9 +1014,12 @@ public class ApiContent extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return;
         }
@@ -1307,9 +1310,12 @@ public class ApiContent extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return;
         }
@@ -1461,7 +1467,7 @@ public class ApiContent extends ApiGeneric {
         }
         NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return;
         }
@@ -1593,7 +1599,7 @@ public class ApiContent extends ApiGeneric {
         }
         NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -1781,9 +1787,12 @@ public class ApiContent extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return null;
         }
@@ -2066,7 +2075,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -2202,7 +2211,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(titleCard.getChannelId());
-        if ((channel == null) || (user.getId() != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return;
         }

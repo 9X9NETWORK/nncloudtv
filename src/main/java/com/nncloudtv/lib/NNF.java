@@ -9,6 +9,7 @@ import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
+import com.nncloudtv.dao.NnChannelPrefDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.dao.NnItemDao;
@@ -61,6 +62,7 @@ import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
 import com.nncloudtv.service.TitleCardManager;
+import com.nncloudtv.service.YtChannelManager;
 import com.nncloudtv.service.YtProgramManager;
 
 public class NNF {
@@ -92,6 +94,7 @@ public class NNF {
     protected static PoiManager             poiMngr             = null;
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
+    protected static YtChannelManager       ytChannelMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
     protected static MyLibraryManager       libraryMngr         = null;
     protected static NnPurchaseManager      purchaseMngr        = null;
@@ -102,7 +105,7 @@ public class NNF {
     protected static CategoryService categoryService = null;
     protected static DepotService    depotService    = null;
     protected static EmailService    emailService    = null;
-    protected static NotificationService   notiService     = null;
+    protected static NotificationService notiService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -129,6 +132,7 @@ public class NNF {
     protected static NnPurchaseDao     purchaseDao       = null;
     protected static NnItemDao         itemDao           = null;
     protected static TitleCardDao      titleCardDao      = null;
+    protected static NnChannelPrefDao  chPrefDao         = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -403,6 +407,17 @@ public class NNF {
         }
         
         return titleCardDao;
+    }
+    
+    public static NnChannelPrefDao getChPrefDao() {
+        
+        if (chPrefDao == null) {
+            
+            log.info("create chPrefDao");
+            chPrefDao = new NnChannelPrefDao();
+        }
+        
+        return chPrefDao;
     }
     
     public static CategoryService getCategoryService() {
@@ -787,5 +802,16 @@ public class NNF {
         }
         
         return titleCardMngr;
+    }
+    
+    public static YtChannelManager getYtChannelMngr() {
+        
+        if (ytChannelMngr == null) {
+            
+            log.info("create ytChannelMngr");
+            ytChannelMngr = new YtChannelManager();
+        }
+        
+        return ytChannelMngr;
     }
 }

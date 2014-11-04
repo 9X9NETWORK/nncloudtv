@@ -59,14 +59,16 @@ public class NnChannelManager {
         return null;
     }
     
-    public NnChannel findById(String channelId) {
-    	NnChannel c = null;
-    	if (channelId.contains("yt")) {
-        	c = new YtChannelManager().convert(channelId);        	
-    	} else {
-            c = this.findById(Long.parseLong(channelId));
-    	}
-    	return c;
+    public NnChannel findById(String channelIdStr) {
+        
+        if (channelIdStr.contains("yt")) {
+            
+            return NNF.getYtChannelMngr().convert(channelIdStr);
+            
+        } else {
+            
+            return dao.findById(channelIdStr);
+        }
     }
     
     public NnChannel create(String sourceUrl, String name, String lang, HttpServletRequest req) {
@@ -1028,13 +1030,13 @@ public class NnChannelManager {
         
         // channel banner, social feeds
         String sns = null, banner = null;
-        List<NnChannelPref> bannerPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
-        if (bannerPrefs.size() > 0) {
-            banner = bannerPrefs.get(0).getValue();
+        NnChannelPref bannerPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+        if (bannerPref != null) {
+            banner = bannerPref.getValue();
         }
-        List<NnChannelPref> snsPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.SOCIAL_FEEDS);
-        if (snsPrefs.size() > 0) {
-            sns = snsPrefs.get(0).getValue();
+        NnChannelPref snsPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.SOCIAL_FEEDS);
+        if (snsPref != null) {
+            sns = snsPref.getValue();
         }
         
         log.info("channel lineup NOT from cache:" + channel.getId());
@@ -1266,13 +1268,13 @@ public class NnChannelManager {
         
         if (channel == null) return;
         
-        List<NnChannelPref> channelPrefs = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-        if (channelPrefs == null || channelPrefs.isEmpty()) {
+        NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        if (channelPref == null) {
             
             channel.setAutoSync(NnChannelPref.OFF);
             return;
         }
-        channel.setAutoSync(channelPrefs.get(0).getValue());
+        channel.setAutoSync(channelPref.getValue());
     }
     
     public int calculateUserChannels(NnUser user) {

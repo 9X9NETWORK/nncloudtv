@@ -655,18 +655,20 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
-        if (user == null) {
-            unauthorized(resp);
-            return null;
-        }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if (channel == null) {
             // ownership crashed, it is orphan object
             forbidden(resp);
             return null;
         }
-        if (user.getId() != channel.getUserId()) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return null;
         }
@@ -1225,9 +1227,12 @@ public class ApiPoi extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return null;
-        } else if (user.getId() != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return null;
         }
