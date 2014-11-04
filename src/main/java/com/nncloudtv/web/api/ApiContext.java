@@ -104,7 +104,7 @@ public class ApiContext {
         
         MsoManager msoMngr = NNF.getMsoMngr();
         httpReq = req;
-        log.info("user agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
+        log.info("user-agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
         
         String returnFormat = httpReq.getParameter(ApiContext.PARAM_FORMAT);
         if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
@@ -138,7 +138,7 @@ public class ApiContext {
             appVersion = os + " " + appVersion;
         
         root = NnNetUtil.getUrlRoot(httpReq);
-        if (root == "") {
+        if (root.isEmpty()) {
             root = MsoConfigManager.getServerDomain();
         }
         mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
@@ -146,7 +146,6 @@ public class ApiContext {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");
             String[] split = domain.split("\\.");
             if (split.length > 2) {
-                log.info("sub-domain = " + split[0]);
                 mso = msoMngr.findByName(split[0]);
             }
             if (mso == null) {
@@ -175,7 +174,7 @@ public class ApiContext {
             String[] splits = domain.split("\\.");
             if (splits.length == 3) {
                 String subdomain = splits[0];
-                log.info("subdomain = " + subdomain);
+                log.info("sub-domain = " + subdomain);
                 if (NNF.getMsoMngr().findByName(subdomain) != null) {
                     
                     return (productionSite = true);
@@ -194,7 +193,7 @@ public class ApiContext {
         if (splits.size() < 3)
             return MsoManager.isSystemMso(mso) ? "www." + domain : mso.getName() + "." + domain;
         
-        log.info("subdomain = " + splits.get(0));
+        log.info("sub-domain = " + splits.get(0));
         if (NNF.getMsoMngr().findByName(splits.get(0)) == null) {
             
             splits.remove(0);
@@ -242,6 +241,7 @@ public class ApiContext {
     }
     
     public String getRoot() {
+        
         return root;
     }
     
