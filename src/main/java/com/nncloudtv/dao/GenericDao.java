@@ -263,7 +263,7 @@ public class GenericDao<T> {
             
             return detached;
         }
-        log.info("[sql] " + queryStr + ";");
+        System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
         try {
             
@@ -273,7 +273,7 @@ public class GenericDao<T> {
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
             query.closeAll();
-            log.info(String.format("query costs %d milliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[sql] query costs %d milliseconds", NnDateUtil.timestamp() - before));
             
         } finally {
             
