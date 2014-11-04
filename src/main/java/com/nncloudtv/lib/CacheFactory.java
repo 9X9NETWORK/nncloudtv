@@ -52,7 +52,7 @@ public class CacheFactory {
                 @Override
                 protected void finalize() throws Throwable {
                     
-                    log.info("MemcachedClient is recycled");
+                    System.out.println("[finalize] MemcachedClient");
                 }
             };
             cache.set(key, EXP_DEFAULT, addr);

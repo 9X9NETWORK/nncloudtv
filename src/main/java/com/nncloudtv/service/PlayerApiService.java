@@ -112,7 +112,7 @@ public class PlayerApiService {
     @Override
     protected void finalize() throws Throwable {
         
-        log.info(this.getClass().getName() + " is recycled");
+        System.out.println("[finalize] " + this.getClass().getName());
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {
