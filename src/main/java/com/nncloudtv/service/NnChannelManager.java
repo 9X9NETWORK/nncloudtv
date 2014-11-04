@@ -20,6 +20,7 @@ import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -938,20 +939,29 @@ public class NnChannelManager {
         return false;
     }
     
-    public void reorderUserChannels(NnUser user) {
+    public void reorderUserChannels(final NnUser user) {
         
-        // the results should be same as ApiUser.userChannels() GET operation, but not include fake channel.
-        String userIdStr = user.getShard() + "-" + user.getId();
-        List<NnChannel> channels = dao.findByUser(userIdStr, 0, true);
+        if (user == null) return;
         
-        Collections.sort(channels, getComparator("seq"));
+        // due to time consuming, always run it in background
+        (new Thread() {
+            public void run() {
+                long before = NnDateUtil.timestamp();
+                System.out.println("[reorder_channels] start");
+                List<NnChannel> channels = dao.findByUser(user.getIdStr(), 0, true);
+                
+                Collections.sort(channels, getComparator("seq"));
+                
+                for (int i = 0; i < channels.size(); i++) {
+                    
+                    channels.get(i).setSeq((short)(i + 1));
+                }
+                
+                saveAll(channels);
+                System.out.println(String.format("[reorder_channels] ended (%d ms)", NnDateUtil.timestamp() - before));
+            }
+        }).start();
         
-        for (int i = 0; i < channels.size(); i++) {
-            
-            channels.get(i).setSeq((short)(i + 1));
-        }
-        
-        saveAll(channels);
     }
     
     public void renewChannelUpdateDate(long channelId) {
