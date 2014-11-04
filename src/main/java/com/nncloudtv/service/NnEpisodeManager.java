@@ -254,6 +254,7 @@ public class NnEpisodeManager {
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
+        
         return dao.findPlayerEpisode(channelId, sort, start, end);
     }
     
@@ -281,7 +282,6 @@ public class NnEpisodeManager {
         return totalDuration;
     }
     
-    /** adapt NnEpisode to format that CMS API required */
     public void normalize(NnEpisode episode) {
         if (episode != null) {
             episode.setName(NnStringUtil.revertHtml(episode.getName()));
@@ -289,7 +289,6 @@ public class NnEpisodeManager {
         }
     }
     
-    /** adapt NnEpisode to format that CMS API required */
     public void normalize(List<NnEpisode> episodes) {
         if (episodes != null) {
             for (NnEpisode episode : episodes) {

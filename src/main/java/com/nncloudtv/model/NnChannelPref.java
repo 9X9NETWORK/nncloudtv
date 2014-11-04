@@ -33,6 +33,11 @@ public class NnChannelPref implements Serializable {
     public static final String AUTO_SYNC       = "auto-sync";       // indicate YouTube-sync-channel is auto sync to YouTube
     public static final String SOCIAL_FEEDS    = "social-feeds";    // channel related social network information, refer to MsoConfig.SOCIAL_FEEDS
     public static final String BANNER_IMAGE    = "banner-image";    // banner image url
+    // In-app purchase information
+    public static final String IAP_TITLE       = "iap-title";
+    public static final String IAP_DESC        = "iap-desc";
+    public static final String IAP_PRICE       = "iap-price";
+    public static final String IAP_THUMB       = "iap-thumb";
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)

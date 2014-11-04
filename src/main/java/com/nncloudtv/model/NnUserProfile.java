@@ -2,11 +2,14 @@ package com.nncloudtv.model;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+
+import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table="nnuser_profile", detachable="true")
 public class NnUserProfile implements Serializable {
@@ -76,28 +79,32 @@ public class NnUserProfile implements Serializable {
     private Date updateDate;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String priv; // indicate pcs read write delete and ccs read write delete
                          // 7th digit indicate the permission of nnchannel.status
-
+    public static final String PRIV_PCS          = "11100000";
+    public static final String PRIV_CMS          = "00011100";
+    public static final String PRIV_SYSTEM_STORE = "00000010";
+    public static final String PRIV_UPLOAD_VIDEO = "00000001";
+    
     public long getMsoId() {
         return msoId;
     }
-
+    
     public void setMsoId(long msoId) {
         this.msoId = msoId;
     }
-
+    
     public String getImageUrl() {
         if (imageUrl == null)
             return NnUserProfile.IMAGE_URL_DEFAULT;
         return imageUrl;
     }
-
+    
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
+    
     public NnUserProfile() {       
     }
     

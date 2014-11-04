@@ -40,7 +40,7 @@ public class CacheFactory {
     private static boolean checkServer(InetSocketAddress addr) {
         
         String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
-        log.info("key = " + key);
+        System.out.println("[memcache] key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
@@ -72,14 +72,14 @@ public class CacheFactory {
             log.warning(e.getMessage());
         } finally {
             long delta = NnDateUtil.timestamp() - before;
-            log.info("it takes " + delta + " milliseconds");
+            System.out.println("[memcache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
                 future.cancel(false);
         }
-        if (alive)
-            log.info("memcache server " + addr + " is alive");
+        if (!alive)
+            log.warning("memcache server " + addr + " is dead");
         return alive;
     }
     
@@ -113,7 +113,7 @@ public class CacheFactory {
         Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
         String serverStr = MsoConfigManager.getMemcacheServer();
         List<InetSocketAddress> checkedServers = new ArrayList<InetSocketAddress>();
-        log.info("[memcache] server = " + serverStr);
+        System.out.println("[memcache] server = " + serverStr);
         String[] serverList = serverStr.split(",");
         for (String server : serverList) {
             
@@ -125,7 +125,7 @@ public class CacheFactory {
         memcacheServers = checkedServers;
         isRunning = (memcacheServers == null || memcacheServers.isEmpty()) ? false : true;
         if (!isRunning)
-            log.severe("[memcache] no available memcache server");
+            log.severe("No available memcache server!");
         
         // take care of current cache
         if (outdated != null)

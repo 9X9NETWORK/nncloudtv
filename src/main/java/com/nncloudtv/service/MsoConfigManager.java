@@ -40,7 +40,7 @@ public class MsoConfigManager {
         
         Properties properties = new Properties();
         String result = null;
-        log.info("to get property " + name + " from " + file);
+        log.info("get property " + name + " from " + file);
         try {
             properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(file));
             result = properties.getProperty(name);
@@ -169,7 +169,7 @@ public class MsoConfigManager {
         return null;
     }
     
-    static public String getFacebookClientId() {        
+    static public String getFacebookClientId() {
         return getProperty("facebook.properties", "facebook_clientid");
     }
     
@@ -237,13 +237,13 @@ public class MsoConfigManager {
         if (os == null || function == null)
             return null;
         if (function.contains("flurry")) {
-            if (os.equals(ApiContext.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.FLURRY_ANALYTICS_IOS;
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.FLURRY_ANALYTICS_ANDROID;
         }
         if (function.contains("google")) {
-            if (os.equals(ApiContext.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.GOOGLE_ANALYTICS_IOS;
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.GOOGLE_ANALYTICS_ANDROID;
@@ -265,7 +265,7 @@ public class MsoConfigManager {
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.ADMOBKEY_ANDROID;
             if (os.equals(ApiContext.OS_IOS))
-                return MsoConfig.ADMOBKEY_IOS;            
+                return MsoConfig.ADMOBKEY_IOS;
         }
         return null;
     }
@@ -277,12 +277,12 @@ public class MsoConfigManager {
     
     public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
-        try {        
-            String result = (String)CacheFactory.get(cacheKey);        
+        try {
+            String result = (String)CacheFactory.get(cacheKey);
             if (result != null){
-                log.info("value from cache: key=" + cacheKey + "value=" + result);            
+                log.info("value from cache: key=" + cacheKey + "value=" + result);
                 return NnStringUtil.stringToBool(result);
-            }            
+            }
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -294,20 +294,20 @@ public class MsoConfigManager {
         }
         return value;
     }
-        
+    
     public boolean isInReadonlyMode(boolean cacheReset) {
         return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
     }
-        
+    
     public boolean isQueueEnabled(boolean cacheReset) {
         boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
-        return status;     
+        return status;
     }
     
     public List<MsoConfig> findByMso(Mso mso) {
         return configDao.findByMso(mso);
     }
-        
+    
     //find: access db directly; get: through cache
     public MsoConfig getByMsoAndItem(Mso mso, String item) {
         String cacheKey = this.getCacheKeyByMsoAndKey(mso.getId(), item);
@@ -419,7 +419,7 @@ public class MsoConfigManager {
     
     // DB first, property file as fallback
     public static String getMemcacheServer() {
-    
+        
         String result = null;
         MsoConfig config = configDao.findByItem(MsoConfig.MEMCACHE_SERVER);
         if (config != null) {

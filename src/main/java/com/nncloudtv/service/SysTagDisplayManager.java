@@ -237,12 +237,12 @@ public class SysTagDisplayManager {
 	            listingChannels.addAll(whatsonChannels);
 	            for (NnChannel c : whatsonChannels) {
 	                if (c.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
-	                    daypartingChannel = c;                    
+	                    daypartingChannel = c;
 	                } else {
 	                    programInfo += (String) NNF.getYtProgramMngr().findByChannel(c);
 	                }
-	            }	            
-	        }	        
+	            }
+	        }
 	        //find the real dayparting channels
 	        SysTagDisplay dayparting = this.findDayparting(time, ctx.getLang(), ctx.getMso().getId());
 	        if (dayparting != null) {
@@ -335,19 +335,7 @@ public class SysTagDisplayManager {
     
     @SuppressWarnings("unchecked")
     public Object getPlayerPortal(String lang, boolean minimal, ApiContext ctx) {
-        /*
-        //1: list of sets, including dayparting         
-        //The dayparting set is system set, always shows up
-        Mso nnMso = msoMngr.findNNMso();
-        SysTagDisplay dayparting = displayMngr.findDayparting(baseTime, lang, nnMso.getId());
-        if (dayparting != null) {
-            displays.add(dayparting);
-        }
-        SysTagDisplay previously = displayMngr.findPrevious(nnMso.getId(), lang, dayparting);
-        if (previously != null) {
-            displays.add(previously);
-        }
-        */
+        
         List<SysTagDisplay> displays = this.findRecommendedSets(lang, ctx.getMso().getId());
         String setStr = "";
         List<SetInfo> setInfo = new ArrayList<SetInfo>();
@@ -402,7 +390,7 @@ public class SysTagDisplayManager {
                 if (systag.getType() == SysTag.TYPE_SET) {
                     sort = systag.getSorting();
                 }
-                channels.addAll(NNF.getSysTagMngr().findPlayerChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
+                channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(displays.get(0).getSystagId(), lang, sort, 0));
             }
             if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
                 channelStr = (String)NNF.getChannelMngr().composeChannelLineup(channels, ctx);
@@ -418,16 +406,12 @@ public class SysTagDisplayManager {
         }
         if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
             if (minimal) {
-                String result[] = {""};
-                result[0] = setStr;
+                String result[] = { setStr };
                 return result;
             } else {
-                String result[] = {"", "", ""};
-                result[0] = setStr;            
-                result[1] = channelStr;
-                result[2] = programStr;
-                return result;            
-            }            
+                String result[] = { setStr, channelStr, programStr };
+                return result;
+            }
         } else {
             Portal portal = new Portal();
             portal.setSetInfo(setInfo);

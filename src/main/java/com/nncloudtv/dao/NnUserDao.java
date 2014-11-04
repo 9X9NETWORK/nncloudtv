@@ -68,7 +68,7 @@ public class NnUserDao extends GenericDao<NnUser> {
             detached.addAll((List<NnUser>)pm.detachCopyAll(results));
         } catch (JDOObjectNotFoundException e) {
         } finally {
-            pm.close();                
+            pm.close();
         }        
         return detached;
     }
@@ -100,33 +100,13 @@ public class NnUserDao extends GenericDao<NnUser> {
         
         try {            
             user = pm.getObjectById(NnUser.class, id);
-            detached = (NnUser)pm.detachCopy(user);            
+            detached = (NnUser) pm.detachCopy(user);
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
         return detached;
-        //return user;
     }
-    
-    /**
-    public NnUser findById(long id, short shard) {
-        PersistenceManager pm = NnUserDao.getPersistenceManager((short) shard, null);
-        NnUser detached = null;
-        try {
-            NnUser user = (NnUser)pm.getObjectById(NnUser.class, id);
-            if (user == null)
-                pm = NnUserDao.getPersistenceManager((short)2, null);
-            else
-                detached = user;
-            //detached = (NnUser)pm.detachCopy(user); // Louis: this line cause internal error
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();
-        }
-        return detached;        
-    }    
-    **/
     
     //use either shard or token to determine partition, default shard 1 if nothing
     public static PersistenceManager getPersistenceManager(short shard, String token) {
@@ -146,7 +126,7 @@ public class NnUserDao extends GenericDao<NnUser> {
         }        
         return PMF.getNnUser1().getPersistenceManager();
     }
-                
+    
     public NnUser save(NnUser user) {
         if (user == null) {return null;}
         PersistenceManager pm = NnUserDao.getPersistenceManager(user.getShard(), user.getToken());
@@ -194,13 +174,14 @@ public class NnUserDao extends GenericDao<NnUser> {
         } finally {
             pm.close();
         }
-        return detached;        
+        return detached;
     }
     
     public NnUser findByToken(String token) {
+        
         NnUser user = null;
         log.info("token = " + token);
-        PersistenceManager pm = NnUserDao.getPersistenceManager((short) 0, token);
+        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_UNKNWON, token);
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("token == tokenParam");
@@ -214,6 +195,7 @@ public class NnUserDao extends GenericDao<NnUser> {
         } finally {
             pm.close();
         }
+        
         return user;
     }
     
@@ -223,24 +205,24 @@ public class NnUserDao extends GenericDao<NnUser> {
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("email == emailParam");
-            query.declareParameters("String emailParam");        
+            query.declareParameters("String emailParam");
             @SuppressWarnings("unchecked")
             List<NnUser> results = (List<NnUser>) query.execute(email);
             if (results.size() > 0) {
-                user = results.get(0);            
+                user = results.get(0);
             }
             user = pm.detachCopy(user);
         } finally {
             pm.close();
         }
-        return user;                
+        return user;
     }    
     
     public NnUser findByProfileUrl(String profileUrl) {
         if (profileUrl == null) return null;
         profileUrl = profileUrl.toLowerCase();
         NnUser user = null;
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();        
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
         try {
             for (int i=0;i<2;i++) {
                 String sql = "select * from nnuser n " +
@@ -248,7 +230,7 @@ public class NnUserDao extends GenericDao<NnUser> {
                 		         " select userId " +
                                    "from nnuser_profile p " +
                                  " where p.userId = n.id " +
-                                   " and lower(profileUrl) = '" + profileUrl + "')";                
+                                   " and lower(profileUrl) = '" + profileUrl + "')";
                 log.info("sql:" + sql);
                 Query query = pm.newQuery("javax.jdo.query.SQL", sql);
                 query.setClass(NnUser.class);
@@ -265,17 +247,17 @@ public class NnUserDao extends GenericDao<NnUser> {
         } finally {
             pm.close();
         }
-        return user;                
-    }    
-
+        return user;
+    }
+    
     public NnUser findByFbId(String fbId) {
         NnUser user = null;
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();        
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
         try {
             for (int i=0;i<2;i++) {
                 Query query = pm.newQuery(NnUser.class);
                 query.setFilter("fbId == fbIdParam");
-                query.declareParameters("String fbIdParam");        
+                query.declareParameters("String fbIdParam");
                 @SuppressWarnings("unchecked")
                 List<NnUser> results = (List<NnUser>) query.execute(fbId);
                 if (results.size() > 0) {
@@ -289,8 +271,8 @@ public class NnUserDao extends GenericDao<NnUser> {
         } finally {
             pm.close();
         }
-        return user;                
-    }    
+        return user;
+    }
     
     public List<NnUser> findByTypeAndMso(Short type, Long msoId) {
         List<NnUser> detached = new ArrayList<NnUser>();

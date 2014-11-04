@@ -202,7 +202,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
             } else if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
                 ordering = "seq asc, subSeq asc";
             } else if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_SPECIAL_SORTING) {
-                ordering = "seq desc, subSeq asc";                
+                ordering = "seq desc, subSeq asc";
             } else {
                 ordering = "updateDate desc";
             }

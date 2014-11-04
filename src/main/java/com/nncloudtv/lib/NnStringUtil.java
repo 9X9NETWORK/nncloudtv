@@ -12,6 +12,7 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 
 public class NnStringUtil {
     
@@ -299,5 +300,68 @@ public class NnStringUtil {
         
         return schema + "://" + domain + "/view/p" + channelId
                    + "/" + (episodeId == null ? "" : "e" + episodeId);
+    }
+    
+    public static Long evalLong(String longStr) {
+        
+        if (longStr == null) {
+            return null;
+        }
+        
+        Long longValue = null;
+        try {
+            longValue = Long.valueOf(longStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + longStr + "\" can't evaluate to type Long.");
+            return null;
+        }
+        
+        return longValue;
+    }
+    
+    public static Integer evalInt(String intStr) {
+        
+        if (intStr == null) {
+            return null;
+        }
+        
+        Integer intValue = null;
+        try {
+            intValue = Integer.valueOf(intStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + intStr + "\" can't evaluate to type Int.");
+            return null;
+        }
+        
+        return intValue;
+    }
+    
+    public static Short evalShort(String shortStr) {
+        
+        if (shortStr == null) {
+            return null;
+        }
+        
+        Short shortValue = null;
+        try {
+            shortValue = Short.valueOf(shortStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + shortStr + "\" can't evaluate to type Short.");
+            return null;
+        }
+        
+        return shortValue;
+    }
+    
+    public static Boolean evalBool(String boolStr) {
+        
+        if ("true".equals(boolStr) == true) {
+            return true;
+        }
+        if ("false".equals(boolStr) == true) {
+            return false;
+        }
+        
+        return null;
     }
 }

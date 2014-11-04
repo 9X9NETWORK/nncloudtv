@@ -508,27 +508,29 @@ public class NnChannel implements Serializable {
     }
     
     public long getUserId() {
-        return getUserId(userIdStr);
-    }
-    
-    public long getUserId(String userId) {
-        if (userId == null)
+        
+        if (userIdStr == null) {
             return 0;
-        String[] splits = userId.split("-");
-        if (splits.length > 1)
+        }
+        String[] splits = userIdStr.split("-");
+        if (splits.length > 1) {
+            
             return Long.parseLong(splits[1]);
-        else
-            return Long.parseLong(userId);        
+            
+        } else {
+            
+            return Long.parseLong(userIdStr);
+        }
     }
     
     public String getUserIdStr() {
         return userIdStr;
     }
-
+    
     public void setUserIdStr(String userIdStr) {
         this.userIdStr = userIdStr;
     }
-
+    
     public void setUserIdStr(short shard, long userId) {
         if (shard == 0) {
             userIdStr = String.valueOf(userId);

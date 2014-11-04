@@ -748,4 +748,9 @@ public class MsoManager {
         
         return getSystemMso().getName();
     }
+    
+    public Mso findById(String msoIdStr) {
+        
+        return dao.findById(msoIdStr);
+    }
 }

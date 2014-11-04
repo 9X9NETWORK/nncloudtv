@@ -55,6 +55,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
@@ -66,7 +67,7 @@ public class ApiMisc extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
     @RequestMapping(value = "feedback", method = RequestMethod.POST)
-    public @ResponseBody String feedback(HttpServletRequest req, HttpServletResponse resp,
+    public @ResponseBody void feedback(HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false) Boolean isHtml) {
         
         String subject = req.getParameter("subject");
@@ -86,18 +87,11 @@ public class ApiMisc extends ApiGeneric {
             NNF.getEmailService().sendEmail(mail, null, null);
         }
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
     public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
-        
-        Long userId = userIdentify(req);
-        if (userId == null) {
-            
-            unauthorized(resp);
-            return null;
-        }
         
         Mso mso = null;
         String msoIdStr = req.getParameter("mso");
@@ -108,7 +102,14 @@ public class ApiMisc extends ApiGeneric {
                 notFound(resp, INVALID_PATH_PARAMETER);
                 return null;
             }
-            if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+            if (user == null) {
+                
+                unauthorized(resp);
+                return null;
+                
+            } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
                 
                 forbidden(resp);
                 return null;
@@ -165,26 +166,25 @@ public class ApiMisc extends ApiGeneric {
         return result;
     }
     
-	@RequestMapping(value = "login", method = RequestMethod.DELETE)
-	public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
-		
-		CookieHelper.deleteCookie(resp, CookieHelper.USER);
-		CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
-		
-		return ok(resp);
-	}
-	
-	/** super profile's msoId priv will replace the result one if super profile exist */
-	@RequestMapping(value = "login", method = RequestMethod.GET)
-	public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
-	    
-		Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-		    nullResponse(resp);
-		    return null;
-		}
+    @RequestMapping(value = "login", method = RequestMethod.DELETE)
+    public @ResponseBody void logout(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId());
+        CookieHelper.deleteCookie(resp, CookieHelper.USER);
+        CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
+        
+        msgResponse(resp, OK);
+    }
+    
+    /** super profile's msoId priv will replace the result one if super profile exist */
+    @RequestMapping(value = "login", method = RequestMethod.GET)
+    public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        
+        if (user == null) {
+            nullResponse(resp);
+            return null;
+        }
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
@@ -193,47 +193,42 @@ public class ApiMisc extends ApiGeneric {
             int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
             log.info("cntChannel = " + cntChannel);
             user.getProfile().setCntChannel(cntChannel);
+        }
+        
+        return response(user);
+    }
+    
+    /** super profile's msoId priv will replace the result one if super profile exist */
+    @RequestMapping(value = "login", method = RequestMethod.POST)
+    public @ResponseBody User login(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String token = req.getParameter("token");
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+        
+        NnUser user = null;
+        if (token != null) {
+            log.info("token = " + token);
+            user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
+            
+        } else if (email != null && password != null) {
+            
+            log.info("email = " + email + ", password = xxxxxx");
+            
+            user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
+            if (user != null) {
+                CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
+            }
+            
+        } else {
+            badRequest(resp, MISSING_PARAMETER);
         }
         
         if (user == null) {
             nullResponse(resp);
             return null;
         }
-		
-		return userResponse(user);
-	}
-	
-	/** super profile's msoId priv will replace the result one if super profile exist */
-	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public @ResponseBody User login(HttpServletRequest req, HttpServletResponse resp) {
-		
-		String token = req.getParameter("token");
-		String email = req.getParameter("email");
-		String password = req.getParameter("password");
-		
-		NnUser user = null;
-		if (token != null) {
-			log.info("token = " + token);
-			user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
-			
-		} else if (email != null && password != null) {
-			
-			log.info("email = " + email + ", password = xxxxxx");
-			
-			user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
-			if (user != null) {
-				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
-			}
-			
-		} else {
-			badRequest(resp, MISSING_PARAMETER);
-		}
-		
-		if (user == null) {
-		    nullResponse(resp);
-		    return null;
-		}
-		
+        
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
             user.getProfile().setMsoId(profile.getMsoId());
@@ -243,7 +238,7 @@ public class ApiMisc extends ApiGeneric {
             user.getProfile().setCntChannel(cntChannel);
         }
         
-        return userResponse(user);
+        return response(user);
     }
     
     @RequestMapping("sysinfo")

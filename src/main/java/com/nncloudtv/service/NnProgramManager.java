@@ -214,11 +214,11 @@ public class NnProgramManager {
         YtProgramDao ytDao = new YtProgramDao();
         String output = "";
         List<ProgramInfo> json = new ArrayList<ProgramInfo>();
-        for (NnChannel c : channels) {
-            String cacheKey = CacheFactory.getLatestProgramInfoKey(c.getId(), format);
+        for (NnChannel channel : channels) {
+            String cacheKey = CacheFactory.getLatestProgramInfoKey(channel.getId(), format);
             Object programInfo = CacheFactory.get(cacheKey);
             if (programInfo != null) {
-                log.info("got programInfo from cache, channelId = " + c.getId() + "; cacheKey=" + cacheKey);
+                log.info("got programInfo from cache, channelId = " + channel.getId() + ", cacheKey = " + cacheKey);
                 if (format == ApiContext.FORMAT_PLAIN) {
                     String programInfoStr = (String) programInfo;
                     if (!programInfoStr.isEmpty())
@@ -230,26 +230,26 @@ public class NnProgramManager {
                 }
                 continue;
             }
-            if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
-                c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) {
-                YtProgram yt = ytDao.findLatestByChannel(c.getId());
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL || 
+                channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST) {
+                YtProgram yt = ytDao.findLatestByChannel(channel.getId());
                 List<YtProgram> programs = new ArrayList<YtProgram>();
                 if (yt != null) {
                     programs.add(yt);
                     log.info("find latest yt program:" + yt.getId());
-                    programInfo = this.composeYtProgramInfo(c, programs, format);
+                    programInfo = this.composeYtProgramInfo(channel, programs, format);
                 }
             }
-            if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
-                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(c.getId(), c.getSorting());
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
+                List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerLatestEpisodes(channel.getId(), channel.getSorting());
                 if (episodes.size() > 0) {
                     log.info("find latest episode id:" + episodes.get(0).getId());
                     List<NnProgram> programs = this.findByEpisodeId(episodes.get(0).getId());
-                    programInfo = this.composeNnProgramInfo(c, episodes, programs, format);
+                    programInfo = this.composeNnProgramInfo(channel, episodes, programs, format);
                 }
             }
             if (programInfo != null) {
-                log.info("save lastProgramInfo to cache, channelId = " + c.getId() + "; cacheKey=" + cacheKey);
+                log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", cacheKey = " + cacheKey);
                 if (format == ApiContext.FORMAT_PLAIN) {
                     output += (String)programInfo;
                     CacheFactory.set(cacheKey, programInfo);
@@ -258,7 +258,7 @@ public class NnProgramManager {
                     CacheFactory.set(cacheKey, programInfo);
                 }
             } else {
-                log.info("save lastProgramInfo to cache, channelId = " + c.getId() + ", though its empty");
+                log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", though its empty");
                 if (format == ApiContext.FORMAT_PLAIN) {
                     CacheFactory.set(cacheKey, ""); // save an empty string to prevent cache miss
                 } else {

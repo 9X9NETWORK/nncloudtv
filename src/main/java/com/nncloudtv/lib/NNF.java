@@ -9,6 +9,7 @@ import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
+import com.nncloudtv.dao.NnChannelPrefDao;
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.dao.NnItemDao;
@@ -25,6 +26,7 @@ import com.nncloudtv.dao.PoiPointDao;
 import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
@@ -52,12 +54,15 @@ import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.NotificationService;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
+import com.nncloudtv.service.PoiManager;
 import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.StoreListingManager;
 import com.nncloudtv.service.SysTagDisplayManager;
 import com.nncloudtv.service.SysTagManager;
 import com.nncloudtv.service.SysTagMapManager;
+import com.nncloudtv.service.TitleCardManager;
+import com.nncloudtv.service.YtChannelManager;
 import com.nncloudtv.service.YtProgramManager;
 
 public class NNF {
@@ -86,18 +91,21 @@ public class NNF {
     protected static PoiPointManager        poiPointMngr        = null;
     protected static PoiEventManager        poiEventMngr        = null;
     protected static PoiCampaignManager     poiCampaignMngr     = null;
+    protected static PoiManager             poiMngr             = null;
     protected static AdPlacementManager     adMngr              = null;
     protected static YtProgramManager       ytProgramMngr       = null;
+    protected static YtChannelManager       ytChannelMngr       = null;
     protected static StoreListingManager    storeListingMngr    = null;
     protected static MyLibraryManager       libraryMngr         = null;
     protected static NnPurchaseManager      purchaseMngr        = null;
     protected static NnItemManager          itemMngr            = null;
+    protected static TitleCardManager       titleCardMngr       = null;
     
     protected static SetService      setService      = null;
     protected static CategoryService categoryService = null;
     protected static DepotService    depotService    = null;
     protected static EmailService    emailService    = null;
-    protected static NotificationService   notiService     = null;
+    protected static NotificationService notiService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -123,6 +131,8 @@ public class NNF {
     protected static MyLibraryDao      libraryDao        = null;
     protected static NnPurchaseDao     purchaseDao       = null;
     protected static NnItemDao         itemDao           = null;
+    protected static TitleCardDao      titleCardDao      = null;
+    protected static NnChannelPrefDao  chPrefDao         = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -388,6 +398,28 @@ public class NNF {
         return itemDao;
     }
     
+    public static TitleCardDao getTitleCardDao() {
+        
+        if (titleCardDao == null) {
+            
+            log.info("create titleCardDao");
+            titleCardDao = new TitleCardDao();
+        }
+        
+        return titleCardDao;
+    }
+    
+    public static NnChannelPrefDao getChPrefDao() {
+        
+        if (chPrefDao == null) {
+            
+            log.info("create chPrefDao");
+            chPrefDao = new NnChannelPrefDao();
+        }
+        
+        return chPrefDao;
+    }
+    
     public static CategoryService getCategoryService() {
         
         if (categoryService == null) {
@@ -498,7 +530,7 @@ public class NNF {
         return poiEventMngr;
     }
     
-    public static PoiCampaignManager getPoiCanpaignMngr() {
+    public static PoiCampaignManager getPoiCampaignMngr() {
         
         if (poiCampaignMngr == null) {
             
@@ -507,6 +539,17 @@ public class NNF {
         }
         
         return poiCampaignMngr;
+    }
+    
+    public static PoiManager getPoiMngr() {
+        
+        if (poiMngr == null) {
+            
+            log.info("create poiMngr");
+            poiMngr = new PoiManager();
+        }
+        
+        return poiMngr;
     }
     
     public static MsoNotificationManager getMsoNotiMngr() {
@@ -748,5 +791,27 @@ public class NNF {
         }
         
         return itemMngr;
+    }
+    
+    public static TitleCardManager getTitleCardMngr() {
+        
+        if (titleCardMngr == null) {
+            
+            log.info("create titleCardMngr");
+            titleCardMngr = new TitleCardManager();
+        }
+        
+        return titleCardMngr;
+    }
+    
+    public static YtChannelManager getYtChannelMngr() {
+        
+        if (ytChannelMngr == null) {
+            
+            log.info("create ytChannelMngr");
+            ytChannelMngr = new YtChannelManager();
+        }
+        
+        return ytChannelMngr;
     }
 }

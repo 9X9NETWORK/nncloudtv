@@ -24,6 +24,8 @@ public class NnUserProfileManager {
     
     public List<NnUserProfile> findAllByUser(NnUser user) {
         
+        if (user == null) { return null; }
+        
         return dao.findByUserId(user.getId(), user.getShard());
     }
     
@@ -111,6 +113,8 @@ public class NnUserProfileManager {
     /** pick up highest priv profile */
     public NnUserProfile pickupBestProfile(NnUser user) {
         
+        if (user == null) { return null; }
+        
         List<NnUserProfile> profiles = findAllByUser(user);
         
         if (profiles.isEmpty()) {
@@ -123,6 +127,7 @@ public class NnUserProfileManager {
     }
     
     public Object getPlayerProfile(NnUser user, short format) {
+        
         NnUserProfile profile = user.getProfile();
         String name = profile.getName();
         String email = user.getUserEmail();
@@ -136,31 +141,58 @@ public class NnUserProfileManager {
         String uiLang = profile.getLang();
         String phone = profile.getPhoneNumber();
         if (format == ApiContext.FORMAT_PLAIN) {
-            String[] result = {""};     
-	        result[0] += PlayerApiService.assembleKeyValue("name", name);
-	        result[0] += PlayerApiService.assembleKeyValue("email", email);
-	        result[0] += PlayerApiService.assembleKeyValue("description", intro);
-	        result[0] += PlayerApiService.assembleKeyValue("image", imageUrl);
-	        result[0] += PlayerApiService.assembleKeyValue("gender", gender);
-	        result[0] += PlayerApiService.assembleKeyValue("year", year);
-	        result[0] += PlayerApiService.assembleKeyValue("sphere", sphere);
-	        result[0] += PlayerApiService.assembleKeyValue("ui-lang", uiLang);
-	        result[0] += PlayerApiService.assembleKeyValue("phone", phone);
-	        return result;
+            String[] result = { "" };
+            result[0] += PlayerApiService.assembleKeyValue("name", name);
+            result[0] += PlayerApiService.assembleKeyValue("email", email);
+            result[0] += PlayerApiService.assembleKeyValue("description", intro);
+            result[0] += PlayerApiService.assembleKeyValue("image", imageUrl);
+            result[0] += PlayerApiService.assembleKeyValue("gender", gender);
+            result[0] += PlayerApiService.assembleKeyValue("year", year);
+            result[0] += PlayerApiService.assembleKeyValue("sphere", sphere);
+            result[0] += PlayerApiService.assembleKeyValue("ui-lang", uiLang);
+            result[0] += PlayerApiService.assembleKeyValue("phone", phone);
+            return result;
         } else {
-        	PlayerUserProfile json = new PlayerUserProfile();
-        	json.setName(name);
-        	json.setEmail(email);
-        	json.setDescription(intro);
-        	json.setImage(imageUrl);
-        	json.setGender(gender);
-        	json.setYear(year);
-        	json.setSphere(sphere);
-        	json.setUiLang(uiLang);
-        	json.setPhone(phone);
-        	return json;
+            PlayerUserProfile json = new PlayerUserProfile();
+            json.setName(name);
+            json.setEmail(email);
+            json.setDescription(intro);
+            json.setImage(imageUrl);
+            json.setGender(gender);
+            json.setYear(year);
+            json.setSphere(sphere);
+            json.setUiLang(uiLang);
+            json.setPhone(phone);
+            return json;
         }
-        
     }
     
+    public static boolean checkPriv(NnUser user, String requiredPriv) {
+        
+        if (requiredPriv == null || requiredPriv.matches("[01]+") == false) {
+            return false;
+        }
+        
+        NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
+        if (profile == null) {
+            profile = new NnUserProfile();
+            profile.setPriv(NnUserProfile.PRIV_CMS);
+        }
+        if (profile.getPriv() == null) {
+            profile.setPriv(NnUserProfile.PRIV_CMS);
+        }
+        String priv = profile.getPriv();
+        int privLen = priv.length();
+        
+        for (int i = 0; i < requiredPriv.length(); i++) {
+            
+            if (requiredPriv.charAt(i) == '1' &&
+                    (privLen <= i || priv.charAt(i) != '1')) {
+                
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }

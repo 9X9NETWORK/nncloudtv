@@ -55,7 +55,6 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnEpisodeManager;
-import com.nncloudtv.service.NnProgramManager;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -78,29 +77,23 @@ public class ApiContent extends ApiGeneric {
         this.apiContentService = apiContentService;
     }
     
-    // TODO: rewrite
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
     public @ResponseBody
     List<Map<String, Object>> validBrandsAutosharingGet(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         Long channelId = null;
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
@@ -117,7 +110,6 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -225,13 +217,13 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -273,7 +265,7 @@ public class ApiContent extends ApiGeneric {
         // startTime
         String startTimeStr = req.getParameter("startTime");
         if (startTimeStr != null) {
-            Integer startTime = evaluateInt(startTimeStr);
+            Integer startTime = NnStringUtil.evalInt(startTimeStr);
             if (startTime != null && startTime >= 0) {
                 program.setStartTime(startTime);
             }
@@ -282,7 +274,7 @@ public class ApiContent extends ApiGeneric {
         // endTime
         String endTimeStr = req.getParameter("endTime");
         if (endTimeStr != null) {
-            Integer endTime = evaluateInt(endTimeStr);
+            Integer endTime = NnStringUtil.evalInt(endTimeStr);
             if (endTime != null && endTime >= program.getStartTimeInt()) {
                 program.setEndTime(endTime);
             }
@@ -311,7 +303,7 @@ public class ApiContent extends ApiGeneric {
     
     @RequestMapping(value = "programs/{programId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String programDelete(HttpServletRequest req, HttpServletResponse resp,
+    void programDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
         Long programId = null;
@@ -321,36 +313,37 @@ public class ApiContent extends ApiGeneric {
         }
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            return "Program Not Found";
+            msgResponse(resp, "Program Not Found");
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         NNF.getProgramMngr().delete(program);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     // delete programs in one episode
     @RequestMapping(value = "episodes/{episodeId}/programs", method = RequestMethod.DELETE)
     public @ResponseBody
-    String programsDelete(HttpServletRequest req, HttpServletResponse resp,
+    void programsDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
-    
+        
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -358,29 +351,27 @@ public class ApiContent extends ApiGeneric {
         }
         if (episodeId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
-        
-        NnProgramManager programMngr = NNF.getProgramMngr();
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             notFound(resp, "Episode Not Found");
-            return null;
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
-            return null;
+            return;
         }
         
-        List<NnProgram> episodePrograms = programMngr.findByEpisodeId(episode.getId());
+        List<NnProgram> episodePrograms = NNF.getProgramMngr().findByEpisodeId(episode.getId());
         List<Long> episodeProgramIdList = new ArrayList<Long>();
         for (NnProgram episodeProgram : episodePrograms) {
             episodeProgramIdList.add(episodeProgram.getId());
@@ -389,13 +380,12 @@ public class ApiContent extends ApiGeneric {
         String programIdsStr = req.getParameter("programs");
         if (programIdsStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            return null;
+            return;
         }
         log.info(programIdsStr);
         
         String[] programIdStrList = programIdsStr.split(",");
         List<NnProgram> programDeleteList = new ArrayList<NnProgram>();
-        //List<TitleCard> titlecardDeleteList = new ArrayList<TitleCard>();
         
         for (String programIdStr : programIdStrList) {
             
@@ -408,24 +398,18 @@ public class ApiContent extends ApiGeneric {
             }
             if (programId != null) {
                 
-                NnProgram program = programMngr.findById(programId);
+                NnProgram program = NNF.getProgramMngr().findById(programId);
                 if (program != null && episodeProgramIdList.indexOf(program.getId()) > -1) {
                     
                     programDeleteList.add(program);
-                    /*
-                    List<TitleCard> titlecards = titlecardMngr.findByProgramId(programId);
-                    if (titlecards.size() > 0) {
-                        titlecardDeleteList.addAll(titlecards);
-                    }
-                    */
                 }
             }
         }
         log.info("program delete count = " + programDeleteList.size());
         
-        programMngr.delete(programDeleteList);
+        NNF.getProgramMngr().delete(programDeleteList);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes/{episodeId}/programs", method = RequestMethod.POST)
@@ -448,13 +432,13 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -495,7 +479,7 @@ public class ApiContent extends ApiGeneric {
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
             
-            Short contentType = evaluateShort(contentTypeStr);
+            Short contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType == null) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -511,7 +495,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short duration = evaluateShort(durationStr);
+            Short duration = NnStringUtil.evalShort(durationStr);
             if ((duration == null) || (duration < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -527,7 +511,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short startTime = evaluateShort(startTimeStr);
+            Short startTime = NnStringUtil.evalShort(startTimeStr);
             if ((startTime == null) || (startTime < 0)) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -543,7 +527,7 @@ public class ApiContent extends ApiGeneric {
             
         } else {
             
-            Short endTime = evaluateShort(endTimeStr);
+            Short endTime = NnStringUtil.evalShort(endTimeStr);
             if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
                 badRequest(resp, INVALID_PARAMETER);
                 return null;
@@ -780,32 +764,23 @@ public class ApiContent extends ApiGeneric {
     NnChannel channelUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
         NnChannelManager channelMngr = NNF.getChannelMngr();
         
-        Long channelId = evaluateLong(channelIdStr);
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -837,7 +812,7 @@ public class ApiContent extends ApiGeneric {
         Boolean isPublic = null;
         String isPublicStr = req.getParameter("isPublic");
         if (isPublicStr != null) {
-            isPublic = evaluateBoolean(isPublicStr);
+            isPublic = NnStringUtil.evalBool(isPublicStr);
         }
         
         // tag
@@ -851,7 +826,7 @@ public class ApiContent extends ApiGeneric {
         String categoryIdStr = req.getParameter("categoryId");
         if (categoryIdStr != null) {
             
-            categoryId = evaluateLong(categoryIdStr);
+            categoryId = NnStringUtil.evalLong(categoryIdStr);
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 categoryId = null;
             }
@@ -868,7 +843,7 @@ public class ApiContent extends ApiGeneric {
         Short sorting = null;
         String sortingStr = req.getParameter("sorting");
         if (sortingStr != null) {
-            sorting = evaluateShort(sortingStr);
+            sorting = NnStringUtil.evalShort(sortingStr);
         }
         
         // status
@@ -878,7 +853,7 @@ public class ApiContent extends ApiGeneric {
             // TODO: rewrite
             //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
             //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
-                status = evaluateShort(statusStr);
+                status = NnStringUtil.evalShort(statusStr);
             //}
         }
         
@@ -886,7 +861,6 @@ public class ApiContent extends ApiGeneric {
                                     imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting, status);
         if (savedChannel == null) {
             internalError(resp);
-            log.warning(printExitState(now, req, "500"));
             return null;
         }
         
@@ -894,7 +868,6 @@ public class ApiContent extends ApiGeneric {
         channelMngr.populateAutoSync(savedChannel);
         channelMngr.normalize(savedChannel);
         
-        log.info(printExitState(now, req, "ok"));
         return savedChannel;
     }
     
@@ -903,31 +876,27 @@ public class ApiContent extends ApiGeneric {
     public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return;
-        } else if (verifiedUserId != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return;
         }
         
@@ -1018,9 +987,6 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     List<Long> storeChannels(HttpServletRequest req, HttpServletResponse resp) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
         // categoryId
         long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
@@ -1029,12 +995,10 @@ public class ApiContent extends ApiGeneric {
                 categoryId = Long.valueOf(categoryIdStr);
             } catch (NumberFormatException e) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (CategoryService.isSystemCategory(categoryId) == false) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -1052,7 +1016,6 @@ public class ApiContent extends ApiGeneric {
                     spheres.add(value);
                 } else {
                     badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
                     return null;
                 }
             }
@@ -1063,7 +1026,7 @@ public class ApiContent extends ApiGeneric {
         for (NnChannel channel : channels) {
             channelIds.add(channel.getId());
         }
-        log.info(printExitState(now, req, "ok"));
+        
         return channelIds;
     }
     
@@ -1071,7 +1034,7 @@ public class ApiContent extends ApiGeneric {
     public void channelStream(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -1141,33 +1104,28 @@ public class ApiContent extends ApiGeneric {
             HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         // page
         String pageStr = req.getParameter("page");
-        Long page = evaluateLong(pageStr);
+        Long page = NnStringUtil.evalLong(pageStr);
         if (page == null) {
             page = (long) 0;
         }
         
         // rows
         String rowsStr = req.getParameter("rows");
-        Long rows = evaluateLong(rowsStr);
+        Long rows = NnStringUtil.evalLong(rowsStr);
         if (rows == null) {
             rows = (long) 0;
         }
@@ -1198,14 +1156,13 @@ public class ApiContent extends ApiGeneric {
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
     // TODO: need to be optimized
     @RequestMapping(value = "channels/{channelId}/episodes/sorting", method = RequestMethod.PUT)
     public @ResponseBody
-    String channelEpisodesSorting(HttpServletRequest req,
+    void channelEpisodesSorting(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("channelId") String channelIdStr) {
         
         Long channelId = null;
@@ -1215,7 +1172,7 @@ public class ApiContent extends ApiGeneric {
         }
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
@@ -1224,22 +1181,26 @@ public class ApiContent extends ApiGeneric {
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            return null;
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
             unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != channel.getUserId()) {
+            return;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
-            return null;
+            return;
         }
         
         String episodeIdsStr = req.getParameter("episodes");
         if (episodeIdsStr == null) {
             episodeMngr.reorderChannelEpisodes(channelId);
-            return ok(resp);
+            msgResponse(resp, OK);
+            return;
         }
         String[] episodeIdStrList = episodeIdsStr.split(",");
         
@@ -1273,7 +1234,7 @@ public class ApiContent extends ApiGeneric {
         // parameter should contain all episodeId
         if (checkedEpisodeIdList.size() != 0) {
             badRequest(resp, INVALID_PARAMETER);
-            return null;
+            return;
         }
         
         int counter = 1;
@@ -1285,7 +1246,7 @@ public class ApiContent extends ApiGeneric {
         episodeMngr.save(orderedEpisodes);
         channelMngr.renewChannelUpdateDate(channel.getId());
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes", method = RequestMethod.GET)
@@ -1355,7 +1316,7 @@ public class ApiContent extends ApiGeneric {
     
     @RequestMapping(value = "episodes/{episodeId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String episodeDelete(HttpServletRequest req, HttpServletResponse resp,
+    void episodeDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
     
         Long episodeId = null;
@@ -1365,25 +1326,26 @@ public class ApiContent extends ApiGeneric {
         }
         if (episodeId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            return "Episode Not Found";
+            msgResponse(resp, "Episode Not Found");
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         }
         NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         // delete episode
@@ -1395,7 +1357,7 @@ public class ApiContent extends ApiGeneric {
             channelMngr.save(channel);
         }
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
@@ -1506,14 +1468,14 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
         NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(episode.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -1533,7 +1495,7 @@ public class ApiContent extends ApiGeneric {
         // contentType
         String contentTypeStr = req.getParameter("contentType");
         if (contentTypeStr != null) {
-            Short contentType = evaluateShort(contentTypeStr);
+            Short contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType != null) {
                 episode.setContentType(contentType);
             }
@@ -1606,7 +1568,7 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        Long storageId = evaluateLong(req.getParameter("storageId"));
+        Long storageId = NnStringUtil.evalLong(req.getParameter("storageId"));
         if (storageId != null) {
             episode.setStorageId(storageId);
         }
@@ -1630,7 +1592,7 @@ public class ApiContent extends ApiGeneric {
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
-            Integer duration = evaluateInt(durationStr);
+            Integer duration = NnStringUtil.evalInt(durationStr);
             if (duration != null && duration >= 0) {
                 episode.setDuration(duration);
             } else {
@@ -1689,11 +1651,14 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
             unauthorized(resp);
             return null;
-        } else if (verifiedUserId != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return null;
         }
@@ -1714,7 +1679,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // contentType
-        Short contentType = evaluateShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         if (contentType == null) {
             contentType = NnEpisode.CONTENTTYPE_GENERAL;
         }
@@ -1761,7 +1726,7 @@ public class ApiContent extends ApiGeneric {
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
-            Integer duration = evaluateInt(durationStr);
+            Integer duration = NnStringUtil.evalInt(durationStr);
             if (duration != null && duration >= 0) {
                 episode.setDuration(duration);
             }
@@ -1808,7 +1773,7 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        Long storageId = evaluateLong(req.getParameter("storageId"));
+        Long storageId = NnStringUtil.evalLong(req.getParameter("storageId"));
         if (storageId != null) {
             episode.setStorageId(storageId);
         }
@@ -1854,7 +1819,7 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     List<NnProgram> episodePrograms(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable(value = "episodeId") String episodeIdStr) {
-    
+        
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -1939,7 +1904,7 @@ public class ApiContent extends ApiGeneric {
         
         return results;
     }
-
+    
     @RequestMapping(value = "programs/{programId}/title_cards", method = RequestMethod.POST)
     public @ResponseBody
     TitleCard titleCardCreate(HttpServletResponse resp, HttpServletRequest req,
@@ -1960,13 +1925,13 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
             return null;
         }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
             return null;
         }
@@ -2087,39 +2052,28 @@ public class ApiContent extends ApiGeneric {
     
     @RequestMapping(value = "title_card/{id}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String titleCardDelete(HttpServletResponse resp, HttpServletRequest req,
+    void titleCardDelete(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("id") String idStr) {
         
-        Long id = null;
-        try {
-            id = Long.valueOf(idStr);
-        } catch (NumberFormatException e) {
-        }
-        if (id == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        TitleCardManager titleCardMngr = new TitleCardManager();
-        TitleCard titleCard = titleCardMngr.findById(id);
-        if (titleCard==null) {
+        TitleCard titleCard = NNF.getTitleCardMngr().findById(idStr);
+        if (titleCard == null) {
             notFound(resp, "TitleCard Not Found");
-            return null;
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            return null;
+            return;
         }
         NnChannel channel = NNF.getChannelMngr().findById(titleCard.getChannelId());
-        if ((channel == null) || (verifiedUserId != channel.getUserId())) {
+        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
             forbidden(resp);
-            return null;
+            return;
         }
         
-        titleCardMngr.delete(titleCard);
+        NNF.getTitleCardMngr().delete(titleCard);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
 }

@@ -2,15 +2,11 @@ package com.nncloudtv.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -26,9 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class ApiGeneric {
-	
-	protected static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
+    
+    public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
+    public static final String MSO_NOT_FOUND          = "Mso Not Found";
     public static final String MISSING_PARAMETER      = "Missing Parameter";
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
     public static final String INVALID_PARAMETER      = "Invalid Parameter";
@@ -168,24 +166,6 @@ public class ApiGeneric {
         }
     }
     
-    // TODO: rewrite
-	public Long userIdentify(HttpServletRequest req) {
-	    
-	    String token = CookieHelper.getCookie(req, "user");
-	    if (token == null) {
-            return null;
-        }
-	    Long userId = NNF.getUserMngr().findUserIdByToken(token);
-	    return userId;
-	}
-	
-    public String ok(HttpServletResponse resp) {
-        
-        resp.setContentType(APPLICATION_JSON_UTF8);
-        
-        return NnStringUtil.escapeDoubleQuote(OK);
-    }
-    
     public void msgResponse(HttpServletResponse resp, String msg) {
     
         try {
@@ -210,7 +190,7 @@ public class ApiGeneric {
     }
     
     /** adapt response for user change to user+userProfile */
-    public User userResponse(NnUser user) {
+    public User response(NnUser user) {
         
         User userResp = new User();
         
@@ -234,7 +214,7 @@ public class ApiGeneric {
         userResp.setIdStr(user.getIdStr());
         
         if (user.getProfile().getPriv() == null) {
-            userResp.setPriv("000111"); // TODO hard coded default
+            userResp.setPriv(NnUserProfile.PRIV_CMS);
         } else {
             userResp.setPriv(user.getProfile().getPriv());
         }
@@ -248,7 +228,7 @@ public class ApiGeneric {
     }
     
     /** compose set response **/
-    public Set setResponse(SysTag set, SysTagDisplay setMeta) {
+    public Set response(SysTag set, SysTagDisplay setMeta) {
         
         Set setResp = new Set();
         
@@ -263,156 +243,4 @@ public class ApiGeneric {
         
         return setResp;
     }
-	
-	/** log the enter state
-	 *  @param now the enter time
-	 *  */
-	public String printEnterState(Date now, HttpServletRequest req) {
-	    
-	    if (now == null || req == null) {
-            return null;
-        }
-	    
-	    String result = req.getRequestURI() + "@" + now + "[";
-	    String parameterPairs = "";
-	    
-	    try {
-			Map<String, String[]> map = (Map<String, String[]>) req.getParameterMap();
-	        Enumeration<String> names = (Enumeration<String>) req.getParameterNames();
-        
-	        while(names.hasMoreElements()) {
-	            
-	            String name = names.nextElement();
-	            String[] values = map.get(name);
-	            
-	            parameterPairs += "," + name + "=";
-	            if (values.length > 1) {
-	                parameterPairs += "(";
-	            }
-	            
-	            String parameterValues = "";
-	            for (String value : values) {
-	                parameterValues += ",\"" + value + "\"";
-	            }
-	            parameterValues = parameterValues.replaceFirst(",", "");
-	            
-	            parameterPairs += parameterValues;
-	            if (values.length > 1) {
-	                parameterPairs += ")";
-	            }
-	        }
-	        parameterPairs = parameterPairs.replaceFirst(",", "");
-	        
-	    } catch (ClassCastException e) {
-	        NnLogUtil.logException(e);
-	    }
-	    
-	    result += parameterPairs + "]";
-        
-	    return result;
-	}
-	
-	/** log the exit state
-	 *  @param now the enter time, not the exit time
-	 *  @param exitState the exit state : ok, 400, 401, 403, 404
-	 *  */
-	public String printExitState(Date now, HttpServletRequest req, String exitState) {
-	    return req.getRequestURI() + "@" + now + "[exit-state=" + exitState + "]";
-	}
-	
-	public Long evaluateLong(String stringValue) {
-	    
-	    if (stringValue == null) {
-	        return null;
-	    }
-	    
-	    Long longValue = null;
-	    try {
-	        longValue = Long.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Long.");
-            return null;
-        }
-	    
-	    return longValue;
-	}
-	
-	public Integer evaluateInt(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Integer intValue = null;
-        try {
-            intValue = Integer.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Int.");
-            return null;
-        }
-        
-        return intValue;
-    }
-	
-	public Short evaluateShort(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Short shortValue = null;
-        try {
-            shortValue = Short.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Short.");
-            return null;
-        }
-        
-        return shortValue;
-    }
-	
-	public Boolean evaluateBoolean(String stringValue) {
-	    
-	    if ("true".equals(stringValue) == true) {
-	        return true;
-	    }
-	    if ("false".equals(stringValue) == true) {
-	        return false;
-	    }
-	    
-	    return null;
-	}
-	
-    /** indicate logging user has access right to target mso in PCS API
-     *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
-     */
-    protected boolean hasRightAccessPCS(Long userId, Long msoId, String requirePriv) {
-        
-        if (userId == null || msoId == null || requirePriv == null || requirePriv.matches("[01]+") == false) {
-            return false;
-        }
-        
-        NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
-        if (profile == null) {
-            profile = new NnUserProfile();
-            profile.setPriv("000111");
-        }
-        if (profile.getPriv() == null) {
-            profile.setPriv("000111");
-        }
-        String priv = profile.getPriv();
-        int privLen = priv.length();
-        
-        for (int i = 0; i < requirePriv.length(); i++) {
-            
-            if (requirePriv.charAt(i) == '1' &&
-                    (privLen <= i || priv.charAt(i) != '1')) {
-                
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
 }
