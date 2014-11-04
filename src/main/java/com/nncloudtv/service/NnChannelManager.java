@@ -419,9 +419,10 @@ public class NnChannelManager {
     }
     
     public static List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
-        return NnChannelDao.search(keyword, content, extra, all, start, limit);
+        
+        return NNF.getChannelDao().search(keyword, content, extra, all, start, limit);
     }
-
+    
     //stack => NnChannel, total number found
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {

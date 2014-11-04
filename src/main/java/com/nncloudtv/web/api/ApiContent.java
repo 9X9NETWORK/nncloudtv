@@ -798,7 +798,7 @@ public class ApiContent extends ApiGeneric {
             } else {
                 channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             }
-            log.info("found channels = " + channels.size());
+            log.info(String.format("found %d channels", channels.size()));
             
             if (sphereFilter == null) {
                 
@@ -812,13 +812,13 @@ public class ApiContent extends ApiGeneric {
                     for (NnUserProfile profile : profiles) {
                         userIdSet.add(profile.getUserId());
                     }
-                    log.info("hash set = " + userIdSet.size()); // debug
-                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(new ArrayList<Long>(userIdSet), shard);
-                    log.info(String.format("found %d users in shard %d", users.size(), shard));
+                    
+                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(userIdSet, shard);
+                    log.info(String.format("found %d users in shard %d", shardUsers.size(), shard));
                     
                     users.addAll(shardUsers);
                 }
-                
+                log.info(String.format("total %d users found", users.size()));
                 for (NnUser user : users) {
                     List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
                     for (NnChannel channel : userChannels) {

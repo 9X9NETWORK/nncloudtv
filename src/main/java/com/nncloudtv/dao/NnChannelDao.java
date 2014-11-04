@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.SearchLib;
@@ -153,50 +155,50 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     }
     
     //replaced with Apache Lucene
-    @SuppressWarnings("unchecked")
-    public static List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
-        log.info("start:" + start + ";end:" + limit);
-        if (start == 0) start = 0;            
+    public List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
+        
+        //log.info("start:" + start + ";end:" + limit);
+        if (start == 0) start = 0;
         if (limit == 0) limit = 9;
         
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnChannel> detached = new ArrayList<NnChannel>();
-        try {
-            String sql = "select * from nnchannel where ("
-                       + "lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-            if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) { // PCS
-                sql += " || lower(intro) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-            }
-            sql += ")";
-            if (!all) {
-                sql += " and (status = " + NnChannel.STATUS_SUCCESS + " or status = " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")";
-                if (content != null) {
-                    if (content.equals(SearchLib.YOUTUBE_ONLY)) {
-                        sql += " and contentType = "
-                                + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL;
-                    } else if (content.equals(SearchLib.STORE_ONLY)) {
-                        // store only
-                        sql += " and (status = " + NnChannel.STATUS_SUCCESS + ")";
-                    }
-                }
-                sql += " and isPublic = true";
-            }
-            if (extra != null) {
-                sql += " and (" + extra + ")";
-            }
-            sql += " limit " + start + ", " + limit;
-            log.info("Sql=" + sql);
-            
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnChannel.class);
-            List<NnChannel> results = (List<NnChannel>) q.execute();
-            detached = (List<NnChannel>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }
+        String query = "SELECT * FROM nnchannel "
+                     +"         WHERE (LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
         
+        if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) { // PCS
+            
+            query += " || LOWER(intro) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
+        }
+        query += ")";
+        
+        if (!all) {
+            
+            query += " AND (status = " + NnChannel.STATUS_SUCCESS + " OR status = " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")";
+            
+            if (content != null) {
+                
+                if (content.equals(SearchLib.YOUTUBE_ONLY)) {
+                    
+                    query += " AND contentType = " + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL;
+                    
+                } else if (content.equals(SearchLib.STORE_ONLY)) {
+                 
+                    // store only
+                    query += " AND (status = " + NnChannel.STATUS_SUCCESS + ")";
+                }
+            }
+            
+            query += " AND isPublic = TRUE";
+        }
+        
+        if (extra != null) {
+            query += " AND (" + extra + ")";
+        }
+        
+        query += " LIMIT " + start + ", " + limit;
+        
+        return sql(query);
+    }
+    
     public List<NnChannel> findAllByStatus(short status) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>(); 
@@ -257,8 +259,20 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             
         } else {
             
+            String listStr = "";
+            if (userIdStr != null) {
+                
+                String[] split = userIdStr.split(",");
+                for (String str : split) {
+                    
+                    str = NnStringUtil.escapedQuote(str);
+                }
+                
+                listStr = StringUtils.join(split, ",");
+            }
+            
             String query = "SELECT * FROM nnchannel "
-                         + "        WHERE userIdStr = " + NnStringUtil.escapedQuote(userIdStr)
+                         + "        WHERE userIdStr in (" + listStr + ")"
                          + "          AND isPublic = true "
                          + "          AND status in (0, 3) "
                          + "     ORDER BY seq, contentType ";
