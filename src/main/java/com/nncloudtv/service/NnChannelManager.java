@@ -679,21 +679,19 @@ public class NnChannelManager {
         }
         return null;
     }
-
+    
     //find channels created by the user, aka curator
     //player true returns only good and public channels
     public List<NnChannel> findByUser(NnUser user, int limit, boolean isAll) {
-        String userIdStr = user.getShard() + "-" + user.getId();
-        List<NnChannel> channels = dao.findByUser(userIdStr, limit, isAll);
-        if (limit == 0) {
-            return channels;
-        } else {             
-            if (channels.size() > limit)
+        
+        List<NnChannel> channels = dao.findByUser(user.getIdStr(), limit, isAll);
+        if (limit > 0 && channels.size() > limit) {
+            
             return channels.subList(0, limit);
         }
         return channels;
     }
-
+    
     //TODO change to list, and merge with byUser, and subList is not real
     //used only in player for specific occasion
     public List<NnChannel> findByUserAndHisFavorite(NnUser user, int limit, boolean isAll) {        

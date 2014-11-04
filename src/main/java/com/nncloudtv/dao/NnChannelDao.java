@@ -230,38 +230,47 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     
     @SuppressWarnings("unchecked")
     public List<NnChannel> findByUser(String userIdStr, int limit, boolean isAll) {
-        PersistenceManager pm = getPersistenceManager();
-        List<NnChannel> channels = new ArrayList<NnChannel>(); 
-        try {
-            if (isAll) {
-                Query q = pm.newQuery(NnChannel.class);
-                q.setOrdering("seq asc, contentType asc");
-                q.setFilter("userIdStr == userIdStrParam");
-                q.declareParameters("String userIdStrParam");
+        
+        if (isAll) {
+            
+            PersistenceManager pm = getPersistenceManager();
+            List<NnChannel> channels = new ArrayList<NnChannel>();
+            
+            try {
+                
+                Query query = pm.newQuery(NnChannel.class);
+                query.setOrdering("seq asc, contentType asc");
+                query.setFilter("userIdStr == userIdStrParam");
+                query.declareParameters("String userIdStrParam");
                 if (limit != 0)
-                    q.setRange(0, limit);
-                channels = (List<NnChannel>) q.execute(userIdStr);
-            } else {
-                String sql = 
-                    "select * from nnchannel " +
-                     "where  userIdStr = '" + userIdStr + "' " +
-                       " and isPublic=true " +
-                       " and (status=0 or status=3) " +
-                       " order by seq, contentType "; 
-                if (limit != 0)
-                    sql += " limit " + limit;
-                log.info("Sql=" + sql);
-                Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-                q.setClass(NnChannel.class);
-                channels = (List<NnChannel>) q.execute();
+                    query.setRange(0, limit);
+                channels = (List<NnChannel>) query.execute(userIdStr);
+                channels = (List<NnChannel>)pm.detachCopyAll(channels);
+                query.closeAll();
+                
+            } finally {
+                
+                pm.close();
             }
             
-            channels = (List<NnChannel>)pm.detachCopyAll(channels);
-        } finally {
-            pm.close();
+            return channels;
+            
+        } else {
+            
+            String query = "SELECT * FROM nnchannel "
+                         + "        WHERE userIdStr = " + NnStringUtil.escapedQuote(userIdStr)
+                         + "          AND isPublic = true "
+                         + "          AND status in (0, 3) "
+                         + "     ORDER BY seq, contentType ";
+            
+            if (limit > 0) {
+                
+                query += " LIMIT " + limit;
+            }
+            
+            return sql(query);
         }
-        return channels;
-    }    
+    }
     
     public NnChannel findBySourceUrl(String url) {
         if (url == null) {return null;}
@@ -309,17 +318,17 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
         
-        String query = "select * from nncloudtv_content.nnchannel c "
-                     + "        where c.id in ("
-                     + "               select channelId from nncloudtv_nnuser1.nnuser_watched "
-                     + "                where userId = " + userId
-                     + "                  and msoId = " + msoId
-                     + "                  and channelId not in ("
-                     + "                                select channelId from nncloudtv_nnuser1.nnuser_subscribe "
-                     + "                                 where userId = " + userId + " and msoId = " + msoId
+        String query = "SELECT * FROM nncloudtv_content.nnchannel c "
+                     + "        WHERE c.id IN ("
+                     + "               SELECT channelId FROM nncloudtv_nnuser1.nnuser_watched "
+                     + "                WHERE userId = " + userId
+                     + "                  AND msoId = " + msoId
+                     + "                  AND channelId NOT IN ("
+                     + "                                SELECT channelId FROM nncloudtv_nnuser1.nnuser_subscribe "
+                     + "                                 WHERE userId = " + userId + " and msoId = " + msoId
                      + "                      )"
                      + "              )"
-                     + "     order by updateDate desc";
+                     + "     ORDER BY updateDate DESC";
         
         return sql(query);
     }
