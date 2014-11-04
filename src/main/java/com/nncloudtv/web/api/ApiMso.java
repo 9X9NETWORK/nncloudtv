@@ -65,7 +65,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -132,7 +132,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -159,7 +159,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -305,7 +305,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -410,7 +410,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -444,7 +444,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -563,7 +563,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -590,7 +590,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -618,7 +618,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -693,7 +693,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -735,7 +735,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -855,7 +855,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -903,7 +903,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -1008,7 +1008,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1093,7 +1093,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1178,7 +1178,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1228,7 +1228,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1308,7 +1308,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -1363,7 +1363,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -1454,7 +1454,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -1502,7 +1502,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1534,7 +1534,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1575,7 +1575,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1650,7 +1650,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1713,7 +1713,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1744,7 +1744,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return null;
@@ -1812,7 +1812,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS)) {
             
             forbidden(resp);
             return;
@@ -1839,7 +1839,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
             
             forbidden(resp);
             return;
@@ -1868,7 +1868,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
             
             forbidden(resp);
             return null;
@@ -1935,7 +1935,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
             
             forbidden(resp);
             return null;
@@ -1985,7 +1985,7 @@ public class ApiMso extends ApiGeneric {
             unauthorized(resp);
             return null;
             
-        } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+        } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
             
             forbidden(resp);
             return null;

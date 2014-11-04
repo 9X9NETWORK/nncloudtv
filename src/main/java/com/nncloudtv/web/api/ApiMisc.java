@@ -109,7 +109,7 @@ public class ApiMisc extends ApiGeneric {
                 unauthorized(resp);
                 return null;
                 
-            } else if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO) == false) {
+            } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
                 
                 forbidden(resp);
                 return null;
