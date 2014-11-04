@@ -338,9 +338,12 @@ public class ApiUser extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return null;
+            
         } else if (user.getId() != userId) {
+            
             forbidden(resp);
             return null;
         }
