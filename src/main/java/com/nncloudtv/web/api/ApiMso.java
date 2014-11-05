@@ -368,7 +368,7 @@ public class ApiMso extends ApiGeneric {
         String lang = LangTable.LANG_EN; // default
         MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion != null && supportedRegion.getValue() != null) {
-            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+            List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
             if (spheres != null && spheres.isEmpty() == false) {
                 lang = spheres.get(0);
             }
@@ -962,7 +962,7 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoManager.populateMso(mso);
+        MsoConfigManager.populateSupportedRegion(mso);
         MsoManager.normalize(mso);
         
         // check if push notification was enabled
@@ -979,12 +979,18 @@ public class ApiMso extends ApiGeneric {
         mso.setGcmEnabled(gcmEnabled);
         mso.setApnsEnabled(apnsEnabled);
         
+        
+        // favicon
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        if (config != null) {
+            mso.setJingleUrl(config.getValue());
+        }
+        
         // cms logo
-        MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
+        config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
         if (config != null) {
             mso.setCmsLogo(config.getValue());
         }
-        
         return mso;
     }
     

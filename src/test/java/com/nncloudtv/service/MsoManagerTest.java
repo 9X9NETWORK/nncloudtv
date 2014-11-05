@@ -32,6 +32,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
@@ -246,7 +247,7 @@ public class MsoManagerTest {
         when(mockConfigMngr.findByMsoAndItem((Mso) anyObject(), anyString())).thenReturn(supportedRegion);
         
         PowerMockito.mockStatic(MsoConfigManager.class);
-        when(MsoConfigManager.parseSupportedRegion(anyString())).thenReturn(spheres);
+        when(NnStringUtil.parseRegion(anyString(), false)).thenReturn(spheres);
         
         // execute
         Boolean actual = msoMngr.isValidBrand(channel, mockMso);
@@ -255,7 +256,7 @@ public class MsoManagerTest {
         verify(mockConfigMngr).findByMsoAndItem(mockMso, MsoConfig.SUPPORTED_REGION);
         
         PowerMockito.verifyStatic();
-        MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+        NnStringUtil.parseRegion(supportedRegion.getValue(), false);
         
         assertTrue("The mock mso should be a valid brand of mock channel.", actual);
     }

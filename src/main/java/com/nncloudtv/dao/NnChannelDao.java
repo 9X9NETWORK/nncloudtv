@@ -244,7 +244,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
                 query.setOrdering("seq asc, contentType asc");
                 query.setFilter("userIdStr == userIdStrParam");
                 query.declareParameters("String userIdStrParam");
-                if (limit != 0)
+                if (limit > 0)
                     query.setRange(0, limit);
                 channels = (List<NnChannel>) query.execute(userIdStr);
                 channels = (List<NnChannel>)pm.detachCopyAll(channels);

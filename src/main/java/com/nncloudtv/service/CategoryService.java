@@ -383,15 +383,16 @@ public class CategoryService {
     
     public List<Long> getMsoCategoryChannels(long categoryId, long msoId) {
         
-        Mso mso = NNF.getMsoMngr().findById(msoId, true);
+        Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
             return new ArrayList<Long>();
         }
+        MsoConfigManager.populateSupportedRegion(mso);
         List<String> spheres;
         if (mso.getSupportedRegion() == null) {
             spheres = null;
         } else {
-            spheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
+            spheres = NnStringUtil.parseRegion(mso.getSupportedRegion(), false);
         }
         List<NnChannel> channels = NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
         

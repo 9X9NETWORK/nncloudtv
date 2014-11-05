@@ -29,6 +29,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
@@ -133,35 +134,53 @@ public class ApiUser extends ApiGeneric {
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
     public @ResponseBody
-    List<NnChannel> userChannels(HttpServletRequest req,
-            HttpServletResponse resp,
+    List<NnChannel> userChannels(HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(value = "mso", required = false) String msoName, 
             @PathVariable("userId") String userIdStr) {
         
         List<NnChannel> results = new ArrayList<NnChannel>();
-        ApiContext ctx = new ApiContext(req);
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, ctx.getMsoId());
+        NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
         if (user == null) {
-            notFound(resp, "User Not Found");
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        results = channelMngr.findByUser(user, 0, true);
+        List<String> supportedRegion = null;
+        if (msoName != null) {
+            
+            Mso mso = NNF.getMsoMngr().findByIdOrName(msoName);
+            if (mso != null) {
+                
+                MsoConfigManager.populateSupportedRegion(mso);
+                if (mso.getSupportedRegion() != null) {
+                    supportedRegion = NnStringUtil.parseRegion(mso.getSupportedRegion(), true);
+                }
+            }
+        }
+        
+        results = NNF.getChannelMngr().findByUser(user, 0, true);
         Iterator<NnChannel> it = results.iterator();
         while (it.hasNext()) {
+            
             NnChannel channel = it.next();
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
                 it.remove();
+                continue;
+            }
+            
+            // filter by mso supported region
+            if (supportedRegion != null) {
+                String sphere = channel.getSphere();
+                if (sphere == null || sphere.isEmpty() || supportedRegion.indexOf(sphere) < 0) {
+                    it.remove();
+                    continue;
+                }
             }
         }
         int rows = PlayerApiService.PAGING_ROWS;
@@ -178,20 +197,24 @@ public class ApiUser extends ApiGeneric {
                 return empty;
             }
             int end = ((start + rows) < results.size()) ? start + rows : results.size();
-            log.info("subList " + start + " ~ " + end);
+            log.info("sub-list " + start + " ~ " + end);
             results = results.subList(start, end);
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         for (NnChannel channel : results) {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
             channelMngr.populateAutoSync(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));
         }
         
         return results;
     }
     
+    // TODO remove
     @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> userPlayableChannels(HttpServletRequest req,
@@ -208,15 +231,20 @@ public class ApiUser extends ApiGeneric {
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
-            notFound(resp, "User Not Found");
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> results = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : results) {
+        results = channelMngr.findByUser(user, 0, true);
+        Iterator<NnChannel> it = results.iterator();
+        while (it.hasNext()) {
+            
+            NnChannel channel = it.next();
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                results.remove(channel);
+                it.remove();
+                continue;
             }
         }
         
@@ -231,7 +259,6 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
-            
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
@@ -356,22 +383,13 @@ public class ApiUser extends ApiGeneric {
         }
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang == null) {
-            lang = LangTable.LANG_EN; // default : en
-        }
+        String lang = getParameter(req, "lang", LangTable.LANG_EN); //req.getParameter("lang");
         
         // isPublic
-        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"));
-        if (isPublic == null) {
-            isPublic = true;
-        }
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
         
         // paidChannel
-        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"));
-        if (paidChannel == null) {
-            paidChannel = false;
-        }
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"), false);
         
         // tag
         String tag = req.getParameter("tag");
@@ -473,7 +491,11 @@ public class ApiUser extends ApiGeneric {
         
         channel = NNF.getChannelMngr().save(channel);
         
-        NNF.getChannelMngr().reorderUserChannels(user);
+        // syncNow
+        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+            
+            channel = NnChannelManager.syncNow(channel);
+        }
         
         if (categoryId != null) {
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
@@ -490,10 +512,10 @@ public class ApiUser extends ApiGeneric {
             NNF.getChPrefMngr().save(autosyncPref);
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
+        NNF.getChannelMngr().reorderUserChannels(user);
+        NNF.getChannelMngr().populateCategoryId(channel);
+        NNF.getChannelMngr().populateAutoSync(channel);
+        NNF.getChannelMngr().normalize(channel);
         
         return channel;
     }

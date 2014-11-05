@@ -944,24 +944,6 @@ public class NnChannelManager {
         
     }
     
-    public boolean isChannelOwner(NnChannel channel, String mail) {
-        
-        if (channel == null || mail == null) {
-            return false;
-        }
-        
-        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
-        if(user == null) {
-            return false;
-        }
-        
-        if ((user.getUserEmail() != null) && user.getUserEmail().equals(mail)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
     public void reorderUserChannels(final NnUser user) {
         
         if (user == null) return;
@@ -1311,5 +1293,47 @@ public class NnChannelManager {
         
         return NNF.getChannelMngr().total("contentType != " + NnChannel.CONTENTTYPE_FAVORITE + 
                                           " && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+    }
+    
+    public static NnChannel syncNow(NnChannel channel) {
+        
+        if (channel.isReadonly()) {
+            
+            String msg = "channel is readonly";
+            log.warning(msg);
+            
+            return channel.setNote(msg);
+        }
+        
+        NNF.getChannelMngr().save(channel.setReadonly(true));
+        
+        long before = NnDateUtil.timestamp();
+        
+        Map<String, String> obj = new HashMap<String, String>();
+        obj.put("id",          channel.getIdStr());
+        obj.put("sourceUrl",   channel.getSourceUrl());
+        obj.put("contentType", String.valueOf(channel.getContentType()));
+        obj.put("isRealtime",  "true");
+        
+        String response = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
+        
+        if (response != null && response.trim().equalsIgnoreCase("Ack")) {
+            
+            log.info("crawlerAPI return " + response);
+            channel.setNote("OK");
+            
+        } else {
+            
+            String msg = "crawlerAPI return NOT OK!";
+            log.warning(msg);
+            
+            NNF.getChannelMngr().save(channel.setReadonly(false));
+            
+            channel.setNote(msg);
+        }
+        
+        log.info(String.format("crawlerAPI costs %d milliseconds", NnDateUtil.timestamp() - before));
+        
+        return channel;
     }
 }

@@ -4,9 +4,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
+import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
@@ -338,6 +341,13 @@ public class NnStringUtil {
         return shortValue;
     }
     
+    public static Boolean evalBool(String boolStr, boolean defaultValue) {
+        
+        Boolean result = evalBool(boolStr);
+        
+        return (result == null) ? defaultValue : result;
+    }
+    
     public static Boolean evalBool(String boolStr) {
         
         if (boolStr == null) return null;
@@ -352,5 +362,29 @@ public class NnStringUtil {
         }
         
         return null;
+    }
+    
+    // "en English;zh Chinese"
+    public static List<String> parseRegion(String regionStr, boolean appendOther) {
+        
+        if (regionStr == null || regionStr.isEmpty()) {
+            return null;
+        }
+        
+        List<String> regions = new ArrayList<String>();
+        String[] pairs = regionStr.split(";");
+        for (String pair : pairs) {
+            String[] values = pair.split(" +");
+            if (!values[0].isEmpty()) {
+                regions.add(values[0].trim());
+            }
+        }
+        
+        if (appendOther && regions.indexOf(LangTable.OTHER) < 0) {
+            
+            regions.add(LangTable.OTHER);
+        }
+        
+        return regions;
     }
 }

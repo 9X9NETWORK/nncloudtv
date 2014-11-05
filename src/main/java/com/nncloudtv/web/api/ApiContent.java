@@ -771,7 +771,7 @@ public class ApiContent extends ApiGeneric {
                 log.info("mso = " + msoName);
                 MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
-                    List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
+                    List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
                     sphereStr = StringUtils.join(spheres, ',');
                     log.info("mso supported region = " + sphereStr);
                 }
@@ -1038,6 +1038,12 @@ public class ApiContent extends ApiGeneric {
         
         channel = NNF.getChannelMngr().save(channel);
         
+        // syncNow
+        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+            
+            channel = NnChannelManager.syncNow(channel);
+        }
+        
         channelMngr.populateCategoryId(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
@@ -1045,7 +1051,7 @@ public class ApiContent extends ApiGeneric {
         return channel;
     }
     
-    // TODO: fix me
+    // TODO remove
     @RequestMapping(value = "channels/{channelId}/youtubeSyncData", method = RequestMethod.PUT)
     public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
