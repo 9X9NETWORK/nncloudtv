@@ -362,13 +362,15 @@ public class ApiUser extends ApiGeneric {
         }
         
         // isPublic
-        Boolean isPublic = true; // default : true
-        String isPublicStr = req.getParameter("isPublic");
-        if (isPublicStr != null) {
-            isPublic = NnStringUtil.evalBool(isPublicStr);
-            if (isPublic == null) {
-                isPublic = true;
-            }
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"));
+        if (isPublic == null) {
+            isPublic = true;
+        }
+        
+        // paidChannel
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"));
+        if (paidChannel == null) {
+            paidChannel = false;
         }
         
         // tag
@@ -446,6 +448,9 @@ public class ApiUser extends ApiGeneric {
         }
         if (isPublic != null) {
             channel.setPublic(isPublic);
+        }
+        if (paidChannel != null) {
+            channel.setPaidChannel(paidChannel);
         }
         if (sphere != null) {
             channel.setSphere(sphere);

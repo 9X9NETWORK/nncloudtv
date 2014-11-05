@@ -956,13 +956,15 @@ public class ApiContent extends ApiGeneric {
         }
         
         // isPublic
-        Boolean isPublic = null;
-        String isPublicStr = req.getParameter("isPublic");
-        if (isPublicStr != null) {
-            isPublic = NnStringUtil.evalBool(isPublicStr);
-            if (isPublic != null) {
-                channel.setPublic(isPublic);
-            }
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"));
+        if (isPublic != null) {
+            channel.setPublic(isPublic);
+        }
+        
+        // paidChannel
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"));
+        if (paidChannel != null) {
+            channel.setPaidChannel(paidChannel);
         }
         
         // tag
@@ -1056,7 +1058,7 @@ public class ApiContent extends ApiGeneric {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1088,7 +1090,7 @@ public class ApiContent extends ApiGeneric {
             channel.setReadonly(false);
             NNF.getChannelMngr().save(channel);
             
-            msgResponse(resp, "OK");
+            msgResponse(resp, OK);
             
         } else {
             

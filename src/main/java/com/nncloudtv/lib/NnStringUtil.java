@@ -340,10 +340,14 @@ public class NnStringUtil {
     
     public static Boolean evalBool(String boolStr) {
         
-        if ("true".equals(boolStr) == true) {
+        if (boolStr == null) return null;
+        
+        if (boolStr.equalsIgnoreCase("true") || boolStr.equals("1")) {
+            
             return true;
-        }
-        if ("false".equals(boolStr) == true) {
+            
+        } else if (boolStr.equalsIgnoreCase("false") || boolStr.equals("0")) {
+            
             return false;
         }
         
