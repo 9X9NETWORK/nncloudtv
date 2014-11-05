@@ -198,7 +198,7 @@ public class ApiUser extends ApiGeneric {
                 return empty;
             }
             int end = ((start + rows) < results.size()) ? start + rows : results.size();
-            log.info("sub-list " + start + " ~ " + end);
+            log.info("subList " + start + " ~ " + end);
             results = results.subList(start, end);
         }
         
