@@ -760,7 +760,7 @@ public class ApiContent extends ApiGeneric {
                 log.info("mso = " + msoName);
                 MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
                 if (supportedRegion != null) {
-                    List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
+                    List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), true);
                     sphereStr = StringUtils.join(spheres, ',');
                     log.info("mso supported region = " + sphereStr);
                 }
@@ -772,7 +772,6 @@ public class ApiContent extends ApiGeneric {
                 for (String sphere : sphereArr) {
                     sphereList.add(NnStringUtil.escapedQuote(sphere));
                 }
-                sphereList.add(NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER));
                 sphereFilter = "sphere in (" + StringUtils.join(sphereList, ',') + ")";
                 log.info("sphere filter = " + sphereFilter);
             }

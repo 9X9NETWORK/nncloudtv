@@ -365,15 +365,7 @@ public class ApiMso extends ApiGeneric {
             set.setTag(tag);
         }
         
-        String lang = LocaleTable.LANG_EN; // default
-        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (supportedRegion != null && supportedRegion.getValue() != null) {
-            List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
-            if (spheres != null && spheres.isEmpty() == false) {
-                lang = spheres.get(0);
-            }
-        }
-        set.setLang(lang);
+        set.setLang(LocaleTable.LANG_EN);
         
         String iosBannerUrl = req.getParameter("iosBannerUrl");
         if (iosBannerUrl != null) {
@@ -778,6 +770,7 @@ public class ApiMso extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
+    // TODO rewrite
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.GET)
     public @ResponseBody
     List<Long> storeChannels(HttpServletRequest req,
@@ -790,19 +783,11 @@ public class ApiMso extends ApiGeneric {
         }
         
         // categoryId
-        Long categoryId = null;
-        String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            try {
-                categoryId = Long.valueOf(categoryIdStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
+        if (categoryId != null && !CategoryService.isSystemCategory(categoryId)) {
+            
+            badRequest(resp, INVALID_PARAMETER);
+            return null;
         }
         
         // channels
@@ -827,9 +812,12 @@ public class ApiMso extends ApiGeneric {
         }
         List<Long> results = new ArrayList<Long>();
         if (channelIds != null) {
+            
             List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
             results = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
+            
         } else if (categoryId != null) {
+            
             results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
         }
         return results;

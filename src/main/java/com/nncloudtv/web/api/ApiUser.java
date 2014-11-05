@@ -159,6 +159,7 @@ public class ApiUser extends ApiGeneric {
                 
                 MsoConfigManager.populateSupportedRegion(mso);
                 if (mso.getSupportedRegion() != null) {
+                    log.info("supported region = " + mso.getSupportedRegion());
                     supportedRegion = NnStringUtil.parseRegion(mso.getSupportedRegion(), true);
                 }
             }
