@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
@@ -80,8 +80,8 @@ public class CategoryService {
         
         List<Category> results = new ArrayList<Category>();
         for (SysTag category : categories) {
-            SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_ZH);
-            SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_EN);
+            SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LocaleTable.LANG_ZH);
+            SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LocaleTable.LANG_EN);
             
             if (zhCategoryDisplay != null && enCategoryDisplay != null) {
                 Category result = composeCategory(category, zhCategoryDisplay, enCategoryDisplay);
@@ -120,8 +120,8 @@ public class CategoryService {
             return null;
         }
         
-        SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LangTable.LANG_ZH);
-        SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LangTable.LANG_EN);
+        SysTagDisplay zhCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LocaleTable.LANG_ZH);
+        SysTagDisplay enCategoryDisplay = NNF.getDisplayMngr().findBySysTagIdAndLang(categoryId, LocaleTable.LANG_EN);
         
         Category result;
         if (zhCategoryDisplay != null && enCategoryDisplay != null) {
@@ -160,14 +160,14 @@ public class CategoryService {
         
         SysTagDisplay zh = new SysTagDisplay();
         zh.setSystagId(sysTag.getId());
-        zh.setLang(LangTable.LANG_ZH);
+        zh.setLang(LocaleTable.LANG_ZH);
         zh.setCntChannel(0);
         zh.setName(category.getZhName());
         zh = NNF.getDisplayMngr().save(zh);
         
         SysTagDisplay en = new SysTagDisplay();
         en.setSystagId(sysTag.getId());
-        en.setLang(LangTable.LANG_EN);
+        en.setLang(LocaleTable.LANG_EN);
         en.setCntChannel(0);
         en.setName(category.getEnName());
         en = NNF.getDisplayMngr().save(en);
@@ -194,21 +194,21 @@ public class CategoryService {
             return null;
         }
         
-        SysTagDisplay zh = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_ZH);
+        SysTagDisplay zh = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LocaleTable.LANG_ZH);
         if (zh == null) {
             // create one
             zh = new SysTagDisplay();
             zh.setSystagId(sysTag.getId());
-            zh.setLang(LangTable.LANG_ZH);
+            zh.setLang(LocaleTable.LANG_ZH);
             zh.setCntChannel(0);
         }
         
-        SysTagDisplay en = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LangTable.LANG_EN);
+        SysTagDisplay en = NNF.getDisplayMngr().findBySysTagIdAndLang(category.getId(), LocaleTable.LANG_EN);
         if (en == null) {
             // create one
             en = new SysTagDisplay();
             en.setSystagId(sysTag.getId());
-            en.setLang(LangTable.LANG_EN);
+            en.setLang(LocaleTable.LANG_EN);
             en.setCntChannel(0);
         }
         
@@ -311,12 +311,12 @@ public class CategoryService {
             public int compare(Category category1, Category category2) {
                 
                 int seq1 = category1.getSeq();
-                if (LangTable.LANG_EN.equalsIgnoreCase(category1.getLang())) {
+                if (LocaleTable.LANG_EN.equalsIgnoreCase(category1.getLang())) {
                     
                     seq1 -= 100;
                 }
                 int seq2 = category2.getSeq();
-                if (LangTable.LANG_EN.equalsIgnoreCase(category2.getLang())) {
+                if (LocaleTable.LANG_EN.equalsIgnoreCase(category2.getLang())) {
                     
                     seq2 -= 100;
                 }

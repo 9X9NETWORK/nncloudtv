@@ -48,7 +48,7 @@ import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.App;
 import com.nncloudtv.model.Captcha;
 import com.nncloudtv.model.EndPoint;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoIpg;
@@ -1405,8 +1405,8 @@ public class PlayerApiService {
     
     public String checkLang(String lang) {
         if (lang == null || lang.length() == 0)
-            return LangTable.LANG_EN;
-        if (lang != null && !lang.equals(LangTable.LANG_EN) && !lang.equals(LangTable.LANG_ZH))
+            return LocaleTable.LANG_EN;
+        if (lang != null && !lang.equals(LocaleTable.LANG_EN) && !lang.equals(LocaleTable.LANG_ZH))
             return null;
         return lang;
     }
@@ -2032,7 +2032,7 @@ public class PlayerApiService {
         log.info("user language:" + lang);
         NnContent content = contentMngr.findByItemAndLang("resetpwd", lang, mso.getId());
         String subject = "Forgotten Password";
-        if (lang.equals(LangTable.LANG_ZH))
+        if (lang.equals(LocaleTable.LANG_ZH))
             subject = "忘記密碼";
         String sentense = "<p>To reset the password, click on the link or copy and paste the following link into the address bar of your browser</p>";
         String body = sentense + "<p><a href = '" + link  + "'>" + link +  "</a></p>";
@@ -2148,7 +2148,7 @@ public class PlayerApiService {
         //if none matched, return suggestion channels
         List<NnChannel> suggestion = new ArrayList<NnChannel>();
         if (channels.size() == 0 && users.size() == 0) {
-            suggestion = NNF.getChannelMngr().findBillboard(Tag.TRENDING, LangTable.LANG_EN);
+            suggestion = NNF.getChannelMngr().findBillboard(Tag.TRENDING, LocaleTable.LANG_EN);
         }
         int numOfChannelReturned = channels.size();
         int numOfCuratorReturned = users.size();
@@ -2770,7 +2770,7 @@ public class PlayerApiService {
     
     public Object frontpage(String time, String stack, String user) {
         short baseTime = Short.valueOf(time);
-        String lang = LangTable.LANG_EN;
+        String lang = LocaleTable.LANG_EN;
         lang = mso.getLang();
         //section 1: items
         List<String> data = new ArrayList<String>();
@@ -3025,7 +3025,7 @@ public class PlayerApiService {
        if (name == null)
            name = email;
        NnUser newUser = new NnUser(email, password, type, mso.getId());
-       NnUserProfile profile = new NnUserProfile(mso.getId(), name, LangTable.LANG_EN, LangTable.LANG_EN, null);
+       NnUserProfile profile = new NnUserProfile(mso.getId(), name, LocaleTable.LANG_EN, LocaleTable.LANG_EN, null);
        newUser.setProfile(profile);
        newUser.setTemp(false);
        status = NNF.getUserMngr().create(newUser, req, (short)0);

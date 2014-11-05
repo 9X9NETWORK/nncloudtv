@@ -1285,4 +1285,14 @@ public class NnProgramManager {
             return info;
         }
     }
+    
+    public NnProgram findById(String programIdStr) {
+        
+        return dao.findById(programIdStr);
+    }
+    
+    public List<NnProgram> findAllByIds(List<Long> deleteIdList) {
+        
+        return dao.findAllByIds(deleteIdList);
+    }
 }

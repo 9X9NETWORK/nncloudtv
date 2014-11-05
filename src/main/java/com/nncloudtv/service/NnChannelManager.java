@@ -26,7 +26,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -185,7 +185,7 @@ public class NnChannelManager {
         channel.setStatus(NnChannel.STATUS_PROCESSING);
         channel.setContentType(NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL);
         channel.setPublic(false);
-        channel.setLang(LangTable.LANG_EN);        
+        channel.setLang(LocaleTable.LANG_EN);        
         Date now = new Date();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);  

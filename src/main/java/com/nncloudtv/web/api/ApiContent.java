@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.StreamFactory;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
@@ -455,70 +456,58 @@ public class ApiContent extends ApiGeneric {
     void programsDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
         
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeIdStr);
         if (episode == null) {
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return;
         }
         
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
+            
+        } else if (channel == null || !user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return;
         }
         
-        List<NnProgram> episodePrograms = NNF.getProgramMngr().findByEpisodeId(episode.getId());
-        List<Long> episodeProgramIdList = new ArrayList<Long>();
-        for (NnProgram episodeProgram : episodePrograms) {
-            episodeProgramIdList.add(episodeProgram.getId());
-        }
-        
-        String programIdsStr = req.getParameter("programs");
-        if (programIdsStr == null) {
+        String programStr = req.getParameter("programs");
+        if (programStr == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
         }
-        log.info(programIdsStr);
+        log.info(programStr);
         
-        String[] programIdStrList = programIdsStr.split(",");
-        List<NnProgram> programDeleteList = new ArrayList<NnProgram>();
-        
-        for (String programIdStr : programIdStrList) {
+        String[] split = programStr.split(",");
+        List<Long> list = new ArrayList<Long>();
+        for (String programIdStr : split) {
             
-            Long programId = null;
-            try {
-                
-                programId = Long.valueOf(programIdStr);
-                
-            } catch(Exception e) {
-            }
+            Long programId = NnStringUtil.evalLong(programIdStr);
             if (programId != null) {
-                
-                NnProgram program = NNF.getProgramMngr().findById(programId);
-                if (program != null && episodeProgramIdList.indexOf(program.getId()) > -1) {
-                    
-                    programDeleteList.add(program);
-                }
+                list.add(programId);
             }
         }
-        log.info("program delete count = " + programDeleteList.size());
         
-        NNF.getProgramMngr().delete(programDeleteList);
+        List<NnProgram> programs = NNF.getProgramMngr().findAllByIds(list);
+        Iterator<NnProgram> it = programs.iterator();
+        while (it.hasNext()) {
+            
+            NnProgram program = it.next();
+            if (program.getEpisodeId() != episode.getId()) {
+                
+                it.remove();
+                continue;
+            }
+            
+        }
+        
+        log.info("program delete count = " + programs.size());
+        
+        NNF.getProgramMngr().delete(programs);
         
         msgResponse(resp, OK);
     }
@@ -783,7 +772,7 @@ public class ApiContent extends ApiGeneric {
                 for (String sphere : sphereArr) {
                     sphereList.add(NnStringUtil.escapedQuote(sphere));
                 }
-                sphereList.add(NnStringUtil.escapedQuote(LangTable.OTHER));
+                sphereList.add(NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER));
                 sphereFilter = "sphere in (" + StringUtils.join(sphereList, ',') + ")";
                 log.info("sphere filter = " + sphereFilter);
             }
@@ -1192,7 +1181,7 @@ public class ApiContent extends ApiGeneric {
             spheres = new ArrayList<String>();
             String[] values = sphere.split(",");
             for (String value : values) {
-                if (value.equals(LangTable.LANG_ZH) || value.equals(LangTable.LANG_EN) || value.equals(LangTable.OTHER)) {
+                if (value.equals(LocaleTable.LANG_ZH) || value.equals(LocaleTable.LANG_EN) || value.equals(LocaleTable.LANG_OTHER)) {
                     spheres.add(value);
                 } else {
                     badRequest(resp, INVALID_PARAMETER);
@@ -1401,7 +1390,7 @@ public class ApiContent extends ApiGeneric {
         
         for (NnEpisode episode : episodes) {
             
-            int index = episodeIdList.indexOf(Long.valueOf(episode.getId()));
+            int index = episodeIdList.indexOf(episode.getId());
             if (index < 0) {
                 
                 log.info(String.format("episodeId %d is not matched", episode.getId()));

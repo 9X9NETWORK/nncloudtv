@@ -20,7 +20,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
@@ -365,7 +365,7 @@ public class ApiMso extends ApiGeneric {
             set.setTag(tag);
         }
         
-        String lang = LangTable.LANG_EN; // default
+        String lang = LocaleTable.LANG_EN; // default
         MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (supportedRegion != null && supportedRegion.getValue() != null) {
             List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
@@ -1062,11 +1062,11 @@ public class ApiMso extends ApiGeneric {
         List<Category> results = NNF.getCategoryService().findByMsoId(mso.getId());
         
         for (Category result : results) {
-            if (lang.equals(LangTable.LANG_ZH)) {
-                result.setLang(LangTable.LANG_ZH);
+            if (lang.equals(LocaleTable.LANG_ZH)) {
+                result.setLang(LocaleTable.LANG_ZH);
                 result.setName(result.getZhName());
             } else {
-                result.setLang(LangTable.LANG_EN);
+                result.setLang(LocaleTable.LANG_EN);
                 result.setName(result.getEnName());
             }
             result = CategoryService.normalize(result);
@@ -1136,11 +1136,11 @@ public class ApiMso extends ApiGeneric {
         category.setZhName(zhName);
         category.setEnName(enName);
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
         } else {
-            category.setLang(LangTable.LANG_EN);
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         category = CategoryService.normalize(category);
@@ -1185,11 +1185,11 @@ public class ApiMso extends ApiGeneric {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
         } else {
-            category.setLang(LangTable.LANG_EN);
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         return CategoryService.normalize(category);
@@ -1261,11 +1261,11 @@ public class ApiMso extends ApiGeneric {
         category = NNF.getCategoryService().updateCntChannel(category);
         category = NNF.getCategoryService().save(category);
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
         } else {
-            category.setLang(LangTable.LANG_EN);
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         return CategoryService.normalize(category);

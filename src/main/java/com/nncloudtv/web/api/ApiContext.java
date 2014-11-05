@@ -14,7 +14,7 @@ import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
@@ -114,8 +114,8 @@ public class ApiContext {
         }
         
         String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
-        if (LangTable.isValidLanguage(lang)) {
-            locale = LangTable.getLocale(lang);
+        if (LocaleTable.isLanguageSupported(lang)) {
+            locale = LocaleTable.getLocale(lang);
         } else {
             locale = Locale.ENGLISH; // TODO: from http request
         }

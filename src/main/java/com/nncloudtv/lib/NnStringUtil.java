@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
@@ -380,9 +380,9 @@ public class NnStringUtil {
             }
         }
         
-        if (appendOther && regions.indexOf(LangTable.OTHER) < 0) {
+        if (appendOther && !regions.contains(LocaleTable.LANG_OTHER)) {
             
-            regions.add(LangTable.OTHER);
+            regions.add(LocaleTable.LANG_OTHER);
         }
         
         return regions;

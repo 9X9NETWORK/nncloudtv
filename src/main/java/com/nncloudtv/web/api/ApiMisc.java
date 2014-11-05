@@ -48,7 +48,7 @@ import com.nncloudtv.lib.stream.UstreamLib;
 import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.lib.stream.StreamLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
@@ -319,14 +319,14 @@ public class ApiMisc extends ApiGeneric {
         
         try {
             properties.load(getClass().getClassLoader().getResourceAsStream(
-                    LangTable.EN_PROPERTIE_FILE));
+                    LocaleTable.EN_PROPERTIE_FILE));
             
             Set<String> keys = properties.stringPropertyNames();
             
-            if (lang.equals(LangTable.LANG_ZH)) {
+            if (lang.equals(LocaleTable.LANG_ZH)) {
                 Properties zhProps = new Properties();
                 zhProps.load(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
-                        LangTable.ZH_PROPERTIE_FILE), "UTF-8"));
+                        LocaleTable.ZH_PROPERTIE_FILE), "UTF-8"));
                 
                 for (String key : keys) {
                     
@@ -351,34 +351,37 @@ public class ApiMisc extends ApiGeneric {
         return result;
     }
     
-	@RequestMapping("*")
-	public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
-		
-		String path = req.getServletPath();
-		String message = null;
-		Date now = new Date();
-		long rand = Math.round(Math.random() * 1000);
-		byte[] salt = AuthLib.generateSalt();
-		
-		try {
-			
-			log.info("path = " + path);
-			String inbound = AmazonLib
-			        .decodeS3Token(AmazonLib.AWS_TOKEN, now, salt, rand)
-			        .toLowerCase().replace("-", "");
-			String outbound = AmazonLib.decodeS3Token(AmazonLib.S3_TOKEN, now,
-			        salt, rand);
-			
-			if (path.indexOf(inbound) > 0) {
-				message = AmazonLib.decodeS3Token(AmazonLib.S3_CONTEXT_CODE,
-				        now, salt, rand);
-			} else if (path.indexOf(outbound) > 0) {
-				message = AmazonLib.decodeS3Token(AmazonLib.S3_EXT, now, salt,
-				        rand);
-			} else {
-				message = BLACK_HOLE;
-			}
-		} catch (IOException e) {
+    @RequestMapping("*")
+    public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String path = req.getServletPath();
+        String message = null;
+        Date now = NnDateUtil.now();
+        long rand = Math.round(Math.random() * 1000);
+        byte[] salt = AuthLib.generateSalt();
+        
+        try {
+            
+            log.info("path = " + path);
+            String inbound = AmazonLib
+                    .decodeS3Token(AmazonLib.AWS_TOKEN, now, salt, rand)
+                    .toLowerCase().replace("-", "");
+            String outbound = AmazonLib.decodeS3Token(AmazonLib.S3_TOKEN, now, salt, rand);
+            
+            if (path.indexOf(inbound) > 0) {
+                
+                message = AmazonLib.decodeS3Token(AmazonLib.S3_CONTEXT_CODE, now, salt, rand);
+                
+            } else if (path.indexOf(outbound) > 0) {
+                
+                message = AmazonLib.decodeS3Token(AmazonLib.S3_EXT, now, salt, rand);
+                
+            } else {
+                
+                message = BLACK_HOLE;
+            }
+            
+        } catch (IOException e) {
             
             internalError(resp);
             return null;

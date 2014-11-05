@@ -15,7 +15,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.AdPlacement;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
@@ -547,7 +547,7 @@ public class MsoManager {
                 valids.add(mso); // mso support all region
             } else {
                 spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
-                spheres.add(LangTable.OTHER);
+                spheres.add(LocaleTable.LANG_OTHER);
                 for (String sphere : spheres) {
                     if (sphere.equals(channel.getSphere())) { // this channel's sphere that MSO supported
                         valids.add(mso);
@@ -588,7 +588,7 @@ public class MsoManager {
             return true; // Mso's region support all sphere
         } else {
             List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
-            spheres.add(LangTable.OTHER);
+            spheres.add(LocaleTable.LANG_OTHER);
             for (String sphere : spheres) {
                 if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
                     log.info(mso.getName() + " is the valid brand of " + channel.getName());

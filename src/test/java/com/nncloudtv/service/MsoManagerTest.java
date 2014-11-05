@@ -33,7 +33,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
@@ -232,7 +232,7 @@ public class MsoManagerTest {
         channel.setStatus(NnChannel.STATUS_SUCCESS);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
         channel.setPublic(true);
-        channel.setSphere(LangTable.LANG_ZH);
+        channel.setSphere(LocaleTable.LANG_ZH);
         
         // mock data
         MsoConfig supportedRegion = new MsoConfig();

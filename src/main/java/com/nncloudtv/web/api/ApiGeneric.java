@@ -25,6 +25,7 @@ public class ApiGeneric {
     
     public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static final String EPISODE_NOT_FOUND      = "Episode Not Found";
     public static final String USER_NOT_FOUND         = "User Not Found";
     public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
     public static final String MSO_NOT_FOUND          = "Mso Not Found";

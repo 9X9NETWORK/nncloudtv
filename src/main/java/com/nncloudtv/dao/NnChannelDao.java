@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.SearchLib;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 
@@ -352,7 +352,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         
         String filter = "";
         if (spheres != null && spheres.size() > 0) {
-            filter = " and ( c.sphere = " + NnStringUtil.escapedQuote(LangTable.OTHER);
+            filter = " and ( c.sphere = " + NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER);
             for (String sphere : spheres) {
                 filter = filter + " or c.sphere = " + NnStringUtil.escapedQuote(sphere);
             }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -177,7 +177,7 @@ public class ApiUser extends ApiGeneric {
             // filter by mso supported region
             if (supportedRegion != null) {
                 String sphere = channel.getSphere();
-                if (sphere == null || sphere.isEmpty() || supportedRegion.indexOf(sphere) < 0) {
+                if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
                     it.remove();
                     continue;
                 }
@@ -323,7 +323,7 @@ public class ApiUser extends ApiGeneric {
         
         for (NnChannel channel : channels) {
             
-            int index = channelIdList.indexOf(Long.valueOf(channel.getId()));
+            int index = channelIdList.indexOf(channel.getId());
             if (index < 0) {
                 
                 log.info(String.format("channelId %d is not matched", channel.getId()));
@@ -383,7 +383,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         // lang
-        String lang = getParameter(req, "lang", LangTable.LANG_EN); //req.getParameter("lang");
+        String lang = getParameter(req, "lang", LocaleTable.LANG_EN); //req.getParameter("lang");
         
         // isPublic
         Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
@@ -397,7 +397,7 @@ public class ApiUser extends ApiGeneric {
         // sphere
         String sphere = req.getParameter("sphere");
         if (sphere == null) {
-            sphere = LangTable.LANG_EN; // default : en
+            sphere = LocaleTable.LANG_EN; // default : en
         }
         
         // categoryId
@@ -451,8 +451,8 @@ public class ApiUser extends ApiGeneric {
         channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
         channel.setPoolType(NnChannel.POOL_BASE);
         channel.setUserIdStr(user.getShard(), user.getId());
-        channel.setLang(LangTable.LANG_EN); // default : en
-        channel.setSphere(LangTable.LANG_EN); // default : en
+        channel.setLang(LocaleTable.LANG_EN); // default : en
+        channel.setSphere(LocaleTable.LANG_EN); // default : en
         channel.setSeq((short) 0);
         
         if (intro != null) {
