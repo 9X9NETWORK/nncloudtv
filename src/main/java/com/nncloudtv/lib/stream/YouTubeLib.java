@@ -234,6 +234,10 @@ public class YouTubeLib  implements StreamLib {
         url = url + "?v=2&alt=json";
         log.info("url:" + url);
         String jsonStr = NnNetUtil.urlGet(url);
+        if (jsonStr == null) {
+           results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
+           return results;
+        }
         JSONObject json = new JSONObject(jsonStr);
         String title, description, thumbnail, author, total;
         title = description = thumbnail = author = total = "";
