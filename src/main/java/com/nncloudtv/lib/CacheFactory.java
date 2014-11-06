@@ -28,7 +28,7 @@ public class CacheFactory {
     public static final int EXP_DEFAULT = 2592000;
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
-    public static final int MINIMUM_LOG_INTERVAL = 50;
+    public static final int MINIMUM_LOG_INTERVAL = 10;
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
@@ -323,7 +323,7 @@ public class CacheFactory {
         
         List<String> keys = new ArrayList<String>();
         
-        log.info("get all programInfo keys from ch" + channelId + " in " + format + " format");
+        log.info("get all programInfo keys from ch" + channelId + " in format " + format);
         
         for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
             

@@ -352,7 +352,7 @@ public class NnProgramManager {
         //channelLineup
         keys.addAll(CacheFactory.getAllChannelInfoKeys(channelId));
         
-        log.info("keys count = " + keys.size());
+        log.info("cache key count = " + keys.size());
         CacheFactory.delete(keys);
     }
     
