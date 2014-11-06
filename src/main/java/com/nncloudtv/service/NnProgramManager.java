@@ -923,13 +923,13 @@ public class NnProgramManager {
                     
                     List<PlayerPoi>       playerPois       = new ArrayList<PlayerPoi>();
                     List<PlayerTitleCard> playerTitleCards = new ArrayList<PlayerTitleCard>();
-                    List<PoiPoint>        points           = NNF.getPoiPointMngr().findCurrentByProgram(program.getId());
+                    List<PoiPoint>        points           = NNF.getPoiPointMngr().findCurrentByProgramId(program.getId());
                     
                     log.info("points size:" + points.size());
                     
                     List<PoiEvent> events = new ArrayList<PoiEvent>();
                     for (PoiPoint point : points) {
-                        PoiEvent event = NNF.getPoiEventMngr().findByPoint(point.getId());
+                        PoiEvent event = NNF.getPoiEventMngr().findByPointId(point.getId());
                         events.add(event);
                     }
                     if (points.size() != events.size()) {

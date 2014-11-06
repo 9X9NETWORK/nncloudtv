@@ -17,7 +17,7 @@ public class PoiEventDao extends GenericDao<PoiEvent> {
         super(PoiEvent.class);
     }
     
-    public PoiEvent findByPoint(long pointId) {
+    public PoiEvent findByPointId(long pointId) {
         PoiEvent detached = null;
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         try {
@@ -37,10 +37,10 @@ public class PoiEventDao extends GenericDao<PoiEvent> {
         } finally {
             pm.close();
         } 
-        return detached;                            
+        return detached;
     }
     
-    public PoiEvent findByPoi(long poiId) {
+    public PoiEvent findByPoiId(long poiId) {
         PoiEvent result = null;
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         try {
@@ -63,7 +63,7 @@ public class PoiEventDao extends GenericDao<PoiEvent> {
         } finally {
             pm.close();
         } 
-        return result;                            
+        return result;
     }
     
 }

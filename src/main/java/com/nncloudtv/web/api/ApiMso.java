@@ -761,44 +761,40 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
+        String categoryIdStr = req.getParameter("categoryId");
+        String channelParam = req.getParameter("channels");
+        if (categoryIdStr == null && channelParam == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        
         // categoryId
-        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId != null && !CategoryService.isSystemCategory(categoryId)) {
-            
             badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
         // channels
-        java.util.Set<Long> channelIds = null;
-        String channelsStr = req.getParameter("channels");
-        if (channelsStr != null) {
-            
-            String[] channelIdsStr = channelsStr.split(",");
-            channelIds = new HashSet<Long>();
-            Long channelId = null;
-            for (String channelIdStr : channelIdsStr) {
-                
-                channelId = null;
-                try {
-                    channelId = Long.valueOf(channelIdStr);
-                } catch(Exception e) {
-                }
+        java.util.Set<Long> channelIdSet = new HashSet<Long>();
+        if (channelParam != null) {
+            String[] channelIdArr = channelParam.split(",");
+            for (String channelIdStr : channelIdArr) {
+                Long channelId = NnStringUtil.evalLong(channelIdStr);
                 if (channelId != null) {
-                    channelIds.add(channelId);
+                    channelIdSet.add(channelId);
                 }
             }
         }
-        List<Long> results = new ArrayList<Long>();
-        if (channelIds != null) {
-            
-            List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
-            results = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
-            
-        } else if (categoryId != null) {
-            
-            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
+        List<NnChannel> candidates = null;
+        if (categoryId == null) {
+            categoryId = 0L;
+            candidates = NNF.getChannelMngr().findByIds(channelIdSet);
         }
+        List<NnChannel> channels = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso, candidates);
+        List<Long> results = new ArrayList<Long>();
+        for (NnChannel channel : channels)
+            results.add(channel.getId());
         return results;
     }
     

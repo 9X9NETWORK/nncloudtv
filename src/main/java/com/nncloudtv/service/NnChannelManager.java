@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -637,14 +638,13 @@ public class NnChannelManager {
         }
     }
     
-    public List<NnChannel> findByIds(List<Long> ids) {
-        
+    public List<NnChannel> findByIds(Collection<Long> ids) {
         return dao.findAllByIds(ids);
     }
     
     public List<NnChannel> findByStatus(short status) {
-        List<NnChannel> channels = dao.findAllByStatus(status);        
-        return channels;
+        
+        return dao.findAllByStatus(status);
     }
     
     public List<NnChannel> findAll() {
@@ -1146,11 +1146,11 @@ public class NnChannelManager {
         //poi
         String poiStr = "";
         if (ctx.getVersion() > 32) {
-            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(channel.getId());
+            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannelId(channel.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
             for (PoiPoint p : points) {
-                PoiEvent event = NNF.getPoiEventMngr().findByPoint(p.getId());
+                PoiEvent event = NNF.getPoiEventMngr().findByPointId(p.getId());
                 events.add(event);
             }
             if (points.size() != events.size()) {

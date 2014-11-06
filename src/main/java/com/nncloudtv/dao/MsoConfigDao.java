@@ -20,18 +20,6 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
         super(MsoConfig.class);
     }
     
-    public MsoConfig save(MsoConfig config) {
-        if (config == null) {return null;}
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.makePersistent(config);
-            config = pm.detachCopy(config);
-        } finally {
-            pm.close();
-        }
-        return config;
-    }
-    
     public MsoConfig findByMsoAndItem(long msoId, String item) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         MsoConfig config = null;

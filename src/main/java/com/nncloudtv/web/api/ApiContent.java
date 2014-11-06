@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -1156,46 +1157,30 @@ public class ApiContent extends ApiGeneric {
     List<Long> storeChannels(HttpServletRequest req, HttpServletResponse resp) {
         
         // categoryId
-        long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            try {
-                categoryId = Long.valueOf(categoryIdStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        if (categoryIdStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        log.info("categoryId = " + categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
+        if (categoryId == null || !CategoryService.isSystemCategory(categoryId)) {
+            badRequest(resp, INVALID_PARAMETER);
+            return null;
         }
         
         // sphere
-        String sphere = req.getParameter("sphere");
-        List<String> spheres;
-        if (sphere == null || sphere.isEmpty()) {
-            spheres = null;
-        } else {
-            spheres = new ArrayList<String>();
-            String[] values = sphere.split(",");
-            for (String value : values) {
-                if (value.equals(LocaleTable.LANG_ZH) || value.equals(LocaleTable.LANG_EN) || value.equals(LocaleTable.LANG_OTHER)) {
-                    spheres.add(value);
-                } else {
-                    badRequest(resp, INVALID_PARAMETER);
-                    return null;
-                }
-            }
-        }
+        List<String> spheres = null;
+        String sphereParam = req.getParameter("sphere");
+        if (sphereParam != null)
+            spheres = Arrays.asList(sphereParam.split(","));
         
-        List<Long> channelIds = new ArrayList<Long>();
-        List<NnChannel> channels = NNF.getCategoryService().getSystemCategoryChannels(categoryId, spheres);
-        for (NnChannel channel : channels) {
-            channelIds.add(channel.getId());
-        }
+        List<Long> results = new ArrayList<Long>();
+        List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId, spheres);
+        for (NnChannel channel : channels)
+            results.add(channel.getId());
         
-        return channelIds;
+        return results;
     }
     
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)

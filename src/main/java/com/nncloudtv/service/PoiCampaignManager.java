@@ -16,18 +16,9 @@ public class PoiCampaignManager {
     
     protected static final Logger log = Logger.getLogger(PoiCampaignManager.class.getName());
     
-    public List<PoiCampaign> findByUserId(Long userId) {
+    public List<PoiCampaign> findByUserId(long userId) {
         
-        if (userId == null) {
-            return new ArrayList<PoiCampaign>();
-        }
-        
-        List<PoiCampaign> results = NNF.getPoiCampaignDao().findByUserId(userId);
-        if (results == null) {
-            return new ArrayList<PoiCampaign>();
-        }
-        
-        return results;
+        return NNF.getPoiCampaignDao().findByUserId(userId);
     }
     
     public PoiCampaign save(PoiCampaign campaign) {

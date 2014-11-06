@@ -1,8 +1,10 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -16,7 +18,6 @@ import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.model.StoreListing;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
@@ -369,59 +370,54 @@ public class CategoryService {
         return results;
     }
     
-    public List<Long> getMsoCategoryChannels(long categoryId, long msoId) {
+    public List<NnChannel> getMsoCategoryChannels(long categoryId, Mso mso, List<NnChannel> candidates) {
         
-        Mso mso = NNF.getMsoMngr().findById(msoId);
-        if (mso == null) {
-            return new ArrayList<Long>();
-        }
+        if (mso == null) throw new IllegalArgumentException("mso is null");
+        if (categoryId == 0 && candidates == null) throw new IllegalArgumentException("either categoryId or candidates be specified");
+        
         MsoConfigManager.populateSupportedRegion(mso);
-        List<String> spheres;
-        if (mso.getSupportedRegion() == null) {
-            spheres = null;
-        } else {
-            spheres = NnStringUtil.parseRegion(mso.getSupportedRegion(), false);
+        List<String> supportedRegion = null;
+        if (mso.getSupportedRegion() != null) {
+            supportedRegion = NnStringUtil.parseRegion(mso.getSupportedRegion(), true);
         }
-        List<NnChannel> channels = NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
-        
-        List<StoreListing> blackList = NNF.getStoreListingMngr().getBlackListByMsoId(msoId);
-        Map<Long, Long> blackListMap = new TreeMap<Long, Long>();
-        if (blackList != null && blackList.isEmpty() == false) {
-            for (StoreListing item : blackList) {
-                blackListMap.put(item.getChannelId(), item.getChannelId());
+        List<NnChannel> channels = candidates;
+        if (channels == null) {
+            channels = NNF.getChannelDao().getCategoryChannels(categoryId, supportedRegion);
+        } else if (supportedRegion != null) {
+            Iterator<NnChannel> it = channels.iterator();
+            while (it.hasNext()) {
+                NnChannel channel = it.next();
+                String sphere = channel.getSphere();
+                if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
+                    it.remove();
+                    continue;
+                }
             }
         }
-        
-        List<Long> results = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            if (blackListMap.containsKey(channel.getId())) {
-                // skip
-            } else {
-                results.add(channel.getId());
+        Collection<Long> mask = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
+        Iterator<NnChannel> it = channels.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
+            if (mask.contains(channel.getId())) {
+                it.remove();
+                continue;
             }
         }
-        
-        return results;
+        return channels;
     }
     
     public static boolean isSystemCategory(long categoryId) {
         
         SysTag category = NNF.getSysTagMngr().findById(categoryId);
-        if (category == null) {
-            
+        if (category == null)
             return false;
-        }
-        
         if (category.getMsoId() == MsoManager.getSystemMsoId() &&
-            category.getType() == SysTag.TYPE_CATEGORY) {
-            
+            category.getType() == SysTag.TYPE_CATEGORY)
             return true;
-        }
-        
         return false;
     }
     
-    public List<NnChannel> getSystemCategoryChannels(long categoryId, List<String> spheres) {
+    public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
         
         return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
     }

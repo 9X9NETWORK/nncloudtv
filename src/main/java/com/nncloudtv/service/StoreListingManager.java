@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -126,16 +127,12 @@ public class StoreListingManager {
         return results;
     }
     
-    public List<StoreListing> getBlackListByMsoId(Long msoId) {
+    public Collection<Long> findChannelIdsByMsoId(long msoId) {
         
-        if (msoId == null) {
-            return new ArrayList<StoreListing>();
-        }
-        
-        List<StoreListing> results = dao.findByMsoId(msoId);
-        if (results == null) {
-            return new ArrayList<StoreListing>();
-        }
+        List<Long> results = new ArrayList<Long>();
+        List<StoreListing> list = dao.findByMsoId(msoId);
+        for (StoreListing item : list)
+            results.add(item.getChannelId());
         return results;
     }
     

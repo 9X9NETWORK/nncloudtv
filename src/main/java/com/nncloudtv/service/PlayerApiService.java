@@ -3210,7 +3210,7 @@ public class PlayerApiService {
         Poi poi = NNF.getPoiPointMngr().findPoiById(lPoiId);
         if (poi == null)
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid
-        PoiEvent event = NNF.getPoiEventMngr().findByPoi(lPoiId);
+        PoiEvent event = NNF.getPoiEventMngr().findByPoiId(lPoiId);
         if (event == null) {
             log.info("event invalid");
             return this.assembleMsgs(NnStatusCode.POI_INVALID, null); //poi invalid

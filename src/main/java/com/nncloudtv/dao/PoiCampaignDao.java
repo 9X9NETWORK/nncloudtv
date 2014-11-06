@@ -22,17 +22,16 @@ public class PoiCampaignDao extends GenericDao<PoiCampaign> {
         
         List<PoiCampaign> detached = new ArrayList<PoiCampaign>();
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        
         try {
             Query query = pm.newQuery(PoiCampaign.class);
             query.setFilter("userId == userIdParam");
             query.declareParameters("long userIdParam");
-            //query.setOrdering("startDate desc");
             @SuppressWarnings("unchecked")
             List<PoiCampaign> results = (List<PoiCampaign>) query.execute(userId);
             if (results != null && results.size() > 0) {
                 detached = (List<PoiCampaign>) pm.detachCopyAll(results);
             }
+            query.closeAll();
         } finally {
             pm.close();
         }

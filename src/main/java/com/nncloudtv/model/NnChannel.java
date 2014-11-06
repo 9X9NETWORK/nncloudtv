@@ -60,7 +60,7 @@ public class NnChannel implements Serializable {
     public static final int DEFAULT_HEIGHT = 480;
     
     @Persistent
-    private boolean isPublic;
+    private boolean isPublic; // set to false when paidChannel = true
     
     @Persistent
     private boolean paidChannel;

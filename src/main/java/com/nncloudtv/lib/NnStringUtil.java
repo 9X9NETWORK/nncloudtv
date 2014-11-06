@@ -367,9 +367,7 @@ public class NnStringUtil {
     // "en English;zh Chinese"
     public static List<String> parseRegion(String regionStr, boolean appendOther) {
         
-        if (regionStr == null || regionStr.isEmpty()) {
-            return null;
-        }
+        if (regionStr == null) { throw new IllegalArgumentException("regionStr is null"); }
         
         List<String> regions = new ArrayList<String>();
         String[] pairs = regionStr.split(";");
@@ -379,12 +377,8 @@ public class NnStringUtil {
                 regions.add(values[0].trim());
             }
         }
-        
-        if (appendOther && !regions.contains(LocaleTable.LANG_OTHER)) {
-            
+        if (appendOther && !regions.contains(LocaleTable.LANG_OTHER))
             regions.add(LocaleTable.LANG_OTHER);
-        }
-        
         return regions;
     }
 }

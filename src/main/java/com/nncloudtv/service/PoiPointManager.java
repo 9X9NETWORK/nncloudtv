@@ -59,19 +59,23 @@ public class PoiPointManager {
     }
     
     public PoiPoint findById(long id) {
+        
         return NNF.getPoiPointDao().findById(id);
     }
     
     public List<PoiPoint> findByChannel(long channelId) {
+        
         return NNF.getPoiPointDao().findByChannel(channelId);
     }
     
-    public List<PoiPoint> findCurrentByChannel(long channelId) {
-        return NNF.getPoiPointDao().findCurrentByChannel(channelId);
+    public List<PoiPoint> findCurrentByChannelId(long channelId) {
+        
+        return NNF.getPoiPointDao().findCurrentByChannelId(channelId);
     }
     
-    public List<PoiPoint> findCurrentByProgram(long programId) {
-        return NNF.getPoiPointDao().findCurrentByProgram(programId);
+    public List<PoiPoint> findCurrentByProgramId(long programId) {
+        
+        return NNF.getPoiPointDao().findCurrentByProgramId(programId);
     }
     
     public void delete(List<PoiPoint> points) {
@@ -98,7 +102,7 @@ public class PoiPointManager {
     
     public List<PoiPoint> findByProgram(long programId) {
         
-        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(programId);
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgramId(programId);
         if (points != null) {
             Collections.sort(points, getPointStartTimeComparator());
         }
@@ -121,7 +125,7 @@ public class PoiPointManager {
             return true;
         }
         
-        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(program.getId());
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgramId(program.getId());
         if (originPoint != null) {
             if (points.contains(originPoint)) {
                 points.remove(originPoint);

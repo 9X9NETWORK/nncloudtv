@@ -32,79 +32,65 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     //player channels means status=true and isPublic=true
     public List<NnChannel> findBySysTag(long systagId, String lang, boolean limitRows, int start, int count, short sort, long msoId, boolean isPlayer) {
         
-        String orderStr = " order by m.alwaysOnTop desc,"
-                        + "          case m.alwaysOnTop when true then m.seq else (case c.sphere when '" + lang + "' then 1 else 2 end) end,"
-                        + "          c.updateDate desc ";
-        if (sort == SysTag.SORT_SEQ) {
-            
-            orderStr = " order by m.seq ";
-        }
-        if (limitRows){
-            
-            orderStr = " order by rand() limit 9 ";
-        }
-        if (start >= 0 && count > 0) {
-            //start = start - 1;
-            orderStr += String.format(" limit %d, %d", start, count);
-        }
-        String playerStr =    (!isPlayer) ? "" : String.format(" and c.isPublic = true and c.status = %d ", NnChannel.STATUS_SUCCESS);
-        String langStr   = (lang == null) ? "" : String.format(" and (c.sphere = %s or c.sphere = 'other') ", NnStringUtil.escapedQuote(lang));
-        String blackList =   (msoId == 0) ? "" : String.format(" and c.id not in (select channelId from store_listing where msoId = %d) ", msoId);
-        String query = "select * from nnchannel a1"
-                     + "   inner join (select distinct c.id "
-                     + "                 from systag_display d, systag_map m, nnchannel c "
-                     + "                where d.systagId = " + systagId 
-                     + "                  and d.systagId = m.systagId "
-                     + "                  and c.id = m.channelId "
-                     + "                  and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
+        String orderStr = " ORDER by m.alwaysOnTop DESC,"
+                        + "          CASE m.alwaysOnTop WHEN TRUE THEN m.seq ELSE (CASE c.sphere WHEN " + NnStringUtil.escapedQuote(lang) + " THEN 1 ELSE 2 END) END,"
+                        + "          c.updateDate DESC ";
+        if (sort == SysTag.SORT_SEQ)
+            orderStr = " ORDER BY m.seq ";
+        if (limitRows)
+            orderStr = " ORDER BY RAND() LIMIT 9 ";
+        if (start >= 0 && count > 0)
+            orderStr += String.format(" LIMIT %d, %d", start, count);
+        String playerStr =    (!isPlayer) ? "" : String.format(" AND c.isPublic = TRUE AND c.status = %d ", NnChannel.STATUS_SUCCESS);
+        String langStr   = (lang == null) ? "" : String.format(" AND c.sphere IN (%s, %s) ", NnStringUtil.escapedQuote(lang), NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER));
+        String blackList =   (msoId == 0) ? "" : String.format(" AND c.id NOT IN (SELECT channelId FROM store_listing WHERE msoId = %d) ", msoId);
+        String query = "SELECT * FROM nnchannel a1"
+                     + "   INNER JOIN (SELECT distinct c.id "
+                     + "                 FROM systag_display d, systag_map m, nnchannel c "
+                     + "                WHERE d.systagId = " + systagId 
+                     + "                  AND d.systagId = m.systagId "
+                     + "                  AND c.id = m.channelId "
+                     + "                  AND c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
                      + "                  " + playerStr
                      + "                  " + blackList
                      + "                  " + langStr
                      + "                  " + orderStr
-                     + "              ) a2 on a1.id = a2.id";
+                     + "              ) a2 ON a1.id = a2.id";
         
         return sql(query);
     }
     
     public List<NnChannel> findByContentType(short type) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<NnChannel> detached = new ArrayList<NnChannel>(); 
+        PersistenceManager pm = getPersistenceManager();
         try {
-            Query q = pm.newQuery(NnChannel.class);
-            q.setFilter("contentType == contentTypeParam");
-            q.declareParameters("short contentTypeParam");
+            Query query = pm.newQuery(NnChannel.class);
+            query.setFilter("contentType == contentTypeParam");
+            query.declareParameters("short contentTypeParam");
             @SuppressWarnings("unchecked")
-            List<NnChannel> channels = (List<NnChannel>) q.execute(type);
-            detached = (List<NnChannel>)pm.detachCopyAll(channels);
+            List<NnChannel> channels = (List<NnChannel>) query.execute(type);
+            if (channels.size() > 0)
+                detached = (List<NnChannel>) pm.detachCopyAll(channels);
+            query.closeAll();
         } finally {
             pm.close();
         }
         return detached;
     }    
     
-    public NnChannel save(NnChannel channel) {
-        if (channel == null) {return null;}
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.makePersistent(channel);            
-            channel = pm.detachCopy(channel);
-        } finally {
-            pm.close();
-        }
-        return channel;
-    }
-    
     //find good channels, for all needs to be extended
     public List<NnChannel> findChannelsByTag(String name) {
         
-        String sql = "select * from nnchannel where id in ( " + 
-                "select distinct map.channelId " + 
-                   "from ytprogram yt, tag_map map " + 
-                  "where yt.channelId = map.channelId " +
-                    "and map.tagId = (select id from tag where name= '" + name + "')) " +
-                    "order by rand() limit 9;";
+        String query = "SELECT * FROM nnchannel "
+                     + "        WHERE id IN ( "
+                     + "                     SELECT DISTINCT map.channelId " 
+                     + "                       FROM ytprogram yt, tag_map map " 
+                     + "                      WHERE yt.channelId = map.channelId "
+                     + "                        AND map.tagId = (SELECT id FROM tag WHERE name = " + NnStringUtil.escapedQuote(name) + ")"
+                     + "                    ) "
+                     + "     ORDER BY RAND() LIMIT 9;";
         
-        return sql(sql);
+        return sql(query);
     }
     
     public static long searchSize(String queryStr, boolean all) {
@@ -127,7 +113,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         }
         return size;
     }
-
+    
     @SuppressWarnings("unchecked")
     public static List<NnChannel> searchTemp(String queryStr, boolean all, int start, int limit) {
         log.info("start:" + start + ";end:" + limit);
@@ -157,43 +143,30 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     //replaced with Apache Lucene
     public List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
         
-        //log.info("start:" + start + ";end:" + limit);
+        log.info("start:" + start + ";end:" + limit);
         if (start == 0) start = 0;
         if (limit == 0) limit = 9;
         
         String query = "SELECT * FROM nnchannel "
                      +"         WHERE (LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-        
-        if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) { // PCS
-            
+        if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) // PCS
             query += " || LOWER(intro) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-        }
         query += ")";
         
         if (!all) {
-            
             query += " AND (status = " + NnChannel.STATUS_SUCCESS + " OR status = " + NnChannel.STATUS_WAIT_FOR_APPROVAL + ")";
-            
             if (content != null) {
-                
                 if (content.equals(SearchLib.YOUTUBE_ONLY)) {
-                    
                     query += " AND contentType = " + NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL;
-                    
                 } else if (content.equals(SearchLib.STORE_ONLY)) {
-                 
                     // store only
                     query += " AND (status = " + NnChannel.STATUS_SUCCESS + ")";
                 }
             }
-            
             query += " AND isPublic = TRUE";
         }
-        
-        if (extra != null) {
+        if (extra != null)
             query += " AND (" + extra + ")";
-        }
-        
         query += " LIMIT " + start + ", " + limit;
         
         return sql(query);
@@ -235,11 +208,9 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         
         if (isAll) {
             
-            PersistenceManager pm = getPersistenceManager();
             List<NnChannel> channels = new ArrayList<NnChannel>();
-            
+            PersistenceManager pm = getPersistenceManager();
             try {
-                
                 Query query = pm.newQuery(NnChannel.class);
                 query.setOrdering("seq asc, contentType asc");
                 query.setFilter("userIdStr == userIdStrParam");
@@ -249,9 +220,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
                 channels = (List<NnChannel>) query.execute(userIdStr);
                 channels = (List<NnChannel>)pm.detachCopyAll(channels);
                 query.closeAll();
-                
             } finally {
-                
                 pm.close();
             }
             
@@ -261,14 +230,10 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             
             String listStr = "";
             if (userIdStr != null) {
-                
                 List<String> list = new ArrayList<String>();
                 String[] split = userIdStr.split(",");
-                for (String str : split) {
-                    
+                for (String str : split)
                     list.add(NnStringUtil.escapedQuote(str));
-                }
-                
                 listStr = StringUtils.join(list, ",");
             }
             
@@ -277,11 +242,8 @@ public class NnChannelDao extends GenericDao<NnChannel> {
                          + "          AND isPublic = true "
                          + "          AND status in (0, 3) "
                          + "     ORDER BY seq, contentType ";
-            
-            if (limit > 0) {
-                
+            if (limit > 0)
                 query += " LIMIT " + limit;
-            }
             
             return sql(query);
         }
@@ -305,7 +267,6 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             if (channels.size() > 0) {
                 channel = pm.detachCopy(channels.get(0));
             }
-            
         } finally {
             pm.close();
         }
@@ -334,15 +295,18 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
         
         String query = "SELECT * FROM nncloudtv_content.nnchannel c "
-                     + "        WHERE c.id IN ("
-                     + "               SELECT channelId FROM nncloudtv_nnuser1.nnuser_watched "
-                     + "                WHERE userId = " + userId
-                     + "                  AND msoId = " + msoId
-                     + "                  AND channelId NOT IN ("
-                     + "                                SELECT channelId FROM nncloudtv_nnuser1.nnuser_subscribe "
-                     + "                                 WHERE userId = " + userId + " and msoId = " + msoId
+                     + "        WHERE c.id IN ( "
+                     + "                       SELECT channelId "
+                     + "                         FROM nncloudtv_nnuser1.nnuser_watched "
+                     + "                        WHERE userId = " + userId
+                     + "                          AND msoId = " + msoId
+                     + "                          AND channelId NOT IN ( "
+                     + "                                                SELECT channelId "
+                     + "                                                  FROM nncloudtv_nnuser1.nnuser_subscribe "
+                     + "                                                 WHERE userId = " + userId
+                     + "                                                   AND msoId = " + msoId
+                     + "                                               )"
                      + "                      )"
-                     + "              )"
                      + "     ORDER BY updateDate DESC";
         
         return sql(query);
@@ -351,26 +315,31 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
         
         String filter = "";
-        if (spheres != null && spheres.size() > 0) {
-            filter = " and ( c.sphere = " + NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER);
-            for (String sphere : spheres) {
-                filter = filter + " or c.sphere = " + NnStringUtil.escapedQuote(sphere);
+        if (spheres != null && !spheres.isEmpty()) {
+            if (!spheres.contains(LocaleTable.LANG_OTHER))
+                spheres.add(LocaleTable.LANG_OTHER);
+            for (int i = 0; i < spheres.size(); i++) {
+                spheres.set(i, NnStringUtil.escapedQuote(spheres.get(i)));
             }
-            filter = filter + " )";
+            filter += " AND c.sphere IN (";
+            filter += StringUtils.join(spheres, ",");
+            filter += ")";
         }
         
-        String query = " select * from nnchannel a1 "
-                     + " inner join ("
-                     + "         select distinct c.id"
-                     + "         from systag_display d, systag_map m, nnchannel c"
-                     + "         where d.systagId = " + categoryId
-                     + "         and d.systagId = m.systagId"
-                     + "         and c.id = m.channelId"
-                     + "         and c.isPublic = true"
-                     + "         and c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
-                     + "         and c.status = " + NnChannel.STATUS_SUCCESS + filter
-                     + "         order by c.updateDate desc) a2 "
-                     + " on a1.id = a2.id";
+        String query = "SELECT * FROM nnchannel a1 "
+                     + "   INNER JOIN ( "
+                     + "               SELECT DISTINCT c.id"
+                     + "                 FROM systag_display d, systag_map m, nnchannel c "
+                     + "                WHERE d.systagId = " + categoryId
+                     + "                  AND d.systagId = m.systagId "
+                     + "                  AND c.id = m.channelId "
+                     + "                  AND c.isPublic = TRUE "
+                     + "                  AND c.contentType != " + NnChannel.CONTENTTYPE_FAVORITE
+                     + "                  AND c.status = " + NnChannel.STATUS_SUCCESS
+                     + "                    " + filter
+                     + "                ORDER BY c.updateDate DESC "
+                     + "              ) a2 "
+                     + "           ON a1.id = a2.id";
                     
         return sql(query);
     }
