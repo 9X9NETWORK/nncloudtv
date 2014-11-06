@@ -310,7 +310,9 @@ public class NnEpisodeManager {
         String[] parsedObj;
         
         fbPost.setCaption(" ");
-        
+        if (pref == null) {
+            return;
+        }
         parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
         if (parsedObj == null) {
             return;
