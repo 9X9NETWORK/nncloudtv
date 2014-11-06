@@ -28,8 +28,7 @@ public class CacheFactory {
     public static final int EXP_DEFAULT = 2592000;
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
-    public static final int HEALTH_CHECK_INTERVAL = 100000; // milliseconds
-    public static final int MINIMUM_LOG_INTERVAL = 500;
+    public static final int MINIMUM_LOG_INTERVAL = 50;
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
@@ -419,7 +418,7 @@ public class CacheFactory {
         return key;
     }
     
-    public static List<String> getAllChannelKeys(long channelId) {
+    public static List<String> getAllChannelInfoKeys(long channelId) {
         
         List<String> keys = new ArrayList<String>();
         

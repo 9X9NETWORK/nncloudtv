@@ -104,16 +104,8 @@ public class CategoryService {
         return results;
     }
     
-    /**
-     * Get Category by Category ID.
-     * @param categoryId required, Category ID
-     * @return fetched Category
-     */
-    public Category findById(Long categoryId) {
-        
-        if (categoryId == null) {
-            return null;
-        }
+    // TODO rewrite
+    public Category findById(long categoryId) {
         
         SysTag category = NNF.getSysTagMngr().findById(categoryId);
         if (category == null || category.getType() != SysTag.TYPE_CATEGORY) {
@@ -177,11 +169,7 @@ public class CategoryService {
         return result;
     }
     
-    /**
-     * Save a modified Category.
-     * @param category required, the Category that has modified
-     * @return saved Category
-     */
+    // TODO rewrite
     public Category save(Category category) {
         
         if (category == null) {

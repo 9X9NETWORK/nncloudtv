@@ -333,23 +333,28 @@ public class NnProgramManager {
     }
     
     public void resetCache(long channelId) {
+        
         log.info("reset program info cache: " + channelId);
+        List<String> keys = new ArrayList<String>();
+        
         //programInfo version 40, format json
-        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
+        keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
         //programInfo, version 40, format text
-        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
+        keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
+        
         //programInfo, version 31
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
         //latestProgramInfo
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
+        keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
+        
         //channelLineup
-        String cId = String.valueOf(channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
-    }           
+        keys.addAll(CacheFactory.getAllChannelInfoKeys(channelId));
+        
+        log.info("keys count = " + keys.size());
+        CacheFactory.delete(keys);
+    }
     
     public int total() {
         return dao.total();

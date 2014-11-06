@@ -769,7 +769,7 @@ public class NnChannelManager {
         List<String> keys = new ArrayList<String>();
         for (NnChannel channel : channels) {
             
-            keys.addAll(CacheFactory.getAllChannelKeys(channel.getId()));
+            keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
         }
         CacheFactory.delete(keys);
     }
@@ -778,7 +778,7 @@ public class NnChannelManager {
         
         log.info("reset channel info cache = " + channelId);
         
-        List<String> keys = CacheFactory.getAllChannelKeys(channelId);
+        List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
         CacheFactory.delete(keys);
     }
     
