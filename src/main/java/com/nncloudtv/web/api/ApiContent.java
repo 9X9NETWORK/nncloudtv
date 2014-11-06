@@ -1173,7 +1173,7 @@ public class ApiContent extends ApiGeneric {
         List<String> spheres = null;
         String sphereParam = req.getParameter("sphere");
         if (sphereParam != null)
-            spheres = Arrays.asList(sphereParam.split(","));
+            spheres = new ArrayList<String>(Arrays.asList(sphereParam.split(",")));
         
         List<Long> results = new ArrayList<Long>();
         List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId, spheres);
