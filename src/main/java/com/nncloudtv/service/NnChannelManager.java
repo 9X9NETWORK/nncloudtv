@@ -755,24 +755,31 @@ public class NnChannelManager {
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL)
                 sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST)
-                sorting = NnChannel.SORT_POSITION_FORWARD;            
+                sorting = NnChannel.SORT_POSITION_FORWARD;
         }
         return sorting;
     }
     
     public void resetCache(List<NnChannel> channels) {
-        for (NnChannel c : channels) {
-            resetCache(c.getId());
+        
+        if (channels == null || channels.isEmpty()) return;
+        
+        log.info("reset channel cache count = " + channels.size());
+        
+        List<String> keys = new ArrayList<String>();
+        for (NnChannel channel : channels) {
+            
+            keys.addAll(CacheFactory.getAllChannelKeys(channel.getId()));
         }
+        CacheFactory.delete(keys);
     }
     
     public void resetCache(long channelId) {
-        log.info("reset channel info cache: " + channelId);
-        String cId = String.valueOf(channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
+        
+        log.info("reset channel info cache = " + channelId);
+        
+        List<String> keys = CacheFactory.getAllChannelKeys(channelId);
+        CacheFactory.delete(keys);
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {

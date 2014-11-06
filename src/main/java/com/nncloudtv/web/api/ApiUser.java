@@ -151,10 +151,11 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
+        Mso mso = null;
         List<String> supportedRegion = null;
         if (msoName != null) {
             
-            Mso mso = NNF.getMsoMngr().findByIdOrName(msoName);
+            mso = NNF.getMsoMngr().findByIdOrName(msoName);
             if (mso != null) {
                 
                 MsoConfigManager.populateSupportedRegion(mso);
@@ -170,17 +171,29 @@ public class ApiUser extends ApiGeneric {
         while (it.hasNext()) {
             
             NnChannel channel = it.next();
+            
+            // filter by type
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
                 it.remove();
                 continue;
             }
             
-            // filter by mso supported region
-            if (supportedRegion != null) {
-                String sphere = channel.getSphere();
-                if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
+            if (mso != null) {
+                
+                // store only
+                if (channel.getStatus() != NnChannel.STATUS_SUCCESS) {
                     it.remove();
                     continue;
+                }
+                
+                // filter by mso supported region
+                if (supportedRegion != null) {
+                    
+                    String sphere = channel.getSphere();
+                    if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
+                        it.remove();
+                        continue;
+                    }
                 }
             }
         }
