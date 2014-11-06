@@ -29,10 +29,12 @@ public class CacheFactory {
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
     public static final int HEALTH_CHECK_INTERVAL = 100000; // milliseconds
+    public static final int MINIMUM_LOG_INTERVAL = 500;
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
     public static boolean isRunning = false;
+    private static long lastLogTime = 0;
     private static List<InetSocketAddress> memcacheServers = null;
     private static MemcachedClient cache = null;
     private static MemcachedClient outdated = null;
@@ -357,6 +359,7 @@ public class CacheFactory {
      *          nnchannel-v40-2-json 
      */
     public static String getChannelLineupKey(String channelId, int version, short format) {
+        
         String key = "";
         if (version == 32) {
             //nnchannel-v32(1)
@@ -373,7 +376,13 @@ public class CacheFactory {
         } else {
         	key += "-text";
         }
-        log.info("channelLineup key:" + key);
+        
+        // cool log down
+        if (NnDateUtil.timestamp() - lastLogTime > MINIMUM_LOG_INTERVAL) {
+            log.info("channelLineup key = " + key);
+            lastLogTime = NnDateUtil.timestamp();
+        }
+        
         return key;
     }
     
