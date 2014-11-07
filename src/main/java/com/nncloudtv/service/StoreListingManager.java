@@ -127,7 +127,7 @@ public class StoreListingManager {
         return results;
     }
     
-    public Collection<Long> findChannelIdsByMsoId(long msoId) {
+    public List<Long> findChannelIdsByMsoId(long msoId) {
         
         List<Long> results = new ArrayList<Long>();
         List<StoreListing> list = dao.findByMsoId(msoId);

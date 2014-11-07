@@ -1,7 +1,6 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -370,40 +369,68 @@ public class CategoryService {
         return results;
     }
     
-    public List<NnChannel> getMsoCategoryChannels(long categoryId, Mso mso, List<NnChannel> candidates) {
-        
-        if (mso == null) throw new IllegalArgumentException("mso is null");
-        if (categoryId == 0 && candidates == null) throw new IllegalArgumentException("either categoryId or candidates be specified");
-        
-        MsoConfigManager.populateSupportedRegion(mso);
+    public List<NnChannel> filterMsoStoreChannels(Mso mso, List<NnChannel> candidates) {
+        if (candidates == null) return null;
         List<String> supportedRegion = null;
-        if (mso.getSupportedRegion() != null) {
-            supportedRegion = NnStringUtil.parseRegion(mso.getSupportedRegion(), true);
+        List<Long> blackList = null;
+        if (mso != null) {
+            blackList = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
+            supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
         }
-        List<NnChannel> channels = candidates;
-        if (channels == null) {
-            channels = NNF.getChannelDao().getCategoryChannels(categoryId, supportedRegion);
-        } else if (supportedRegion != null) {
-            Iterator<NnChannel> it = channels.iterator();
-            while (it.hasNext()) {
-                NnChannel channel = it.next();
+        List<NnChannel> channels = new ArrayList<NnChannel>(candidates);
+        Iterator<NnChannel> it = channels.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
+            if (supportedRegion != null) {
                 String sphere = channel.getSphere();
                 if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
                     it.remove();
                     continue;
                 }
             }
-        }
-        Collection<Long> mask = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
-        Iterator<NnChannel> it = channels.iterator();
-        while (it.hasNext()) {
-            NnChannel channel = it.next();
-            if (mask.contains(channel.getId())) {
+            if (channel.getStatus() != NnChannel.STATUS_SUCCESS ||
+                    channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE ||
+                    channel.isPublic() == false) {
+                it.remove();
+                continue;
+            }
+            if (blackList != null && blackList.contains(channel.getId())) {
                 it.remove();
                 continue;
             }
         }
         return channels;
+    }
+    
+    public List<NnChannel> getMsoCategoryChannels(Mso mso, long categoryId) {
+        
+        List<String> supportedRegion = null;
+        if (mso != null)
+            supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
+        List<NnChannel> channels = NNF.getChannelDao().getCategoryChannels(categoryId, supportedRegion);
+        // filter by mso blacklist
+        if (mso != null) {
+            List<Long> blackList = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
+            Iterator<NnChannel> it = channels.iterator();
+            while (it.hasNext()) {
+                NnChannel channel = it.next();
+                if (blackList.contains(channel.getId())) {
+                    it.remove();
+                    continue;
+                }
+            }
+        }
+        return channels;
+    }
+    
+    public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
+        
+        return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
+    }
+    
+    public List<NnEpisode> getAllEpisodes(long categoryId) {
+        
+        return NNF.getEpisodeDao().findAllBySysTag(categoryId);
     }
     
     public static boolean isSystemCategory(long categoryId) {
@@ -415,15 +442,5 @@ public class CategoryService {
             category.getType() == SysTag.TYPE_CATEGORY)
             return true;
         return false;
-    }
-    
-    public List<NnChannel> getCategoryChannels(long categoryId, List<String> spheres) {
-        
-        return NNF.getChannelDao().getCategoryChannels(categoryId, spheres);
-    }
-    
-    public List<NnEpisode> getAllEpisodes(long categoryId) {
-        
-        return NNF.getEpisodeDao().findAllBySysTag(categoryId);
     }
 }

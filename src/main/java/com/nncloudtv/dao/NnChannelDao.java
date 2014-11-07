@@ -316,11 +316,8 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         
         String filter = "";
         if (spheres != null && !spheres.isEmpty()) {
-            if (!spheres.contains(LocaleTable.LANG_OTHER))
-                spheres.add(LocaleTable.LANG_OTHER);
-            for (int i = 0; i < spheres.size(); i++) {
+            for (int i = 0; i < spheres.size(); i++)
                 spheres.set(i, NnStringUtil.escapedQuote(spheres.get(i)));
-            }
             filter += " AND c.sphere IN (";
             filter += StringUtils.join(spheres, ",");
             filter += ")";

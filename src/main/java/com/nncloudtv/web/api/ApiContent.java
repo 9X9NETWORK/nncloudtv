@@ -41,7 +41,6 @@ import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
@@ -757,13 +756,10 @@ public class ApiContent extends ApiGeneric {
             String sphereFilter = null;
             if (sphereStr == null && msoName != null) {
                 storeOnly = true;
-                log.info("mso = " + msoName);
-                MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-                if (supportedRegion != null) {
-                    List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), true);
-                    sphereStr = StringUtils.join(spheres, ',');
-                    log.info("mso supported region = " + sphereStr);
-                }
+                System.out.println("[channel_search] mso = " + msoName);
+                List<String> spheres = MsoConfigManager.getSuppoertedResion(mso);
+                sphereStr = StringUtils.join(spheres, ',');
+                System.out.println("[channel_search] mso supported region = " + sphereStr);
             }
             if (sphereStr != null && !sphereStr.isEmpty()) {
                 storeOnly = true;

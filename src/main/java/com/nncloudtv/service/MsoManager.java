@@ -610,8 +610,7 @@ public class MsoManager {
         if (mso == null) {
             return new ArrayList<Long>();
         }
-        MsoConfigManager.populateSupportedRegion(mso);
-        List<String> supportedRegion = NnStringUtil.parseRegion(mso.getSupportedRegion(), true);
+        List<String> supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
         
         List<Long> results = new ArrayList<Long>();
         for (NnChannel channel : channels) {

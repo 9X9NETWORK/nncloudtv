@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -548,7 +549,7 @@ public class ApiMso extends ApiGeneric {
         
         Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
-            notFound(resp, "Set Not Found");
+            notFound(resp, SET_NOT_FOUND);
             return null;
         }
         
@@ -786,12 +787,13 @@ public class ApiMso extends ApiGeneric {
                 }
             }
         }
-        List<NnChannel> candidates = null;
+        List<NnChannel> channels;
         if (categoryId == null) {
-            categoryId = 0L;
-            candidates = NNF.getChannelMngr().findByIds(channelIdSet);
+            List<NnChannel> candidates = NNF.getChannelMngr().findByIds(channelIdSet);
+            channels = NNF.getCategoryService().filterMsoStoreChannels(mso, candidates);
+        } else {
+            channels = NNF.getCategoryService().getMsoCategoryChannels(mso, categoryId);
         }
-        List<NnChannel> channels = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso, candidates);
         List<Long> results = new ArrayList<Long>();
         for (NnChannel channel : channels)
             results.add(channel.getId());
@@ -925,7 +927,9 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoConfigManager.populateSupportedRegion(mso);
+        List<String> regions = MsoConfigManager.getSuppoertedResion(mso);
+        if (regions != null)
+            mso.setSupportedRegion(StringUtils.join(regions, ","));
         MsoManager.normalize(mso);
         
         // check if push notification was enabled
@@ -941,7 +945,6 @@ public class ApiMso extends ApiGeneric {
         }
         mso.setGcmEnabled(gcmEnabled);
         mso.setApnsEnabled(apnsEnabled);
-        
         
         // favicon
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
@@ -1269,7 +1272,7 @@ public class ApiMso extends ApiGeneric {
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, "Category Not Found");
+            notFound(resp, CATEGORY_NOT_FOUND);
             return null;
         }
         

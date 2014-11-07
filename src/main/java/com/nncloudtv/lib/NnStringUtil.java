@@ -364,13 +364,14 @@ public class NnStringUtil {
         return null;
     }
     
-    // "en English;zh Chinese"
-    public static List<String> parseRegion(String regionStr, boolean appendOther) {
-        
-        if (regionStr == null) { throw new IllegalArgumentException("regionStr is null"); }
+    // "en English;zh 中文"
+    // TODO merge to MsoConfigManager.getSupportedRegion()
+    public static List<String> parseRegion(String regionConfig, boolean appendOther) {
         
         List<String> regions = new ArrayList<String>();
-        String[] pairs = regionStr.split(";");
+        if (regionConfig == null || regionConfig.isEmpty())
+            return regions;
+        String[] pairs = regionConfig.split(";");
         for (String pair : pairs) {
             String[] values = pair.split(" +");
             if (!values[0].isEmpty()) {

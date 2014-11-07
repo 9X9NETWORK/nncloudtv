@@ -1310,6 +1310,13 @@ public class NnChannelManager {
             log.warning(msg);
             
             return channel.setNote(msg);
+            
+        } else if (channel.getSourceUrl() == null || channel.getSourceUrl().isEmpty()) {
+            
+            String msg = "sourceUrl is empty";
+            log.warning(msg);
+            
+            return channel.setNote(msg);
         }
         
         NNF.getChannelMngr().save(channel.setReadonly(true));

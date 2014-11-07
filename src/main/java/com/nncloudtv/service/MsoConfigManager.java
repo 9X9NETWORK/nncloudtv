@@ -580,18 +580,16 @@ public class MsoConfigManager {
         return null;
     }
     
-    public static void populateSupportedRegion(Mso mso) {
-        
-        if (mso == null) return;
-        
-        // supported region
+    public static List<String> getSuppoertedResion(Mso mso) {
+        List<String> empty = new ArrayList<String>();
+        if (mso == null) return empty;
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (config == null) {
-            mso.setSupportedRegion(null);
-        } else {
-            mso.setSupportedRegion(config.getValue());
+        if (config != null) {
+            List<String> regions = NnStringUtil.parseRegion(config.getValue(), true);
+            if (regions != null && !regions.isEmpty())
+                return regions;
         }
-        
+        return empty;
     }
 }
 
