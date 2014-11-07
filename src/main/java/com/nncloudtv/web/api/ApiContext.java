@@ -249,8 +249,7 @@ public class ApiContext {
         
         String token = CookieHelper.getCookie(req, CookieHelper.USER);
         if (token == null) {
-            
-            ApiGeneric.log.info("not logged in");
+            log.info("not logged in");
             return null;
         }
         

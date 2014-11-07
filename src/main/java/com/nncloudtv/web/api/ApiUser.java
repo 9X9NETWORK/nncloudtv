@@ -339,8 +339,7 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
-    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, 
-            HttpServletResponse resp,
+    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
@@ -371,18 +370,12 @@ public class ApiUser extends ApiGeneric {
         
         // intro
         String intro = req.getParameter("intro");
-        if (intro != null && intro.isEmpty() == false) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
-        }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
-        if (imageUrl == null) {
-            imageUrl = NnChannel.IMAGE_WATERMARK_URL; // default : watermark
-        }
+        String imageUrl = getParameter(req, "imageUrl", NnChannel.IMAGE_WATERMARK_URL);
         
         // lang
-        String lang = getParameter(req, "lang", LocaleTable.LANG_EN); //req.getParameter("lang");
+        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
         
         // isPublic
         Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
@@ -394,55 +387,22 @@ public class ApiUser extends ApiGeneric {
         String tag = req.getParameter("tag");
         
         // sphere
-        String sphere = req.getParameter("sphere");
-        if (sphere == null) {
-            sphere = LocaleTable.LANG_EN; // default : en
-        }
+        String sphere = getParameter(req, "sphere", LocaleTable.LANG_EN);
         
         // categoryId
-        Long categoryId = null;
-        String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            
-            categoryId = NnStringUtil.evalLong(categoryIdStr);
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                categoryId = null;
-            }
-        }
+        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
         
         // sourceUrl
         String sourceUrl = req.getParameter("sourceUrl");
         
         // sorting
-        Short sorting = null;
-        String sortingStr = req.getParameter("sorting");
-        if (sortingStr != null) {
-            sorting = NnStringUtil.evalShort(sortingStr);
-        }
+        Short sorting = NnStringUtil.evalShort(req.getParameter("sorting"));
         
         // status
-        Short status = null;
-        String statusStr = req.getParameter("status");
-        if (statusStr != null) {
-            NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
-            user.setMsoId(profile.getMsoId());
-            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE)) {
-                status = NnStringUtil.evalShort(statusStr);
-            }
-        }
+        Short status = NnStringUtil.evalShort(req.getParameter("status"));
         
         // contentType
-        Short contentType = null;
-        String contentTypeStr = req.getParameter("contentType");
-        if (contentTypeStr != null) {
-            contentType = NnStringUtil.evalShort(contentTypeStr);
-            if (contentType != null &&
-                    contentType != NnChannel.CONTENTTYPE_MIXED &&
-                    contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {
-                
-                contentType = null; // invalid value to see as skip
-            }
-        }
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         
         NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
@@ -455,7 +415,7 @@ public class ApiUser extends ApiGeneric {
         channel.setSeq((short) 0);
         
         if (intro != null) {
-            channel.setIntro(intro);
+            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         if (imageUrl != null) {
             channel.setImageUrl(imageUrl);
@@ -482,7 +442,9 @@ public class ApiUser extends ApiGeneric {
             channel.setSorting(sorting);
         }
         if (status != null) {
-            channel.setStatus(status);
+            user.setProfile(NNF.getProfileMngr().pickupBestProfile(user));
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE))
+                channel.setStatus(status);
         }
         if (contentType != null) {
             channel.setContentType(contentType);
@@ -496,7 +458,9 @@ public class ApiUser extends ApiGeneric {
             channel = NnChannelManager.syncNow(channel);
         }
         
-        if (categoryId != null) {
+        // category
+        if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
+            
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         

@@ -30,8 +30,7 @@ public class NnUserProfileManager {
     }
     
     public NnUserProfile findByUser(NnUser user) {
-        if (user == null)
-            return null;
+        
         return dao.findByUser(user);
     }
     
@@ -89,13 +88,6 @@ public class NnUserProfileManager {
                 return (int) (profile1.getMsoId() - profile2.getMsoId());
             }
         };
-    }
-    
-    public NnUserProfile findByUserIdAndMsoId(Long userId, Long msoId) {
-        if (userId == null || msoId == null) {
-            return null;
-        }
-        return dao.findByUserIdAndMsoId(userId, msoId);
     }
     
     public NnUserProfile save(NnUser user, NnUserProfile profile) {
@@ -166,32 +158,29 @@ public class NnUserProfileManager {
         }
     }
     
-    public static boolean checkPriv(NnUser user, String requiredPriv) {
+    public static boolean checkPriv(NnUser user, String required) {
         
-        if (requiredPriv == null || requiredPriv.matches("[01]+") == false) {
-            return false;
-        }
+        if (required == null || required.matches("[01]+") == false) return false;
         
-        NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
+        NnUserProfile profile = user.getProfile();
         if (profile == null) {
-            profile = new NnUserProfile();
-            profile.setPriv(NnUserProfile.PRIV_CMS);
-        }
-        if (profile.getPriv() == null) {
-            profile.setPriv(NnUserProfile.PRIV_CMS);
-        }
-        String priv = profile.getPriv();
-        int privLen = priv.length();
-        
-        for (int i = 0; i < requiredPriv.length(); i++) {
-            
-            if (requiredPriv.charAt(i) == '1' &&
-                    (privLen <= i || priv.charAt(i) != '1')) {
-                
-                return false;
+            profile = NNF.getProfileMngr().findByUser(user);
+            if (profile == null) {
+                profile = new NnUserProfile();
+                profile.setPriv(NnUserProfile.PRIV_CMS);
             }
         }
         
+        String priv = profile.getPriv();
+        if (priv == null)
+            priv = NnUserProfile.PRIV_CMS;
+        int len = priv.length();
+        for (int i = 0; i < required.length(); i++) {
+            if (required.charAt(i) == '1' &&
+                    (len <= i || priv.charAt(i) != '1')) {
+                return false;
+            }
+        }
         return true;
     }
 }

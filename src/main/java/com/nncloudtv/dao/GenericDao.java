@@ -45,8 +45,12 @@ public class GenericDao<T> {
     
     public T save(T dao) {
         
-        if (dao == null) {return null;}
-        PersistenceManager pm = getPersistenceManager();
+        return save(dao, getPersistenceManager());
+    }
+    
+    public T save(T dao, PersistenceManager pm) {
+        
+        if (dao == null) return null;
         log.info(String.format("save %s", daoClass.getSimpleName()));
         try {
             pm.makePersistent(dao);
@@ -59,7 +63,7 @@ public class GenericDao<T> {
     
     public List<T> saveAll(List<T> list) {
         
-        if (list == null) { return list; }
+        if (list == null) return list;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
         log.info(String.format("saveAll %s, count = %d", daoClass.getSimpleName(), list.size()));

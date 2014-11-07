@@ -30,39 +30,17 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     }
     
     public NnUserProfile findByUser(NnUser user) {
-        
+        if (user == null) return null;
         NnUserProfile detached = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
-        String query = "SELECT * "
-                     + "  FROM nnuser_profile "
-                     + " WHERE msoId = " + user.getMsoId()
-                     + "   AND userId = " + user.getId();
-        List<NnUserProfile> profiles = sql(query, pm);
-        if (profiles.size() > 0) {
-            detached = profiles.get(0);
-        }
-        
-        return detached;
-    }
-    
-    public NnUserProfile findByUserIdAndMsoId(long userId, long msoId) {
-        
-        log.info("user id:" + userId + ";mso id:" + msoId);
-        NnUserProfile detached = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
+        PersistenceManager pm = NnUserDao.getPersistenceManager(user.getShard(), null);
         try {
-            String sql = "select * " +
-                          " from nnuser_profile " + 
-                         " where msoId = " + msoId +   
-                           " and userId = " + userId;
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnUserProfile.class);
+            Query query = pm.newQuery(NnUserProfile.class);
+            query.setFilter("userId == userIdParam && msoId == msoIdParam");
+            query.declareParameters("long userIdParam, long msoIdParam");
             @SuppressWarnings("unchecked")
-            List<NnUserProfile> results = (List<NnUserProfile>) q.execute();
-            if (results.size() > 0) {
-                detached = (NnUserProfile)pm.detachCopy(results.get(0));
-            }            
+            List<NnUserProfile> results = (List<NnUserProfile>) query.execute(user.getId(), user.getMsoId());
+            if (results.size() > 0)
+                detached = (NnUserProfile) pm.detachCopy(results.get(0));
         } finally {
             pm.close();
         }

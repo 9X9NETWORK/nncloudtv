@@ -25,6 +25,8 @@ public class ApiGeneric {
     
     public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static final String TITLECARD_NOT_FOUND    = "TitleCard Not Found";
+    public static final String PROGRAM_NOT_FOUND      = "Program Not Found";
     public static final String CATEGORY_NOT_FOUND     = "Category Not Found";
     public static final String SET_NOT_FOUND          = "Set Not Found";
     public static final String EPISODE_NOT_FOUND      = "Episode Not Found";
@@ -206,42 +208,40 @@ public class ApiGeneric {
         
     }
     
-    /** adapt response for user change to user+userProfile */
-    public User response(NnUser user) {
+    public User response(NnUser nnuser) {
         
-        User userResp = new User();
+        User user = new User();
         
-        userResp.setId(user.getId());
-        userResp.setCreateDate(user.getCreateDate());
-        userResp.setUpdateDate(user.getUpdateDate());
-        userResp.setUserEmail(user.getUserEmail());
-        userResp.setFbUser(user.isFbUser());
-        userResp.setName(NnStringUtil.revertHtml(user.getProfile().getName()));
-        userResp.setIntro(NnStringUtil.revertHtml(user.getProfile().getIntro()));
-        userResp.setImageUrl(user.getProfile().getImageUrl());
-        userResp.setLang(user.getProfile().getLang());
-        userResp.setProfileUrl(user.getProfile().getProfileUrl());
-        userResp.setShard(user.getShard());
-        userResp.setSphere(user.getProfile().getSphere());
-        userResp.setType(user.getType());
-        userResp.setCntSubscribe(user.getProfile().getCntSubscribe());
-        userResp.setCntChannel(user.getProfile().getCntChannel());
-        userResp.setCntFollower(user.getProfile().getCntFollower());
-        userResp.setMsoId(user.getProfile().getMsoId());
-        userResp.setIdStr(user.getIdStr());
+        user.setId(nnuser.getId());
+        user.setType(nnuser.getType());
+        user.setShard(nnuser.getShard());
+        user.setIdStr(nnuser.getIdStr());
+        user.setCreateDate(nnuser.getCreateDate());
+        user.setUpdateDate(nnuser.getUpdateDate());
+        user.setUserEmail(nnuser.getUserEmail());
+        user.setFbUser(nnuser.isFbUser());
+        user.setPriv(NnUserProfile.PRIV_CMS);
         
-        if (user.getProfile().getPriv() == null) {
-            userResp.setPriv(NnUserProfile.PRIV_CMS);
-        } else {
-            userResp.setPriv(user.getProfile().getPriv());
+        NnUserProfile profile = nnuser.getProfile();
+        if (profile != null) {
+            user.setName(NnStringUtil.revertHtml(profile.getName()));
+            user.setIntro(NnStringUtil.revertHtml(profile.getIntro()));
+            user.setImageUrl(profile.getImageUrl());
+            user.setLang(profile.getLang());
+            user.setProfileUrl(profile.getProfileUrl());
+            user.setSphere(profile.getSphere());
+            user.setCntSubscribe(profile.getCntSubscribe());
+            user.setCntChannel(profile.getCntChannel());
+            user.setCntFollower(profile.getCntFollower());
+            user.setMsoId(profile.getMsoId());
+            if (profile != null)
+                user.setPriv(profile.getPriv());
+            Mso mso = NNF.getMsoMngr().findById(profile.getMsoId());
+            if (mso != null)
+                user.setMsoName(mso.getName());
         }
         
-        Mso mso = NNF.getMsoMngr().findById(user.getProfile().getMsoId());
-        if (mso != null) {
-            userResp.setMsoName(mso.getName());
-        }
-        
-        return userResp;
+        return user;
     }
     
     /** compose set response **/

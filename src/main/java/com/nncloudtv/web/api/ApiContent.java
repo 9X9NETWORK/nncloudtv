@@ -240,7 +240,7 @@ public class ApiContent extends ApiGeneric {
         }
         YtProgram ytProgram = NNF.getProgramMngr().findYtProgramById(ytProgramId);
         if (ytProgram == null) {
-            notFound(resp, "Pogram Not Found");
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         return ytProgram;
@@ -261,7 +261,7 @@ public class ApiContent extends ApiGeneric {
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, "Pogram Not Found");
+            notFound(resp, PROGRAM_NOT_FOUND);
             return;
         }
         
@@ -324,7 +324,7 @@ public class ApiContent extends ApiGeneric {
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, "Program Not Found");
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         
@@ -429,7 +429,7 @@ public class ApiContent extends ApiGeneric {
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            msgResponse(resp, "Program Not Found");
+            msgResponse(resp, PROGRAM_NOT_FOUND);
             return;
         }
         
@@ -527,7 +527,7 @@ public class ApiContent extends ApiGeneric {
         }
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -993,17 +993,11 @@ public class ApiContent extends ApiGeneric {
         }
         
         // status
-        Short status = null;
-        String statusStr = req.getParameter("status");
-        if (statusStr != null) {
-            NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
-            user.setMsoId(profile.getMsoId());
-            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE)) {
-                status = NnStringUtil.evalShort(statusStr);
-                if (status != null) {
-                    channel.setStatus(status);
-                }
-            }
+        Short status = NnStringUtil.evalShort(req.getParameter("status"));
+        if (status != null && status != channel.getStatus()) {
+            user.setProfile(NNF.getProfileMngr().pickupBestProfile(user));
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE))
+                channel.setStatus(status);
         }
         
         String autoSync = req.getParameter("autoSync");
@@ -1453,7 +1447,7 @@ public class ApiContent extends ApiGeneric {
     public @ResponseBody
     void episodeDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
-    
+        
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -1467,7 +1461,7 @@ public class ApiContent extends ApiGeneric {
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            msgResponse(resp, "Episode Not Found");
+            msgResponse(resp, EPISODE_NOT_FOUND);
             return;
         }
         
@@ -1511,7 +1505,7 @@ public class ApiContent extends ApiGeneric {
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return;
         }
         
@@ -1570,7 +1564,7 @@ public class ApiContent extends ApiGeneric {
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -1599,7 +1593,7 @@ public class ApiContent extends ApiGeneric {
         
         NnEpisode episode = episodeMngr.findById(episodeId);
         if (episode == null) {
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -1988,7 +1982,7 @@ public class ApiContent extends ApiGeneric {
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -2032,7 +2026,7 @@ public class ApiContent extends ApiGeneric {
     List<TitleCard> episodeTitleCards(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
-    
+        
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -2046,7 +2040,7 @@ public class ApiContent extends ApiGeneric {
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -2076,7 +2070,7 @@ public class ApiContent extends ApiGeneric {
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, "Program Not Found");
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         
@@ -2212,7 +2206,7 @@ public class ApiContent extends ApiGeneric {
         
         TitleCard titleCard = NNF.getTitleCardMngr().findById(idStr);
         if (titleCard == null) {
-            notFound(resp, "TitleCard Not Found");
+            notFound(resp, TITLECARD_NOT_FOUND);
             return;
         }
         

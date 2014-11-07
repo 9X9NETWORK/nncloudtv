@@ -98,7 +98,7 @@ public class NnUserDao extends GenericDao<NnUser> {
             pm = PMF.getNnUser1().getPersistenceManager();
         }
         
-        try {            
+        try {
             user = pm.getObjectById(NnUser.class, id);
             detached = (NnUser) pm.detachCopy(user);
         } catch (JDOObjectNotFoundException e) {
@@ -128,20 +128,13 @@ public class NnUserDao extends GenericDao<NnUser> {
     }
     
     public NnUser save(NnUser user) {
-        if (user == null) {return null;}
-        PersistenceManager pm = NnUserDao.getPersistenceManager(user.getShard(), user.getToken());
-        try {
-            pm.makePersistent(user);
-            user = pm.detachCopy(user);
-        } finally {
-            pm.close();
-        }
-        return user;
+        
+        return save(user, getPersistenceManager(user.getShard(), user.getToken()));
     }
     
     public NnUser findAuthenticatedUser(String email, String password, short shard) {
         NnUser user = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
+        PersistenceManager pm = getPersistenceManager(shard, null);
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("email == emailParam");
@@ -162,26 +155,11 @@ public class NnUserDao extends GenericDao<NnUser> {
         return user;
     }
     
-    public List<NnUser> findByType(short type) {
-        List<NnUser> detached = new ArrayList<NnUser>();
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
-        try {
-            Query query = pm.newQuery(NnUser.class);
-            query.setFilter("type == " + type);    
-            @SuppressWarnings("unchecked")
-            List<NnUser> users = (List<NnUser>) query.execute(type);
-            detached = (List<NnUser>)pm.detachCopyAll(users);
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }
-    
     public NnUser findByToken(String token) {
         
         NnUser user = null;
         log.info("token = " + token);
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_UNKNWON, token);
+        PersistenceManager pm = getPersistenceManager(NnUser.SHARD_UNKNWON, token);
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("token == tokenParam");
@@ -201,7 +179,7 @@ public class NnUserDao extends GenericDao<NnUser> {
     
     public NnUser findByEmail(String email, short shard) {
         NnUser user = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
+        PersistenceManager pm = getPersistenceManager(shard, null);
         try {
             Query query = pm.newQuery(NnUser.class);
             query.setFilter("email == emailParam");
@@ -274,24 +252,6 @@ public class NnUserDao extends GenericDao<NnUser> {
         return user;
     }
     
-    public List<NnUser> findByTypeAndMso(Short type, Long msoId) {
-        List<NnUser> detached = new ArrayList<NnUser>();
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
-        try {
-            Query query = pm.newQuery(NnUser.class);
-            query.setFilter("type == typeParam && msoId == msoIdParam");
-            query.declareParameters("short typeParam, long msoIdParam");
-            @SuppressWarnings("unchecked")
-            List<NnUser> results = (List<NnUser>) query.execute(type, msoId);
-            if (results.size() > 0) {
-                detached = (List<NnUser>) pm.detachCopyAll(results);
-            }
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }
-    
     //TODO merge one and two
     public List<NnUser> findFeatured(long msoId) {
         PersistenceManager pm = PMF.getNnUser1().getPersistenceManager(); 
@@ -305,7 +265,7 @@ public class NnUserDao extends GenericDao<NnUser> {
                                  " and p.msoId = " + msoId +
                                  " and p.featured = true " +
                                " order by rand())" + 
-                                       " limit 9";                                    
+                                       " limit 9";
             log.info("sql:" + sql);
             Query q= pm.newQuery("javax.jdo.query.SQL", sql);
             q.setClass(NnUser.class);

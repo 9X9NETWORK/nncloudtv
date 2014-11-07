@@ -175,12 +175,10 @@ public class ApiMisc extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
-    /** super profile's msoId priv will replace the result one if super profile exist */
     @RequestMapping(value = "login", method = RequestMethod.GET)
     public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
-        
+        NnUser user = ApiContext.getAuthenticatedUser(req, 0);
         if (user == null) {
             nullResponse(resp);
             return null;
@@ -188,11 +186,8 @@ public class ApiMisc extends ApiGeneric {
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
-            user.getProfile().setMsoId(profile.getMsoId());
-            user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
-            log.info("cntChannel = " + cntChannel);
-            user.getProfile().setCntChannel(cntChannel);
+            profile.setCntChannel(NNF.getChannelMngr().calculateUserChannels(user));
+            user.setProfile(profile);
         }
         
         return response(user);
@@ -222,6 +217,7 @@ public class ApiMisc extends ApiGeneric {
             
         } else {
             badRequest(resp, MISSING_PARAMETER);
+            return null;
         }
         
         if (user == null) {
@@ -231,11 +227,8 @@ public class ApiMisc extends ApiGeneric {
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
-            user.getProfile().setMsoId(profile.getMsoId());
-            user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
-            log.info("cntChannel = " + cntChannel);
-            user.getProfile().setCntChannel(cntChannel);
+            profile.setCntChannel(NNF.getChannelMngr().calculateUserChannels(user));
+            user.setProfile(profile);
         }
         
         return response(user);

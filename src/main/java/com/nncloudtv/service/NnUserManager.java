@@ -261,27 +261,23 @@ public class NnUserManager {
     }    
     
     private NnUser populateUserProfile(NnUser user) {
-        
-        if (user == null) { return null; }
-        
-        log.info("user mso = " + user.getMsoId());
+        if (user == null) return null;
         NnUserProfile profile = NNF.getProfileMngr().findByUser(user);
         if (profile == null)
             profile = new NnUserProfile(user.getId(), user.getMsoId());
         user.setProfile(profile);
-        
         return user;
     }
     
     //TODO able to assign shard
     //find by email means find by unique id
     public NnUser findByEmail(String email, long msoId, HttpServletRequest req) {
-        short shard= getShardByLocale(req);
+        short shard = getShardByLocale(req);
         log.info("find by email:" + email.toLowerCase());
         NnUser user = dao.findByEmail(email.toLowerCase(), shard);
-        if (user != null) {
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);
+            user = populateUserProfile(user);
         }
         return user;
     }        
@@ -289,9 +285,9 @@ public class NnUserManager {
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
         short shard = getShardByLocale(req);
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
-        if (user != null) {
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);
+            user = populateUserProfile(user);
         }
         return user;
     }
@@ -315,11 +311,9 @@ public class NnUserManager {
     }
     
     public NnUser findByToken(String token, long msoId) {
-        
         if (token == null) { return null; }
-        
         NnUser user = dao.findByToken(token);
-        if (user != null) {
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
             populateUserProfile(user);
         }
@@ -352,18 +346,18 @@ public class NnUserManager {
     // find user by ID without providing shard number
     public NnUser findById(long id, long msoId) {
         NnUser user = dao.findById(id);
-        if (user != null) {
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);
+            user = populateUserProfile(user);
         }
         return user;
     }
     
     public NnUser findById(long id, long msoId, short shard) {
         NnUser user = dao.findById(id, shard);
-        if (user != null) {
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);
+            user = populateUserProfile(user);
         }
         return user;
     }
@@ -389,7 +383,7 @@ public class NnUserManager {
         List<NnUser> users = dao.search(email, name, generic, msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);            
+            user = this.populateUserProfile(user);
         }
         return users;
         
@@ -399,19 +393,20 @@ public class NnUserManager {
         List<NnUser> users = dao.findFeatured(msoId);
         for (NnUser user : users ) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);            
+            user = populateUserProfile(user);
         }
         return users;
     }
     
     public NnUser findByProfileUrl(String profileUrl, long msoId) {
         NnUser user = dao.findByProfileUrl(profileUrl);
-        if (user != null)
+        if (user != null && msoId > 0) {
             user.setMsoId(msoId);
-            user = this.populateUserProfile(user);
+            user = populateUserProfile(user);
+        }
         return user;
     }
-
+    
     public String composeCuratorInfo(List<NnUser> users, boolean chCntLimit, boolean isAllChannel, HttpServletRequest req, int version) {
         log.info("looking for all channels of a curator?" + isAllChannel);
         String result = "";
