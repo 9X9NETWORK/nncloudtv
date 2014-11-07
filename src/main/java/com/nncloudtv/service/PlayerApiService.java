@@ -1686,7 +1686,7 @@ public class PlayerApiService {
             log.info("content:" + body);
             NnEmail mail = new NnEmail(toEmail, toName,
                                        from, profile.getName(),
-                                       user.getUserEmail(), subject, body);
+                                       from, subject, body);
             service.sendEmail(mail, "userfeedback@9x9.tv", "userfeedback");
         }
         return this.assembleMsgs(NnStatusCode.SUCCESS, result);
