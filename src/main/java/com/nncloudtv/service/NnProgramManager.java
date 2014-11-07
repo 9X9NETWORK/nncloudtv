@@ -603,7 +603,7 @@ public class NnProgramManager {
             
             if (categoryId != null && start < PlayerApiService.PAGING_ROWS) {
                 
-                List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId);
                 for (NnChannel ch : channels) {
                     if (ch.isAlwaysOnTop()) { // classic channel
                         
@@ -654,7 +654,7 @@ public class NnProgramManager {
             
             if (categoryId != null && start < PlayerApiService.PAGING_ROWS) {
                 
-                List<NnChannel> channels = NNF.getCategoryService().getChannels(categoryId);
+                List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId);
                 for (NnChannel ch : channels) {
                     
                     List<NnEpisode> candidates = NNF.getEpisodeMngr().findPlayerLatestEpisodes(ch.getId(), ch.getSorting());

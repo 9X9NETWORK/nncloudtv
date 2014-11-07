@@ -272,7 +272,7 @@ public class CategoryService {
      * @param categoryId required, Category ID
      * @return list of Channels
      */
-    public List<NnChannel> getChannels(Long categoryId) {
+    public List<NnChannel> getCategoryChannels(Long categoryId) {
         
         List<NnChannel> channels = NNF.getSysTagMngr().getChannels(categoryId);
         

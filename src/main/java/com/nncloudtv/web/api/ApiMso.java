@@ -750,7 +750,6 @@ public class ApiMso extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
-    // TODO rewrite
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.GET)
     public @ResponseBody
     List<Long> storeChannels(HttpServletRequest req,
@@ -1276,7 +1275,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        List<NnChannel> results = NNF.getCategoryService().getChannels(categoryId);
+        List<NnChannel> results = NNF.getCategoryService().getCategoryChannels(categoryId);
         
         return NNF.getChannelMngr().normalize(results);
     }
