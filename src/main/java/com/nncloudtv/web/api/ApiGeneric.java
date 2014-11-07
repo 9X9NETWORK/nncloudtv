@@ -25,6 +25,10 @@ public class ApiGeneric {
     
     public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static final String CATEGORY_NOT_FOUND     = "Category Not Found";
+    public static final String SET_NOT_FOUND          = "Set Not Found";
+    public static final String EPISODE_NOT_FOUND      = "Episode Not Found";
+    public static final String USER_NOT_FOUND         = "User Not Found";
     public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
     public static final String MSO_NOT_FOUND          = "Mso Not Found";
     public static final String MISSING_PARAMETER      = "Missing Parameter";
@@ -54,8 +58,8 @@ public class ApiGeneric {
     
     @Autowired
     protected HttpServletRequest httpRequest;
-	
-	public void unauthorized(HttpServletResponse resp, String message) {
+    
+    public void unauthorized(HttpServletResponse resp, String message) {
         try {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
@@ -70,13 +74,15 @@ public class ApiGeneric {
         } catch (IOException e) {
             internalError(resp, e);
         }
-	}
-	
-	public void unauthorized(HttpServletResponse resp) {
-	    unauthorized(resp, null);
-	}
-	
-	public void forbidden(HttpServletResponse resp, String message) {
+    }
+    
+    public void unauthorized(HttpServletResponse resp) {
+        
+        unauthorized(resp, null);
+    }
+    
+    public void forbidden(HttpServletResponse resp, String message) {
+        
         try {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
@@ -92,37 +98,40 @@ public class ApiGeneric {
             internalError(resp, e);
         }
     }
-	
-	public void forbidden(HttpServletResponse resp) {
-	    forbidden(resp, null);
+    
+    public void forbidden(HttpServletResponse resp) {
+        
+        forbidden(resp, null);
     }
-	
-	public void notFound(HttpServletResponse resp, String message) {
-		
-		try {
-		    resp.resetBuffer();
+    
+    public void notFound(HttpServletResponse resp, String message) {
+        
+        try {
+            resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
             resp.setHeader(API_REF, API_REF_URL);
-			if (message != null) {
-				log.warning(message);
-				resp.getWriter().println(message);
-			}
-			resp.setStatus(HTTP_404);
-			resp.flushBuffer();
-		} catch (IOException e) {
-			internalError(resp, e);
-		}
-		
-	}
-	
-	public void notFound(HttpServletResponse resp) {
-		notFound(resp, null);
-	}
-	
-	public void badRequest(HttpServletResponse resp) {
-		badRequest(resp, null);
-	}
+            if (message != null) {
+                log.warning(message);
+                resp.getWriter().println(message);
+            }
+            resp.setStatus(HTTP_404);
+            resp.flushBuffer();
+        } catch (IOException e) {
+            internalError(resp, e);
+        }
+        
+    }
+    
+    public void notFound(HttpServletResponse resp) {
+        
+        notFound(resp, null);
+    }
+    
+    public void badRequest(HttpServletResponse resp) {
+        
+        badRequest(resp, null);
+    }
     
     public void badRequest(HttpServletResponse resp, String message) {
         
@@ -144,7 +153,15 @@ public class ApiGeneric {
     }
     
     public void internalError(HttpServletResponse resp) {
+        
         internalError(resp, null);
+    }
+    
+    public String getParameter(HttpServletRequest req, String name, String defaultValue) {
+        
+        String value = req.getParameter(name);
+        
+        return value == null ? defaultValue : value;
     }
     
     @ExceptionHandler(Exception.class)
@@ -177,7 +194,7 @@ public class ApiGeneric {
         }
     }
     
-	public void nullResponse(HttpServletResponse resp) {
+    public void nullResponse(HttpServletResponse resp) {
         
         try {
             resp.setContentType(APPLICATION_JSON_UTF8);

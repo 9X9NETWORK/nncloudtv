@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.MsoNotification;
@@ -261,9 +262,6 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-        }
         
         List<Set> results;
         
@@ -339,19 +337,8 @@ public class ApiMso extends ApiGeneric {
             tag = TagManager.processTagText(tagText);
         }
         
-        // sortingType, default : 1, channels sort by seq 
-        Short sortingType = null;
-        String sortingTypeStr = req.getParameter("sortingType");
-        if (sortingTypeStr != null) {
-            try {
-                sortingType = Short.valueOf(sortingTypeStr);
-            } catch (NumberFormatException e) {
-                sortingType = SysTag.SORT_SEQ;
-            }
-            if (SetService.isValidSortingType(sortingType) == false) {
-                sortingType = SysTag.SORT_SEQ;
-            }
-        } else {
+        Short sortingType = NnStringUtil.evalShort(req.getParameter("sortingType"));
+        if (sortingType == null) {
             sortingType = SysTag.SORT_SEQ;
         }
         
@@ -368,13 +355,9 @@ public class ApiMso extends ApiGeneric {
             set.setTag(tag);
         }
         
-        String lang = LangTable.LANG_EN; // default
-        MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (supportedRegion != null && supportedRegion.getValue() != null) {
-            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
-            if (spheres != null && spheres.isEmpty() == false) {
-                lang = spheres.get(0);
-            }
+        String lang = req.getParameter("lang");
+        if (lang == null) {
+            lang = LocaleTable.LANG_EN;
         }
         set.setLang(lang);
         
@@ -434,7 +417,7 @@ public class ApiMso extends ApiGeneric {
         
         SysTag sysTag = NNF.getSysTagMngr().findById(setIdStr);
         if (sysTag == null) {
-            notFound(resp, "Set Not Found");
+            notFound(resp, SET_NOT_FOUND);
             return null;
         }
         
@@ -476,24 +459,10 @@ public class ApiMso extends ApiGeneric {
         }
         
         // sortingType
-        Short sortingType = null;
-        String sortingTypeStr = req.getParameter("sortingType");
-        if (sortingTypeStr != null) {
-            try {
-                sortingType = Short.valueOf(sortingTypeStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            if (SetService.isValidSortingType(sortingType) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-        }
+        Short sortingType = NnStringUtil.evalShort(req.getParameter("sortingType"));
         
         SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
         if (display == null) {
-            log.warning("invalid structure : SysTag's Id=" + sysTag.getId() + " exist but not found any of SysTagDisPlay");
             internalError(resp);
             return null;
         }
@@ -580,7 +549,7 @@ public class ApiMso extends ApiGeneric {
         
         Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
-            notFound(resp, "Set Not Found");
+            notFound(resp, SET_NOT_FOUND);
             return null;
         }
         
@@ -781,6 +750,7 @@ public class ApiMso extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
+    // TODO rewrite
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.GET)
     public @ResponseBody
     List<Long> storeChannels(HttpServletRequest req,
@@ -792,49 +762,41 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        // categoryId
-        Long categoryId = null;
         String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            try {
-                categoryId = Long.valueOf(categoryIdStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        String channelParam = req.getParameter("channels");
+        if (categoryIdStr == null && channelParam == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        
+        // categoryId
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
+        if (categoryId != null && !CategoryService.isSystemCategory(categoryId)) {
+            badRequest(resp, INVALID_PARAMETER);
+            return null;
         }
         
         // channels
-        java.util.Set<Long> channelIds = null;
-        String channelsStr = req.getParameter("channels");
-        if (channelsStr != null) {
-            
-            String[] channelIdsStr = channelsStr.split(",");
-            channelIds = new HashSet<Long>();
-            Long channelId = null;
-            for (String channelIdStr : channelIdsStr) {
-                
-                channelId = null;
-                try {
-                    channelId = Long.valueOf(channelIdStr);
-                } catch(Exception e) {
-                }
+        java.util.Set<Long> channelIdSet = new HashSet<Long>();
+        if (channelParam != null) {
+            String[] channelIdArr = channelParam.split(",");
+            for (String channelIdStr : channelIdArr) {
+                Long channelId = NnStringUtil.evalLong(channelIdStr);
                 if (channelId != null) {
-                    channelIds.add(channelId);
+                    channelIdSet.add(channelId);
                 }
             }
         }
-        List<Long> results = new ArrayList<Long>();
-        if (channelIds != null) {
-            List<NnChannel> channels = NNF.getChannelMngr().findByIds(new ArrayList<Long>(channelIds));
-            results = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
-        } else if (categoryId != null) {
-            results = NNF.getCategoryService().getMsoCategoryChannels(categoryId, mso.getId());
+        List<NnChannel> channels;
+        if (categoryId == null) {
+            List<NnChannel> candidates = NNF.getChannelMngr().findByIds(channelIdSet);
+            channels = NNF.getCategoryService().filterMsoStoreChannels(mso, candidates);
+        } else {
+            channels = NNF.getCategoryService().getMsoCategoryChannels(mso, categoryId);
         }
+        List<Long> results = new ArrayList<Long>();
+        for (NnChannel channel : channels)
+            results.add(channel.getId());
         return results;
     }
     
@@ -965,7 +927,9 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        MsoManager.populateMso(mso);
+        List<String> regions = MsoConfigManager.getSuppoertedResion(mso);
+        if (regions != null)
+            mso.setSupportedRegion(StringUtils.join(regions, ","));
         MsoManager.normalize(mso);
         
         // check if push notification was enabled
@@ -982,12 +946,17 @@ public class ApiMso extends ApiGeneric {
         mso.setGcmEnabled(gcmEnabled);
         mso.setApnsEnabled(apnsEnabled);
         
+        // favicon
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        if (config != null) {
+            mso.setJingleUrl(config.getValue());
+        }
+        
         // cms logo
-        MsoConfig config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
+        config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
         if (config != null) {
             mso.setCmsLogo(config.getValue());
         }
-        
         return mso;
     }
     
@@ -1051,23 +1020,19 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
+            
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
         List<Category> results = NNF.getCategoryService().findByMsoId(mso.getId());
         
         for (Category result : results) {
-            if (lang.equals(LangTable.LANG_ZH)) {
-                result.setLang(LangTable.LANG_ZH);
+            if (lang.equals(LocaleTable.LANG_ZH)) {
+                result.setLang(LocaleTable.LANG_ZH);
                 result.setName(result.getZhName());
-            } else if (lang.equals(LangTable.LANG_EN)) {
-                result.setLang(LangTable.LANG_EN);
+            } else {
+                result.setLang(LocaleTable.LANG_EN);
                 result.setName(result.getEnName());
             }
             result = CategoryService.normalize(result);
@@ -1127,12 +1092,7 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
+        if (lang == null) {
             lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
         }
         
@@ -1142,11 +1102,11 @@ public class ApiMso extends ApiGeneric {
         category.setZhName(zhName);
         category.setEnName(enName);
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
-            category.setLang(LangTable.LANG_EN);
+        } else {
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         category = CategoryService.normalize(category);
@@ -1168,7 +1128,7 @@ public class ApiMso extends ApiGeneric {
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, "Category Not Found");
+            notFound(resp, CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1186,20 +1146,16 @@ public class ApiMso extends ApiGeneric {
         
         // lang
         String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
+        if (lang == null) {
+            
+            lang = LocaleTable.LANG_EN;
         }
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
-            category.setLang(LangTable.LANG_EN);
+        } else {
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         return CategoryService.normalize(category);
@@ -1218,7 +1174,7 @@ public class ApiMso extends ApiGeneric {
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, "Category Not Found");
+            notFound(resp, CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1235,16 +1191,9 @@ public class ApiMso extends ApiGeneric {
         }
         
         // seq
-        Short seq = null;
-        String seqStr = req.getParameter("seq");
-        if (seqStr != null) {
-            try {
-                seq = Short.valueOf(seqStr);
-                category.setSeq(seq);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
+        if (seq != null) {
+            category.setSeq(seq);
         }
         
         // zhName
@@ -1262,24 +1211,16 @@ public class ApiMso extends ApiGeneric {
         }
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
-            if (lang == null) {
-                lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-            }
-        } else {
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        }
+        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
         
         category = NNF.getCategoryService().updateCntChannel(category);
         category = NNF.getCategoryService().save(category);
         
-        if (lang.equals(LangTable.LANG_ZH)) {
-            category.setLang(LangTable.LANG_ZH);
+        if (lang.equals(LocaleTable.LANG_ZH)) {
+            category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
-        } else if (lang.equals(LangTable.LANG_EN)) {
-            category.setLang(LangTable.LANG_EN);
+        } else {
+            category.setLang(LocaleTable.LANG_EN);
             category.setName(category.getEnName());
         }
         return CategoryService.normalize(category);
@@ -1331,7 +1272,7 @@ public class ApiMso extends ApiGeneric {
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, "Category Not Found");
+            notFound(resp, CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1353,7 +1294,7 @@ public class ApiMso extends ApiGeneric {
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, "Category Not Found");
+            notFound(resp, CATEGORY_NOT_FOUND);
             return;
         }
         

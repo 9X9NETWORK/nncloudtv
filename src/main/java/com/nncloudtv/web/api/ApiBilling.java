@@ -362,7 +362,6 @@ public class ApiBilling extends ApiGeneric {
             } else {
                 descPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_DESC, description);
             }
-            
         }
         if (descPref != null) {
             iap.setDescription(descPref.getValue());

@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -14,17 +15,19 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -183,7 +186,7 @@ public class NnChannelManager {
         channel.setStatus(NnChannel.STATUS_PROCESSING);
         channel.setContentType(NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL);
         channel.setPublic(false);
-        channel.setLang(LangTable.LANG_EN);        
+        channel.setLang(LocaleTable.LANG_EN);        
         Date now = new Date();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);  
@@ -339,43 +342,53 @@ public class NnChannelManager {
         // update episode count
         favoriteCh.setCntEpisode(calcuateEpisodeCount(favoriteCh));
         save(favoriteCh);
-    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    }
     
     public NnChannel save(NnChannel channel) {
-        NnChannel original = dao.findById(channel.getId());
-        Date now = new Date();
-        if (channel.getCreateDate() == null)
+        
+        NnChannel origin = dao.findById(channel.getId());
+        Date now = NnDateUtil.now();
+        
+        if (channel.getCreateDate() == null) {
             channel.setCreateDate(now);
-        if (channel.getUpdateDate() == null)
-            channel.setUpdateDate(now);        
+        }
+        if (channel.getUpdateDate() == null) {
+            channel.setUpdateDate(now);
+        }
         if (channel.getIntro() != null) {
             channel.setIntro(channel.getIntro().replaceAll("\n", ""));
             channel.setIntro(channel.getIntro().replaceAll("\t", " "));
-            if (channel.getIntro().length() > 500)
-                channel.getIntro().substring(0, 499);
         }
         if (channel.getName() != null) {
             channel.setName(channel.getName().replaceAll("\n", ""));
             channel.setName(channel.getName().replaceAll("\t", " "));
         }
+        
         //TODO will be inconsistent with those stored in tag table
         if (channel.getTag() != null) {
             channel.setTag(this.processTagText(channel.getTag()));
         }
+        
         channel = dao.save(channel);
         
-        NnChannel[] channels = {original, channel};
+        NnChannel[] channels = { origin, channel };
         if (NNF.getConfigMngr().isQueueEnabled(true)) {
+            
         } else {
+            
             this.processChannelRelatedCounter(channels);
         }
         this.processChannelTag(channel);
         this.resetCache(channel.getId());
+        
         return channel;
     }
     
-    public List<NnChannel> saveAll(List<NnChannel> channels) {
-        resetCache(channels);
+    public List<NnChannel> save(List<NnChannel> channels, boolean resetCache) {
+        
+        if (resetCache) {
+            resetCache(channels);
+        }
         return dao.saveAll(channels);
     }
     
@@ -408,9 +421,10 @@ public class NnChannelManager {
     }
     
     public static List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
-        return NnChannelDao.search(keyword, content, extra, all, start, limit);
+        
+        return NNF.getChannelDao().search(keyword, content, extra, all, start, limit);
     }
-
+    
     //stack => NnChannel, total number found
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
@@ -624,14 +638,13 @@ public class NnChannelManager {
         }
     }
     
-    public List<NnChannel> findByIds(List<Long> ids) {
-        
+    public List<NnChannel> findByIds(Collection<Long> ids) {
         return dao.findAllByIds(ids);
     }
     
     public List<NnChannel> findByStatus(short status) {
-        List<NnChannel> channels = dao.findAllByStatus(status);        
-        return channels;
+        
+        return dao.findAllByStatus(status);
     }
     
     public List<NnChannel> findAll() {
@@ -668,21 +681,30 @@ public class NnChannelManager {
         }
         return null;
     }
-
+    
     //find channels created by the user, aka curator
     //player true returns only good and public channels
     public List<NnChannel> findByUser(NnUser user, int limit, boolean isAll) {
-        String userIdStr = user.getShard() + "-" + user.getId();
-        List<NnChannel> channels = dao.findByUser(userIdStr, limit, isAll);
-        if (limit == 0) {
-            return channels;
-        } else {             
-            if (channels.size() > limit)
+        
+        List<NnChannel> channels = dao.findByUser(user.getIdStr(), limit, isAll);
+        if (limit > 0 && channels.size() > limit) {
+            
             return channels.subList(0, limit);
         }
         return channels;
     }
-
+    
+    public List<NnChannel> findByUsers(List<NnUser> users, int limit) {
+        
+        List<String> idList = new ArrayList<String>();
+        for (NnUser user : users) {
+            
+            idList.add(user.getIdStr());
+        }
+        
+        return dao.findByUser(StringUtils.join(idList, ","), limit, false);
+    }
+    
     //TODO change to list, and merge with byUser, and subList is not real
     //used only in player for specific occasion
     public List<NnChannel> findByUserAndHisFavorite(NnUser user, int limit, boolean isAll) {        
@@ -733,24 +755,31 @@ public class NnChannelManager {
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL)
                 sorting = NnChannel.SORT_NEWEST_TO_OLDEST;
             if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_PLAYLIST)
-                sorting = NnChannel.SORT_POSITION_FORWARD;            
+                sorting = NnChannel.SORT_POSITION_FORWARD;
         }
         return sorting;
     }
     
     public void resetCache(List<NnChannel> channels) {
-        for (NnChannel c : channels) {
-            resetCache(c.getId());
+        
+        if (channels == null || channels.isEmpty()) return;
+        
+        log.info("reset channel cache count = " + channels.size());
+        
+        List<String> keys = new ArrayList<String>();
+        for (NnChannel channel : channels) {
+            
+            keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
         }
+        CacheFactory.delete(keys);
     }
     
-    public void resetCache(long channelId) {        
-        log.info("reset channel info cache: " + channelId);
-        String cId = String.valueOf(channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 31, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
+    public void resetCache(long channelId) {
+        
+        log.info("reset channel info cache = " + channelId);
+        
+        List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
+        CacheFactory.delete(keys);
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {
@@ -922,51 +951,41 @@ public class NnChannelManager {
         
     }
     
-    public boolean isChannelOwner(NnChannel channel, String mail) {
+    public void reorderUserChannels(final NnUser user) {
         
-        if (channel == null || mail == null) {
-            return false;
-        }
+        if (user == null) return;
         
-        NnUser user = NNF.getUserMngr().findById(channel.getUserId(), 1);
-        if(user == null) {
-            return false;
-        }
+        // due to time consuming, always run it in background
+        (new Thread() {
+            public void run() {
+                long before = NnDateUtil.timestamp();
+                System.out.println("[reorder_channels] start");
+                List<NnChannel> channels = dao.findByUser(user.getIdStr(), 0, true);
+                
+                Collections.sort(channels, getComparator("seq"));
+                
+                for (int i = 0; i < channels.size(); i++) {
+                    
+                    channels.get(i).setSeq((short)(i + 1));
+                }
+                
+                save(channels, false);
+                System.out.println(String.format("[reorder_channels] ended (%d ms)", NnDateUtil.timestamp() - before));
+            }
+        }).start();
         
-        if ((user.getUserEmail() != null) && user.getUserEmail().equals(mail)) {
-            return true;
-        }
-        
-        return false;
     }
     
-    public void reorderUserChannels(NnUser user) {
+    public void renewUpdateDateOnly(NnChannel channel) {
         
-        // the results should be same as ApiUser.userChannels() GET operation, but not include fake channel.
-        String userIdStr = user.getShard() + "-" + user.getId();
-        List<NnChannel> channels = dao.findByUser(userIdStr, 0, true);
-        
-        Collections.sort(channels, getComparator("seq"));
-        
-        for (int i = 0; i < channels.size(); i++) {
-            
-            channels.get(i).setSeq((short)(i + 1));
-        }
-        
-        saveAll(channels);
-    }
-    
-    public void renewChannelUpdateDate(long channelId) {
-        Date now = new Date();
-        NnChannel channel = dao.findById(channelId);
-        if (channel == null) {
-            return ;
-        }
-        channel.setUpdateDate(now);
-        save(channel);
+        if (channel == null) return;
+        channel.setUpdateDate(NnDateUtil.now());
+        resetCache(channel.getId());
+        dao.save(channel);
     }
     
     public List<NnChannel> findPersonalHistory(long userId, long msoId) {
+        
         return dao.findPersonalHistory(userId, msoId);
     }
     
@@ -1127,11 +1146,11 @@ public class NnChannelManager {
         //poi
         String poiStr = "";
         if (ctx.getVersion() > 32) {
-            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannel(channel.getId());
+            List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannelId(channel.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
             for (PoiPoint p : points) {
-                PoiEvent event = NNF.getPoiEventMngr().findByPoint(p.getId());
+                PoiEvent event = NNF.getPoiEventMngr().findByPointId(p.getId());
                 events.add(event);
             }
             if (points.size() != events.size()) {
@@ -1281,5 +1300,54 @@ public class NnChannelManager {
         
         return NNF.getChannelMngr().total("contentType != " + NnChannel.CONTENTTYPE_FAVORITE + 
                                           " && userIdStr == " + NnStringUtil.escapedQuote(user.getIdStr()));
+    }
+    
+    public static NnChannel syncNow(NnChannel channel) {
+        
+        if (channel.isReadonly()) {
+            
+            String msg = "channel is readonly";
+            log.warning(msg);
+            
+            return channel.setNote(msg);
+            
+        } else if (channel.getSourceUrl() == null || channel.getSourceUrl().isEmpty()) {
+            
+            String msg = "sourceUrl is empty";
+            log.warning(msg);
+            
+            return channel.setNote(msg);
+        }
+        
+        NNF.getChannelMngr().save(channel.setReadonly(true));
+        
+        long before = NnDateUtil.timestamp();
+        
+        Map<String, String> obj = new HashMap<String, String>();
+        obj.put("id",          channel.getIdStr());
+        obj.put("sourceUrl",   channel.getSourceUrl());
+        obj.put("contentType", String.valueOf(channel.getContentType()));
+        obj.put("isRealtime",  "true");
+        
+        String response = NnNetUtil.urlPostWithJson("http://" + MsoConfigManager.getCrawlerDomain() + "/ytcrawler/crawlerAPI.php", obj);
+        
+        if (response != null && response.trim().equalsIgnoreCase("Ack")) {
+            
+            log.info("crawlerAPI return " + response);
+            channel.setNote("OK");
+            
+        } else {
+            
+            String msg = "crawlerAPI return NOT OK!";
+            log.warning(msg);
+            
+            NNF.getChannelMngr().save(channel.setReadonly(false));
+            
+            channel.setNote(msg);
+        }
+        
+        log.info(String.format("crawlerAPI costs %d milliseconds", NnDateUtil.timestamp() - before));
+        
+        return channel;
     }
 }

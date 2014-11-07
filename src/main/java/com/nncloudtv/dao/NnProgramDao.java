@@ -19,28 +19,6 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         super(NnProgram.class);
     }
     
-    public NnProgram save(NnProgram program) {
-        if (program == null) {return null;}        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.makePersistent(program);
-            program = pm.detachCopy(program);
-        } finally {
-            pm.close();
-        }
-        return program;
-    }
-    
-    public void delete(NnProgram program) {
-        if (program == null) return;
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.deletePersistent(program);
-        } finally {
-            pm.close();
-        }        
-    }
-    
     public NnProgram findByChannelAndFileUrl(long channelId, String fileUrl) {
         NnProgram detached = null;
         PersistenceManager pm = PMF.getContent().getPersistenceManager();        
@@ -74,7 +52,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         }
         return detached;
     }
-
+    
     public List<NnProgram> findByYtVideoId(String videoId) {
         if (videoId == null) {return null;}
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
@@ -83,7 +61,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
             String sql = 
                 "select * from nnprogram " +
                  "where lower(fileUrl) like lower('%" + videoId + "%')";
-
+            
             log.info("Sql=" + sql);
             Query q= pm.newQuery("javax.jdo.query.SQL", sql);
             
@@ -117,7 +95,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         }
         return detached;
     }
-
+    
     public List<NnProgram> findProgramByChannelByChannelAndSeq(long channelId, String seq) {
         List<NnProgram> detached = new ArrayList<NnProgram>();
         PersistenceManager pm = PMF.getContent().getPersistenceManager();        
@@ -125,14 +103,14 @@ public class NnProgramDao extends GenericDao<NnProgram> {
             Query query = pm.newQuery(NnProgram.class);
             query.setFilter("channelId == " + channelId + " & seq == '" + seq + "'");
             log.info("ordering by seq, subSeq asc");
-
+            
             @SuppressWarnings("unchecked")
             List<NnProgram> results = (List<NnProgram>) query.execute(channelId, seq);
             detached = (List<NnProgram>)pm.detachCopyAll(results);
         } finally {
             pm.close();
         }
-        return detached;        
+        return detached;
     }
     
     public NnProgram findByChannelAndStorageId(long channelId, String storageId) {
@@ -151,7 +129,6 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         }
         return detached;
     }
-    
     
     public NnProgram findFavorite(long channelId, String fileUrl) {
         NnProgram detached = null;
@@ -278,9 +255,9 @@ public class NnProgramDao extends GenericDao<NnProgram> {
     //use scenario: such as "reference" lookup
     public List<NnProgram> findProgramsByEpisode(long episodeId) {
         
-        String query = "select id from nnprogram "
-                     + "         where episodeId = " + episodeId
-                     + "      order by subSeq"; // seq is not be maintain anymore
+        String query = "SELECT * FROM nnprogram "
+                     + "        WHERE episodeId = " + episodeId
+                     + "     ORDER BY subSeq"; // seq is not maintained anymore
         
         return sql(query);
     }
@@ -309,7 +286,7 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         } finally {
             pm.close();
         } 
-        return detached;        
+        return detached;
     }
     
     public List<NnProgram> findAllByEpisodeId(long episodeId) {

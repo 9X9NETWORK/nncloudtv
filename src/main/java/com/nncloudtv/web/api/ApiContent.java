@@ -7,10 +7,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,15 +34,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.StreamFactory;
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
@@ -50,11 +51,11 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.TitleCard;
 import com.nncloudtv.model.YtProgram;
-import com.nncloudtv.service.ApiContentService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnEpisodeManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -63,19 +64,6 @@ import com.nncloudtv.web.json.cms.Category;
 public class ApiContent extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
-    
-    private ApiContentService apiContentService;
-    
-    public ApiContent() {
-        
-        this.apiContentService = new ApiContentService(NNF.getChannelMngr(), NNF.getChPrefMngr(), NNF.getProgramMngr());
-    }
-    
-    @Autowired
-    public ApiContent(ApiContentService apiContentService) {
-        
-        this.apiContentService = apiContentService;
-    }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
     public @ResponseBody
@@ -344,70 +332,58 @@ public class ApiContent extends ApiGeneric {
     void programsDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
         
-        Long episodeId = null;
-        try {
-            episodeId = Long.valueOf(episodeIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
-        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeIdStr);
         if (episode == null) {
-            notFound(resp, "Episode Not Found");
+            notFound(resp, EPISODE_NOT_FOUND);
             return;
         }
         
+        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
-        }
-        NnChannel channel = NNF.getChannelMngr().findById(episode.getChannelId());
-        if ((channel == null) || (!user.getIdStr().equals(channel.getUserIdStr()))) {
+            
+        } else if (channel == null || !user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
             return;
         }
         
-        List<NnProgram> episodePrograms = NNF.getProgramMngr().findByEpisodeId(episode.getId());
-        List<Long> episodeProgramIdList = new ArrayList<Long>();
-        for (NnProgram episodeProgram : episodePrograms) {
-            episodeProgramIdList.add(episodeProgram.getId());
-        }
-        
-        String programIdsStr = req.getParameter("programs");
-        if (programIdsStr == null) {
+        String programStr = req.getParameter("programs");
+        if (programStr == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
         }
-        log.info(programIdsStr);
+        log.info(programStr);
         
-        String[] programIdStrList = programIdsStr.split(",");
-        List<NnProgram> programDeleteList = new ArrayList<NnProgram>();
-        
-        for (String programIdStr : programIdStrList) {
+        String[] split = programStr.split(",");
+        List<Long> list = new ArrayList<Long>();
+        for (String programIdStr : split) {
             
-            Long programId = null;
-            try {
-                
-                programId = Long.valueOf(programIdStr);
-                
-            } catch(Exception e) {
-            }
+            Long programId = NnStringUtil.evalLong(programIdStr);
             if (programId != null) {
-                
-                NnProgram program = NNF.getProgramMngr().findById(programId);
-                if (program != null && episodeProgramIdList.indexOf(program.getId()) > -1) {
-                    
-                    programDeleteList.add(program);
-                }
+                list.add(programId);
             }
         }
-        log.info("program delete count = " + programDeleteList.size());
         
-        NNF.getProgramMngr().delete(programDeleteList);
+        List<NnProgram> programs = NNF.getProgramMngr().findAllByIds(list);
+        Iterator<NnProgram> it = programs.iterator();
+        while (it.hasNext()) {
+            
+            NnProgram program = it.next();
+            if (program.getEpisodeId() != episode.getId()) {
+                
+                it.remove();
+                continue;
+            }
+            
+        }
+        
+        log.info("program delete count = " + programs.size());
+        
+        NNF.getProgramMngr().delete(programs);
         
         msgResponse(resp, OK);
     }
@@ -571,7 +547,7 @@ public class ApiContent extends ApiGeneric {
     @SuppressWarnings("unchecked")
     @RequestMapping(value = "channels", method = RequestMethod.GET)
     public @ResponseBody
-    List<NnChannel> channelsSearch(HttpServletRequest req,
+    List<NnChannel> channelSearch(HttpServletRequest req,
             HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoName,
             @RequestParam(required = false, value = "sphere") String sphereStr,
@@ -657,13 +633,10 @@ public class ApiContent extends ApiGeneric {
             String sphereFilter = null;
             if (sphereStr == null && msoName != null) {
                 storeOnly = true;
-                log.info("mso = " + msoName);
-                MsoConfig supportedRegion = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-                if (supportedRegion != null) {
-                    List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
-                    sphereStr = StringUtils.join(spheres, ',');
-                    log.info("mso supported region = " + sphereStr);
-                }
+                System.out.println("[channel_search] mso = " + msoName);
+                List<String> spheres = MsoConfigManager.getSuppoertedResion(mso);
+                sphereStr = StringUtils.join(spheres, ',');
+                System.out.println("[channel_search] mso supported region = " + sphereStr);
             }
             if (sphereStr != null && !sphereStr.isEmpty()) {
                 storeOnly = true;
@@ -672,7 +645,6 @@ public class ApiContent extends ApiGeneric {
                 for (String sphere : sphereArr) {
                     sphereList.add(NnStringUtil.escapedQuote(sphere));
                 }
-                sphereList.add(NnStringUtil.escapedQuote(LangTable.OTHER));
                 sphereFilter = "sphere in (" + StringUtils.join(sphereList, ',') + ")";
                 log.info("sphere filter = " + sphereFilter);
             }
@@ -687,33 +659,44 @@ public class ApiContent extends ApiGeneric {
             } else {
                 channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             }
-            log.info("found channels = " + channels.size());
+            System.out.println(String.format("[channel_search] found %d channels", channels.size()));
             
             if (sphereFilter == null) {
                 
-                Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30);
-                Set<Long> userIdSet = new HashSet<Long>();
-                log.info("found profiles = " + profiles.size());
-                for (NnUserProfile profile : profiles) {
-                    userIdSet.add(profile.getUserId());
+                List<NnUser> users = new ArrayList<NnUser>();
+                short[] shards = { NnUser.SHARD_CHINESE, NnUser.SHARD_DEFAULT };
+                for (short shard : shards) {
+                    
+                    Set<NnUserProfile> profiles = NNF.getProfileMngr().search(keyword, 0, 30, shard);
+                    Set<Long> userIdSet = new HashSet<Long>();
+                    for (NnUserProfile profile : profiles) {
+                        userIdSet.add(profile.getUserId());
+                    }
+                    
+                    List<NnUser> shardUsers = NNF.getUserMngr().findAllByIds(userIdSet, shard);
+                    System.out.println(String.format("[channel_search] found %d profiles which in %d users from shard %d", profiles.size(), shardUsers.size(), shard));
+                    
+                    users.addAll(shardUsers);
                 }
-                List<NnUser> users = NNF.getUserMngr().findAllByIds(userIdSet);
-                log.info("found users = " + users.size());
+                System.out.println(String.format("[channel_search] total %d users found", users.size()));
                 
-                for (NnUser user : users) {
-                    List<NnChannel> userChannels = channelMngr.findByUser(user, 30, false);
-                    for (NnChannel channel : userChannels) {
-                        if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
-                            if ((!sphereList.isEmpty() && sphereList.contains(channel.getSphere())) || sphereList.isEmpty()) {
-                                log.info("from curator = " + channel.getName());
-                                channels.add(channel);
-                            }
+                List<NnChannel> userChannels = channelMngr.findByUsers(users, 150);
+                int recognized = 0;
+                for (NnChannel channel : userChannels) {
+                    
+                    if (channel.getStatus() == NnChannel.STATUS_SUCCESS && channel.isPublic()) {
+                        
+                        if (sphereList.isEmpty() || sphereList.contains(channel.getSphere())) {
+                            
+                            channels.add(channel);
+                            recognized++;
                         }
                     }
                 }
+                System.out.println(String.format("[channel_search] %d channels obtained from user where %d of them are recognized", userChannels.size(), recognized));
             }
             
-            log.info("total channels = " + channels.size());
+            System.out.println("[channel_search] total channels = " + channels.size());
             if (msoName != null) {
                 List<Long> channelIdList = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
                 results = channelMngr.findByIds(channelIdList);
@@ -723,8 +706,33 @@ public class ApiContent extends ApiGeneric {
             }
             
             Collections.sort(results, NnChannelManager.getComparator("updateDate"));
+            
         } else if (ytPlaylistIdStr != null || ytUserIdStr != null) {
-            results = apiContentService.channelsSearch(mso.getId(), ytPlaylistIdStr, ytUserIdStr);
+            
+            if (ytPlaylistIdStr != null) {
+                
+                String sourceUrl = "http://www.youtube.com/view_play_list?p=" + ytPlaylistIdStr;
+                NnChannel result = channelMngr.findBySourceUrl(sourceUrl);
+                if (result != null) {
+                    results.add(result);
+                }
+                
+            } else if (ytUserIdStr != null) {
+                
+                String sourceUrl = "http://www.youtube.com/user/" + ytUserIdStr;
+                NnChannel result = channelMngr.findBySourceUrl(sourceUrl);
+                if (result != null) {
+                    results.add(result);
+                }
+                
+            }
+            
+            // filter part
+            // TODO: rewrite
+            List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, mso.getId());
+            results = channelMngr.findByIds(verifiedChannel);
+            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
+            
         }
         
         results = channelMngr.normalize(results);
@@ -787,39 +795,50 @@ public class ApiContent extends ApiGeneric {
         // name
         String name = req.getParameter("name");
         if (name != null) {
-            name = NnStringUtil.htmlSafeAndTruncated(name);
+            channel.setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
         String intro = req.getParameter("intro");
         if (intro != null) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
+            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // lang
         String lang = req.getParameter("lang");
         if (lang != null) {
-            lang = NnStringUtil.validateLangCode(lang);
+            channel.setLang(lang);
         }
         
         // sphere
         String sphere = req.getParameter("sphere");
         if (sphere != null) {
-            sphere = NnStringUtil.validateLangCode(sphere);
+            channel.setSphere(sphere);
         }
         
         // isPublic
-        Boolean isPublic = null;
-        String isPublicStr = req.getParameter("isPublic");
-        if (isPublicStr != null) {
-            isPublic = NnStringUtil.evalBool(isPublicStr);
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"));
+        if (isPublic != null) {
+            channel.setPublic(isPublic);
+        }
+        
+        // paidChannel
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"));
+        if (paidChannel != null) {
+            channel.setPaidChannel(paidChannel);
         }
         
         // tag
         String tag = req.getParameter("tag");
+        if (tag != null) {
+            channel.setTag(tag);
+        }
         
         // imageUrl
         String imageUrl = req.getParameter("imageUrl");
+        if (imageUrl != null) {
+            channel.setImageUrl(imageUrl);
+        }
         
         // categoryId
         Long categoryId = null;
@@ -827,16 +846,16 @@ public class ApiContent extends ApiGeneric {
         if (categoryIdStr != null) {
             
             categoryId = NnStringUtil.evalLong(categoryIdStr);
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                categoryId = null;
+            if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
+                
+                NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
             }
         }
         
         // updateDate
-        Date updateDate = null;
         String updateDateStr = req.getParameter("updateDate");
         if (updateDateStr != null) {
-            updateDate = new Date();
+            channel.setUpdateDate(NnDateUtil.now());
         }
         
         // sorting
@@ -844,34 +863,56 @@ public class ApiContent extends ApiGeneric {
         String sortingStr = req.getParameter("sorting");
         if (sortingStr != null) {
             sorting = NnStringUtil.evalShort(sortingStr);
+            if (sorting != null) {
+                channel.setSorting(sorting);
+                NNF.getProgramMngr().resetCache(channel.getId());
+            }
         }
         
         // status
         Short status = null;
         String statusStr = req.getParameter("status");
         if (statusStr != null) {
-            // TODO: rewrite
-            //NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(verifiedUserId);
-            //if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
+            NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
+            user.setMsoId(profile.getMsoId());
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE)) {
                 status = NnStringUtil.evalShort(statusStr);
-            //}
+                if (status != null) {
+                    channel.setStatus(status);
+                }
+            }
         }
         
-        NnChannel savedChannel = apiContentService.channelUpdate(channel.getId(), name, intro, lang, sphere, isPublic, tag,
-                                    imageUrl, categoryId, updateDate, req.getParameter("autoSync"), sorting, status);
-        if (savedChannel == null) {
-            internalError(resp);
-            return null;
+        String autoSync = req.getParameter("autoSync");
+        if (autoSync != null) {
+            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+            if (autosyncPref == null) {
+                
+                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+            }
+            if (!autoSync.equals(autosyncPref.getValue())) {
+                
+                autosyncPref.setValue(autoSync);
+                NNF.getChPrefMngr().save(autosyncPref);
+            }
         }
         
-        channelMngr.populateCategoryId(savedChannel);
-        channelMngr.populateAutoSync(savedChannel);
-        channelMngr.normalize(savedChannel);
+        channel = NNF.getChannelMngr().save(channel);
         
-        return savedChannel;
+        // syncNow
+        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+            
+            channel = NnChannelManager.syncNow(channel);
+        }
+        
+        channelMngr.populateCategoryId(channel);
+        channelMngr.populateAutoSync(channel);
+        channelMngr.normalize(channel);
+        
+        return channel;
     }
     
-    // TODO: fix me
+    // TODO remove
     @RequestMapping(value = "channels/{channelId}/youtubeSyncData", method = RequestMethod.PUT)
     public void channelYoutubeDataSync(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
@@ -884,7 +925,7 @@ public class ApiContent extends ApiGeneric {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -916,7 +957,7 @@ public class ApiContent extends ApiGeneric {
             channel.setReadonly(false);
             NNF.getChannelMngr().save(channel);
             
-            msgResponse(resp, "OK");
+            msgResponse(resp, OK);
             
         } else {
             
@@ -988,46 +1029,28 @@ public class ApiContent extends ApiGeneric {
     List<Long> storeChannels(HttpServletRequest req, HttpServletResponse resp) {
         
         // categoryId
-        long categoryId = 0;
         String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            try {
-                categoryId = Long.valueOf(categoryIdStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        if (categoryIdStr == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
+        }
+        log.info("categoryId = " + categoryIdStr);
+        Long categoryId = NnStringUtil.evalLong(categoryIdStr);
+        if (categoryId == null || !CategoryService.isSystemCategory(categoryId)) {
+            badRequest(resp, INVALID_PARAMETER);
+            return null;
         }
         
         // sphere
-        String sphere = req.getParameter("sphere");
-        List<String> spheres;
-        if (sphere == null || sphere.isEmpty()) {
-            spheres = null;
-        } else {
-            spheres = new ArrayList<String>();
-            String[] values = sphere.split(",");
-            for (String value : values) {
-                if (value.equals(LangTable.LANG_ZH) || value.equals(LangTable.LANG_EN) || value.equals(LangTable.OTHER)) {
-                    spheres.add(value);
-                } else {
-                    badRequest(resp, INVALID_PARAMETER);
-                    return null;
-                }
-            }
-        }
-        
-        List<Long> channelIds = new ArrayList<Long>();
-        List<NnChannel> channels = NNF.getCategoryService().getSystemCategoryChannels(categoryId, spheres);
-        for (NnChannel channel : channels) {
-            channelIds.add(channel.getId());
-        }
-        
-        return channelIds;
+        List<String> spheres = null;
+        String sphereParam = req.getParameter("sphere");
+        if (sphereParam != null && !sphereParam.isEmpty())
+            spheres = new ArrayList<String>(Arrays.asList(sphereParam.split(",")));
+        List<Long> results = new ArrayList<Long>();
+        List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId, spheres);
+        for (NnChannel channel : channels)
+            results.add(channel.getId());
+        return results;
     }
     
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
@@ -1159,7 +1182,6 @@ public class ApiContent extends ApiGeneric {
         return results;
     }
     
-    // TODO: need to be optimized
     @RequestMapping(value = "channels/{channelId}/episodes/sorting", method = RequestMethod.PUT)
     public @ResponseBody
     void channelEpisodesSorting(HttpServletRequest req,
@@ -1175,12 +1197,9 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
-        
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1196,55 +1215,48 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        String episodeIdsStr = req.getParameter("episodes");
-        if (episodeIdsStr == null) {
-            episodeMngr.reorderChannelEpisodes(channelId);
+        String episodeParam = req.getParameter("episodes");
+        if (episodeParam == null) {
+            
+            NNF.getEpisodeMngr().reorderChannelEpisodes(channelId);
+            
             msgResponse(resp, OK);
             return;
         }
-        String[] episodeIdStrList = episodeIdsStr.split(",");
+        String[] splitted = episodeParam.split(",");
+        ArrayList<Long> episodeIdList = new ArrayList<Long>();
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channelId);
         
-        List<NnEpisode> episodes = episodeMngr.findByChannelId(channelId); // it must same as channelEpisodes result
-        List<NnEpisode> orderedEpisodes = new ArrayList<NnEpisode>();
-        List<Long> episodeIdList = new ArrayList<Long>();
-        List<Long> checkedEpisodeIdList = new ArrayList<Long>();
-        for (NnEpisode episode : episodes) {
-            episodeIdList.add(episode.getId());
-            checkedEpisodeIdList.add(episode.getId());
-        }
-        
-        int index;
-        for (String episodeIdStr : episodeIdStrList) {
+        for (String episodeIdStr : splitted) {
             
-            Long episodeId = null;
-            try {
-                
-                episodeId = Long.valueOf(episodeIdStr);
-                
-            } catch(Exception e) {
-            }
+            Long episodeId = NnStringUtil.evalLong(episodeIdStr);
             if (episodeId != null) {
-                index = episodeIdList.indexOf(episodeId);
-                if (index > -1) {
-                    orderedEpisodes.add(episodes.get(index));
-                    checkedEpisodeIdList.remove(episodeId);
-                }
+                episodeIdList.add(episodeId);
             }
         }
-        // parameter should contain all episodeId
-        if (checkedEpisodeIdList.size() != 0) {
+        
+        if (episodeIdList.size() != episodes.size()) {
+            
+            log.info(String.format("%d not equal %d", episodeIdList.size(), episodes.size()));
             badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
-        int counter = 1;
-        for (NnEpisode episode : orderedEpisodes) {
-            episode.setSeq(counter);
-            counter++;
+        for (NnEpisode episode : episodes) {
+            
+            int index = episodeIdList.indexOf(episode.getId());
+            if (index < 0) {
+                
+                log.info(String.format("episodeId %d is not matched", episode.getId()));
+                badRequest(resp, INVALID_PARAMETER);
+                return;
+            }
+            
+            episode.setSeq(index + 1);
         }
         
-        episodeMngr.save(orderedEpisodes);
-        channelMngr.renewChannelUpdateDate(channel.getId());
+        NNF.getEpisodeMngr().save(episodes);
+        NNF.getChannelMngr().renewUpdateDateOnly(channel);
         
         msgResponse(resp, OK);
     }
@@ -1622,9 +1634,8 @@ public class ApiContent extends ApiGeneric {
         episode.setName(NnStringUtil.revertHtml(episode.getName()));
         episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
         
-        if (dirty) {
+        if (dirty)
             QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
-        }
         
         return episode;
     }
@@ -1808,9 +1819,8 @@ public class ApiContent extends ApiGeneric {
         channel.setCntEpisode(channelMngr.calcuateEpisodeCount(channel));
         channelMngr.save(channel);
         
-        if (dirty) {
+        if (dirty)
             QueueFactory.add("/podcastAPI/processThumbnail?episode=" + episode.getId(), null);
-        }
         
         return episode;
     }

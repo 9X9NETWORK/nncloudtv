@@ -15,7 +15,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.AdPlacement;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnChannel;
@@ -473,22 +473,6 @@ public class MsoManager {
         return dao.findByType(type);
     }
     
-    public static void populateMso(Mso mso) {
-        
-        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
-        if (config == null) {
-            mso.setSupportedRegion(null);
-        } else {
-            mso.setSupportedRegion(config.getValue());
-        }
-        
-        config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
-        if (config != null) {
-            mso.setJingleUrl(config.getValue());
-        }
-        
-    }
-    
     public Mso findByIdOrName(String idStr) {
         
         if (idStr == null) { return null; }
@@ -522,20 +506,6 @@ public class MsoManager {
     
     public Mso findById(long id) {
         return dao.findById(id);
-    }
-    
-    // TODO: to be removed
-    public Mso findById(long id, boolean extend) {
-        
-        Mso mso = dao.findById(id);
-        if (mso == null) {return null;}
-        
-        if (extend) {
-            
-            populateMso(mso);
-        }
-        
-        return mso;
     }
     
     public List<Mso> findAll() {
@@ -586,8 +556,8 @@ public class MsoManager {
             if (supportedRegion == null) {
                 valids.add(mso); // mso support all region
             } else {
-                spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
-                spheres.add(LangTable.OTHER);
+                spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
+                spheres.add(LocaleTable.LANG_OTHER);
                 for (String sphere : spheres) {
                     if (sphere.equals(channel.getSphere())) { // this channel's sphere that MSO supported
                         valids.add(mso);
@@ -601,8 +571,7 @@ public class MsoManager {
         return valids;
     }
     
-    /** indicate channel can or can't set brand for target MSO,
-     *  9x9 is always a valid brand for auto-sharing even channel is not playable */
+    // TODO remove
     public boolean isValidBrand(NnChannel channel, Mso mso) {
         
         if (channel == null || mso == null) {
@@ -628,8 +597,8 @@ public class MsoManager {
         if (supportedRegion == null) {
             return true; // Mso's region support all sphere
         } else {
-            List<String> spheres = MsoConfigManager.parseSupportedRegion(supportedRegion.getValue());
-            spheres.add(LangTable.OTHER);
+            List<String> spheres = NnStringUtil.parseRegion(supportedRegion.getValue(), false);
+            spheres.add(LocaleTable.LANG_OTHER);
             for (String sphere : spheres) {
                 if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
                     log.info(mso.getName() + " is the valid brand of " + channel.getName());
@@ -640,26 +609,18 @@ public class MsoManager {
         }
     }
     
-    /** Get playable channels on target MSO.
-     *  The basic definition of playable should same as NnChannelDao.getStoreChannels. */
+    // TODO: remove
     public List<Long> getPlayableChannels(List<NnChannel> channels, Long msoId) {
         
         if (channels == null || channels.size() < 1 || msoId == null) {
             return new ArrayList<Long>();
         }
         
-        Mso mso = findById(msoId, true);
+        Mso mso = findById(msoId);
         if (mso == null) {
             return new ArrayList<Long>();
         }
-        
-        List<String> supportSpheres;
-        if (mso.getSupportedRegion() == null) {
-            supportSpheres = null; // means support all sphere
-        } else {
-            supportSpheres = MsoConfigManager.parseSupportedRegion(mso.getSupportedRegion());
-            supportSpheres.add(LangTable.OTHER);
-        }
+        List<String> supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
         
         List<Long> results = new ArrayList<Long>();
         for (NnChannel channel : channels) {
@@ -674,10 +635,10 @@ public class MsoManager {
             }
             
             // MSO support region check
-            if (supportSpheres == null) { // Mso's region support all sphere
+            if (supportedRegion == null) { // Mso's region support all sphere
                 results.add(channel.getId());
             } else {
-                for (String sphere : supportSpheres) {
+                for (String sphere : supportedRegion) {
                     if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
                         results.add(channel.getId());
                         break;
@@ -689,6 +650,7 @@ public class MsoManager {
         return results;
     }
     
+    // TODO remove
     public boolean isPlayableChannel(NnChannel channel, Long msoId) {
         
         if (channel == null || msoId==null) {
@@ -709,28 +671,6 @@ public class MsoManager {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));
         mso.setIntro(NnStringUtil.revertHtml(mso.getIntro()));
-        mso.setSupportedRegion(formatSupportedRegion(mso.getSupportedRegion()));
-    }
-    
-    /** format supportedRegion of Mso to response format, ex : "en,zh,other" */
-    private static String formatSupportedRegion(String input) {
-        
-        if (input == null) {
-            return null;
-        }
-        
-        List<String> spheres = MsoConfigManager.parseSupportedRegion(input);
-        String supportedRegion = "";
-        for (String sphere : spheres) {
-            supportedRegion = supportedRegion + "," + sphere;
-        }
-        supportedRegion = supportedRegion.replaceFirst(",", "");
-        
-        String output = supportedRegion;
-        if (output.equals("")) {
-            return null;
-        }
-        return output;
     }
     
     public Mso findByPurchase(NnPurchase purchase) {

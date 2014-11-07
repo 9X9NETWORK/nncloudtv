@@ -25,7 +25,7 @@ public class NnChannel implements Serializable {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
-            
+    
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String name; //the name we define, versus oriName
@@ -60,7 +60,7 @@ public class NnChannel implements Serializable {
     public static final int DEFAULT_HEIGHT = 480;
     
     @Persistent
-    private boolean isPublic;
+    private boolean isPublic; // set to false when paidChannel = true
     
     @Persistent
     private boolean paidChannel;
@@ -129,7 +129,7 @@ public class NnChannel implements Serializable {
     //internal
     public static final short STATUS_TRANSCODING_DB_ERROR = 1000;
     public static final short STATUS_NNVMSO_JSON_ERROR = 1001;
-                            
+    
     //status note or pool status note
     //can be number to indicate any kind of status or text
     @Persistent
@@ -550,11 +550,14 @@ public class NnChannel implements Serializable {
     public String getNote() {
         return note;
     }
-
-    public void setNote(String note) {
+    
+    public NnChannel setNote(String note) {
+        
         this.note = note;
+        
+        return this;
     }
-
+    
     public int getCntFollower() {
         return cntFollower;
     }
@@ -586,63 +589,67 @@ public class NnChannel implements Serializable {
     public void setCntEpisode(int cntEpisode) {
         this.cntEpisode = cntEpisode;
     }
-
-    public String getMoreImageUrl() {    
+    
+    public String getMoreImageUrl() {
         return moreImageUrl;
     }
-
+    
     public void setMoreImageUrl(String moreImageUrl) {
     
         this.moreImageUrl = moreImageUrl;
     }
-
+    
     public long getCntVisit() {
         return cntVisit;
     }
-
+    
     public void setCntVisit(long cntVisit) {
         this.cntVisit = cntVisit;
     }
-
+    
     public short getTimeStart() {
         return timeStart;
     }
-
+    
     public void setTimeStart(short timeStart) {
         this.timeStart = timeStart;
     }
-
+    
     public short getTimeEnd() {
         return timeEnd;
     }
-
+    
     public void setTimeEnd(short timeEnd) {
         this.timeEnd = timeEnd;
     }
-
+    
     public boolean isAlwaysOnTop() {
         return alwaysOnTop;
     }
-
+    
     public void setAlwaysOnTop(boolean alwaysOnTop) {
         this.alwaysOnTop = alwaysOnTop;
     }
-
+    
     public boolean isReadonly() {
         return readonly;
     }
-
-    public void setReadonly(boolean readonly) {
+    
+    public NnChannel setReadonly(boolean readonly) {
+        
         this.readonly = readonly;
+        
+        return this;
     }
-
+    
     public String getAutoSync() {
         return autoSync;
     }
-
+    
     public void setAutoSync(String autoSync) {
         this.autoSync = autoSync;
     }
+    
     public String getPlaybackUrl() {
         
         return playbackUrl;
@@ -652,19 +659,19 @@ public class NnChannel implements Serializable {
     
         this.playbackUrl = playbackUrl;
     }
-
+    
     public boolean isFeatured() {
         return featured;
     }
-
+    
     public void setFeatured(boolean featured) {
         this.featured = featured;
     }
-
+    
     public boolean isPaidChannel() {
         return paidChannel;
     }
-
+    
     public void setPaidChannel(boolean paidChannel) {
         this.paidChannel = paidChannel;
     }

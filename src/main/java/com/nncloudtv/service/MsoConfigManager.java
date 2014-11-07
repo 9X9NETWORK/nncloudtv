@@ -17,7 +17,6 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.SysTag;
@@ -337,31 +336,6 @@ public class MsoConfigManager {
         return configDao.findByItem(item);
     }
     
-    /** parse supportedRegion to list of sphere that mso can supported */
-    public static List<String> parseSupportedRegion(String supportedRegion) {
-        
-        if (supportedRegion == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> spheres = new ArrayList<String>();
-        String[] pairs = supportedRegion.split(";");
-        for (String pair : pairs) {
-            String[] values = pair.split(" ");
-            if (values[0].equals(LangTable.LANG_EN)) {
-                spheres.add(LangTable.LANG_EN);
-            }
-            if (values[0].equals(LangTable.LANG_ZH)) {
-                spheres.add(LangTable.LANG_ZH);
-            }
-            if (values[0].equals(LangTable.OTHER)) {
-                spheres.add(LangTable.OTHER);
-            }
-        }
-        
-        return spheres;
-    }
-    
     public static List<String> parseCategoryMask(String systemCategoryMask) {
         
         if (systemCategoryMask == null) {
@@ -604,6 +578,18 @@ public class MsoConfigManager {
             return NNF.getMsoMngr().findById(config.getMsoId());
         }
         return null;
+    }
+    
+    public static List<String> getSuppoertedResion(Mso mso) {
+        List<String> empty = new ArrayList<String>();
+        if (mso == null) return empty;
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        if (config != null) {
+            List<String> regions = NnStringUtil.parseRegion(config.getValue(), true);
+            if (regions != null && !regions.isEmpty())
+                return regions;
+        }
+        return empty;
     }
 }
 

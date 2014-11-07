@@ -132,22 +132,6 @@ public class SysTagManager {
             
     }
     
-    /** indicate input value is in model SysTag's sorting table or not */
-    public static boolean isValidSortingType(Short sortingType) {
-        
-        if (sortingType == null) {
-            return false;
-        }
-        if (sortingType == SysTag.SORT_SEQ) {
-            return true;
-        }
-        if (sortingType == SysTag.SORT_DATE) {
-            return true;
-        }
-        
-        return false;
-    }
-    
     public SysTagMap addChannel(long sysTagId, long channelId, boolean alwaysOnTop, boolean featured, short seq) {
         
         // create if not exist

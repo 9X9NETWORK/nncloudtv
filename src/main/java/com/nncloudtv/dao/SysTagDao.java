@@ -21,12 +21,13 @@ public class SysTagDao extends GenericDao<SysTag> {
     // see SysTagMapDao.findCategoryMapsByChannelId
     public List<SysTag> findCategoriesByChannelId(long channelId, long msoId) {
     
-        String query = " select * from systag a1"
-                     + " inner join (select s.id from systag_map m, systag s "
-                     + "             where s.type = "      + SysTag.TYPE_CATEGORY
-                     + "               and s.msoId = "     + msoId
-                     + "               and m.channelId = " + channelId
-                     + "               and s.id = m.systagId) a2 on a1.id = a2.id ";
+        String query = "   SELECT * FROM systag a1 "
+                     + " INNER JOIN (SELECT s.id FROM systag_map m, systag s "
+                     + "              WHERE s.type = " + SysTag.TYPE_CATEGORY
+                     + "                AND s.msoId = " + msoId
+                     + "                AND m.channelId = " + channelId
+                     + "                AND s.id = m.systagId) a2 "
+                     + "         ON a1.id = a2.id ";
         
         return sql(query);
     }

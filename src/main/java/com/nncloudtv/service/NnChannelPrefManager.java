@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnChannelPrefDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
-import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
 
 @Service
@@ -73,21 +71,4 @@ public class NnChannelPrefManager {
         }
     }
     
-    // TODO: to be removed
-    public void setAutoSync(Long channelId, String autoSync) {
-        
-        if (channelId == null || autoSync == null) {
-            return ;
-        }
-        
-        NnChannelPref channelPref = findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
-        if (channelPref == null) {
-            
-            channelPref = new NnChannelPref(channelId, NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-        }
-        
-        channelPref.setValue(autoSync);
-        
-        save(channelPref);
-    }
 }

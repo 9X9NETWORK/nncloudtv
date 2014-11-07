@@ -333,23 +333,28 @@ public class NnProgramManager {
     }
     
     public void resetCache(long channelId) {
+        
         log.info("reset program info cache: " + channelId);
+        List<String> keys = new ArrayList<String>();
+        
         //programInfo version 40, format json
-        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
+        keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
         //programInfo, version 40, format text
-        CacheFactory.delete(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
+        keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
+        
         //programInfo, version 31
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
         //latestProgramInfo
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
-        CacheFactory.delete(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
+        keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
+        
         //channelLineup
-        String cId = String.valueOf(channelId);
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
-        CacheFactory.delete(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
-    }           
+        keys.addAll(CacheFactory.getAllChannelInfoKeys(channelId));
+        
+        log.info("cache key count = " + keys.size());
+        CacheFactory.delete(keys);
+    }
     
     public int total() {
         return dao.total();
@@ -918,13 +923,13 @@ public class NnProgramManager {
                     
                     List<PlayerPoi>       playerPois       = new ArrayList<PlayerPoi>();
                     List<PlayerTitleCard> playerTitleCards = new ArrayList<PlayerTitleCard>();
-                    List<PoiPoint>        points           = NNF.getPoiPointMngr().findCurrentByProgram(program.getId());
+                    List<PoiPoint>        points           = NNF.getPoiPointMngr().findCurrentByProgramId(program.getId());
                     
                     log.info("points size:" + points.size());
                     
                     List<PoiEvent> events = new ArrayList<PoiEvent>();
                     for (PoiPoint point : points) {
-                        PoiEvent event = NNF.getPoiEventMngr().findByPoint(point.getId());
+                        PoiEvent event = NNF.getPoiEventMngr().findByPointId(point.getId());
                         events.add(event);
                     }
                     if (points.size() != events.size()) {
@@ -1284,5 +1289,15 @@ public class NnProgramManager {
             
             return info;
         }
+    }
+    
+    public NnProgram findById(String programIdStr) {
+        
+        return dao.findById(programIdStr);
+    }
+    
+    public List<NnProgram> findAllByIds(List<Long> deleteIdList) {
+        
+        return dao.findAllByIds(deleteIdList);
     }
 }

@@ -21,13 +21,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
@@ -124,11 +126,7 @@ public class ApiUser extends ApiGeneric {
         String lang = req.getParameter("lang");
         if (lang != null) {
             
-            if (NnStringUtil.validateLangCode(lang) == null) {
-                log.warning("lang is not valid");
-            } else {
-                user.getProfile().setLang(lang);
-            }
+            user.getProfile().setLang(lang);
         }
         
         return response(NNF.getUserMngr().save(user));
@@ -136,35 +134,52 @@ public class ApiUser extends ApiGeneric {
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
     public @ResponseBody
-    List<NnChannel> userChannels(HttpServletRequest req,
-            HttpServletResponse resp,
+    List<NnChannel> userChannels(HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(value = "mso", required = false) String msoName, 
             @PathVariable("userId") String userIdStr) {
         
         List<NnChannel> results = new ArrayList<NnChannel>();
-        ApiContext ctx = new ApiContext(req);
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, ctx.getMsoId());
+        NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
         if (user == null) {
-            notFound(resp, "User Not Found");
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        results = channelMngr.findByUser(user, 0, true);
+        Mso mso = null;
+        List<String> supportedRegion = null;
+        if (msoName != null) {
+            mso = NNF.getMsoMngr().findByIdOrName(msoName);
+            if (mso != null)
+                supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
+        }
+        
+        results = NNF.getChannelMngr().findByUser(user, 0, true);
         Iterator<NnChannel> it = results.iterator();
         while (it.hasNext()) {
             NnChannel channel = it.next();
+            // filter by type
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
                 it.remove();
+                continue;
+            }
+            if (mso != null) { // NnSet candidates filter
+                if (channel.getStatus() != NnChannel.STATUS_SUCCESS) {
+                    it.remove();
+                    continue;
+                }
+                if (supportedRegion != null) {
+                    String sphere = channel.getSphere();
+                    if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
+                        it.remove();
+                        continue;
+                    }
+                }
             }
         }
         int rows = PlayerApiService.PAGING_ROWS;
@@ -185,16 +200,20 @@ public class ApiUser extends ApiGeneric {
             results = results.subList(start, end);
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         for (NnChannel channel : results) {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
             channelMngr.populateAutoSync(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));
         }
         
         return results;
     }
     
+    // TODO remove
     @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> userPlayableChannels(HttpServletRequest req,
@@ -211,15 +230,20 @@ public class ApiUser extends ApiGeneric {
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
-            notFound(resp, "User Not Found");
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> results = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : results) {
+        results = channelMngr.findByUser(user, 0, true);
+        Iterator<NnChannel> it = results.iterator();
+        while (it.hasNext()) {
+            
+            NnChannel channel = it.next();
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                results.remove(channel);
+                it.remove();
+                continue;
             }
         }
         
@@ -234,7 +258,6 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
-            
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
@@ -249,11 +272,7 @@ public class ApiUser extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return;
@@ -261,69 +280,60 @@ public class ApiUser extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return;
+            
         } else if (user.getId() != userId) {
+            
             forbidden(resp);
             return;
         }
         
-        String channelIdsStr = req.getParameter("channels");
-        if (channelIdsStr == null) {
+        String channelsParam = req.getParameter("channels");
+        if (channelsParam == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
         }
-        String[] channelIdStrList = channelIdsStr.split(",");
-        
-        // the result should be same as userChannels but not include fake channel
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : channels) {
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                channels.remove(channel);
-                break;
-            }
-        }
-        
-        List<NnChannel> orderedChannels = new ArrayList<NnChannel>();
         List<Long> channelIdList = new ArrayList<Long>();
-        List<Long> checkedChannelIdList = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            channelIdList.add(channel.getId());
-            checkedChannelIdList.add(channel.getId());
+        for (String split : channelsParam.split(",")) {
+            
+            Long splitId = NnStringUtil.evalLong(split);
+            if (splitId != null) {
+                channelIdList.add(splitId);
+            }
         }
         
-        int index;
-        for (String channelIdStr : channelIdStrList) {
-            
-            Long channelId = null;
-            try {
-                
-                channelId = Long.valueOf(channelIdStr);
-                
-            } catch(Exception e) {
-            }
-            if (channelId != null) {
-                index = channelIdList.indexOf(channelId);
-                if (index > -1) {
-                    orderedChannels.add(channels.get(index));
-                    checkedChannelIdList.remove(channelId);
-                }
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
+        Iterator<NnChannel> it = channels.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                it.remove();
             }
         }
-        // parameter should contain all channelId
-        if (checkedChannelIdList.size() != 0) {
+        
+        if (channelIdList.size() != channels.size()) {
+            
+            log.info(String.format("%d not equal %d", channelIdList.size(), channels.size()));
             badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
-        short counter = 1;
-        for (NnChannel channel : orderedChannels) {
-            channel.setSeq(counter);
-            counter++;
+        for (NnChannel channel : channels) {
+            
+            int index = channelIdList.indexOf(channel.getId());
+            if (index < 0) {
+                
+                log.info(String.format("channelId %d is not matched", channel.getId()));
+                badRequest(resp, INVALID_PARAMETER);
+                return;
+            }
+            
+            channel.setSeq((short)(index + 1));
         }
         
-        channelMngr.saveAll(orderedChannels);
+        NNF.getChannelMngr().save(channels, false);
         
         msgResponse(resp, OK);
     }
@@ -341,9 +351,12 @@ public class ApiUser extends ApiGeneric {
         
         NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
+            
             unauthorized(resp);
             return null;
+            
         } else if (user.getId() != userId) {
+            
             forbidden(resp);
             return null;
         }
@@ -369,28 +382,21 @@ public class ApiUser extends ApiGeneric {
         }
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang == null || NnStringUtil.validateLangCode(lang) == null) {
-            lang = LangTable.LANG_EN; // default : en
-        }
+        String lang = getParameter(req, "lang", LocaleTable.LANG_EN); //req.getParameter("lang");
         
         // isPublic
-        Boolean isPublic = true; // default : true
-        String isPublicStr = req.getParameter("isPublic");
-        if (isPublicStr != null) {
-            isPublic = NnStringUtil.evalBool(isPublicStr);
-            if (isPublic == null) {
-                isPublic = true;
-            }
-        }
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
+        
+        // paidChannel
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"), false);
         
         // tag
         String tag = req.getParameter("tag");
         
         // sphere
         String sphere = req.getParameter("sphere");
-        if (sphere == null || NnStringUtil.validateLangCode(sphere) == null) {
-            sphere = LangTable.LANG_EN; // default : en
+        if (sphere == null) {
+            sphere = LocaleTable.LANG_EN; // default : en
         }
         
         // categoryId
@@ -444,8 +450,8 @@ public class ApiUser extends ApiGeneric {
         channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
         channel.setPoolType(NnChannel.POOL_BASE);
         channel.setUserIdStr(user.getShard(), user.getId());
-        channel.setLang(LangTable.LANG_EN); // default : en
-        channel.setSphere(LangTable.LANG_EN); // default : en
+        channel.setLang(LocaleTable.LANG_EN); // default : en
+        channel.setSphere(LocaleTable.LANG_EN); // default : en
         channel.setSeq((short) 0);
         
         if (intro != null) {
@@ -459,6 +465,9 @@ public class ApiUser extends ApiGeneric {
         }
         if (isPublic != null) {
             channel.setPublic(isPublic);
+        }
+        if (paidChannel != null) {
+            channel.setPaidChannel(paidChannel);
         }
         if (sphere != null) {
             channel.setSphere(sphere);
@@ -481,7 +490,11 @@ public class ApiUser extends ApiGeneric {
         
         channel = NNF.getChannelMngr().save(channel);
         
-        NNF.getChannelMngr().reorderUserChannels(user);
+        // syncNow
+        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+            
+            channel = NnChannelManager.syncNow(channel);
+        }
         
         if (categoryId != null) {
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
@@ -489,13 +502,19 @@ public class ApiUser extends ApiGeneric {
         
         String autoSync = req.getParameter("autoSync");
         if (autoSync != null) {
-            NNF.getChPrefMngr().setAutoSync(channel.getId(), autoSync);
+            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+            if (autosyncPref == null) {
+                
+                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+            }
+            autosyncPref.setValue(autoSync);
+            NNF.getChPrefMngr().save(autosyncPref);
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
+        NNF.getChannelMngr().reorderUserChannels(user);
+        NNF.getChannelMngr().populateCategoryId(channel);
+        NNF.getChannelMngr().populateAutoSync(channel);
+        NNF.getChannelMngr().normalize(channel);
         
         return channel;
     }
