@@ -281,7 +281,7 @@ public class GenericDao<T> {
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
             query.closeAll();
-            System.out.println(String.format("[sql] query costs %d milliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
             
         } finally {
             
