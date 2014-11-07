@@ -1629,6 +1629,7 @@ public class PlayerApiService {
             //return this.assembleMsgs(NnStatusCode.ACCOUNT_INVALID, null);
         }
         String content = "";
+        String from = "";
         if (item != null) {
             String[] key = item.split(",");
             String[] value = comment.split(",");
@@ -1640,13 +1641,17 @@ public class PlayerApiService {
                     content += key[i] + ":" + value[i] + "\n";
             	else
                     description = value[i];
-            }
+            	if (key[i].equals("email"))
+            		from = key[i];
+            }            
+            //description needs to be put at the end
             if (description.length() > 0)
-        		content += "description:" + description + "\n";            	
+        		content += "description:" + description + "\n";
         } else {
             content = comment; //backward compatibility
         }
-        
+        if (from.length() == 0)
+        	from = user.getEmail();
         NnUserReportManager reportMngr = new NnUserReportManager();
         String[] result = {""};
         NnUserReport report = reportMngr.save(user, device, session, type, item, content);
@@ -1655,12 +1660,15 @@ public class PlayerApiService {
             EmailService service = new EmailService();
             String toEmail = "feedback@9x9.tv";
             String toName = "feedback";
-            String subject = "User send a report";
+            //String subject = "User send a report";
             ApiContext context = new ApiContext(req);
             Mso mso = context.getMso();
             NnUserProfile profile = user.getProfile();
             String body = "user ui-lang:" + profile.getLang() + "\n";
-            body += "user region:" + profile.getSphere() + "\n";
+            String region = "TW";
+            if (profile.getSphere() != null && profile.getSphere().equals("zh"))
+            	region = "US";
+            body += "user region:" + region + "\n";
             body += "user brand:" + mso.getName() + "\n\n";
             body += content;
             try {
@@ -1669,12 +1677,15 @@ public class PlayerApiService {
                 e.printStackTrace();
             }
             
-            subject += (type != null) ? (" (" + type + ")") : "" ;
-            
+            String subject = "[" + mso.getName() + "]";
+            subject += (type != null) ? (" - [" + type + "]") : "" ;
+            SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
+        	String date = sdf.format(new Date()); 
+            subject += " (" + date + ")";
             log.info("subject:" + subject);
             log.info("content:" + body);
             NnEmail mail = new NnEmail(toEmail, toName,
-                                       user.getUserEmail(), profile.getName(),
+                                       from, profile.getName(),
                                        user.getUserEmail(), subject, body);
             service.sendEmail(mail, "userfeedback@9x9.tv", "userfeedback");
         }
