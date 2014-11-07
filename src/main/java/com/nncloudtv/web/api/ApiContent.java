@@ -670,7 +670,7 @@ public class ApiContent extends ApiGeneric {
     @SuppressWarnings("unchecked")
     @RequestMapping(value = "channels", method = RequestMethod.GET)
     public @ResponseBody
-    List<NnChannel> channelsSearch(HttpServletRequest req,
+    List<NnChannel> channelSearch(HttpServletRequest req,
             HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoName,
             @RequestParam(required = false, value = "sphere") String sphereStr,
@@ -1167,14 +1167,12 @@ public class ApiContent extends ApiGeneric {
         // sphere
         List<String> spheres = null;
         String sphereParam = req.getParameter("sphere");
-        if (sphereParam != null)
+        if (sphereParam != null && !sphereParam.isEmpty())
             spheres = new ArrayList<String>(Arrays.asList(sphereParam.split(",")));
-        
         List<Long> results = new ArrayList<Long>();
         List<NnChannel> channels = NNF.getCategoryService().getCategoryChannels(categoryId, spheres);
         for (NnChannel channel : channels)
             results.add(channel.getId());
-        
         return results;
     }
     
