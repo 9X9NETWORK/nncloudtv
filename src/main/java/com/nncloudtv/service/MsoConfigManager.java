@@ -317,7 +317,7 @@ public class MsoConfigManager {
         }
         MsoConfig config = this.findByMsoAndItem(mso, item);
         if (config != null) {
-            log.info("set value to cache: key=" + cacheKey + "value=" + config.getValue());
+            log.info("set value to cache: key=" + cacheKey + ", value=" + config.getValue());
             CacheFactory.set(cacheKey, config);
         }
         return config;
