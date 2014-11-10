@@ -362,7 +362,7 @@ public class ApiBilling extends ApiGeneric {
             } else {
                 descPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_DESC, description);
             }
-            NNF.getChPrefMngr().save(titlePref);
+            NNF.getChPrefMngr().save(descPref);
         }
         if (descPref != null) {
             iap.setDescription(descPref.getValue());
@@ -377,7 +377,7 @@ public class ApiBilling extends ApiGeneric {
             } else {
                 pricePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_PRICE, price);
             }
-            NNF.getChPrefMngr().save(titlePref);
+            NNF.getChPrefMngr().save(pricePref);
         }
         if (pricePref != null) {
             iap.setPrice(pricePref.getValue());
@@ -392,7 +392,7 @@ public class ApiBilling extends ApiGeneric {
             } else {
                 thumbPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_THUMB, thumbnail);
             }
-            NNF.getChPrefMngr().save(titlePref);
+            NNF.getChPrefMngr().save(thumbPref);
         }
         if (thumbPref != null) {
             iap.setThumbnail(thumbPref.getValue());
