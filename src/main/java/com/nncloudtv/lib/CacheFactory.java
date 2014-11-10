@@ -287,13 +287,18 @@ public class CacheFactory {
         }
     }
     
+    public static String getMaoConfigKey(long msoId, String key) {
+        
+        return String.format("msoconfig(%d)(%s)", msoId, key);
+    }
+    
     // example: mso(9x9)
     public static String getMsoObjectKey(String name) {
         
         return String.format("mso(%s)", name);
     }
     
-	// example: brandInfo(9x9)[json]
+    // example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
     	String key = "";
     	if (format == ApiContext.FORMAT_PLAIN) {
@@ -312,14 +317,14 @@ public class CacheFactory {
      *           nnprogram-v40-2-50-json
      */
     public static String getProgramInfoKey(long channelId, int start, int version, short format) {
-    	if (version <= 32) {
-    		return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
-    	}
-        String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
+        if (version <= 32) {
+            return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
+        }
+        String str = "nnprogram-v40-" + channelId + "-" + start + "-";
         if (format == ApiContext.FORMAT_JSON) {
-        	str += "json";
+            str += "json";
         } else {
-        	str += "text";
+            str += "text";
         }
         log.info("programInfo cache key:" + str);
         return str;

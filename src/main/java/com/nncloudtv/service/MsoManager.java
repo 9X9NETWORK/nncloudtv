@@ -92,8 +92,8 @@ public class MsoManager {
         String keyWebJson      = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_JSON);
         String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_PLAIN);
         
-        String appConfig        = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_EXPIRE);
-        String appVersionConfig = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
+        String appConfig        = CacheFactory.getMaoConfigKey(mso.getId(), MsoConfig.APP_EXPIRE);
+        String appVersionConfig = CacheFactory.getMaoConfigKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         
         CacheFactory.delete(keyMsoObjectName);
         CacheFactory.delete(keyMsoObjectId);

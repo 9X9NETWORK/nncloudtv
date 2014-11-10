@@ -269,11 +269,6 @@ public class MsoConfigManager {
         return null;
     }
     
-    public String getCacheKeyByMsoAndKey(long msoId, String key) {
-        String cacheKey = "msoconfig(" + msoId + ")(" + key + ")";
-        return cacheKey;
-    }
-    
     public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
         try {
@@ -309,11 +304,12 @@ public class MsoConfigManager {
     
     //find: access db directly; get: through cache
     public MsoConfig getByMsoAndItem(Mso mso, String item) {
-        String cacheKey = this.getCacheKeyByMsoAndKey(mso.getId(), item);
-        try {        
-            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);        
+        
+        String cacheKey = CacheFactory.getMaoConfigKey(mso.getId(), item);
+        try {
+            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);
             if (result != null){
-                log.info("value from cache: key=" + cacheKey + "value=" + result.getValue());
+                log.info("value from cache: key=" + cacheKey + ", value=" + result.getValue());
                 return result;
             }    
         } catch (Exception e) {
