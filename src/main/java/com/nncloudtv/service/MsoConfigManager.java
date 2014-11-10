@@ -576,12 +576,12 @@ public class MsoConfigManager {
         return null;
     }
     
-    public static List<String> getSuppoertedResion(Mso mso) {
+    public static List<String> getSuppoertedResion(Mso mso, boolean appendOther) {
         List<String> empty = new ArrayList<String>();
         if (mso == null) return empty;
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
         if (config != null) {
-            List<String> regions = NnStringUtil.parseRegion(config.getValue(), true);
+            List<String> regions = NnStringUtil.parseRegion(config.getValue(), appendOther);
             if (regions != null && !regions.isEmpty())
                 return regions;
         }

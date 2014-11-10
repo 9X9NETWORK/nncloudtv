@@ -926,7 +926,7 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        List<String> regions = MsoConfigManager.getSuppoertedResion(mso);
+        List<String> regions = MsoConfigManager.getSuppoertedResion(mso, false);
         if (regions != null)
             mso.setSupportedRegion(StringUtils.join(regions, ","));
         MsoManager.normalize(mso);

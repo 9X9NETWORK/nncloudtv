@@ -615,7 +615,7 @@ public class MsoManager {
         if (mso == null) {
             return new ArrayList<Long>();
         }
-        List<String> supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
+        List<String> supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
         
         List<Long> results = new ArrayList<Long>();
         for (NnChannel channel : channels) {

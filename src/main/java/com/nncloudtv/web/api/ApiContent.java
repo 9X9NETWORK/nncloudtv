@@ -757,7 +757,7 @@ public class ApiContent extends ApiGeneric {
             if (sphereStr == null && msoName != null) {
                 storeOnly = true;
                 System.out.println("[channel_search] mso = " + msoName);
-                List<String> spheres = MsoConfigManager.getSuppoertedResion(mso);
+                List<String> spheres = MsoConfigManager.getSuppoertedResion(mso, true);
                 sphereStr = StringUtils.join(spheres, ',');
                 System.out.println("[channel_search] mso supported region = " + sphereStr);
             }

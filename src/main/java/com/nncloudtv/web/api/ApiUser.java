@@ -45,12 +45,12 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 @RequestMapping("api")
 public class ApiUser extends ApiGeneric {
 
-    protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
+    protected static Logger log = Logger.getLogger(ApiUser.class.getName());
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
     public @ResponseBody
     User userInfoUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String msoStr,
+            @RequestParam(value = "mso", required = false) String msoIdStr,
             @PathVariable("userId") String userIdStr, @RequestParam(required = false) Short shard) {
         
         Long userId = null;
@@ -62,12 +62,16 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        
         if (shard == null) {
             shard = NnUser.SHARD_UNKNWON;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        Mso mso = null;
+        if (msoIdStr != null) {
+            mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso == null ? MsoManager.getSystemMsoId() : mso.getId());
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -156,7 +160,7 @@ public class ApiUser extends ApiGeneric {
         if (msoName != null) {
             mso = NNF.getMsoMngr().findByIdOrName(msoName);
             if (mso != null)
-                supportedRegion = MsoConfigManager.getSuppoertedResion(mso);
+                supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
         }
         
         results = NNF.getChannelMngr().findByUser(user, 0, true);
