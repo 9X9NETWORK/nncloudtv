@@ -286,8 +286,14 @@ public class CacheFactory {
             log.info(String.format("cache [%s] --> not deleted", key));
         }
     }
-            
-	//example: brandInfo(9x9)[json]
+    
+    // example: mso(9x9)
+    public static String getMsoObjectKey(String name) {
+        
+        return String.format("mso(%s)", name);
+    }
+    
+	// example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
     	String key = "";
     	if (format == ApiContext.FORMAT_PLAIN) {

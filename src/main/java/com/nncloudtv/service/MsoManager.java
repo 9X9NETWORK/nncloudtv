@@ -80,6 +80,9 @@ public class MsoManager {
         
         if (mso == null) { return; }
         
+        String keyMsoObjectName = CacheFactory.getMsoObjectKey(mso.getName());
+        String keyMsoObjectId   = CacheFactory.getMsoObjectKey(String.valueOf(mso.getId()));
+        
         String keyAdInfoPlain  = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_PLAIN);
         String keyAdInfoJson   = CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_JSON);
         String keyAndroidJson  = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_ANDROID, ApiContext.FORMAT_JSON);
@@ -92,6 +95,8 @@ public class MsoManager {
         String appConfig        = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_EXPIRE);
         String appVersionConfig = NNF.getConfigMngr().getCacheKeyByMsoAndKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         
+        CacheFactory.delete(keyMsoObjectName);
+        CacheFactory.delete(keyMsoObjectId);
         CacheFactory.delete(keyAdInfoPlain);
         CacheFactory.delete(keyAdInfoJson);
         CacheFactory.delete(keyAndroidJson);
@@ -478,17 +483,17 @@ public class MsoManager {
     
     public Mso getByNameFromCache(String name) {
         if (name == null || name.isEmpty()) {return null;}
-        String cacheKey = "mso(" + name + ")";
+        String cacheKey = CacheFactory.getMsoObjectKey(name);
         try {
             Mso cached = (Mso) CacheFactory.get(cacheKey);
             if (cached != null) {
-                log.info("get mso object from cache:" + cached.getId());
+                log.info("get mso object from cache: " + name);
                 return cached;
             }
         } catch (Exception e) {
             log.info("memcache error");
         }        
-        log.info("NOT get mso object from cache:" + name);
+        log.info("NOT get mso object from cache: " + name);
         Mso mso = findByIdOrName(name);
         CacheFactory.set(cacheKey, mso);
         return mso;
