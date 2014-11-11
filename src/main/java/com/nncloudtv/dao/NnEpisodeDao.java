@@ -10,7 +10,6 @@ import javax.jdo.Query;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.service.PlayerApiService;
 
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
@@ -87,7 +86,6 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             	query.setOrdering("seq desc");
             else 
                 query.setOrdering("seq asc");
-            query.setRange(0, PlayerApiService.PAGING_ROWS);
             @SuppressWarnings("unchecked")
             List<NnEpisode> episodes = (List<NnEpisode>)query.execute(channelId, true);
             if (episodes.size() > 0) {
