@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -8,10 +7,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable(table="poi", detachable = "true")
-public class Poi implements Serializable {
-    private static final long serialVersionUID = 6052050995813073585L;
-
+@PersistenceCapable(table = "poi", detachable = "true")
+public class Poi {
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

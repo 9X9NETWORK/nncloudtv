@@ -27,7 +27,7 @@ public class EmailService {
         props.put("mail.smtp.host", "ec2-50-112-96-199.us-west-2.compute.amazonaws.com"); 
         Session session = Session.getDefaultInstance(props, null);
         
-        try {            
+        try {
             MimeMessage msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(email.getSendEmail(), email.getSendName()));
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email.getToEmail(), email.getToName()));
@@ -41,14 +41,14 @@ public class EmailService {
             msg.setSubject(email.getSubject(), "utf-8");
             if (email.isHtml()) {
                 //msg.setContent("<h1>哈囉</h1>", "text/html; charset=utf-8");
-                msg.setContent(email.getBody(), "text/html; charset=utf-8");                
+                msg.setContent(email.getBody(), "text/html; charset=utf-8");
             } else {
                 msg.setText(email.getBody());
             }
             Transport.send(msg);
         } catch (Exception e) {
             NnLogUtil.logException(e);
-        }                    
-    }            
-
+        }
+    }
+    
 }

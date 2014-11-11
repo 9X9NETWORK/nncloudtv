@@ -11,6 +11,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.web.api.ApiContext;
@@ -60,15 +61,37 @@ public class NnItemManager {
         return NnStringUtil.getDelimitedStr(obj);
     }
     
-    public List<NnItem> findByMsoAndOs(Mso mso, String os) {
+    private short os2Platform(String os) {
         
         short platform = NnItem.UNKNOWN;
-        if (os.equals(ApiContext.OS_ANDROID)) {
+        if (os == null) {
+            
+        } else if (os.equals(ApiContext.OS_ANDROID)) {
+            
             platform = NnItem.GOOGLEPLAY;
+            
         } else if (os.equals(ApiContext.OS_IOS)) {
+            
             platform = NnItem.APPSTORE;
         }
         
-        return dao.findByMsoIdAndPlatform(mso.getId(), platform);
+        return platform;
+    }
+    
+    public List<NnItem> findByMsoAndOs(Mso mso, String os) {
+        
+        return dao.findByMsoIdAndPlatform(mso.getId(), os2Platform(os));
+    }
+    
+    public List<NnItem> findByChannelId(long channelId) {
+        
+        return dao.findByChannelId(channelId);
+    }
+    
+    public NnItem findOne(Mso mso, NnChannel channel, String os) {
+        
+        if (mso == null || channel == null || os == null) { return null; }
+        
+        return dao.findOne(mso.getId(), os2Platform(os), channel.getId());
     }
 }

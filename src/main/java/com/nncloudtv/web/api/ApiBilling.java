@@ -31,8 +31,14 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
+import com.nncloudtv.model.NnItem;
+import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.web.json.cms.CreditCard;
+import com.nncloudtv.web.json.cms.IapInfo;
 
 @Controller
 @RequestMapping("api/billing")
@@ -288,9 +294,8 @@ public class ApiBilling extends ApiGeneric {
         
         if (req.getParameter(NO_MAIL) == null) {
             try {
-                BillingService billingServ = new BillingService();
                 
-                billingServ.sendPurchaseConfirmEmail(orders);
+                NNF.getBillingService().sendPurchaseConfirmEmail(orders);
                 
             } catch (NnDataIntegrityException e) {
                 NnLogUtil.logException(e);
@@ -305,5 +310,168 @@ public class ApiBilling extends ApiGeneric {
         
         resp.setStatus(HTTP_201);
         return NNF.getOrderMngr().save(orders);
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.POST)
+    public @ResponseBody IapInfo iapInfoUpdate(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
+            forbidden(resp);
+            return null;
+        }
+        
+        IapInfo iapInfo = NNF.getChPrefMngr().getIapInfo(channel.getId());
+        
+        // title
+        String title = req.getParameter("title");
+        NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_TITLE);
+        if (title != null) {
+            if (titlePref != null) {
+                titlePref.setValue(title);
+            } else {
+                titlePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_TITLE, title);
+            }
+            NNF.getChPrefMngr().save(titlePref);
+            iapInfo.setTitle(titlePref.getValue());
+        }
+        
+        // description
+        String description = req.getParameter("description");
+        NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_DESC);
+        if (description != null) {
+            if (descPref != null) {
+                descPref.setValue(description);
+            } else {
+                descPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_DESC, description);
+            }
+            NNF.getChPrefMngr().save(descPref);
+            iapInfo.setDescription(descPref.getValue());
+        }
+        
+        // price
+        String price = req.getParameter("price");
+        NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_PRICE);
+        if (price != null) {
+            if (pricePref != null) {
+                pricePref.setValue(price);
+            } else {
+                pricePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_PRICE, price);
+            }
+            NNF.getChPrefMngr().save(pricePref);
+            iapInfo.setPrice(pricePref.getValue());
+        }
+        
+        // thumbnail
+        String thumbnail = req.getParameter("thumbnail");
+        NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_THUMB);
+        if (thumbnail != null) {
+            if (thumbPref != null) {
+                thumbPref.setValue(thumbnail);
+            } else {
+                thumbPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_THUMB, thumbnail);
+            }
+            NNF.getChPrefMngr().save(thumbPref);
+            iapInfo.setThumbnail(thumbPref.getValue());
+        }
+        
+        return iapInfo;
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.POST)
+    public @ResponseBody void itemsCreate(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return;
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
+            forbidden(resp);
+            return;
+        }
+        
+        String msoIdStr = req.getParameter("msoId");
+        if (msoIdStr == null) {
+            
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        Mso mso = NNF.getMsoMngr().findById(msoIdStr);
+        if (mso == null) {
+            
+            badRequest(resp, MSO_NOT_FOUND);
+            return;
+        }
+        
+        NnItem appstoreItem = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_IOS);
+        if (appstoreItem == null) {
+            
+            appstoreItem = new NnItem(mso.getId(), channel.getId(), NnItem.APPSTORE);
+            NNF.getItemMngr().save(appstoreItem);
+            
+            try {
+                NNF.getBillingService().sendItemCreationEmail(appstoreItem);
+            } catch (IOException e) {
+                log.warning("fail to send notification mail");
+            }
+        }
+        
+        NnItem googleplayItem = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_ANDROID);
+        if (googleplayItem == null) {
+            
+            googleplayItem = new NnItem(mso.getId(), channel.getId(), NnItem.GOOGLEPLAY);
+            NNF.getItemMngr().save(googleplayItem);
+        }
+        
+        msgResponse(resp, OK);
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.GET)
+    public @ResponseBody List<NnItem> items(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        return NNF.getItemMngr().findByChannelId(channel.getId());
+    }
+    
+    @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.GET)
+    public @ResponseBody IapInfo iapInfo(HttpServletResponse resp, HttpServletRequest req,
+            @PathVariable("channelId") String channelIdStr) {
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null) {
+            notFound(resp, CHANNEL_NOT_FOUND);
+            return null;
+        }
+        
+        return NNF.getChPrefMngr().getIapInfo(channel.getId());
     }
 }

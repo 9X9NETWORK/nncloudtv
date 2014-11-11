@@ -8,15 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.LangTable;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
-import com.nncloudtv.model.SysTag;
-import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 
@@ -24,66 +19,6 @@ import com.nncloudtv.web.api.NnStatusCode;
 public class IosService {
     
     protected static final Logger log = Logger.getLogger(IosService.class.getName());
-    private static final String urlRoot = "http://s3.amazonaws.com/9x9ui/war/v2/ios/";
-    
-    public String category(String id, String lang, boolean flatten, Mso mso) {
-        if (mso.getId() == 1) {
-            String filename = "category_en";
-            if (lang != null && lang.equals(LangTable.LANG_ZH)) {
-                filename = "category_zh";
-            }
-            if (id != null) {
-                filename = "category_" + id;
-                if (id.contains("s"))
-                    filename = id;
-            }
-            log.info("file mode:" + filename);
-            String url = urlRoot + filename;
-            String result = NnNetUtil.urlGet(url);            
-            if (result == null)
-                return (String) new PlayerApiService().assembleMsgs(NnStatusCode.INPUT_BAD, null);
-            else
-                return result;
-        }
-        PlayerApiService api = new PlayerApiService();
-        lang = api.checkLang(lang);    
-        if (lang == null) {
-            return (String) api.assembleMsgs(NnStatusCode.INPUT_BAD, null);
-        }
-        if (id == null) {
-            id = "0";
-        }        
-        String[] result = {"", "", ""};
-        //if it's a set, find channel info
-        result[0] = "id" + "\t" + id + "\n";
-        if (!id.equals("0")) {            
-            long tagId = Long.parseLong(id);
-            SysTag tag = NNF.getSysTagMngr().findById(tagId);
-            if (tag != null) {
-                result[0] += "piwik" + "\t" + "" + "\n";
-            }
-            List<NnChannel> channels = NNF.getSysTagMngr().findPlayerChannelsById(tagId, lang, SysTag.SORT_SEQ, 0);
-            for (NnChannel c : channels) {
-                c.setSorting(NnChannelManager.getPlayerDefaultSorting(c));
-            }
-            result[2] = this.composeChannelLineup(channels);
-            return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
-        }        
-        
-        List<SysTagDisplay> categories = NNF.getDisplayMngr().findPlayerCategories(lang, mso.getId());
-        //if it's just categories, find categories
-        for (SysTagDisplay c : categories) { 
-            String name =  c.getName();
-            int cnt = c.getCntChannel();
-            String subItemHint = "ch"; //what's under this level
-            String[] str = {String.valueOf(c.getId()), 
-                            name, 
-                            String.valueOf(cnt), 
-                            subItemHint};               
-            result[1] += NnStringUtil.getDelimitedStr(str) + "\n";
-        }
-        return (String) api.assembleMsgs(NnStatusCode.SUCCESS, result);
-    }
     
     public String composeChannelLineup(List<NnChannel> channels) {
         String result = "";
@@ -129,7 +64,7 @@ public class IosService {
         }
         return result;
     }
-
+    
     private String composeLimitProgramInfoStr(String input, long sidx, long limit) {
         if (sidx == 0 && limit == 0)
             return input;
@@ -147,11 +82,11 @@ public class IosService {
         }        
         return result;
     }
-
+    
     public String findPlayerProgramInfoByChannel(long channelId, long sidx, long limit) {
         String result = this.findPlayerProgramInfoByChannel(channelId);
         return this.composeLimitProgramInfoStr(result, sidx, limit);
-    }    
+    }
     
     public String findPlayerProgramInfoByChannel(long channelId) {
         log.info("request from != v32");
@@ -172,15 +107,16 @@ public class IosService {
         return str;
     }    
     
-	public String search(String text) {
-		List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
-		String[] result = {""};
-		result[0] = this.composeChannelLineup(searchResults);
-		return (String) new PlayerApiService().assembleMsgs(NnStatusCode.SUCCESS, result);
-	}
+    public String search(String text) {
+        List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
+        String[] result = { "" };
+        result[0] = this.composeChannelLineup(searchResults);
+        return (String) new PlayerApiService().assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
     
-    public String composeProgramInfoStr(List<NnProgram> programs) {        
-        String output = "";        
+    public String composeProgramInfoStr(List<NnProgram> programs) {
+        
+        String output = "";
         String regexCache = "^(http|https)://(9x9cache.s3.amazonaws.com|s3.amazonaws.com/9x9cache)";
         String regexPod = "^(http|https)://(9x9pod.s3.amazonaws.com|s3.amazonaws.com/9x9pod)";
         String cache = "http://cache.9x9.tv";
@@ -237,6 +173,6 @@ public class IosService {
             output = output.replaceAll("null", "");
             output = output + "\n";
         }
-        return output;        
+        return output;
     }    
 }

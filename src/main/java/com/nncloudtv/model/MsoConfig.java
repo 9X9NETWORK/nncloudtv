@@ -44,7 +44,7 @@ public class MsoConfig implements Serializable  {
     public static String APP_VERSION_EXPIRE    = "app-version-expire";       //format: "ios 3.0.2;ios 3.0.7;android 4.0" 
     public static String UPGRADE_MSG           = "upgrade-msg";
     public static String QUEUED                = "queued";
-    public static String SUPPORTED_REGION      = "supported-region"; //zh, en
+    public static String SUPPORTED_REGION      = "supported-region";         //"zh Chinese, en English"
     public static String API_MINIMAL           = "api-minimal";
     public static String SYSTEM_CATEGORY_MASK  = "system-category-mask";
     public static String STORE_ANDROID         = "store-android";            //android store url

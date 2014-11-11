@@ -8,17 +8,14 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.NnUser;
@@ -26,11 +23,6 @@ import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
-import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.PoiCampaignManager;
-import com.nncloudtv.service.PoiEventManager;
-import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.TagManager;
 
 @Controller
@@ -39,61 +31,29 @@ public class ApiPoi extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiPoi.class.getName());
     
-    NnUserManager userMngr;
-    NnProgramManager programMngr;
-    PoiCampaignManager campaignMngr;
-    PoiPointManager pointMngr;
-    PoiEventManager eventMngr;
-    
-    @Autowired
-    public ApiPoi(NnUserManager userMngr, NnProgramManager programMngr, PoiCampaignManager campaignMngr,
-                    PoiPointManager pointMngr, PoiEventManager eventMngr) {
-        this.userMngr = userMngr;
-        this.programMngr = programMngr;
-        this.campaignMngr = campaignMngr;
-        this.pointMngr = pointMngr;
-        this.eventMngr = eventMngr;
-    }
-    
     @RequestMapping(value = "users/{userId}/poi_campaigns", method = RequestMethod.GET)
     public @ResponseBody
     List<PoiCampaign> userCampaigns(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        List<PoiCampaign> results = campaignMngr.findByUserId(user.getId());
+        List<PoiCampaign> results = NNF.getPoiCampaignMngr().findByUserId(userId);
         if (results == null) {
-            log.info(printExitState(now, req, "ok"));
             return new ArrayList<PoiCampaign>();
         }
         
@@ -101,7 +61,6 @@ public class ApiPoi extends ApiGeneric {
             result.setName(NnStringUtil.revertHtml(result.getName()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -109,35 +68,20 @@ public class ApiPoi extends ApiGeneric {
     public @ResponseBody
     PoiCampaign userCampaignCreate(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -145,25 +89,23 @@ public class ApiPoi extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
-        PoiCampaign newCampaign = new PoiCampaign();
-        newCampaign.setMsoId(user.getMsoId());
-        newCampaign.setUserId(user.getId());
-        newCampaign.setName(name);
+        PoiCampaign campaign = new PoiCampaign();
+        campaign.setMsoId(user.getMsoId());
+        campaign.setUserId(userId);
+        campaign.setName(name);
         
         // startDate
         Long startDateLong = null;
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null) {
             
-            startDateLong = evaluateLong(startDateStr);
+            startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -173,10 +115,9 @@ public class ApiPoi extends ApiGeneric {
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null) {
             
-            endDateLong = evaluateLong(endDateStr);
+            endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -184,65 +125,54 @@ public class ApiPoi extends ApiGeneric {
         if (startDateStr != null && endDateStr != null) {
             if (endDateLong < startDateLong) { 
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
-            newCampaign.setStartDate(new Date(startDateLong));
-            newCampaign.setEndDate(new Date(endDateLong));
+            campaign.setStartDate(new Date(startDateLong));
+            campaign.setEndDate(new Date(endDateLong));
         } else if (startDateStr == null && endDateStr == null) {
-            newCampaign.setStartDate(null);
-            newCampaign.setEndDate(null);
+            campaign.setStartDate(null);
+            campaign.setEndDate(null);
         } else { // should be pair
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
-        PoiCampaign savedCampaign = campaignMngr.save(newCampaign);
-        savedCampaign.setName(NnStringUtil.revertHtml(savedCampaign.getName()));
+        campaign = NNF.getPoiCampaignMngr().save(campaign);
+        campaign.setName(NnStringUtil.revertHtml(campaign.getName()));
         
-        log.info(printExitState(now, req, "ok"));
-        return savedCampaign;
+        return campaign;
     }
     
-    @RequestMapping(value = "poi_campaigns/{poiCampaignId}", method = RequestMethod.GET)
+    @RequestMapping(value = "poi_campaigns/{campaignId}", method = RequestMethod.GET)
     public @ResponseBody
     PoiCampaign campaign(HttpServletRequest req,
             HttpServletResponse resp,
-            @PathVariable("poiCampaignId") String poiCampaignIdStr) {
+            @PathVariable("campaignId") String campaignIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
-        if (poiCampaignId == null) {
+        Long campaignId = NnStringUtil.evalLong(campaignIdStr);
+        if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiCampaign result = campaignMngr.findCampaignById(poiCampaignId);
-        if (result == null) {
+        PoiCampaign canpaign = NNF.getPoiCampaignMngr().findById(campaignId);
+        if (canpaign == null) {
             notFound(resp, "Campaign Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != result.getUserId()) {
+        } else if (user.getId() != canpaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        result.setName(NnStringUtil.revertHtml(result.getName()));
+        canpaign.setName(NnStringUtil.revertHtml(canpaign.getName()));
         
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return canpaign;
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}", method = RequestMethod.PUT)
@@ -251,31 +181,23 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
-        if (poiCampaignId == null) {
+        Long campaignId = NnStringUtil.evalLong(poiCampaignIdStr);
+        if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
-        
-        PoiCampaign campaign = campaignMngr.findCampaignById(poiCampaignId);
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(campaignId);
         if (campaign == null) {
             notFound(resp, "Campaign Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -291,10 +213,9 @@ public class ApiPoi extends ApiGeneric {
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null) {
             
-            startDateLong = evaluateLong(startDateStr);
+            startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -304,10 +225,9 @@ public class ApiPoi extends ApiGeneric {
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null) {
             
-            endDateLong = evaluateLong(endDateStr);
+            endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
@@ -315,7 +235,6 @@ public class ApiPoi extends ApiGeneric {
         if (startDateStr != null && endDateStr != null) {
             if (endDateLong < startDateLong) { 
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             campaign.setStartDate(new Date(startDateLong));
@@ -324,56 +243,46 @@ public class ApiPoi extends ApiGeneric {
             // skip
         } else { // should be pair
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
-        PoiCampaign savedCampaign = campaignMngr.save(campaign);
+        campaign = NNF.getPoiCampaignMngr().save(campaign);
         
-        savedCampaign.setName(NnStringUtil.revertHtml(savedCampaign.getName()));
+        campaign.setName(NnStringUtil.revertHtml(campaign.getName()));
         
-        log.info(printExitState(now, req, "ok"));
-        return savedCampaign;
+        return campaign;
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String campaignDelete(HttpServletRequest req,
+    void campaignDelete(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(poiCampaignId);
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poiCampaignId);
         if (campaign == null) {
             notFound(resp, "Campaign Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+            return;
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        campaignMngr.delete(campaign);
-        log.info(printExitState(now, req, "ok"));
+        NNF.getPoiCampaignMngr().delete(campaign);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.GET)
@@ -382,31 +291,24 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(poiCampaignId);
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poiCampaignId);
         if (campaign == null) {
             notFound(resp, "Campaign Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -414,63 +316,48 @@ public class ApiPoi extends ApiGeneric {
         Long poiPointId = null;
         String poiPointIdStr = req.getParameter("poiPointId");
         if (poiPointIdStr != null) {
-            poiPointId = evaluateLong(poiPointIdStr);
+            poiPointId = NnStringUtil.evalLong(poiPointIdStr);
             if (poiPointId == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
         
-        List<Poi> results = null;
         if (poiPointId != null) {
             // find pois with point
-            results = campaignMngr.findPoisByPointId(poiPointId);
+            return NNF.getPoiMngr().findByPointId(poiPointId);
         } else {
             // find pois with campaign
-            results = campaignMngr.findPoisByCampaignId(campaign.getId());
+            return NNF.getPoiCampaignMngr().findPoisByCampaignId(campaign.getId());
         }
-        
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
-            return new ArrayList<Poi>();
-        }
-        
-        log.info(printExitState(now, req, "ok"));
-        return results;
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.POST)
     public @ResponseBody
     Poi campaignPoiCreate(HttpServletRequest req,
             HttpServletResponse resp,
-            @PathVariable("poiCampaignId") String poiCampaignIdStr) {
+            @PathVariable("poiCampaignId") String campaignIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
+        // TODO: auth check
         
-        Long poiCampaignId = evaluateLong(poiCampaignIdStr);
+        Long poiCampaignId = NnStringUtil.evalLong(campaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(poiCampaignId);
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poiCampaignId);
         if (campaign == null) {
             notFound(resp, "Campaign Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -478,22 +365,19 @@ public class ApiPoi extends ApiGeneric {
         Long pointId = null;
         String pointIdStr = req.getParameter("pointId");
         if (pointIdStr != null) {
-            pointId = evaluateLong(pointIdStr);
+            pointId = NnStringUtil.evalLong(pointIdStr);
             if (pointId == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
-        PoiPoint point = pointMngr.findById(pointId);
+        PoiPoint point = NNF.getPoiPointMngr().findById(pointId);
         if (point == null) {
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
@@ -501,59 +385,54 @@ public class ApiPoi extends ApiGeneric {
         Long eventId = null;
         String eventIdStr = req.getParameter("eventId");
         if (eventIdStr != null) {
-            eventId = evaluateLong(eventIdStr);
+            eventId = NnStringUtil.evalLong(eventIdStr);
             if (eventId == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
-        PoiEvent event = eventMngr.findById(eventId);
+        PoiEvent event = NNF.getPoiEventMngr().findById(eventId);
         if (event == null) {
             badRequest(resp, INVALID_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
         // create the poi
-        Poi newPoi = new Poi();
-        newPoi.setCampaignId(campaign.getId());
-        newPoi.setPointId(point.getId());
-        newPoi.setEventId(event.getId());
+        Poi poi = new Poi();
+        poi.setCampaignId(campaign.getId());
+        poi.setPointId(point.getId());
+        poi.setEventId(event.getId());
         
         // startDate
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
-            Long startDateLong = evaluateLong(startDateStr);
+            Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
-            newPoi.setStartDate(new Date(startDateLong));
+            poi.setStartDate(new Date(startDateLong));
         } else {
-            newPoi.setStartDate(null);
+            poi.setStartDate(null);
         }
         
         // endDate
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
-            Long endDateLong = evaluateLong(endDateStr);
+            Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
-            newPoi.setEndDate(new Date(endDateLong));
+            poi.setEndDate(new Date(endDateLong));
         } else {
-            newPoi.setEndDate(null);
+            poi.setEndDate(null);
         }
         
         // hoursOfWeek
@@ -563,24 +442,20 @@ public class ApiPoi extends ApiGeneric {
                 // valid hoursOfWeek format
             } else {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
-            newPoi.setHoursOfWeek(hoursOfWeek);
+            poi.setHoursOfWeek(hoursOfWeek);
         } else {
             hoursOfWeek = "";
-            for (int i = 1; i<= 7; i++) { // maybe type 111... in the code, will execute faster
+            for (int i = 1; i <= 7; i++) { // maybe type 111... in the code, will execute faster
                 hoursOfWeek = hoursOfWeek.concat("111111111111111111111111");
             }
             
-            newPoi.setHoursOfWeek(hoursOfWeek);
+            poi.setHoursOfWeek(hoursOfWeek);
         }
         
-        Poi result = campaignMngr.save(newPoi);
-        
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return NNF.getPoiMngr().save(poi);
     }
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.GET)
@@ -589,41 +464,36 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Poi result = campaignMngr.findPoiById(poiId);
-        if (result == null) {
+        Poi poi = NNF.getPoiCampaignMngr().findPoiById(poiId);
+        if (poi == null) {
             notFound(resp, "Poi Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(result.getCampaignId());
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poi.getCampaignId());
         if (campaign == null) {
             // ownership crashed
+            // TODO: log
+            internalError(resp);
+            return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return poi;
     }
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.PUT)
@@ -632,46 +502,41 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Poi poi = campaignMngr.findPoiById(poiId);
+        Poi poi = NNF.getPoiCampaignMngr().findPoiById(poiId);
         if (poi == null) {
             notFound(resp, "Poi Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(poi.getCampaignId());
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poi.getCampaignId());
         if (campaign == null) {
             // ownership crashed
+            // TODO: log
+            internalError(resp);
+            return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
         // startDate
         String startDateStr = req.getParameter("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
-            Long startDateLong = evaluateLong(startDateStr);
+            Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
@@ -681,10 +546,9 @@ public class ApiPoi extends ApiGeneric {
         // endDate
         String endDateStr = req.getParameter("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
-            Long endDateLong = evaluateLong(endDateStr);
+            Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
@@ -699,60 +563,48 @@ public class ApiPoi extends ApiGeneric {
                 poi.setHoursOfWeek(hoursOfWeek);
             } else {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
         
-        Poi result = campaignMngr.save(poi);
-        
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return NNF.getPoiMngr().save(poi);
     }
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String poiDelete(HttpServletRequest req,
+    void poiDelete(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiId = evaluateLong(poiIdStr);
+        Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        Poi poi = campaignMngr.findPoiById(poiId);
+        Poi poi = NNF.getPoiCampaignMngr().findPoiById(poiId);
         if (poi == null) {
             notFound(resp, "Poi Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        PoiCampaign campaign = campaignMngr.findCampaignById(poi.getCampaignId());
+        PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(poi.getCampaignId());
         if (campaign == null) {
             // ownership crashed
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != campaign.getUserId()) {
+            return;
+        } else if (user.getId() != campaign.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        campaignMngr.delete(poi);
-        log.info(printExitState(now, req, "ok"));
+        NNF.getPoiMngr().delete(poi);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.GET)
@@ -761,35 +613,28 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long programId = evaluateLong(programIdStr);
+        Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             notFound(resp, "Program Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        List<PoiPoint> results = pointMngr.findByProgram(program.getId());
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
+        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
+        if (points == null) {
             return new ArrayList<PoiPoint>();
         }
         
-        for (PoiPoint result : results) {
-            result.setName(NnStringUtil.revertHtml(result.getName()));
+        for (PoiPoint point : points) {
+            point.setName(NnStringUtil.revertHtml(point.getName()));
         }
         
-        log.info(printExitState(now, req, "ok"));
-        return results;
+        return points;
     }
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.POST)
@@ -798,39 +643,33 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long programId = evaluateLong(programIdStr);
+        Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        NnProgram program = programMngr.findById(programId);
+        NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
             notFound(resp, "Program Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        }
         NnChannel channel = NNF.getChannelMngr().findById(program.getChannelId());
         if (channel == null) {
             // ownership crashed, it is orphan object
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
-        if (verifiedUserId != channel.getUserId()) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
+            unauthorized(resp);
+            return null;
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -844,7 +683,6 @@ public class ApiPoi extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -856,7 +694,6 @@ public class ApiPoi extends ApiGeneric {
         String endTimeStr = req.getParameter("endTime");
         if (startTimeStr == null || endTimeStr == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         } else {
             try {
@@ -866,26 +703,22 @@ public class ApiPoi extends ApiGeneric {
             }
             if ((startTime == null) || (startTime < 0) || (endTime == null) || (endTime <= 0) || (endTime - startTime <= 0)) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         }
         // collision check
-        
-        PoiPoint newPoint = new PoiPoint();
-        newPoint.setTargetId(targetId);
-        newPoint.setType(targetType);
-        newPoint.setName(name);
-        newPoint.setStartTime(startTime);
-        newPoint.setEndTime(endTime);
+        PoiPoint point = new PoiPoint();
+        point.setTargetId(targetId);
+        point.setType(targetType);
+        point.setName(name);
+        point.setStartTime(startTime);
+        point.setEndTime(endTime);
         
         // tag
-        String tagText = req.getParameter("tag");
-        String tag = null;
-        if (tagText != null) {
-            tag = TagManager.processTagText(tagText);
+        String tag = req.getParameter("tag");;
+        if (tag != null) {
+            point.setTag(TagManager.processTagText(tag));
         }
-        newPoint.setTag(tag);
         
         // active, default : true
         Boolean active = true;
@@ -893,13 +726,11 @@ public class ApiPoi extends ApiGeneric {
         if (activeStr != null) {
             active = Boolean.valueOf(activeStr);
         }
-        newPoint.setActive(active);
+        point.setActive(active);
         
-        PoiPoint result = pointMngr.create(newPoint);
-        result.setName(NnStringUtil.revertHtml(result.getName()));
+        PoiPoint result = NNF.getPoiPointMngr().create(point);
         
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return result.setName(NnStringUtil.revertHtml(result.getName()));
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.GET)
@@ -908,66 +739,50 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiPointId") String poiPointIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiPointId = evaluateLong(poiPointIdStr);
+        Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiPoint result = pointMngr.findById(poiPointId);
+        PoiPoint result = NNF.getPoiPointMngr().findById(poiPointId);
         if (result == null) {
             notFound(resp, "PoiPoint Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        result.setName(NnStringUtil.revertHtml(result.getName()));
-        
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return result.setName(NnStringUtil.revertHtml(result.getName()));
     }
     
-    @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "poi_points/{pointId}", method = RequestMethod.PUT)
     public @ResponseBody
     PoiPoint pointUpdate(HttpServletRequest req,
             HttpServletResponse resp,
-            @PathVariable("poiPointId") String poiPointIdStr) {
+            @PathVariable("pointId") String pointIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiPointId = evaluateLong(poiPointIdStr);
-        if (poiPointId == null) {
+        Long pointId = NnStringUtil.evalLong(pointIdStr);
+        if (pointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiPoint point = pointMngr.findById(poiPointId);
+        PoiPoint point = NNF.getPoiPointMngr().findById(pointId);
         if (point == null) {
             notFound(resp, "PoiPoint Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long ownerUserId = pointMngr.findOwner(point);
+        Long ownerUserId = NNF.getPoiPointMngr().findOwner(point);
         if (ownerUserId == null) { // no one can access orphan object
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId.longValue() != ownerUserId.longValue()) {
+        } else if (user.getId() != ownerUserId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -990,7 +805,6 @@ public class ApiPoi extends ApiGeneric {
                 }
                 if ((startTime == null) || (startTime < 0)) {
                     badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
                     return null;
                 }
             } else {
@@ -1008,23 +822,20 @@ public class ApiPoi extends ApiGeneric {
                 }
                 if ((endTime == null) || (endTime <= 0)) {
                     badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
                     return null;
                 }
             } else {
                 // origin setting
                 endTime = point.getEndTimeInt();
             }
-        
+            
             if (endTime - startTime <= 0) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             // collision check
             point.setStartTime(startTime);
             point.setEndTime(endTime);
-            
         }
         
         // tag
@@ -1043,92 +854,65 @@ public class ApiPoi extends ApiGeneric {
             point.setActive(active);
         }
         
-        PoiPoint result = pointMngr.save(point);
-        result.setName(NnStringUtil.revertHtml(result.getName()));
-        
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        PoiPoint result = NNF.getPoiPointMngr().save(point);
+        return result.setName(NnStringUtil.revertHtml(result.getName()));
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String pointDelete(HttpServletRequest req,
+    void pointDelete(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("poiPointId") String poiPointIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiPointId = evaluateLong(poiPointIdStr);
+        Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        PoiPoint point = pointMngr.findById(poiPointId);
+        PoiPoint point = NNF.getPoiPointMngr().findById(poiPointId);
         if (point == null) {
             notFound(resp, "PoiPoint Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        Long ownerUserId = pointMngr.findOwner(point);
+        Long ownerUserId = NNF.getPoiPointMngr().findOwner(point);
         if (ownerUserId == null) { // orphan object
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId.longValue() != ownerUserId.longValue()) {
+            return;
+        } else if (user.getId() != ownerUserId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        pointMngr.delete(point);
-        log.info(printExitState(now, req, "ok"));
+        NNF.getPoiPointMngr().delete(point);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/poi_events", method = RequestMethod.POST)
     public @ResponseBody
     PoiEvent eventCreate(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = userMngr.findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1136,7 +920,6 @@ public class ApiPoi extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -1151,17 +934,10 @@ public class ApiPoi extends ApiGeneric {
             }
             if (type == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-            if (eventMngr.isValidEventType(type) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
         } else {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
@@ -1169,53 +945,50 @@ public class ApiPoi extends ApiGeneric {
         String context = req.getParameter("context");
         if (context == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         
-        PoiEvent newEvent = new PoiEvent();
-        newEvent.setUserId(user.getId());
-        newEvent.setMsoId(user.getMsoId());
-        newEvent.setName(name);
-        newEvent.setType(type);
-        newEvent.setContext(context);
+        PoiEvent event = new PoiEvent();
+        event.setUserId(user.getId());
+        event.setMsoId(user.getMsoId());
+        event.setName(name);
+        event.setType(type);
+        event.setContext(context);
         
         // notifyMsg
-        if (newEvent.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
-             newEvent.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
+        if (event.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
+             event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
+            
             String notifyMsg = req.getParameter("notifyMsg");
             if (notifyMsg == null) {
                 badRequest(resp, MISSING_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             notifyMsg = NnStringUtil.htmlSafeAndTruncated(notifyMsg);
-            newEvent.setNotifyMsg(notifyMsg);
+            event.setNotifyMsg(notifyMsg);
         }
         
         // notifyScheduler
-        if (newEvent.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
+        if (event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
             String notifyScheduler = req.getParameter("notifyScheduler");
             if (notifyScheduler == null) {
                 badRequest(resp, MISSING_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             String[] timestampList = notifyScheduler.split(",");
             Long timestamp = null;
             for (String timestampStr : timestampList) {
                 
-                timestamp = evaluateLong(timestampStr);
+                timestamp = NnStringUtil.evalLong(timestampStr);
                 if (timestamp == null) {
                     badRequest(resp, INVALID_PARAMETER);
-                    log.info(printExitState(now, req, "400"));
                     return null;
                 }
             }
-            newEvent.setNotifyScheduler(notifyScheduler);
+            event.setNotifyScheduler(notifyScheduler);
         }
         
-        PoiEvent result = eventMngr.create(newEvent);
+        PoiEvent result = NNF.getPoiEventMngr().save(event);
         
         result.setName(NnStringUtil.revertHtml(result.getName()));
         if (result.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
@@ -1223,7 +996,6 @@ public class ApiPoi extends ApiGeneric {
             result.setNotifyMsg(NnStringUtil.revertHtml(result.getNotifyMsg()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return result;
     }
     
@@ -1233,42 +1005,34 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiEventId = evaluateLong(poiEventIdStr);
+        Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiEvent result = eventMngr.findById(poiEventId);
-        if (result == null) {
+        PoiEvent event = NNF.getPoiEventMngr().findById(poiEventId);
+        if (event == null) {
             notFound(resp, "PoiEvent Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != result.getUserId()) {
+        } else if (user.getId() != event.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
-        result.setName(NnStringUtil.revertHtml(result.getName()));
-        if (result.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
-                result.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            result.setNotifyMsg(NnStringUtil.revertHtml(result.getNotifyMsg()));
+        event.setName(NnStringUtil.revertHtml(event.getName()));
+        if (event.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
+                event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
+            event.setNotifyMsg(NnStringUtil.revertHtml(event.getNotifyMsg()));
         }
         
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return event;
     }
     
     @RequestMapping(value = "poi_events/{poiEventId}", method = RequestMethod.PUT)
@@ -1277,31 +1041,24 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiEventId = evaluateLong(poiEventIdStr);
+        Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        PoiEvent event = eventMngr.findById(poiEventId);
+        PoiEvent event = NNF.getPoiEventMngr().findById(poiEventId);
         if (event == null) {
             notFound(resp, "PoiEvent Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != event.getUserId()) {
+        } else if (user.getId() != event.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1324,12 +1081,6 @@ public class ApiPoi extends ApiGeneric {
             }
             if (type == null) {
                 badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
-                return null;
-            }
-            if (eventMngr.isValidEventType(type) == false) {
-                badRequest(resp, INVALID_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             
@@ -1362,7 +1113,6 @@ public class ApiPoi extends ApiGeneric {
             String notifyMsg = req.getParameter("notifyMsg");
             if (shouldContainNotifyMsg == true && notifyMsg == null) {
                 badRequest(resp, MISSING_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (notifyMsg != null) {
@@ -1376,7 +1126,6 @@ public class ApiPoi extends ApiGeneric {
             String notifyScheduler = req.getParameter("notifyScheduler");
             if (shouldContainNotifyScheduler == true && notifyScheduler == null) {
                 badRequest(resp, MISSING_PARAMETER);
-                log.info(printExitState(now, req, "400"));
                 return null;
             }
             if (notifyScheduler != null) {
@@ -1384,10 +1133,9 @@ public class ApiPoi extends ApiGeneric {
                 Long timestamp = null;
                 for (String timestampStr : timestampList) {
                     
-                    timestamp = evaluateLong(timestampStr);
+                    timestamp = NnStringUtil.evalLong(timestampStr);
                     if (timestamp == null) {
                         badRequest(resp, INVALID_PARAMETER);
-                        log.info(printExitState(now, req, "400"));
                         return null;
                     }
                 }
@@ -1395,7 +1143,7 @@ public class ApiPoi extends ApiGeneric {
             }
         }
         
-        PoiEvent result = eventMngr.save(event);
+        PoiEvent result = NNF.getPoiEventMngr().save(event);
         
         result.setName(NnStringUtil.revertHtml(result.getName()));
         if (result.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
@@ -1403,48 +1151,33 @@ public class ApiPoi extends ApiGeneric {
             result.setNotifyMsg(NnStringUtil.revertHtml(result.getNotifyMsg()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return result;
     }
     
-    @RequestMapping(value = "poi_events/{poiEventId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "poi_events/{eventId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String eventDelete(HttpServletRequest req,
+    void eventDelete(HttpServletRequest req,
             HttpServletResponse resp,
-            @PathVariable("poiEventId") String poiEventIdStr) {
+            @PathVariable("eventId") String eventIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long poiEventId = evaluateLong(poiEventIdStr);
-        if (poiEventId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        PoiEvent event = eventMngr.findById(poiEventId);
+        PoiEvent event = NNF.getPoiEventMngr().findById(eventIdStr);
         if (event == null) {
             notFound(resp, "PoiEvent Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
+            return;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
-            return null;
-        } else if (verifiedUserId != event.getUserId()) {
+            return;
+        } else if (user.getId() != event.getUserId()) {
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
-            return null;
+            return;
         }
         
-        eventMngr.delete(event);
-        log.info(printExitState(now, req, "ok"));
+        NNF.getPoiEventMngr().delete(event);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.GET)
@@ -1453,34 +1186,24 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        List<PoiPoint> results = pointMngr.findByChannel(channel.getId());
-        if (results == null) {
-            log.info(printExitState(now, req, "ok"));
-            return new ArrayList<PoiPoint>();
-        }
-        
+        List<PoiPoint> results = NNF.getPoiPointMngr().findByChannel(channel.getId());
         for (PoiPoint result : results) {
+            
             result.setName(NnStringUtil.revertHtml(result.getName()));
         }
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
@@ -1490,31 +1213,27 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long channelId = evaluateLong(channelIdStr);
+        Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+        NnUser user = ApiContext.getAuthenticatedUser(req);
+        if (user == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != channel.getUserId()) {
+            
+        } else if (!user.getIdStr().equals(channel.getUserIdStr())) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -1528,27 +1247,23 @@ public class ApiPoi extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
-        // collision check
-        
-        PoiPoint newPoint = new PoiPoint();
-        newPoint.setTargetId(targetId);
-        newPoint.setType(targetType);
-        newPoint.setName(name);
-        newPoint.setStartTime(0);
-        newPoint.setEndTime(0);
+        PoiPoint point = new PoiPoint();
+        point.setTargetId(targetId);
+        point.setType(targetType);
+        point.setName(name);
+        point.setStartTime(0);
+        point.setEndTime(0);
         
         // tag
-        String tagText = req.getParameter("tag");
-        String tag = null;
-        if (tagText != null) {
-            tag = TagManager.processTagText(tagText);
+        String tag = req.getParameter("tag");
+        if (tag != null) {
+            tag = TagManager.processTagText(tag);
+            point.setTag(tag);
         }
-        newPoint.setTag(tag);
         
         // active, default : true
         Boolean active = true;
@@ -1556,13 +1271,10 @@ public class ApiPoi extends ApiGeneric {
         if (activeStr != null) {
             active = Boolean.valueOf(activeStr);
         }
-        newPoint.setActive(active);
+        point.setActive(active);
         
-        PoiPoint result = pointMngr.create(newPoint);
-        result.setName(NnStringUtil.revertHtml(result.getName()));
+        PoiPoint result = NNF.getPoiPointMngr().create(point);
         
-        log.info(printExitState(now, req, "ok"));
-        return result;
+        return result.setName(NnStringUtil.revertHtml(result.getName()));
     }
-    
 }

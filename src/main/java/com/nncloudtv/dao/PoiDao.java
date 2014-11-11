@@ -34,48 +34,49 @@ public class PoiDao extends GenericDao<Poi> {
             if (pois != null && pois.size() > 0) {
                 results = (List<Poi>) pm.detachCopyAll(pois);
             }
+            query.closeAll();
         } finally {
             pm.close();
         }
         return results;
     }
     
+    // NOTE: not used
     public List<Poi> findCurrentByChannel(long channelId) {
         
-        String sql = "select * " + 
-                " from poi a1 " +   
-               " inner join " +  
-              "(select distinct pp.id " +
-                " from poi_point pp, poi poi " + 
-               " where pp.active = true " +
-                 " and pp.targetId = " + channelId +
-                 " and poi.pointId = pp.id " +
-                 " and pp.type = " + PoiPoint.TYPE_CHANNEL +
-                 " and poi.pointId = pp.id ) a2 " +   
-                 //" and now() > poi.startDate " +
-                 //" and now() < poi.endDate) a2" +
-                   " on a1.id=a2.id";
+        String query = "SELECT * FROM poi a1 "
+                     + "   INNER JOIN (SELECT DISTINCT pp.id "
+                     + "                 FROM poi_point pp, poi poi "
+                     + "                WHERE pp.active = true "
+                     + "                  AND pp.targetId = " + channelId
+                     + "                  AND poi.pointId = pp.id "
+                     + "                  AND pp.type = " + PoiPoint.TYPE_CHANNEL
+                     + "                  AND poi.pointId = pp.id"
+////                 + "                  AND now() > poi.startDate "
+////                 + "                  AND now() < poi.endDate"
+                     + "              ) a2"
+                     + "           ON a1.id = a2.id";
         
-        return sql(sql);
+        return sql(query);
     }
     
+    // NOTE: not used
     public List<Poi> findCurrentByProgram(long programId) {
         
-        String sql = "select * " + 
-                " from poi a1 " +   
-               " inner join " +  
-              "(select distinct pp.id " +
-                " from poi_point pp, poi poi " + 
-               " where pp.active = true " +
-                 " and pp.targetId = " + programId +
-                 " and poi.pointId = pp.id " +
-                 " and pp.type = " + PoiPoint.TYPE_SUBEPISODE +
-                 " and poi.pointId = pp.id) a2 " +   
-                 //" and now() > poi.startDate " +
-                 //" and now() < poi.endDate) a2" +
-                   " on a1.id=a2.id";
+        String query = "SELECT * FROM poi a1 "
+                     + "   INNER JOIN (SELECT DISTINCT pp.id "
+                     + "                 FROM poi_point pp, poi poi " 
+                     + "                WHERE pp.active = true "
+                     + "                  AND pp.targetId = " + programId
+                     + "                  AND poi.pointId = pp.id "
+                     + "                  AND pp.type = " + PoiPoint.TYPE_SUBEPISODE
+                     + "                  AND poi.pointId = pp.id "
+////                 + "                  AND now() > poi.startDate "
+////                 + "                  AND now() < poi.endDate "
+                     + "              ) a2"
+                     + "           ON a1.id = a2.id";
         
-        return sql(sql);
+        return sql(query);
     }
     
     public List<Poi> findByCompaignId(long campaignId) {

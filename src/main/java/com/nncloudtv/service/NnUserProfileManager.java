@@ -24,12 +24,13 @@ public class NnUserProfileManager {
     
     public List<NnUserProfile> findAllByUser(NnUser user) {
         
+        if (user == null) { return null; }
+        
         return dao.findByUserId(user.getId(), user.getShard());
     }
     
     public NnUserProfile findByUser(NnUser user) {
-        if (user == null)
-            return null;
+        
         return dao.findByUser(user);
     }
     
@@ -89,27 +90,21 @@ public class NnUserProfileManager {
         };
     }
     
-    public NnUserProfile findByUserIdAndMsoId(Long userId, Long msoId) {
-        if (userId == null || msoId == null) {
-            return null;
-        }
-        return dao.findByUserIdAndMsoId(userId, msoId);
-    }
-    
     public NnUserProfile save(NnUser user, NnUserProfile profile) {
         if (profile == null)
             return null;
         return dao.save(user, profile);
     }
     
-    public Set<NnUserProfile> search(String keyword, int start, int limit) {
+    public Set<NnUserProfile> search(String keyword, int start, int limit, short shard) {
         
-        return dao.search(keyword, start, limit);
-        
+        return dao.search(keyword, start, limit, shard);
     }
     
     /** pick up highest priv profile */
     public NnUserProfile pickupBestProfile(NnUser user) {
+        
+        if (user == null) { return null; }
         
         List<NnUserProfile> profiles = findAllByUser(user);
         
@@ -123,6 +118,7 @@ public class NnUserProfileManager {
     }
     
     public Object getPlayerProfile(NnUser user, short format) {
+        
         NnUserProfile profile = user.getProfile();
         String name = profile.getName();
         String email = user.getUserEmail();
@@ -136,31 +132,55 @@ public class NnUserProfileManager {
         String uiLang = profile.getLang();
         String phone = profile.getPhoneNumber();
         if (format == ApiContext.FORMAT_PLAIN) {
-            String[] result = {""};     
-	        result[0] += PlayerApiService.assembleKeyValue("name", name);
-	        result[0] += PlayerApiService.assembleKeyValue("email", email);
-	        result[0] += PlayerApiService.assembleKeyValue("description", intro);
-	        result[0] += PlayerApiService.assembleKeyValue("image", imageUrl);
-	        result[0] += PlayerApiService.assembleKeyValue("gender", gender);
-	        result[0] += PlayerApiService.assembleKeyValue("year", year);
-	        result[0] += PlayerApiService.assembleKeyValue("sphere", sphere);
-	        result[0] += PlayerApiService.assembleKeyValue("ui-lang", uiLang);
-	        result[0] += PlayerApiService.assembleKeyValue("phone", phone);
-	        return result;
+            String[] result = { "" };
+            result[0] += PlayerApiService.assembleKeyValue("name", name);
+            result[0] += PlayerApiService.assembleKeyValue("email", email);
+            result[0] += PlayerApiService.assembleKeyValue("description", intro);
+            result[0] += PlayerApiService.assembleKeyValue("image", imageUrl);
+            result[0] += PlayerApiService.assembleKeyValue("gender", gender);
+            result[0] += PlayerApiService.assembleKeyValue("year", year);
+            result[0] += PlayerApiService.assembleKeyValue("sphere", sphere);
+            result[0] += PlayerApiService.assembleKeyValue("ui-lang", uiLang);
+            result[0] += PlayerApiService.assembleKeyValue("phone", phone);
+            return result;
         } else {
-        	PlayerUserProfile json = new PlayerUserProfile();
-        	json.setName(name);
-        	json.setEmail(email);
-        	json.setDescription(intro);
-        	json.setImage(imageUrl);
-        	json.setGender(gender);
-        	json.setYear(year);
-        	json.setSphere(sphere);
-        	json.setUiLang(uiLang);
-        	json.setPhone(phone);
-        	return json;
+            PlayerUserProfile json = new PlayerUserProfile();
+            json.setName(name);
+            json.setEmail(email);
+            json.setDescription(intro);
+            json.setImage(imageUrl);
+            json.setGender(gender);
+            json.setYear(year);
+            json.setSphere(sphere);
+            json.setUiLang(uiLang);
+            json.setPhone(phone);
+            return json;
         }
-        
     }
     
+    public static boolean checkPriv(NnUser user, String required) {
+        
+        if (required == null || required.matches("[01]+") == false) return false;
+        
+        NnUserProfile profile = user.getProfile();
+        if (profile == null) {
+            profile = NNF.getProfileMngr().findByUser(user);
+            if (profile == null) {
+                profile = new NnUserProfile();
+                profile.setPriv(NnUserProfile.PRIV_CMS);
+            }
+        }
+        
+        String priv = profile.getPriv();
+        if (priv == null)
+            priv = NnUserProfile.PRIV_CMS;
+        int len = priv.length();
+        for (int i = 0; i < required.length(); i++) {
+            if (required.charAt(i) == '1' &&
+                    (len <= i || priv.charAt(i) != '1')) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

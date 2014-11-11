@@ -53,6 +53,8 @@ public class SysTagMap {
         this.sysTagId = sysTagId;
         this.channelId = channelId;
         this.seq = 0;
+        this.alwaysOnTop = false;
+        this.featured = false;
     }
     
     public long getId() {

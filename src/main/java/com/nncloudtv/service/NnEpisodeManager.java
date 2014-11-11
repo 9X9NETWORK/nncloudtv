@@ -258,6 +258,7 @@ public class NnEpisodeManager {
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {
+        
         return dao.findPlayerEpisode(channelId, sort, start, end);
     }
     
@@ -285,7 +286,7 @@ public class NnEpisodeManager {
         return totalDuration;
     }
     
-    // hook, auto share to facebook
+    // TODO: to be removed
     public void autoShareToFacebook(NnEpisode episode) {
         
         FBPost fbPost = new FBPost(NnStringUtil.revertHtml(episode.getName()), NnStringUtil.revertHtml(episode.getIntro()), episode.getImageUrl());
@@ -304,24 +305,24 @@ public class NnEpisodeManager {
         }
         
         NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
-        List<NnChannelPref> prefList = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(episode.getChannelId(), NnChannelPref.FB_AUTOSHARE);
         String facebookId, accessToken;
         String[] parsedObj;
         
         fbPost.setCaption(" ");
-        
-        for (NnChannelPref pref : prefList) {
-            parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
-            if (parsedObj == null) {
-                continue;
-            }
-            facebookId = parsedObj[0];
-            accessToken = parsedObj[1];
-            fbPost.setFacebookId(facebookId);
-            fbPost.setAccessToken(accessToken);
-            
-            QueueFactory.add("/fb/postToFacebook", fbPost);
+        if (pref == null) {
+            return;
         }
+        parsedObj = prefMngr.parseFacebookAutoshare(pref.getValue());
+        if (parsedObj == null) {
+            return;
+        }
+        facebookId = parsedObj[0];
+        accessToken = parsedObj[1];
+        fbPost.setFacebookId(facebookId);
+        fbPost.setAccessToken(accessToken);
+        
+        QueueFactory.add("/fb/postToFacebook", fbPost);
         log.info(fbPost.toString());
     }
     

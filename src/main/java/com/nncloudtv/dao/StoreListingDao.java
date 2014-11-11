@@ -1,6 +1,7 @@
 package com.nncloudtv.dao;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -18,91 +19,88 @@ public class StoreListingDao extends GenericDao<StoreListing> {
         super(StoreListing.class);
     }
     
-    @SuppressWarnings("unchecked")
     public List<StoreListing> findByChannelIdsAndMsoId(List<Long> channelIds, long msoId) {
         
-        List<StoreListing> results = new ArrayList<StoreListing>();
-        List<StoreListing> results2 = new ArrayList<StoreListing>();
+        List<StoreListing> detached = new ArrayList<StoreListing>();
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         try {
-            Query q = pm.newQuery(StoreListing.class, ":p.contains(channelId)");
-            //q.setFilter("msoId == " + msoId);
-            q.setOrdering("updateDate desc");
-            results = ((List<StoreListing>) q.execute(channelIds));        
-            results = (List<StoreListing>) pm.detachCopyAll(results);
-            
+            Query query = pm.newQuery(StoreListing.class, ":p.contains(channelId)");
+            @SuppressWarnings("unchecked")
+            List<StoreListing> results = (List<StoreListing>) query.execute(channelIds);
+            if (results.size() > 0)
+                detached = (List<StoreListing>) pm.detachCopyAll(results);
+            query.closeAll();
         } finally {
             pm.close();
         }
         
-        for (StoreListing item : results) {
-            if (item.getMsoId() == msoId) {
-                results2.add(item);
+        Iterator<StoreListing> it = detached.iterator();
+        while (it.hasNext()) {
+            StoreListing item = it.next();
+            if (item.getMsoId() != msoId) {
+                it.remove();
+                continue;
             }
         }
         
-        return results2;
+        return detached;
     }
     
     public StoreListing findByChannelIdAndMsoId(long channelId, long msoId) {
         
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        StoreListing result = null;
+        StoreListing detached = null;
+        PersistenceManager pm = getPersistenceManager();
         try {
-            Query q = pm.newQuery(StoreListing.class);
-            q.setFilter("channelId == channelIdParam && msoId == msoIdParam");
-            q.declareParameters("long channelIdParam, long msoIdParam");
+            Query query = pm.newQuery(StoreListing.class);
+            query.setFilter("channelId == channelIdParam && msoId == msoIdParam");
+            query.declareParameters("long channelIdParam, long msoIdParam");
             @SuppressWarnings("unchecked")
-            List<StoreListing> results = (List<StoreListing>) q.execute(channelId, msoId);
-            if (results.size() > 0) {
-                result = pm.detachCopy(results.get(0));
-            }
+            List<StoreListing> results = (List<StoreListing>) query.execute(channelId, msoId);
+            if (results.size() > 0)
+                detached = pm.detachCopy(results.get(0));
+            query.closeAll();
         } finally {
             pm.close();
         }
-        return result;
+        return detached;
     }
     
     public List<StoreListing> findByMsoId(long msoId) {
         
         List<StoreListing> detached = new ArrayList<StoreListing>();
-        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(StoreListing.class);
             query.setFilter("msoId == msoIdParam");
             query.declareParameters("long msoIdParam");
             @SuppressWarnings("unchecked")
             List<StoreListing> results = (List<StoreListing>)query.execute(msoId);
-            if (results.size() > 0) {
+            if (results.size() > 0)
                 detached = (List<StoreListing>) pm.detachCopyAll(results);
-            }
+            query.closeAll();
         } finally {
             pm.close();
         }
-        
         return detached;
     }
     
     public List<StoreListing> findByChannelId(long channelId) {
         
         List<StoreListing> detached = new ArrayList<StoreListing>();
-        
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(StoreListing.class);
             query.setFilter("channelId == channelIdParam");
             query.declareParameters("long channelIdParam");
             @SuppressWarnings("unchecked")
-            List<StoreListing> results = (List<StoreListing>)query.execute(channelId);
-            if (results.size() > 0) {
+            List<StoreListing> results = (List<StoreListing>) query.execute(channelId);
+            if (results.size() > 0)
                 detached = (List<StoreListing>) pm.detachCopyAll(results);
-            }
+            query.closeAll();
         } finally {
             pm.close();
         }
-        
         return detached;
     }
     

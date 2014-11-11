@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.nncloudtv.lib.NNF;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -56,7 +56,7 @@ public class NnUserValidator {
         }
         String sphere = profile.getSphere();
         if (sphere != null && sphere.length() > 0) {
-            if (sphere.equals(LangTable.LANG_EN) && sphere.equals(LangTable.LANG_ZH)) {
+            if (sphere.equals(LocaleTable.LANG_EN) && sphere.equals(LocaleTable.LANG_ZH)) {
                 log.info("sphere error:" + sphere + ";" + user.getEmail());
                 return NnStatusCode.INPUT_BAD;
             }

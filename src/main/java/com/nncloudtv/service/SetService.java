@@ -195,10 +195,4 @@ public class SetService {
         
         return composeSet(sysTag, display);
     }
-    
-    public static boolean isValidSortingType(Short sortingType) {
-        
-        return SysTagManager.isValidSortingType(sortingType);
-    }
-    
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
@@ -15,21 +14,9 @@ import com.nncloudtv.dao.GenericDao;
 public class MsoDao extends GenericDao<Mso> {    
     
     protected static final Logger log = Logger.getLogger(MsoDao.class.getName());
-
+    
     public MsoDao() {
         super(Mso.class);
-    }
-    
-    public Mso save(Mso mso) {
-        if (mso == null) {return null;}
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.makePersistent(mso);
-            mso = pm.detachCopy(mso);
-        } finally {
-            pm.close();
-        }
-        return mso;
     }
     
     public Mso findByName(String name) {
@@ -65,32 +52,4 @@ public class MsoDao extends GenericDao<Mso> {
         }
         return detached;
     }
-    
-    public Mso findById(long id) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        Mso mso = null;
-        log.info("id == '" + id + "'");
-        try {
-            mso = pm.getObjectById(Mso.class, id);
-            mso = pm.detachCopy(mso);
-        } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();            
-        }
-        return mso;
-    }
-    
-    public List<Mso> findAll() {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<Mso> detached = new ArrayList<Mso>();
-        try {
-            Query query = pm.newQuery(Mso.class);
-            @SuppressWarnings("unchecked")
-            List<Mso> results = (List<Mso>) query.execute();
-            detached = (List<Mso>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }    
 }
