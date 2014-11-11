@@ -16,38 +16,30 @@ public class PoiEventManager {
     
     protected static final Logger log = Logger.getLogger(PoiEventManager.class.getName());
     
-    public PoiEvent create(PoiEvent poiEvent) {
-        Date now = new Date();
-        poiEvent.setCreateDate(now);
-        poiEvent.setUpdateDate(now);
-        poiEvent = NNF.getPoiEventDao().save(poiEvent);
-        return poiEvent;
-    }
-    
-    public PoiEvent save(PoiEvent poiEvent) {
-        Date now = new Date();
-        poiEvent.setUpdateDate(now);
-        poiEvent = NNF.getPoiEventDao().save(poiEvent);
-        return poiEvent;
+    public PoiEvent save(PoiEvent event) {
+        
+        event.setUpdateDate(new Date());
+        if (event.getCreateDate() == null) {
+            
+            event.setCreateDate(new Date());
+        }
+        event = NNF.getPoiEventDao().save(event);
+        
+        return event;
     }
     
     public void delete(PoiEvent poiEvent) {
-        if (poiEvent == null) {
-            return ;
-        }
+        
         NNF.getPoiEventDao().delete(poiEvent);
     }
     
     public void delete(List<PoiEvent> poiEvents) {
-        NNF.getPoiEventDao().deleteAll(poiEvents);
-    }
-    
-    public void deleteByIds(List<Long> eventIds) {
-        List<PoiEvent> poiEvents = NNF.getPoiEventDao().findAllByIds(eventIds); // when List too long, TODO : will need rewrite
+        
         NNF.getPoiEventDao().deleteAll(poiEvents);
     }
     
     public static String composeContext(Map<String, Object> context, int eventType) {
+        
         // compose rule
         String result = "";
         if (eventType == PoiEvent.TYPE_HYPERLINK) {
@@ -59,10 +51,12 @@ public class PoiEventManager {
                 result += context.get("button");
             }
         }
+        
         return result;
     }
     
-    private Map<String, Object> explainContext_hyperChannel(String context) {
+    private Map<String, Object> explainContextHyperChannel(String context) {
+        
         // pair with compose rule
         Map<String, Object> output = new TreeMap<String, Object>();
         String[] values = context.split("\\|");
@@ -88,9 +82,10 @@ public class PoiEventManager {
     }
     
     public Map<String, Object> eventExplainFactory(PoiEvent event) {
+        
         Map<String, Object> output = new TreeMap<String, Object>();
         if (event.getType() == PoiEvent.TYPE_HYPERLINK) {
-            Map<String, Object> context = explainContext_hyperChannel(event.getContext());
+            Map<String, Object> context = explainContextHyperChannel(event.getContext());
             output.putAll(context);
         }
         output.put("message", event.getMessage());
@@ -98,51 +93,29 @@ public class PoiEventManager {
         return output;
     }
     
-    public PoiEvent findEventsByPoi(long poiId) {
-        return NNF.getPoiEventDao().findByPoi(poiId);
+    public PoiEvent findEventsByPoiId(long poiId) {
+        
+        return NNF.getPoiEventDao().findByPoiId(poiId);
     }
     
-    public PoiEvent findByPoint(long pointId) {
-        return NNF.getPoiEventDao().findByPoint(pointId);
+    public PoiEvent findByPointId(long pointId) {
+        
+        return NNF.getPoiEventDao().findByPointId(pointId);
     }
     
     public PoiEvent findById(Long eventId) {
         
-        if (eventId == null) {
-            return null;
-        }
-        
-        PoiEvent result = NNF.getPoiEventDao().findById(eventId);
-        return result;
+        return NNF.getPoiEventDao().findById(eventId);
     }
     
-    public boolean isValidEventType(Short eventType) {
+    public PoiEvent findByPoiId(long poiId) {
         
-        if (eventType == null) {
-            return false;
-        }
-        if (eventType == PoiEvent.TYPE_POPUP) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_HYPERLINK) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_INSTANTNOTIFICATION) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            return true;
-        }
-        if (eventType == PoiEvent.TYPE_POLL) {
-            return true;
-        }
-        
-        return false;
+        return NNF.getPoiEventDao().findByPoiId(poiId);
     }
-
-    public PoiEvent findByPoi(Long poiId) {        
-        PoiEvent result = NNF.getPoiEventDao().findByPoi(poiId);
-        return result;
+    
+    public PoiEvent findById(String eventIdStr) {
+        
+        return NNF.getPoiEventDao().findById(eventIdStr);
     }
     
 }

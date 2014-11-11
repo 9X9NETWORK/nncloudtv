@@ -4,14 +4,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 
 public class NnStringUtil {
     
@@ -234,25 +237,6 @@ public class NnStringUtil {
                   .replaceAll("\\|", " "); // not for htmlSafe but for player parsing
     }
     
-    public static String validateLangCode(String lang) {
-        
-        if (lang == null) {
-            return null;
-        }
-        
-        lang = lang.toLowerCase();
-        
-        if (lang.equals(LangTable.LANG_ZH)) {
-            return LangTable.LANG_ZH;
-        } else if (lang.equals(LangTable.LANG_EN)) {
-            return LangTable.LANG_EN;
-        } else if (lang.equals(LangTable.OTHER)) {
-            return LangTable.OTHER;
-        } else {
-            return null;
-        }
-    }
-    
     public static String seqToStr(int seq) {
         
         return String.format("%08d", seq);
@@ -304,5 +288,98 @@ public class NnStringUtil {
         
         return schema + "://" + domain + "/view/p" + channelId
                    + "/" + (episodeId == null ? "" : "e" + episodeId);
+    }
+    
+    public static Long evalLong(String longStr) {
+        
+        if (longStr == null) {
+            return null;
+        }
+        
+        Long longValue = null;
+        try {
+            longValue = Long.valueOf(longStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + longStr + "\" can't evaluate to type Long.");
+            return null;
+        }
+        
+        return longValue;
+    }
+    
+    public static Integer evalInt(String intStr) {
+        
+        if (intStr == null) {
+            return null;
+        }
+        
+        Integer intValue = null;
+        try {
+            intValue = Integer.valueOf(intStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + intStr + "\" can't evaluate to type Int.");
+            return null;
+        }
+        
+        return intValue;
+    }
+    
+    public static Short evalShort(String shortStr) {
+        
+        if (shortStr == null) {
+            return null;
+        }
+        
+        Short shortValue = null;
+        try {
+            shortValue = Short.valueOf(shortStr);
+        } catch (NumberFormatException e) {
+            ApiGeneric.log.info("String value \"" + shortStr + "\" can't evaluate to type Short.");
+            return null;
+        }
+        
+        return shortValue;
+    }
+    
+    public static Boolean evalBool(String boolStr, boolean defaultValue) {
+        
+        Boolean result = evalBool(boolStr);
+        
+        return (result == null) ? defaultValue : result;
+    }
+    
+    public static Boolean evalBool(String boolStr) {
+        
+        if (boolStr == null) return null;
+        
+        if (boolStr.equalsIgnoreCase("true") || boolStr.equals("1")) {
+            
+            return true;
+            
+        } else if (boolStr.equalsIgnoreCase("false") || boolStr.equals("0")) {
+            
+            return false;
+        }
+        
+        return null;
+    }
+    
+    // "en English;zh 中文"
+    // TODO merge to MsoConfigManager.getSupportedRegion()
+    public static List<String> parseRegion(String regionConfig, boolean appendOther) {
+        
+        List<String> regions = new ArrayList<String>();
+        if (regionConfig == null || regionConfig.isEmpty())
+            return regions;
+        String[] pairs = regionConfig.split(";");
+        for (String pair : pairs) {
+            String[] values = pair.split(" +");
+            if (!values[0].isEmpty()) {
+                regions.add(values[0].trim());
+            }
+        }
+        if (appendOther && !regions.contains(LocaleTable.LANG_OTHER))
+            regions.add(LocaleTable.LANG_OTHER);
+        return regions;
     }
 }

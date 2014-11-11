@@ -28,11 +28,12 @@ public class CacheFactory {
     public static final int EXP_DEFAULT = 2592000;
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
-    public static final int HEALTH_CHECK_INTERVAL = 100000; // milliseconds
+    public static final int MINIMUM_LOG_INTERVAL = 10;
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
     public static boolean isRunning = false;
+    private static long lastLogTime = 0;
     private static List<InetSocketAddress> memcacheServers = null;
     private static MemcachedClient cache = null;
     private static MemcachedClient outdated = null;
@@ -40,7 +41,7 @@ public class CacheFactory {
     private static boolean checkServer(InetSocketAddress addr) {
         
         String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
-        log.info("key = " + key);
+        System.out.println("[memcache] key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
@@ -52,7 +53,7 @@ public class CacheFactory {
                 @Override
                 protected void finalize() throws Throwable {
                     
-                    log.info("MemcachedClient is recycled");
+                    System.out.println("[finalize] MemcachedClient");
                 }
             };
             cache.set(key, EXP_DEFAULT, addr);
@@ -72,14 +73,14 @@ public class CacheFactory {
             log.warning(e.getMessage());
         } finally {
             long delta = NnDateUtil.timestamp() - before;
-            log.info("it takes " + delta + " milliseconds");
+            System.out.println("[memcache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
                 future.cancel(false);
         }
-        if (alive)
-            log.info("memcache server " + addr + " is alive");
+        if (!alive)
+            log.warning("memcache server " + addr + " is dead");
         return alive;
     }
     
@@ -113,7 +114,7 @@ public class CacheFactory {
         Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
         String serverStr = MsoConfigManager.getMemcacheServer();
         List<InetSocketAddress> checkedServers = new ArrayList<InetSocketAddress>();
-        log.info("[memcache] server = " + serverStr);
+        System.out.println("[memcache] server = " + serverStr);
         String[] serverList = serverStr.split(",");
         for (String server : serverList) {
             
@@ -125,7 +126,7 @@ public class CacheFactory {
         memcacheServers = checkedServers;
         isRunning = (memcacheServers == null || memcacheServers.isEmpty()) ? false : true;
         if (!isRunning)
-            log.severe("[memcache] no available memcache server");
+            log.severe("No available memcache server!");
         
         // take care of current cache
         if (outdated != null)
@@ -285,8 +286,19 @@ public class CacheFactory {
             log.info(String.format("cache [%s] --> not deleted", key));
         }
     }
-            
-	//example: brandInfo(9x9)[json]
+    
+    public static String getMaoConfigKey(long msoId, String key) {
+        
+        return String.format("msoconfig(%d)(%s)", msoId, key);
+    }
+    
+    // example: mso(9x9)
+    public static String getMsoObjectKey(String name) {
+        
+        return String.format("mso(%s)", name);
+    }
+    
+    // example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
     	String key = "";
     	if (format == ApiContext.FORMAT_PLAIN) {
@@ -305,14 +317,14 @@ public class CacheFactory {
      *           nnprogram-v40-2-50-json
      */
     public static String getProgramInfoKey(long channelId, int start, int version, short format) {
-    	if (version <= 32) {
-    		return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
-    	}
-        String str = "nnprogram-v40-" + channelId + "-" + start + "-"; 
+        if (version <= 32) {
+            return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
+        }
+        String str = "nnprogram-v40-" + channelId + "-" + start + "-";
         if (format == ApiContext.FORMAT_JSON) {
-        	str += "json";
+            str += "json";
         } else {
-        	str += "text";
+            str += "text";
         }
         log.info("programInfo cache key:" + str);
         return str;
@@ -322,7 +334,7 @@ public class CacheFactory {
         
         List<String> keys = new ArrayList<String>();
         
-        log.info("get all programInfo keys from ch" + channelId + " in " + format + " format");
+        log.info("get all programInfo keys from ch" + channelId + " in format " + format);
         
         for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
             
@@ -350,33 +362,40 @@ public class CacheFactory {
         }
         return str;
     }
-        
+    
     /**
      * format: nnchannel-v version_number-channel_id-format
      * example: nnchannel-v31-1-text
      *          nnchannel-v40-2-json 
      */
     public static String getChannelLineupKey(String channelId, int version, short format) {
-    	String key = "";
-    	if (version == 32) {
-    		//nnchannel-v32(1)
-    		key = "nnchannel-v32-" + channelId;
-    	} else if (version < 32) {
-    		//nnchannel-v31(1)
-        	key = "nnchannel-v31-" + channelId;
-    	} else {			
-    		//nnchannel(1)
+        
+        String key = "";
+        if (version == 32) {
+            //nnchannel-v32(1)
+            key = "nnchannel-v32-" + channelId;
+        } else if (version < 32) {
+            //nnchannel-v31(1)
+            key = "nnchannel-v31-" + channelId;
+        } else {
+            //nnchannel(1)
             key = "nnchannel-v40-" + channelId;
-    	}
+        }
         if (format == ApiContext.FORMAT_JSON) {
         	key += "-json";
         } else {
         	key += "-text";
         }
-        log.info("channelLineup key:" + key);
+        
+        // cool log down
+        if (NnDateUtil.timestamp() - lastLogTime > MINIMUM_LOG_INTERVAL) {
+            log.info("channelLineup key = " + key);
+            lastLogTime = NnDateUtil.timestamp();
+        }
+        
         return key;
     }
- 
+    
     /**
      * format: daypartChannel-msoId-lang-time
      * example: daypartChannel-1-en-2
@@ -386,19 +405,19 @@ public class CacheFactory {
     	log.info("daypartChannel cache key:" + key);
     	return key;
     }
-
+    
     public static String getDaypartingProgramsKey(long msoId, short time, String lang) {
     	String key = "daypartProgram" + msoId + "-" + lang + "-" + time;
     	log.info("daypartProgram cache key:" + key);
     	return key;    	
     }
-
+    
     public static String getYtProgramInfoKey(long channelId) {
         String key = "ytprogram-" + channelId; 
         log.info("ytprogram key:" + key);
         return key;
     }
-
+    
     public static String getAdInfoKey(Mso mso, short format) {
         String key = "";
         if (format == ApiContext.FORMAT_PLAIN) {
@@ -408,6 +427,19 @@ public class CacheFactory {
         }
         log.info("adInfoKey:" + key);
         return key;
+    }
+    
+    public static List<String> getAllChannelInfoKeys(long channelId) {
+        
+        List<String> keys = new ArrayList<String>();
+        
+        String cId = String.valueOf(channelId);
+        keys.add(CacheFactory.getChannelLineupKey(cId, 31, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getChannelLineupKey(cId, 32, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_JSON));
+        keys.add(CacheFactory.getChannelLineupKey(cId, 40, ApiContext.FORMAT_PLAIN));
+        
+        return keys;
     }
     
 }

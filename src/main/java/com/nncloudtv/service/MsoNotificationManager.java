@@ -57,5 +57,10 @@ public class MsoNotificationManager {
         }
     }
     
+    public MsoNotification findById(String notificationIdStr) {
+        
+        return dao.findById(notificationIdStr);
+    }
+    
 }
 

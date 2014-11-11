@@ -38,7 +38,6 @@ import com.google.gdata.util.ServiceException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
-import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -49,17 +48,17 @@ import com.nncloudtv.lib.stream.UstreamLib;
 import com.nncloudtv.lib.stream.StreamFactory;
 import com.nncloudtv.lib.stream.StreamLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.json.cms.User;
-import com.nncloudtv.web.json.facebook.FBPost;
 
 @Controller
 @RequestMapping("api")
@@ -68,7 +67,7 @@ public class ApiMisc extends ApiGeneric {
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
     @RequestMapping(value = "feedback", method = RequestMethod.POST)
-    public @ResponseBody String feedback(HttpServletRequest req, HttpServletResponse resp,
+    public @ResponseBody void feedback(HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(required = false) Boolean isHtml) {
         
         String subject = req.getParameter("subject");
@@ -88,18 +87,11 @@ public class ApiMisc extends ApiGeneric {
             NNF.getEmailService().sendEmail(mail, null, null);
         }
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
     public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
-        
-        Long userId = userIdentify(req);
-        if (userId == null) {
-            
-            unauthorized(resp);
-            return null;
-        }
         
         Mso mso = null;
         String msoIdStr = req.getParameter("mso");
@@ -110,7 +102,14 @@ public class ApiMisc extends ApiGeneric {
                 notFound(resp, INVALID_PATH_PARAMETER);
                 return null;
             }
-            if (hasRightAccessPCS(userId, mso.getId(), "00000001") == false) {
+            
+            NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+            if (user == null) {
+                
+                unauthorized(resp);
+                return null;
+                
+            } else if (!NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_UPLOAD_VIDEO)) {
                 
                 forbidden(resp);
                 return null;
@@ -167,85 +166,72 @@ public class ApiMisc extends ApiGeneric {
         return result;
     }
     
-	@RequestMapping(value = "login", method = RequestMethod.DELETE)
-	public @ResponseBody String logout(HttpServletRequest req, HttpServletResponse resp) {
-		
-		CookieHelper.deleteCookie(resp, CookieHelper.USER);
-		CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
-		
-		return ok(resp);
-	}
-	
-	/** super profile's msoId priv will replace the result one if super profile exist */
-	@RequestMapping(value = "login", method = RequestMethod.GET)
-	public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
-	    
-		Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-		    nullResponse(resp);
-		    return null;
-		}
+    @RequestMapping(value = "login", method = RequestMethod.DELETE)
+    public @ResponseBody void logout(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = NNF.getUserMngr().findById(verifiedUserId, MsoManager.getSystemMsoId());
+        CookieHelper.deleteCookie(resp, CookieHelper.USER);
+        CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
+        
+        msgResponse(resp, OK);
+    }
+    
+    @RequestMapping(value = "login", method = RequestMethod.GET)
+    public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req, 0);
+        if (user == null) {
+            nullResponse(resp);
+            return null;
+        }
         
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
-            user.getProfile().setMsoId(profile.getMsoId());
-            user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
-            log.info("cntChannel = " + cntChannel);
-            user.getProfile().setCntChannel(cntChannel);
+            profile.setCntChannel(NNF.getChannelMngr().calculateUserChannels(user));
+            user.setProfile(profile);
+        }
+        
+        return response(user);
+    }
+    
+    /** super profile's msoId priv will replace the result one if super profile exist */
+    @RequestMapping(value = "login", method = RequestMethod.POST)
+    public @ResponseBody User login(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String token = req.getParameter("token");
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+        
+        NnUser user = null;
+        if (token != null) {
+            log.info("token = " + token);
+            user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
+            
+        } else if (email != null && password != null) {
+            
+            log.info("email = " + email + ", password = xxxxxx");
+            
+            user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
+            if (user != null) {
+                CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
+            }
+            
+        } else {
+            badRequest(resp, MISSING_PARAMETER);
+            return null;
         }
         
         if (user == null) {
             nullResponse(resp);
             return null;
         }
-		
-		return userResponse(user);
-	}
-	
-	/** super profile's msoId priv will replace the result one if super profile exist */
-	@RequestMapping(value = "login", method = RequestMethod.POST)
-	public @ResponseBody User login(HttpServletRequest req, HttpServletResponse resp) {
-		
-		String token = req.getParameter("token");
-		String email = req.getParameter("email");
-		String password = req.getParameter("password");
-		
-		NnUser user = null;
-		if (token != null) {
-			log.info("token = " + token);
-			user = NNF.getUserMngr().findByToken(token, MsoManager.getSystemMsoId());
-			
-		} else if (email != null && password != null) {
-			
-			log.info("email = " + email + ", password = xxxxxx");
-			
-			user = NNF.getUserMngr().findAuthenticatedUser(email, password, MsoManager.getSystemMsoId(), req);
-			if (user != null) {
-				CookieHelper.setCookie(resp, CookieHelper.USER, user.getToken());
-			}
-			
-		} else {
-			badRequest(resp, MISSING_PARAMETER);
-		}
-		
-		if (user == null) {
-		    nullResponse(resp);
-		    return null;
-		}
-		
+        
         NnUserProfile profile = NNF.getProfileMngr().pickupBestProfile(user);
         if (profile != null) {
-            user.getProfile().setMsoId(profile.getMsoId());
-            user.getProfile().setPriv(profile.getPriv());
-            int cntChannel = NNF.getChannelMngr().calculateUserChannels(user);
-            log.info("cntChannel = " + cntChannel);
-            user.getProfile().setCntChannel(cntChannel);
+            profile.setCntChannel(NNF.getChannelMngr().calculateUserChannels(user));
+            user.setProfile(profile);
         }
         
-        return userResponse(user);
+        return response(user);
     }
     
     @RequestMapping("sysinfo")
@@ -322,21 +308,18 @@ public class ApiMisc extends ApiGeneric {
         if (lang == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
-        } else if (NnStringUtil.validateLangCode(lang) == null) {
-            badRequest(resp, "Invalid lang");
-            return null;
         }
         
         try {
             properties.load(getClass().getClassLoader().getResourceAsStream(
-                    LangTable.EN_PROPERTIE_FILE));
+                    LocaleTable.EN_PROPERTIE_FILE));
             
             Set<String> keys = properties.stringPropertyNames();
             
-            if (lang.equals(LangTable.LANG_ZH)) {
+            if (lang.equals(LocaleTable.LANG_ZH)) {
                 Properties zhProps = new Properties();
                 zhProps.load(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(
-                        LangTable.ZH_PROPERTIE_FILE), "UTF-8"));
+                        LocaleTable.ZH_PROPERTIE_FILE), "UTF-8"));
                 
                 for (String key : keys) {
                     
@@ -361,34 +344,37 @@ public class ApiMisc extends ApiGeneric {
         return result;
     }
     
-	@RequestMapping("*")
-	public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
-		
-		String path = req.getServletPath();
-		String message = null;
-		Date now = new Date();
-		long rand = Math.round(Math.random() * 1000);
-		byte[] salt = AuthLib.generateSalt();
-		
-		try {
-			
-			log.info("path = " + path);
-			String inbound = AmazonLib
-			        .decodeS3Token(AmazonLib.AWS_TOKEN, now, salt, rand)
-			        .toLowerCase().replace("-", "");
-			String outbound = AmazonLib.decodeS3Token(AmazonLib.S3_TOKEN, now,
-			        salt, rand);
-			
-			if (path.indexOf(inbound) > 0) {
-				message = AmazonLib.decodeS3Token(AmazonLib.S3_CONTEXT_CODE,
-				        now, salt, rand);
-			} else if (path.indexOf(outbound) > 0) {
-				message = AmazonLib.decodeS3Token(AmazonLib.S3_EXT, now, salt,
-				        rand);
-			} else {
-				message = BLACK_HOLE;
-			}
-		} catch (IOException e) {
+    @RequestMapping("*")
+    public @ResponseBody String blackHole(HttpServletRequest req, HttpServletResponse resp) {
+        
+        String path = req.getServletPath();
+        String message = null;
+        Date now = NnDateUtil.now();
+        long rand = Math.round(Math.random() * 1000);
+        byte[] salt = AuthLib.generateSalt();
+        
+        try {
+            
+            log.info("path = " + path);
+            String inbound = AmazonLib
+                    .decodeS3Token(AmazonLib.AWS_TOKEN, now, salt, rand)
+                    .toLowerCase().replace("-", "");
+            String outbound = AmazonLib.decodeS3Token(AmazonLib.S3_TOKEN, now, salt, rand);
+            
+            if (path.indexOf(inbound) > 0) {
+                
+                message = AmazonLib.decodeS3Token(AmazonLib.S3_CONTEXT_CODE, now, salt, rand);
+                
+            } else if (path.indexOf(outbound) > 0) {
+                
+                message = AmazonLib.decodeS3Token(AmazonLib.S3_EXT, now, salt, rand);
+                
+            } else {
+                
+                message = BLACK_HOLE;
+            }
+            
+        } catch (IOException e) {
             
             internalError(resp);
             return null;
@@ -402,97 +388,6 @@ public class ApiMisc extends ApiGeneric {
         resp.setContentType(PLAIN_TEXT_UTF8);
         
         return message + "\n";
-    }
-    
-    @RequestMapping(value = "sns/facebook", method = RequestMethod.POST)
-    public @ResponseBody String postToFacebook(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String mso) {
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
-            unauthorized(resp);
-            return null;
-        }
-        
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(verifiedUserId, brand.getId());
-        if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        FBPost fbPost = new FBPost();
-        
-        // message
-        String message = req.getParameter("message");
-        if (message != null){
-            fbPost.setMessage(message);
-        }
-        
-        // picture
-        String picture = req.getParameter("picture");
-        if (picture != null){
-            fbPost.setPicture(picture);
-        }
-        
-        // link
-        String link = req.getParameter("link");
-        if (link != null){
-            fbPost.setLink(link);
-        }
-        
-        // name
-        String name = req.getParameter("name");
-        if (name != null){
-            fbPost.setName(name);
-        }
-        
-        // caption
-        String caption = req.getParameter("caption");
-        if (caption != null){
-            fbPost.setCaption(caption);
-        }
-        
-        // description
-        String description = req.getParameter("description");
-        if (description != null){
-            fbPost.setDescription(description);
-        }
-        
-        // facebookId
-        if (user.isFbUser()) {
-            fbPost.setFacebookId(user.getEmail());
-        } else {
-            String facebookId = req.getParameter("facebookId");
-            if (facebookId != null){
-                fbPost.setFacebookId(facebookId);
-            }
-        }
-         
-        // accessToken
-        if (user.isFbUser()) {
-            fbPost.setAccessToken(user.getToken());
-        } else {
-            String accessToken = req.getParameter("accessToken");
-            if (accessToken != null){
-                fbPost.setAccessToken(accessToken);
-            }
-        }
-        
-        if(fbPost.getFacebookId() == null || fbPost.getAccessToken() == null) {
-            return "not link to facebook";
-        }
-        
-        try {
-            log.info(fbPost.toString());
-            FacebookLib.postToFacebook(fbPost);
-        } catch (IOException e) {
-            NnLogUtil.logException(e);
-            internalError(resp, e);
-            return null;
-        }
-        
-        return ok(resp);
     }
     
     @RequestMapping(value = "livestream")

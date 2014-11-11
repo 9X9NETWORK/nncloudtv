@@ -11,7 +11,6 @@ import javax.jdo.Query;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 
@@ -25,54 +24,23 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     
     public List<NnUserProfile> findByUserId(long userId, short shard) {
         
-        String query = "select * from nnuser_profile where userId = " + userId;
+        String query = "SELECT * FROM nnuser_profile WHERE userId = " + userId;
         
         return sql(query, NnUserDao.getPersistenceManager(shard, null));
     }
     
     public NnUserProfile findByUser(NnUser user) {
-        if (user == null)
-            return null;
-        log.info("user id:" + user.getId() + ";mso id:" + user.getMsoId());
+        if (user == null) return null;
         NnUserProfile detached = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
+        PersistenceManager pm = NnUserDao.getPersistenceManager(user.getShard(), null);
         try {
-            String sql = "select * " +
-                          " from nnuser_profile " + 
-                         " where msoId = " + user.getMsoId() +   
-                           " and userId = " + user.getId();
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnUserProfile.class);
+            Query query = pm.newQuery(NnUserProfile.class);
+            query.setFilter("userId == userIdParam && msoId == msoIdParam");
+            query.declareParameters("long userIdParam, long msoIdParam");
             @SuppressWarnings("unchecked")
-            List<NnUserProfile> results = (List<NnUserProfile>) q.execute();
-            if (results.size() > 0) {
-                detached = (NnUserProfile)pm.detachCopy(results.get(0));
-            }            
-        } finally {
-            pm.close();
-        }
-        return detached;
-    }
-    
-    public NnUserProfile findByUserIdAndMsoId(long userId, long msoId) {
-        
-        log.info("user id:" + userId + ";mso id:" + msoId);
-        NnUserProfile detached = null;
-        PersistenceManager pm = NnUserDao.getPersistenceManager(NnUser.SHARD_DEFAULT, null);
-        try {
-            String sql = "select * " +
-                          " from nnuser_profile " + 
-                         " where msoId = " + msoId +   
-                           " and userId = " + userId;
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnUserProfile.class);
-            @SuppressWarnings("unchecked")
-            List<NnUserProfile> results = (List<NnUserProfile>) q.execute();
-            if (results.size() > 0) {
-                detached = (NnUserProfile)pm.detachCopy(results.get(0));
-            }            
+            List<NnUserProfile> results = (List<NnUserProfile>) query.execute(user.getId(), user.getMsoId());
+            if (results.size() > 0)
+                detached = (NnUserProfile) pm.detachCopy(results.get(0));
         } finally {
             pm.close();
         }
@@ -91,20 +59,19 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
         return profile;
     }
     
-    public Set<NnUserProfile> search(String keyword, int start,
-            int limit) {
+    public Set<NnUserProfile> search(String keyword, int start, int limit, short shard) {
         
         Set<NnUserProfile> results = new HashSet<NnUserProfile>();
         
         keyword = StringEscapeUtils.escapeSql(keyword);
-        String query = "select * from nnuser_profile where lower(name) like lower(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
-        query += " order by updateDate desc";
-        query += " limit " + start + ", " + limit;
+        String query = "SELECT * FROM nnuser_profile "
+                     + "        WHERE LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")"
+                     + "     ORDER BY updateDate DESC"
+                     + "        LIMIT " + start + ", " + limit;
         
-        results.addAll(sql(query, PMF.getNnUser1().getPersistenceManager()));
-        results.addAll(sql(query, PMF.getNnUser2().getPersistenceManager()));
+        results.addAll(sql(query, NnUserDao.getPersistenceManager(shard, null)));
         
         return results;
     }
-        
+    
 }

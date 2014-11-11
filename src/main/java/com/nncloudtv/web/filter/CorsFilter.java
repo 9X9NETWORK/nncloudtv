@@ -1,4 +1,4 @@
-package com.nncloudtv.filter;
+package com.nncloudtv.web.filter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,7 +35,7 @@ public class CorsFilter extends OncePerRequestFilter {
             response.addHeader("Access-Control-Max-Age", "1728000");
             return ;
         }
-
+        
         filterChain.doFilter(request, response);
     }
     

@@ -2,7 +2,6 @@ package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +21,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
+import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserPrefManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.json.cms.User;
@@ -42,12 +45,12 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 @RequestMapping("api")
 public class ApiUser extends ApiGeneric {
 
-    protected static Logger log = Logger.getLogger(ApiUser.class.getName());    
+    protected static Logger log = Logger.getLogger(ApiUser.class.getName());
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
     public @ResponseBody
     User userInfoUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
+            @RequestParam(value = "mso", required = false) String msoIdStr,
             @PathVariable("userId") String userIdStr, @RequestParam(required = false) Short shard) {
         
         Long userId = null;
@@ -59,23 +62,20 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        
         if (shard == null) {
-            shard = 0;
+            shard = NnUser.SHARD_UNKNWON;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId(), shard);
+        Mso mso = null;
+        if (msoIdStr != null) {
+            mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        }
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req, mso == null ? MsoManager.getSystemMsoId() : mso.getId());
         if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verified = userIdentify(req);
-        if (verified == null) {
             unauthorized(resp);
             return null;
-        } else if (verified != user.getId()) {
+        } else if (user.getId() != userId) {
             forbidden(resp);
             return null;
         }
@@ -90,8 +90,7 @@ public class ApiUser extends ApiGeneric {
                 return null;
             }
             
-            NnUser passwordCheckedUser = NNF.getUserMngr().findAuthenticatedUser(user.getUserEmail(), oldPassword, brand.getId(), req);
-            if (passwordCheckedUser == null) {
+            if (NNF.getUserMngr().findAuthenticatedUser(user.getUserEmail(), oldPassword, MsoManager.getSystemMsoId(), req) == null) {
                 badRequest(resp, "WRONG_PASSWORD");
                 return null;
             }
@@ -104,19 +103,20 @@ public class ApiUser extends ApiGeneric {
             user.setPassword(newPassword);
             
         } else if (oldPassword != null || newPassword != null) {
+            
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
         // name
         String name = req.getParameter("name");
-        if (name != null && name.length() > 0){            
+        if (name != null && name.length() > 0){
             user.getProfile().setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
         String intro = req.getParameter("intro");
-        if (intro != null) {            
+        if (intro != null) {
             user.getProfile().setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
         }
         
@@ -130,57 +130,68 @@ public class ApiUser extends ApiGeneric {
         String lang = req.getParameter("lang");
         if (lang != null) {
             
-            if (NnStringUtil.validateLangCode(lang) == null) {
-                log.warning("lang is not valid");
-            } else {
-                user.getProfile().setLang(lang);
-            }
+            user.getProfile().setLang(lang);
         }
         
-        user = NNF.getUserMngr().save(user);
-        
-        return userResponse(user);
+        return response(NNF.getUserMngr().save(user));
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
     public @ResponseBody
-    List<NnChannel> userChannels(HttpServletRequest req,
-            HttpServletResponse resp,
+    List<NnChannel> userChannels(HttpServletRequest req, HttpServletResponse resp,
+            @RequestParam(value = "mso", required = false) String msoName, 
             @PathVariable("userId") String userIdStr) {
         
         List<NnChannel> results = new ArrayList<NnChannel>();
-        ApiContext ctx = new ApiContext(req);
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        NnUser user = NNF.getUserMngr().findById(userId, ctx.getMsoId());
+        NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
         if (user == null) {
-            notFound(resp, "User Not Found");
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        results = channelMngr.findByUser(user, 0, true);
+        Mso mso = null;
+        List<String> supportedRegion = null;
+        if (msoName != null) {
+            mso = NNF.getMsoMngr().findByIdOrName(msoName);
+            if (mso != null)
+                supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
+        }
+        
+        results = NNF.getChannelMngr().findByUser(user, 0, true);
         Iterator<NnChannel> it = results.iterator();
         while (it.hasNext()) {
             NnChannel channel = it.next();
+            // filter by type
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
                 it.remove();
+                continue;
+            }
+            if (mso != null) { // NnSet candidates filter
+                if (channel.getStatus() != NnChannel.STATUS_SUCCESS) {
+                    it.remove();
+                    continue;
+                }
+                if (supportedRegion != null) {
+                    String sphere = channel.getSphere();
+                    if (sphere == null || sphere.isEmpty() || !supportedRegion.contains(sphere)) {
+                        it.remove();
+                        continue;
+                    }
+                }
             }
         }
         int rows = PlayerApiService.PAGING_ROWS;
-        Integer rowsI = evaluateInt(req.getParameter("rows"));
+        Integer rowsI = NnStringUtil.evalInt(req.getParameter("rows"));
         if (rowsI != null && rowsI > 0) {
             rows = rowsI;
         }
-        Integer page = evaluateInt(req.getParameter("page"));
+        Integer page = NnStringUtil.evalInt(req.getParameter("page"));
         if (page != null && page > 0) {
             
             List<NnChannel> empty   = new ArrayList<NnChannel>();
@@ -193,16 +204,20 @@ public class ApiUser extends ApiGeneric {
             results = results.subList(start, end);
         }
         
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         for (NnChannel channel : results) {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
             channelMngr.populateAutoSync(channel);
+            
+            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));
         }
         
         return results;
     }
     
+    // TODO remove
     @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
     public @ResponseBody
     List<NnChannel> userPlayableChannels(HttpServletRequest req,
@@ -210,29 +225,29 @@ public class ApiUser extends ApiGeneric {
             @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
-            notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
+            notFound(resp, USER_NOT_FOUND);
             return null;
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> results = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : results) {
+        results = channelMngr.findByUser(user, 0, true);
+        Iterator<NnChannel> it = results.iterator();
+        while (it.hasNext()) {
+            
+            NnChannel channel = it.next();
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                results.remove(channel);
+                it.remove();
+                continue;
             }
         }
         
@@ -247,140 +262,105 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
-            
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
         }
         
         Collections.sort(results, NnChannelManager.getComparator("seq"));
         
-        log.info(printExitState(now, req, "ok"));
         return results;
     }
     
     @RequestMapping(value = "users/{userId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
-    String userChannelsSorting(HttpServletRequest req,
+    void userChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
-        Long userId = null;
-        try {
-            userId = Long.valueOf(userIdStr);
-        } catch (NumberFormatException e) {
-        }
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verified = userIdentify(req);
-        if (verified == null) {
-            unauthorized(resp);
-            return null;
-        } else if (verified != user.getId()) {
-            forbidden(resp);
-            return null;
-        }
-        
-        String channelIdsStr = req.getParameter("channels");
-        if (channelIdsStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
-            return null;
-        }
-        String[] channelIdStrList = channelIdsStr.split(",");
-        
-        // the result should be same as userChannels but not include fake channel
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        List<NnChannel> channels = channelMngr.findByUser(user, 0, true);
-        for (NnChannel channel : channels) {
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                channels.remove(channel);
-                break;
-            }
-        }
-        
-        List<NnChannel> orderedChannels = new ArrayList<NnChannel>();
-        List<Long> channelIdList = new ArrayList<Long>();
-        List<Long> checkedChannelIdList = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            channelIdList.add(channel.getId());
-            checkedChannelIdList.add(channel.getId());
-        }
-        
-        int index;
-        for (String channelIdStr : channelIdStrList) {
             
-            Long channelId = null;
-            try {
-                
-                channelId = Long.valueOf(channelIdStr);
-                
-            } catch(Exception e) {
-            }
-            if (channelId != null) {
-                index = channelIdList.indexOf(channelId);
-                if (index > -1) {
-                    orderedChannels.add(channels.get(index));
-                    checkedChannelIdList.remove(channelId);
-                }
+            unauthorized(resp);
+            return;
+            
+        } else if (user.getId() != userId) {
+            
+            forbidden(resp);
+            return;
+        }
+        
+        String channelsParam = req.getParameter("channels");
+        if (channelsParam == null) {
+            badRequest(resp, MISSING_PARAMETER);
+            return;
+        }
+        List<Long> channelIdList = new ArrayList<Long>();
+        for (String split : channelsParam.split(",")) {
+            
+            Long splitId = NnStringUtil.evalLong(split);
+            if (splitId != null) {
+                channelIdList.add(splitId);
             }
         }
-        // parameter should contain all channelId
-        if (checkedChannelIdList.size() != 0) {
+        
+        List<NnChannel> channels = NNF.getChannelMngr().findByUser(user, 0, true);
+        Iterator<NnChannel> it = channels.iterator();
+        while (it.hasNext()) {
+            NnChannel channel = it.next();
+            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                it.remove();
+            }
+        }
+        
+        if (channelIdList.size() != channels.size()) {
+            
+            log.info(String.format("%d not equal %d", channelIdList.size(), channels.size()));
             badRequest(resp, INVALID_PARAMETER);
-            return null;
+            return;
         }
         
-        short counter = 1;
-        for (NnChannel channel : orderedChannels) {
-            channel.setSeq(counter);
-            counter++;
+        for (NnChannel channel : channels) {
+            
+            int index = channelIdList.indexOf(channel.getId());
+            if (index < 0) {
+                
+                log.info(String.format("channelId %d is not matched", channel.getId()));
+                badRequest(resp, INVALID_PARAMETER);
+                return;
+            }
+            
+            channel.setSeq((short)(index + 1));
         }
         
-        channelMngr.saveAll(orderedChannels);
+        NNF.getChannelMngr().save(channels, false);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
-    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, 
-            HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
+    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
-        Date now = new Date();
-        log.info(printEnterState(now, req));
-        
-        Long userId = evaluateLong(userIdStr);
+        Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            log.info(printExitState(now, req, "404"));
             return null;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            log.info(printExitState(now, req, "404"));
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
+            
             unauthorized(resp);
-            log.info(printExitState(now, req, "401"));
             return null;
-        } else if (verifiedUserId != user.getId()) {
+            
+        } else if (user.getId() != userId) {
+            
             forbidden(resp);
-            log.info(printExitState(now, req, "403"));
             return null;
         }
         
@@ -388,91 +368,45 @@ public class ApiUser extends ApiGeneric {
         String name = req.getParameter("name");
         if (name == null || name.isEmpty()) {
             badRequest(resp, MISSING_PARAMETER);
-            log.info(printExitState(now, req, "400"));
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
         // intro
         String intro = req.getParameter("intro");
-        if (intro != null && intro.isEmpty() == false) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
-        }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
-        if (imageUrl == null) {
-            imageUrl = NnChannel.IMAGE_WATERMARK_URL; // default : watermark
-        }
+        String imageUrl = getParameter(req, "imageUrl", NnChannel.IMAGE_WATERMARK_URL);
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang == null || NnStringUtil.validateLangCode(lang) == null) {
-            lang = LangTable.LANG_EN; // default : en
-        }
+        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
         
         // isPublic
-        Boolean isPublic = true; // default : true
-        String isPublicStr = req.getParameter("isPublic");
-        if (isPublicStr != null) {
-            isPublic = evaluateBoolean(isPublicStr);
-            if (isPublic == null) {
-                isPublic = true;
-            }
-        }
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
+        
+        // paidChannel
+        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"), false);
         
         // tag
         String tag = req.getParameter("tag");
         
         // sphere
-        String sphere = req.getParameter("sphere");
-        if (sphere == null || NnStringUtil.validateLangCode(sphere) == null) {
-            sphere = LangTable.LANG_EN; // default : en
-        }
+        String sphere = getParameter(req, "sphere", LocaleTable.LANG_EN);
         
         // categoryId
-        Long categoryId = null;
-        String categoryIdStr = req.getParameter("categoryId");
-        if (categoryIdStr != null) {
-            
-            categoryId = evaluateLong(categoryIdStr);
-            if (CategoryService.isSystemCategory(categoryId) == false) {
-                categoryId = null;
-            }
-        }
+        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
         
         // sourceUrl
         String sourceUrl = req.getParameter("sourceUrl");
         
         // sorting
-        Short sorting = null;
-        String sortingStr = req.getParameter("sorting");
-        if (sortingStr != null) {
-            sorting = evaluateShort(sortingStr);
-        }
+        Short sorting = NnStringUtil.evalShort(req.getParameter("sorting"));
         
         // status
-        Short status = null;
-        String statusStr = req.getParameter("status");
-        if (statusStr != null) {
-            NnUserProfile superProfile = NNF.getProfileMngr().pickupBestProfile(user);
-            if (hasRightAccessPCS(verifiedUserId, Long.valueOf(superProfile.getMsoId()), "0000001")) {
-                status = evaluateShort(statusStr);
-            }
-        }
+        Short status = NnStringUtil.evalShort(req.getParameter("status"));
         
         // contentType
-        Short contentType = null;
-        String contentTypeStr = req.getParameter("contentType");
-        if (contentTypeStr != null) {
-            contentType = evaluateShort(contentTypeStr);
-            if (contentType != null &&
-                    contentType != NnChannel.CONTENTTYPE_MIXED &&
-                    contentType != NnChannel.CONTENTTYPE_YOUTUBE_LIVE) {
-                
-                contentType = null; // invalid value to see as skip
-            }
-        }
+        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
         
         NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
@@ -480,12 +414,12 @@ public class ApiUser extends ApiGeneric {
         channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
         channel.setPoolType(NnChannel.POOL_BASE);
         channel.setUserIdStr(user.getShard(), user.getId());
-        channel.setLang(LangTable.LANG_EN); // default : en
-        channel.setSphere(LangTable.LANG_EN); // default : en
+        channel.setLang(LocaleTable.LANG_EN); // default : en
+        channel.setSphere(LocaleTable.LANG_EN); // default : en
         channel.setSeq((short) 0);
         
         if (intro != null) {
-            channel.setIntro(intro);
+            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         if (imageUrl != null) {
             channel.setImageUrl(imageUrl);
@@ -495,6 +429,9 @@ public class ApiUser extends ApiGeneric {
         }
         if (isPublic != null) {
             channel.setPublic(isPublic);
+        }
+        if (paidChannel != null) {
+            channel.setPaidChannel(paidChannel);
         }
         if (sphere != null) {
             channel.setSphere(sphere);
@@ -509,7 +446,9 @@ public class ApiUser extends ApiGeneric {
             channel.setSorting(sorting);
         }
         if (status != null) {
-            channel.setStatus(status);
+            user.setProfile(NNF.getProfileMngr().pickupBestProfile(user));
+            if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE))
+                channel.setStatus(status);
         }
         if (contentType != null) {
             channel.setContentType(contentType);
@@ -517,32 +456,42 @@ public class ApiUser extends ApiGeneric {
         
         channel = NNF.getChannelMngr().save(channel);
         
-        NNF.getChannelMngr().reorderUserChannels(user);
+        // syncNow
+        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+            
+            channel = NnChannelManager.syncNow(channel);
+        }
         
-        if (categoryId != null) {
+        // category
+        if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
+            
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
         String autoSync = req.getParameter("autoSync");
         if (autoSync != null) {
-            NNF.getChPrefMngr().setAutoSync(channel.getId(), autoSync);
+            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+            if (autosyncPref == null) {
+                
+                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+            }
+            autosyncPref.setValue(autoSync);
+            NNF.getChPrefMngr().save(autosyncPref);
         }
         
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
+        NNF.getChannelMngr().reorderUserChannels(user);
+        NNF.getChannelMngr().populateCategoryId(channel);
+        NNF.getChannelMngr().populateAutoSync(channel);
+        NNF.getChannelMngr().normalize(channel);
         
-        log.info(printExitState(now, req, "ok"));
         return channel;
     }
     
     @RequestMapping(value = "users/{userId}/channels/{channelId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    String userChannelUnlink(HttpServletRequest req, HttpServletResponse resp,
+    void userChannelUnlink(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr,
-            @RequestParam(required = false) String mso,
-            @PathVariable("channelId") String channelIdStr) {        
+            @PathVariable("channelId") String channelIdStr) {
         
         Long channelId = null;
         try {
@@ -551,14 +500,14 @@ public class ApiUser extends ApiGeneric {
         }
         if (channelId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
         NnChannelManager channelMngr = NNF.getChannelMngr();
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
             notFound(resp, "Channel Not Found");
-            return null;
+            return;
         }
         
         Long userId = null;
@@ -568,28 +517,21 @@ public class ApiUser extends ApiGeneric {
         }
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
+            return;
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         if (userId != channel.getUserId()) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         channel.setUserIdStr(null); // unlink
@@ -597,14 +539,13 @@ public class ApiUser extends ApiGeneric {
         channel.setPublic(false);
         channelMngr.save(channel);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.POST)
     public @ResponseBody
-    String facebookAuthUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
-            @PathVariable("userId") String userIdStr) {        
+    void facebookAuthUpdate(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("userId") String userIdStr) {
         
         Long userId = null;
         try {
@@ -613,23 +554,16 @@ public class ApiUser extends ApiGeneric {
         }
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
+            return;
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         String fbUserId = req.getParameter("userId");
@@ -637,13 +571,13 @@ public class ApiUser extends ApiGeneric {
         if (fbUserId == null || accessToken == null) {
             
             badRequest(resp, MISSING_PARAMETER);
-            return null;
+            return;
         }
         
-        String[] longLivedAccessToken = FacebookLib.getLongLivedAccessToken(accessToken, brand);
+        String[] longLivedAccessToken = FacebookLib.getLongLivedAccessToken(accessToken, MsoManager.getSystemMso());
         if (longLivedAccessToken[0] == null) {
             badRequest(resp, INVALID_PARAMETER);
-            return null;
+            return;
         }
         accessToken = longLivedAccessToken[0];
         
@@ -692,13 +626,12 @@ public class ApiUser extends ApiGeneric {
         }
         prefMngr.save(user, userPref);
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.DELETE)
     public @ResponseBody
-    String facebookAuthDelete(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String mso,            
+    void facebookAuthDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
         Long userId = null;
@@ -708,23 +641,16 @@ public class ApiUser extends ApiGeneric {
         }
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
+            return;
         }
         
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
+        NnUser user = ApiContext.getAuthenticatedUser(req);
         if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
-        
-        Long verifiedUserId = userIdentify(req);
-        if (verifiedUserId == null) {
             unauthorized(resp);
-            return null;
-        } else if (verifiedUserId != user.getId()) {
+            return;
+        } else if (user.getId() != userId) {
             forbidden(resp);
-            return null;
+            return;
         }
         
         NnUserPrefManager prefMngr = NNF.getPrefMngr();
@@ -745,13 +671,12 @@ public class ApiUser extends ApiGeneric {
             prefMngr.delete(user, userPref);
         }
         
-        return ok(resp);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.GET)
     public @ResponseBody
     Map<String, Object> facebookAuth(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
             @PathVariable("userId") String userIdStr) {
         
         Long userId = null;
@@ -763,18 +688,12 @@ public class ApiUser extends ApiGeneric {
             notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
-        if (user == null) {
-            notFound(resp, "User Not Found");
-            return null;
-        }
         
-        Long verifiedUserId = userIdentify(req);
+        NnUser verifiedUserId = ApiContext.getAuthenticatedUser(req);
         if (verifiedUserId == null) {
             unauthorized(resp);
             return null;
-        } else if (verifiedUserId != user.getId()) {
+        } else if (verifiedUserId.getId() != userId) {
             forbidden(resp);
             return null;
         }
@@ -785,14 +704,14 @@ public class ApiUser extends ApiGeneric {
         String accessToken = null;
         
         // fbUserId
-        userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_USER_ID);
+        userPref = NNF.getPrefMngr().findByUserAndItem(verifiedUserId, NnUserPref.FB_USER_ID);
         if (userPref != null) {
             fbUserId = userPref.getValue();
             result.put("userId", fbUserId);
         }
         
         // accessToken
-        userPref = NNF.getPrefMngr().findByUserAndItem(user, NnUserPref.FB_TOKEN);
+        userPref = NNF.getPrefMngr().findByUserAndItem(verifiedUserId, NnUserPref.FB_TOKEN);
         if (userPref != null) {
             accessToken = userPref.getValue();
             result.put("accessToken", accessToken);

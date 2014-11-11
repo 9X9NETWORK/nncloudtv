@@ -2,15 +2,11 @@ package com.nncloudtv.web.api;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -26,9 +22,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class ApiGeneric {
-	
-	protected static Logger log = Logger.getLogger(ApiGeneric.class.getName());
     
+    public static Logger log = Logger.getLogger(ApiGeneric.class.getName());
+    
+    public static final String TITLECARD_NOT_FOUND    = "TitleCard Not Found";
+    public static final String PROGRAM_NOT_FOUND      = "Program Not Found";
+    public static final String CATEGORY_NOT_FOUND     = "Category Not Found";
+    public static final String SET_NOT_FOUND          = "Set Not Found";
+    public static final String EPISODE_NOT_FOUND      = "Episode Not Found";
+    public static final String USER_NOT_FOUND         = "User Not Found";
+    public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
+    public static final String MSO_NOT_FOUND          = "Mso Not Found";
     public static final String MISSING_PARAMETER      = "Missing Parameter";
     public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
     public static final String INVALID_PARAMETER      = "Invalid Parameter";
@@ -56,8 +60,8 @@ public class ApiGeneric {
     
     @Autowired
     protected HttpServletRequest httpRequest;
-	
-	public void unauthorized(HttpServletResponse resp, String message) {
+    
+    public void unauthorized(HttpServletResponse resp, String message) {
         try {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
@@ -72,13 +76,15 @@ public class ApiGeneric {
         } catch (IOException e) {
             internalError(resp, e);
         }
-	}
-	
-	public void unauthorized(HttpServletResponse resp) {
-	    unauthorized(resp, null);
-	}
-	
-	public void forbidden(HttpServletResponse resp, String message) {
+    }
+    
+    public void unauthorized(HttpServletResponse resp) {
+        
+        unauthorized(resp, null);
+    }
+    
+    public void forbidden(HttpServletResponse resp, String message) {
+        
         try {
             resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
@@ -94,37 +100,40 @@ public class ApiGeneric {
             internalError(resp, e);
         }
     }
-	
-	public void forbidden(HttpServletResponse resp) {
-	    forbidden(resp, null);
+    
+    public void forbidden(HttpServletResponse resp) {
+        
+        forbidden(resp, null);
     }
-	
-	public void notFound(HttpServletResponse resp, String message) {
-		
-		try {
-		    resp.resetBuffer();
+    
+    public void notFound(HttpServletResponse resp, String message) {
+        
+        try {
+            resp.resetBuffer();
             resp.setContentType(PLAIN_TEXT_UTF8);
             resp.setHeader(API_DOC, API_DOC_URL);
             resp.setHeader(API_REF, API_REF_URL);
-			if (message != null) {
-				log.warning(message);
-				resp.getWriter().println(message);
-			}
-			resp.setStatus(HTTP_404);
-			resp.flushBuffer();
-		} catch (IOException e) {
-			internalError(resp, e);
-		}
-		
-	}
-	
-	public void notFound(HttpServletResponse resp) {
-		notFound(resp, null);
-	}
-	
-	public void badRequest(HttpServletResponse resp) {
-		badRequest(resp, null);
-	}
+            if (message != null) {
+                log.warning(message);
+                resp.getWriter().println(message);
+            }
+            resp.setStatus(HTTP_404);
+            resp.flushBuffer();
+        } catch (IOException e) {
+            internalError(resp, e);
+        }
+        
+    }
+    
+    public void notFound(HttpServletResponse resp) {
+        
+        notFound(resp, null);
+    }
+    
+    public void badRequest(HttpServletResponse resp) {
+        
+        badRequest(resp, null);
+    }
     
     public void badRequest(HttpServletResponse resp, String message) {
         
@@ -146,7 +155,15 @@ public class ApiGeneric {
     }
     
     public void internalError(HttpServletResponse resp) {
+        
         internalError(resp, null);
+    }
+    
+    public String getParameter(HttpServletRequest req, String name, String defaultValue) {
+        
+        String value = req.getParameter(name);
+        
+        return value == null ? defaultValue : value;
     }
     
     @ExceptionHandler(Exception.class)
@@ -168,24 +185,6 @@ public class ApiGeneric {
         }
     }
     
-    // TODO: rewrite
-	public Long userIdentify(HttpServletRequest req) {
-	    
-	    String token = CookieHelper.getCookie(req, "user");
-	    if (token == null) {
-            return null;
-        }
-	    Long userId = NNF.getUserMngr().findUserIdByToken(token);
-	    return userId;
-	}
-	
-    public String ok(HttpServletResponse resp) {
-        
-        resp.setContentType(APPLICATION_JSON_UTF8);
-        
-        return NnStringUtil.escapeDoubleQuote(OK);
-    }
-    
     public void msgResponse(HttpServletResponse resp, String msg) {
     
         try {
@@ -197,7 +196,7 @@ public class ApiGeneric {
         }
     }
     
-	public void nullResponse(HttpServletResponse resp) {
+    public void nullResponse(HttpServletResponse resp) {
         
         try {
             resp.setContentType(APPLICATION_JSON_UTF8);
@@ -209,46 +208,44 @@ public class ApiGeneric {
         
     }
     
-    /** adapt response for user change to user+userProfile */
-    public User userResponse(NnUser user) {
+    public User response(NnUser nnuser) {
         
-        User userResp = new User();
+        User user = new User();
         
-        userResp.setId(user.getId());
-        userResp.setCreateDate(user.getCreateDate());
-        userResp.setUpdateDate(user.getUpdateDate());
-        userResp.setUserEmail(user.getUserEmail());
-        userResp.setFbUser(user.isFbUser());
-        userResp.setName(NnStringUtil.revertHtml(user.getProfile().getName()));
-        userResp.setIntro(NnStringUtil.revertHtml(user.getProfile().getIntro()));
-        userResp.setImageUrl(user.getProfile().getImageUrl());
-        userResp.setLang(user.getProfile().getLang());
-        userResp.setProfileUrl(user.getProfile().getProfileUrl());
-        userResp.setShard(user.getShard());
-        userResp.setSphere(user.getProfile().getSphere());
-        userResp.setType(user.getType());
-        userResp.setCntSubscribe(user.getProfile().getCntSubscribe());
-        userResp.setCntChannel(user.getProfile().getCntChannel());
-        userResp.setCntFollower(user.getProfile().getCntFollower());
-        userResp.setMsoId(user.getProfile().getMsoId());
-        userResp.setIdStr(user.getIdStr());
+        user.setId(nnuser.getId());
+        user.setType(nnuser.getType());
+        user.setShard(nnuser.getShard());
+        user.setIdStr(nnuser.getIdStr());
+        user.setCreateDate(nnuser.getCreateDate());
+        user.setUpdateDate(nnuser.getUpdateDate());
+        user.setUserEmail(nnuser.getUserEmail());
+        user.setFbUser(nnuser.isFbUser());
+        user.setPriv(NnUserProfile.PRIV_CMS);
         
-        if (user.getProfile().getPriv() == null) {
-            userResp.setPriv("000111"); // TODO hard coded default
-        } else {
-            userResp.setPriv(user.getProfile().getPriv());
+        NnUserProfile profile = nnuser.getProfile();
+        if (profile != null) {
+            user.setName(NnStringUtil.revertHtml(profile.getName()));
+            user.setIntro(NnStringUtil.revertHtml(profile.getIntro()));
+            user.setImageUrl(profile.getImageUrl());
+            user.setLang(profile.getLang());
+            user.setProfileUrl(profile.getProfileUrl());
+            user.setSphere(profile.getSphere());
+            user.setCntSubscribe(profile.getCntSubscribe());
+            user.setCntChannel(profile.getCntChannel());
+            user.setCntFollower(profile.getCntFollower());
+            user.setMsoId(profile.getMsoId());
+            if (profile != null)
+                user.setPriv(profile.getPriv());
+            Mso mso = NNF.getMsoMngr().findById(profile.getMsoId());
+            if (mso != null)
+                user.setMsoName(mso.getName());
         }
         
-        Mso mso = NNF.getMsoMngr().findById(user.getProfile().getMsoId());
-        if (mso != null) {
-            userResp.setMsoName(mso.getName());
-        }
-        
-        return userResp;
+        return user;
     }
     
     /** compose set response **/
-    public Set setResponse(SysTag set, SysTagDisplay setMeta) {
+    public Set response(SysTag set, SysTagDisplay setMeta) {
         
         Set setResp = new Set();
         
@@ -263,156 +260,4 @@ public class ApiGeneric {
         
         return setResp;
     }
-	
-	/** log the enter state
-	 *  @param now the enter time
-	 *  */
-	public String printEnterState(Date now, HttpServletRequest req) {
-	    
-	    if (now == null || req == null) {
-            return null;
-        }
-	    
-	    String result = req.getRequestURI() + "@" + now + "[";
-	    String parameterPairs = "";
-	    
-	    try {
-			Map<String, String[]> map = (Map<String, String[]>) req.getParameterMap();
-	        Enumeration<String> names = (Enumeration<String>) req.getParameterNames();
-        
-	        while(names.hasMoreElements()) {
-	            
-	            String name = names.nextElement();
-	            String[] values = map.get(name);
-	            
-	            parameterPairs += "," + name + "=";
-	            if (values.length > 1) {
-	                parameterPairs += "(";
-	            }
-	            
-	            String parameterValues = "";
-	            for (String value : values) {
-	                parameterValues += ",\"" + value + "\"";
-	            }
-	            parameterValues = parameterValues.replaceFirst(",", "");
-	            
-	            parameterPairs += parameterValues;
-	            if (values.length > 1) {
-	                parameterPairs += ")";
-	            }
-	        }
-	        parameterPairs = parameterPairs.replaceFirst(",", "");
-	        
-	    } catch (ClassCastException e) {
-	        NnLogUtil.logException(e);
-	    }
-	    
-	    result += parameterPairs + "]";
-        
-	    return result;
-	}
-	
-	/** log the exit state
-	 *  @param now the enter time, not the exit time
-	 *  @param exitState the exit state : ok, 400, 401, 403, 404
-	 *  */
-	public String printExitState(Date now, HttpServletRequest req, String exitState) {
-	    return req.getRequestURI() + "@" + now + "[exit-state=" + exitState + "]";
-	}
-	
-	public Long evaluateLong(String stringValue) {
-	    
-	    if (stringValue == null) {
-	        return null;
-	    }
-	    
-	    Long longValue = null;
-	    try {
-	        longValue = Long.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Long.");
-            return null;
-        }
-	    
-	    return longValue;
-	}
-	
-	public Integer evaluateInt(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Integer intValue = null;
-        try {
-            intValue = Integer.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Int.");
-            return null;
-        }
-        
-        return intValue;
-    }
-	
-	public Short evaluateShort(String stringValue) {
-        
-        if (stringValue == null) {
-            return null;
-        }
-        
-        Short shortValue = null;
-        try {
-            shortValue = Short.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            log.info("String value \"" + stringValue + "\" can't evaluate to type Short.");
-            return null;
-        }
-        
-        return shortValue;
-    }
-	
-	public Boolean evaluateBoolean(String stringValue) {
-	    
-	    if ("true".equals(stringValue) == true) {
-	        return true;
-	    }
-	    if ("false".equals(stringValue) == true) {
-	        return false;
-	    }
-	    
-	    return null;
-	}
-	
-    /** indicate logging user has access right to target mso in PCS API
-     *  @param requirePriv 3-characters string with '0' or '1' indicate the required of PCS read write delete access right
-     */
-    protected boolean hasRightAccessPCS(Long userId, Long msoId, String requirePriv) {
-        
-        if (userId == null || msoId == null || requirePriv == null || requirePriv.matches("[01]+") == false) {
-            return false;
-        }
-        
-        NnUserProfile profile = NNF.getProfileMngr().findByUserIdAndMsoId(userId, msoId);
-        if (profile == null) {
-            profile = new NnUserProfile();
-            profile.setPriv("000111");
-        }
-        if (profile.getPriv() == null) {
-            profile.setPriv("000111");
-        }
-        String priv = profile.getPriv();
-        int privLen = priv.length();
-        
-        for (int i = 0; i < requirePriv.length(); i++) {
-            
-            if (requirePriv.charAt(i) == '1' &&
-                    (privLen <= i || priv.charAt(i) != '1')) {
-                
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
 }

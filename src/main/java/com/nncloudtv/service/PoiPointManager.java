@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.Poi;
+import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
 
 @Service
@@ -40,61 +43,66 @@ public class PoiPointManager {
             return ;
         }
         
-        List<Poi> pois = NNF.getPoiDao().findByPointId(point.getId());
-        List<Long> eventIds = new ArrayList<Long>();
-        if (pois != null) {
-            for (Poi p : pois) {
-                eventIds.add(p.getEventId());
+        List<Poi> pois = NNF.getPoiMngr().findByPointId(point.getId());
+        List<PoiEvent> events = new ArrayList<PoiEvent>();
+        for (Poi poi : pois) {
+            PoiEvent event = NNF.getPoiEventMngr().findById(poi.getEventId());
+            if (event != null) {
+                
+                events.add(event);
             }
         }
         
-        // TODO : rewrite when AD's cms is ready
-        if (eventIds.size() > 0) {
-            NNF.getPoiEventMngr().deleteByIds(eventIds);
-        }
-        if (pois != null && pois.size() > 0) {
-            NNF.getPoiDao().deleteAll(pois);
-        }
         NNF.getPoiPointDao().delete(point);
-    }
-    
-    public void delete(List<PoiPoint> points) {
-        List<Poi> pois = new ArrayList<Poi>();
-        List<Poi> temps;
-        List<Long> eventIds = new ArrayList<Long>();
-        for (PoiPoint point : points) {
-            temps = NNF.getPoiDao().findByPointId(point.getId()); // TODO: computing issue, try to reduce mysql queries
-            for (Poi temp : temps) {
-                eventIds.add(temp.getEventId());
-            }
-            pois.addAll(temps);
-        }
-        
-        // TODO : rewrite when AD's cms is ready
-        NNF.getPoiEventMngr().deleteByIds(eventIds);
+        NNF.getPoiEventDao().deleteAll(events);
         NNF.getPoiDao().deleteAll(pois);
-        NNF.getPoiPointDao().deleteAll(points);
     }
     
     public PoiPoint findById(long id) {
+        
         return NNF.getPoiPointDao().findById(id);
     }
     
     public List<PoiPoint> findByChannel(long channelId) {
+        
         return NNF.getPoiPointDao().findByChannel(channelId);
     }
-
-    public List<PoiPoint> findCurrentByChannel(long channelId) {
-        return NNF.getPoiPointDao().findCurrentByChannel(channelId);
+    
+    public List<PoiPoint> findCurrentByChannelId(long channelId) {
+        
+        return NNF.getPoiPointDao().findCurrentByChannelId(channelId);
     }
     
-    public List<PoiPoint> findCurrentByProgram(long programId) {
-        return NNF.getPoiPointDao().findCurrentByProgram(programId);
+    public List<PoiPoint> findCurrentByProgramId(long programId) {
+        
+        return NNF.getPoiPointDao().findCurrentByProgramId(programId);
+    }
+    
+    public void delete(List<PoiPoint> points) {
+        
+        if (points == null || points.isEmpty()) { return; }
+        
+        Set<Poi> poiSet = new HashSet<Poi>();
+        Set<PoiEvent> eventSet = new HashSet<PoiEvent>();
+        
+        for (PoiPoint point : points) {
+            
+            List<Poi> pois = NNF.getPoiMngr().findByPointId(point.getId());
+            for (Poi poi : pois) {
+                
+                eventSet.add(NNF.getPoiEventMngr().findById(poi.getEventId()));
+            }
+            poiSet.addAll(pois);
+        }
+        
+        NNF.getPoiEventDao().deleteAll(eventSet);
+        NNF.getPoiDao().deleteAll(poiSet);
+        NNF.getPoiPointDao().deleteAll(points);
     }
     
     public List<PoiPoint> findByProgram(long programId) {
         
-        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(programId);
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgramId(programId);
         if (points != null) {
             Collections.sort(points, getPointStartTimeComparator());
         }
@@ -117,7 +125,7 @@ public class PoiPointManager {
             return true;
         }
         
-        List<PoiPoint> points = NNF.getPoiPointDao().findByProgram(program.getId());
+        List<PoiPoint> points = NNF.getPoiPointDao().findByProgramId(program.getId());
         if (originPoint != null) {
             if (points.contains(originPoint)) {
                 points.remove(originPoint);
@@ -151,7 +159,7 @@ public class PoiPointManager {
         return new PointStartTimeComparator();
     }
     
-    /** return owner's userId */
+    // TODO: remove
     public Long findOwner(PoiPoint point) {
         
         if (point == null) {
@@ -182,16 +190,19 @@ public class PoiPointManager {
             return null;
         }
     }
-
+    
     public Poi findPoiById(long id) {
+        
         return NNF.getPoiDao().findById(id);
     }
     
     public List<Poi> findCurrentPoiByChannel(long channelId) {
+        
         return NNF.getPoiDao().findCurrentByChannel(channelId);
     }
     
     public List<Poi> findCurrentPoiByProgram(long programId) {
+        
         return NNF.getPoiDao().findCurrentByProgram(programId);
     }
     

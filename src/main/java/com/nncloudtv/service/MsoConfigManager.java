@@ -17,7 +17,6 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.SysTag;
@@ -40,7 +39,7 @@ public class MsoConfigManager {
         
         Properties properties = new Properties();
         String result = null;
-        log.info("to get property " + name + " from " + file);
+        log.info("get property " + name + " from " + file);
         try {
             properties.load(MsoConfigManager.class.getClassLoader().getResourceAsStream(file));
             result = properties.getProperty(name);
@@ -169,7 +168,7 @@ public class MsoConfigManager {
         return null;
     }
     
-    static public String getFacebookClientId() {        
+    static public String getFacebookClientId() {
         return getProperty("facebook.properties", "facebook_clientid");
     }
     
@@ -237,13 +236,13 @@ public class MsoConfigManager {
         if (os == null || function == null)
             return null;
         if (function.contains("flurry")) {
-            if (os.equals(ApiContext.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.FLURRY_ANALYTICS_IOS;
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.FLURRY_ANALYTICS_ANDROID;
         }
         if (function.contains("google")) {
-            if (os.equals(ApiContext.OS_IOS)) 
+            if (os.equals(ApiContext.OS_IOS))
                 return MsoConfig.GOOGLE_ANALYTICS_IOS;
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.GOOGLE_ANALYTICS_ANDROID;
@@ -265,24 +264,19 @@ public class MsoConfigManager {
             if (os.equals(ApiContext.OS_ANDROID))
                 return MsoConfig.ADMOBKEY_ANDROID;
             if (os.equals(ApiContext.OS_IOS))
-                return MsoConfig.ADMOBKEY_IOS;            
+                return MsoConfig.ADMOBKEY_IOS;
         }
         return null;
     }
     
-    public String getCacheKeyByMsoAndKey(long msoId, String key) {
-        String cacheKey = "msoconfig(" + msoId + ")(" + key + ")";
-        return cacheKey;
-    }
-    
     public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
         String cacheKey = "msoconfig(" + key + ")";
-        try {        
-            String result = (String)CacheFactory.get(cacheKey);        
+        try {
+            String result = (String)CacheFactory.get(cacheKey);
             if (result != null){
-                log.info("value from cache: key=" + cacheKey + "value=" + result);            
+                log.info("value from cache: key=" + cacheKey + "value=" + result);
                 return NnStringUtil.stringToBool(result);
-            }            
+            }
         } catch (Exception e) {
             log.info("memcache error");
         }
@@ -294,27 +288,28 @@ public class MsoConfigManager {
         }
         return value;
     }
-        
+    
     public boolean isInReadonlyMode(boolean cacheReset) {
         return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
     }
-        
+    
     public boolean isQueueEnabled(boolean cacheReset) {
         boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
-        return status;     
+        return status;
     }
     
     public List<MsoConfig> findByMso(Mso mso) {
         return configDao.findByMso(mso);
     }
-        
+    
     //find: access db directly; get: through cache
     public MsoConfig getByMsoAndItem(Mso mso, String item) {
-        String cacheKey = this.getCacheKeyByMsoAndKey(mso.getId(), item);
-        try {        
-            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);        
+        
+        String cacheKey = CacheFactory.getMaoConfigKey(mso.getId(), item);
+        try {
+            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);
             if (result != null){
-                log.info("value from cache: key=" + cacheKey + "value=" + result.getValue());
+                log.info("value from cache: key=" + cacheKey + ", value=" + result.getValue());
                 return result;
             }    
         } catch (Exception e) {
@@ -322,7 +317,7 @@ public class MsoConfigManager {
         }
         MsoConfig config = this.findByMsoAndItem(mso, item);
         if (config != null) {
-            log.info("set value to cache: key=" + cacheKey + "value=" + config.getValue());
+            log.info("set value to cache: key=" + cacheKey + ", value=" + config.getValue());
             CacheFactory.set(cacheKey, config);
         }
         return config;
@@ -335,31 +330,6 @@ public class MsoConfigManager {
     
     public MsoConfig findByItem(String item) {
         return configDao.findByItem(item);
-    }
-    
-    /** parse supportedRegion to list of sphere that mso can supported */
-    public static List<String> parseSupportedRegion(String supportedRegion) {
-        
-        if (supportedRegion == null) {
-            return new ArrayList<String>();
-        }
-        
-        List<String> spheres = new ArrayList<String>();
-        String[] pairs = supportedRegion.split(";");
-        for (String pair : pairs) {
-            String[] values = pair.split(" ");
-            if (values[0].equals(LangTable.LANG_EN)) {
-                spheres.add(LangTable.LANG_EN);
-            }
-            if (values[0].equals(LangTable.LANG_ZH)) {
-                spheres.add(LangTable.LANG_ZH);
-            }
-            if (values[0].equals(LangTable.OTHER)) {
-                spheres.add(LangTable.OTHER);
-            }
-        }
-        
-        return spheres;
     }
     
     public static List<String> parseCategoryMask(String systemCategoryMask) {
@@ -419,7 +389,7 @@ public class MsoConfigManager {
     
     // DB first, property file as fallback
     public static String getMemcacheServer() {
-    
+        
         String result = null;
         MsoConfig config = configDao.findByItem(MsoConfig.MEMCACHE_SERVER);
         if (config != null) {
@@ -604,6 +574,18 @@ public class MsoConfigManager {
             return NNF.getMsoMngr().findById(config.getMsoId());
         }
         return null;
+    }
+    
+    public static List<String> getSuppoertedResion(Mso mso, boolean appendOther) {
+        List<String> empty = new ArrayList<String>();
+        if (mso == null) return empty;
+        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
+        if (config != null) {
+            List<String> regions = NnStringUtil.parseRegion(config.getValue(), appendOther);
+            if (regions != null && !regions.isEmpty())
+                return regions;
+        }
+        return empty;
     }
 }
 

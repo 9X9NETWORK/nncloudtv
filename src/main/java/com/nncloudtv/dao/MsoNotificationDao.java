@@ -20,19 +20,6 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
         super(MsoNotification.class);
     }
     
-    public MsoNotification save(MsoNotification notification) {
-        if (notification == null) {return null;}
-        notification.setUpdateDate(new Date());
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            pm.makePersistent(notification);
-            notification = pm.detachCopy(notification);
-        } finally {
-            pm.close();
-        }
-        return notification;
-    }
-    
     public List<MsoNotification> findByMso(Mso mso) {
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<MsoNotification> detached = new ArrayList<MsoNotification>();
