@@ -84,7 +84,7 @@ public class SysTagManager {
         return NNF.getChannelDao().findBySysTag(systagId, lang, false, start, count, sort, msoId, true);
     }
     
-    //find channels for dayparting
+    //TODO virtual? front-page? still using?
     public List<NnChannel> findPlayerChannelsById(long systagId, String lang, boolean rand, long msoId) {
         
         return NNF.getChannelDao().findBySysTag(systagId, lang, true, 0, 0, SysTag.SORT_DATE, 0, true);

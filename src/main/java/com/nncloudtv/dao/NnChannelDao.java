@@ -32,9 +32,10 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     //player channels means status=true and isPublic=true
     public List<NnChannel> findBySysTag(long systagId, String lang, boolean limitRows, int start, int count, short sort, long msoId, boolean isPlayer) {
         
-        String orderStr = " ORDER by m.alwaysOnTop DESC,"
-                        + "          CASE m.alwaysOnTop WHEN TRUE THEN m.seq ELSE (CASE c.sphere WHEN " + NnStringUtil.escapedQuote(lang) + " THEN 1 ELSE 2 END) END,"
-                        + "          c.updateDate DESC ";
+        String orderStr = " ORDER by m.alwaysOnTop DESC, ";
+        if (lang != null && isPlayer == true && limitRows == false) // store only
+            orderStr += " CASE m.alwaysOnTop WHEN TRUE THEN m.seq ELSE (CASE c.sphere WHEN " + NnStringUtil.escapedQuote(lang) + " THEN 1 ELSE 2 END) END,";
+        orderStr += " c.updateDate DESC ";
         if (sort == SysTag.SORT_SEQ)
             orderStr = " ORDER BY m.seq ";
         if (limitRows)
