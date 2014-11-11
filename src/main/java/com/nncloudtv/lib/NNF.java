@@ -32,6 +32,7 @@ import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
 import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
+import com.nncloudtv.service.BillingService;
 import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.EmailService;
@@ -106,6 +107,7 @@ public class NNF {
     protected static DepotService    depotService    = null;
     protected static EmailService    emailService    = null;
     protected static NotificationService notiService = null;
+    protected static BillingService  billingService  = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -473,6 +475,17 @@ public class NNF {
         }
         
         return notiService;
+    }
+    
+    public static BillingService getBillingService() {
+        
+        if (billingService == null) {
+            
+            log.info("create billingservice");
+            billingService = new BillingService();
+        }
+        
+        return billingService;
     }
     
     public static StoreListingManager getStoreListingMngr() {

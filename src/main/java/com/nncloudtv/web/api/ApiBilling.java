@@ -294,9 +294,8 @@ public class ApiBilling extends ApiGeneric {
         
         if (req.getParameter(NO_MAIL) == null) {
             try {
-                BillingService billingServ = new BillingService();
                 
-                billingServ.sendPurchaseConfirmEmail(orders);
+                NNF.getBillingService().sendPurchaseConfirmEmail(orders);
                 
             } catch (NnDataIntegrityException e) {
                 NnLogUtil.logException(e);
@@ -335,7 +334,7 @@ public class ApiBilling extends ApiGeneric {
             return null;
         }
         
-        IapInfo iap = new IapInfo();
+        IapInfo iapInfo = NNF.getChPrefMngr().getIapInfo(channel.getId());
         
         // title
         String title = req.getParameter("title");
@@ -347,10 +346,7 @@ public class ApiBilling extends ApiGeneric {
                 titlePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_TITLE, title);
             }
             NNF.getChPrefMngr().save(titlePref);
-            
-        }
-        if (titlePref != null) {
-            iap.setTitle(titlePref.getValue());
+            iapInfo.setTitle(titlePref.getValue());
         }
         
         // description
@@ -363,9 +359,7 @@ public class ApiBilling extends ApiGeneric {
                 descPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_DESC, description);
             }
             NNF.getChPrefMngr().save(descPref);
-        }
-        if (descPref != null) {
-            iap.setDescription(descPref.getValue());
+            iapInfo.setDescription(descPref.getValue());
         }
         
         // price
@@ -378,9 +372,7 @@ public class ApiBilling extends ApiGeneric {
                 pricePref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_PRICE, price);
             }
             NNF.getChPrefMngr().save(pricePref);
-        }
-        if (pricePref != null) {
-            iap.setPrice(pricePref.getValue());
+            iapInfo.setPrice(pricePref.getValue());
         }
         
         // thumbnail
@@ -393,12 +385,10 @@ public class ApiBilling extends ApiGeneric {
                 thumbPref = new NnChannelPref(channel.getId(), NnChannelPref.IAP_THUMB, thumbnail);
             }
             NNF.getChPrefMngr().save(thumbPref);
-        }
-        if (thumbPref != null) {
-            iap.setThumbnail(thumbPref.getValue());
+            iapInfo.setThumbnail(thumbPref.getValue());
         }
         
-        return iap;
+        return iapInfo;
     }
     
     @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.POST)
@@ -436,18 +426,24 @@ public class ApiBilling extends ApiGeneric {
             return;
         }
         
-        NnItem ios = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_IOS);
-        if (ios == null) {
+        NnItem appstoreItem = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_IOS);
+        if (appstoreItem == null) {
             
-            ios = new NnItem(mso.getId(), channel.getId(), NnItem.APPSTORE);
-            NNF.getItemMngr().save(ios);
+            appstoreItem = new NnItem(mso.getId(), channel.getId(), NnItem.APPSTORE);
+            NNF.getItemMngr().save(appstoreItem);
+            
+            try {
+                NNF.getBillingService().sendItemCreationEmail(appstoreItem);
+            } catch (IOException e) {
+                log.warning("fail to send notification mail");
+            }
         }
         
-        NnItem android = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_ANDROID);
-        if (android == null) {
+        NnItem googleplayItem = NNF.getItemMngr().findOne(mso, channel, ApiContext.OS_ANDROID);
+        if (googleplayItem == null) {
             
-            android = new NnItem(mso.getId(), channel.getId(), NnItem.GOOGLEPLAY);
-            NNF.getItemMngr().save(android);
+            googleplayItem = new NnItem(mso.getId(), channel.getId(), NnItem.GOOGLEPLAY);
+            NNF.getItemMngr().save(googleplayItem);
         }
         
         msgResponse(resp, OK);
@@ -476,31 +472,6 @@ public class ApiBilling extends ApiGeneric {
             return null;
         }
         
-        // title
-        IapInfo iap = new IapInfo();
-        NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_TITLE);
-        if (titlePref != null) {
-            iap.setTitle(titlePref.getValue());
-        }
-        
-        // description
-        NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_DESC);
-        if (descPref != null) {
-            iap.setDescription(descPref.getValue());
-        }
-        
-        // price
-        NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_PRICE);
-        if (pricePref != null) {
-            iap.setPrice(pricePref.getValue());
-        }
-        
-        // thumbnail
-        NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_THUMB);
-        if (thumbPref != null) {
-            iap.setThumbnail(thumbPref.getValue());
-        }
-        
-        return iap;
+        return NNF.getChPrefMngr().getIapInfo(channel.getId());
     }
 }

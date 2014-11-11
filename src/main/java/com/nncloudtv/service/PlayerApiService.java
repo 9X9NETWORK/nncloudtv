@@ -2046,7 +2046,7 @@ public class PlayerApiService {
         EmailService service = new EmailService();
         NnEmail mail = new NnEmail(
                 email, profile.getName(),
-                NnEmail.SEND_EMAIL_NOREPLY, "noreply", NnEmail.SEND_EMAIL_NOREPLY,
+                NnEmail.REPLY_EMAIL_NOREPLY, "noreply", NnEmail.REPLY_EMAIL_NOREPLY,
                 subject, body);
         
         mail.setHtml(true);

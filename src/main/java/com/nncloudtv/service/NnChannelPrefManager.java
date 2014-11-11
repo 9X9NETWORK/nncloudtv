@@ -16,6 +16,7 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.json.cms.IapInfo;
 import com.nncloudtv.web.json.facebook.FacebookPage;
 
 @Service
@@ -181,6 +182,37 @@ public class NnChannelPrefManager {
             return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_9X9);
         }
         return channelPref;
+    }
+    
+    public IapInfo getIapInfo(long channelId) {
+        
+        IapInfo iapInfo = new IapInfo();
+        
+        // title
+        NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channelId, NnChannelPref.IAP_TITLE);
+        if (titlePref != null) {
+            iapInfo.setTitle(titlePref.getValue());
+        }
+        
+        // description
+        NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channelId, NnChannelPref.IAP_DESC);
+        if (descPref != null) {
+            iapInfo.setDescription(descPref.getValue());
+        }
+        
+        // price
+        NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channelId, NnChannelPref.IAP_PRICE);
+        if (pricePref != null) {
+            iapInfo.setPrice(pricePref.getValue());
+        }
+        
+        // thumbnail
+        NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channelId, NnChannelPref.IAP_THUMB);
+        if (thumbPref != null) {
+            iapInfo.setThumbnail(thumbPref.getValue());
+        }
+        
+        return iapInfo;
     }
     
 }

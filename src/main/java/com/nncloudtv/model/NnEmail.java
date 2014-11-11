@@ -4,25 +4,29 @@ package com.nncloudtv.model;
  * email object
  */
 public class NnEmail {
-
-    public final static String TO_EMAIL_FEEDBACK = "feedback@flipr.tv";
+    
+    public final static String TO_EMAIL_FEEDBACK    = "feedback@flipr.tv";
+    public final static String TO_EMAIL_PAIDSUPPORT = "paidsupport@flipr.tv";
     private String toEmail;
     
-    public final static String TO_NAME_FEEDBACK = "Feedback";
+    public final static String TO_NAME_FEEDBACK    = "Feedback";
+    public final static String TO_NAME_PAIDSUPPORT = "Paid Support";
     private String toName;
     
     public final static String SEND_EMAIL_SHARE      = "share@9x9.tv";
-    public final static String SEND_EMAIL_NOREPLY    = "noreply@notify.9x9.tv";
     public final static String SEND_EMAIL_NNCLOUDTV  = "nncloudtv@gmail.com";
     public final static String SEND_EMAIL_VIDCON2014 = "vidcon2014@flipr.tv";
     public final static String SEND_EMAIL_SYSTEM     = "system@flipr.tv";
+    public final static String SEND_EMAIL_CMS        = "cms@flipr.tv";
     private String senderEmail;
     
     public final static String SEND_NAME_NNCLOUDTV = "nncloudtv";
     public final static String SEND_NAME_FLIPR     = "FLIPr";
     public final static String SEND_NAME_SYSTEM    = "System";
+    public final static String SEND_NAME_CMS       = "CMS";
     private String senderName;
     
+    public final static String REPLY_EMAIL_NOREPLY = "noreply@notify.9x9.tv";
     private String replyToEmail;
     
     private String subject;

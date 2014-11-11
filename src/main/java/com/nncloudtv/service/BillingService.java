@@ -27,14 +27,19 @@ import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.model.NnEmail;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.json.cms.CreditCard;
+import com.nncloudtv.web.json.cms.IapInfo;
 
 @Service
 public class BillingService {
     
     protected static final Logger log = Logger.getLogger(BillingService.class.getName());
+    
+    public static final String PREFIX  = "\\{\\{";
+    public static final String POSTFIX = "\\}\\}";
     
     public CreditCard checkCreditCard(ApiContext context, boolean verify) throws NnApiInternalErrorException,
             NnApiBadRequestException, CcApiBadKeyException, NnClearCommerceException, CcApiBadValueException {
@@ -87,8 +92,6 @@ public class BillingService {
     public void sendPurchaseConfirmEmail(List<BillingOrder> orders) throws NnDataIntegrityException, IOException {
         
         final String subject = "[FLIPr.tv] Welcome to FLIPr.tv %s! Let's get started.";
-        final String PREFIX  = "\\{\\{";
-        final String POSTFIX = "\\}\\}";
         
         if (orders == null || orders.isEmpty()) return;
         
@@ -115,7 +118,7 @@ public class BillingService {
             return;
         }
         
-        String content = IOUtils.toString(this.getClass().getClassLoader().getResourceAsStream("purchase_confirm_mail.html"), NnStringUtil.UTF8);
+        String content = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("purchase_confirm_mail.html"), NnStringUtil.UTF8);
         
         float  totalPrice   = 0;
         for (int i = 0; i < packages.size(); i++) {
@@ -137,16 +140,41 @@ public class BillingService {
         content = content.replaceAll(PREFIX + "card"   + POSTFIX, profile.getCardRemainDigits());
         content = content.replaceAll(PREFIX + "total"  + POSTFIX, Matcher.quoteReplacement(String.format("$%.2f", totalPrice)));
         
-        EmailService emailServ = new EmailService();
+        EmailService emailService = NNF.getEmailService();
         NnEmail email = new NnEmail(profile.getEmail(),
                                     profile.getName(),
                                     NnEmail.SEND_EMAIL_VIDCON2014,
                                     NnEmail.SEND_NAME_FLIPR,
-                                    NnEmail.SEND_EMAIL_NOREPLY,
+                                    NnEmail.REPLY_EMAIL_NOREPLY,
                                     String.format(subject, profile.getName()),
                                     content);
         email.setHtml(true);
-        emailServ.sendEmail(email, NnEmail.SEND_EMAIL_NNCLOUDTV, NnEmail.SEND_NAME_NNCLOUDTV);
+        emailService.sendEmail(email, NnEmail.SEND_EMAIL_NNCLOUDTV, NnEmail.SEND_NAME_NNCLOUDTV);
         log.info("sent purchase confirm mail to " + profile.getEmail());
+    }
+    
+    public void sendItemCreationEmail(NnItem item) throws IOException {
+        
+        IapInfo iapInfo = NNF.getChPrefMngr().getIapInfo(item.getChannelId());
+        
+        String subject = "Need to add paid program";
+        String content = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("item_creation_mail.html"), NnStringUtil.UTF8);
+        content = content.replaceAll(PREFIX + "msoId"       + POSTFIX, String.valueOf(item.getMsoId()));
+        content = content.replaceAll(PREFIX + "channelId"   + POSTFIX, String.valueOf(item.getChannelId()));
+        content = content.replaceAll(PREFIX + "title"       + POSTFIX, String.valueOf(iapInfo.getTitle()));
+        content = content.replaceAll(PREFIX + "price"       + POSTFIX, String.valueOf(iapInfo.getPrice()));
+        content = content.replaceAll(PREFIX + "description" + POSTFIX, String.valueOf(iapInfo.getDescription()));
+        content = content.replaceAll(PREFIX + "image"       + POSTFIX, String.valueOf(iapInfo.getThumbnail()));
+        
+        NnEmail email = new NnEmail(NnEmail.TO_EMAIL_PAIDSUPPORT,
+                                    NnEmail.TO_NAME_PAIDSUPPORT,
+                                    NnEmail.SEND_EMAIL_CMS,
+                                    NnEmail.SEND_EMAIL_CMS,
+                                    NnEmail.REPLY_EMAIL_NOREPLY,
+                                    subject,
+                                    content);
+        email.setHtml(true);
+        NNF.getEmailService().sendEmail(email, NnEmail.SEND_EMAIL_NNCLOUDTV, NnEmail.SEND_NAME_NNCLOUDTV);
+        log.info("sent notification mail to " + email.getToEmail());
     }
 }
