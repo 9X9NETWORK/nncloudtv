@@ -169,7 +169,7 @@ public class BillingService {
         NnEmail email = new NnEmail(NnEmail.TO_EMAIL_PAIDSUPPORT,
                                     NnEmail.TO_NAME_PAIDSUPPORT,
                                     NnEmail.SEND_EMAIL_CMS,
-                                    NnEmail.SEND_EMAIL_CMS,
+                                    NnEmail.SEND_NAME_CMS,
                                     NnEmail.REPLY_EMAIL_NOREPLY,
                                     subject,
                                     content);
