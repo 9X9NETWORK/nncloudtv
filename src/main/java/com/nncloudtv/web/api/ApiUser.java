@@ -163,12 +163,18 @@ public class ApiUser extends ApiGeneric {
                 supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
         }
         
+        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), false);
+        
         results = NNF.getChannelMngr().findByUser(user, 0, true);
         Iterator<NnChannel> it = results.iterator();
         while (it.hasNext()) {
             NnChannel channel = it.next();
             // filter by type
             if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
+                it.remove();
+                continue;
+            }
+            if (isPublic && !channel.isPublic()) {
                 it.remove();
                 continue;
             }
