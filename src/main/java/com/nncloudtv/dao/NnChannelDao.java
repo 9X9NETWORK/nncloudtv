@@ -148,7 +148,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         if (limit == 0) limit = 9;
         
         String query = "SELECT * FROM nnchannel "
-                     +"         WHERE (LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
+                     + "        WHERE (LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
         if (all || content == null || !content.equals(SearchLib.STORE_ONLY)) // PCS
             query += " || LOWER(intro) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")";
         query += ")";
@@ -238,9 +238,9 @@ public class NnChannelDao extends GenericDao<NnChannel> {
             }
             
             String query = "SELECT * FROM nnchannel "
-                         + "        WHERE userIdStr in (" + listStr + ")"
-                         + "          AND isPublic = true "
-                         + "          AND status in (0, 3) "
+                         + "        WHERE userIdStr IN (" + listStr + ")"
+                         + "          AND isPublic = TRUE "
+                         + "          AND status IN (0, 3) "
                          + "     ORDER BY seq, contentType ";
             if (limit > 0)
                 query += " LIMIT " + limit;
