@@ -112,7 +112,7 @@ public class PlayerApiService {
     @Override
     protected void finalize() throws Throwable {
         
-        System.out.println("[finalize] " + this.getClass().getName());
+        NnLogUtil.logFinalize(getClass().getName());
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {

@@ -53,7 +53,7 @@ public class CacheFactory {
                 @Override
                 protected void finalize() throws Throwable {
                     
-                    System.out.println("[finalize] MemcachedClient");
+                    NnLogUtil.logFinalize(getClass().getName());
                 }
             };
             cache.set(key, EXP_DEFAULT, addr);
