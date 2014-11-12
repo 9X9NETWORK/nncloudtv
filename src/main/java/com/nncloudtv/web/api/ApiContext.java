@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Joiner;
@@ -24,6 +25,7 @@ import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
 @Component
+@Scope(value = "request")
 public class ApiContext {
     
     @Override
@@ -121,7 +123,6 @@ public class ApiContext {
         
         return value == null ? defaultValue : value;
     }
-    
     
     public ApiContext() {
         
