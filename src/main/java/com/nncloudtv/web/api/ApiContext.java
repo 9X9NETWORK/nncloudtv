@@ -8,11 +8,6 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
@@ -25,8 +20,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
-@Controller
-@Scope(value = "request")
 public class ApiContext {
     
     @Override
@@ -60,7 +53,6 @@ public class ApiContext {
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     
-    @Autowired(required = true)
     private HttpServletRequest httpReq;
     
     Locale language;
@@ -124,10 +116,6 @@ public class ApiContext {
         String value = httpReq.getParameter(name);
         
         return value == null ? defaultValue : value;
-    }
-    
-    public ApiContext() {
-        
     }
     
     public ApiContext(HttpServletRequest req) {

@@ -66,8 +66,10 @@ public class PlayerController {
             @RequestParam(value="ch", required=false) String ch,
             @RequestParam(value="ep", required=false) String ep,
             @RequestParam(value="jsp",required=false) String jsp,
-            @RequestParam(value="js",required=false) String js, ApiContext ctx) {
+            @RequestParam(value="js",required=false) String js) {
+        
         try {
+            ApiContext ctx = new ApiContext(req);
             if (ctx.isAndroid() || ctx.isIos()) {
                 return "redirect:/mobile/";
             }

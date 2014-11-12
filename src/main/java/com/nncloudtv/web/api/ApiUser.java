@@ -349,9 +349,9 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
-    public @ResponseBody NnChannel userChannelCreate(ApiContext ctx, HttpServletResponse resp,
+    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
-        
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);

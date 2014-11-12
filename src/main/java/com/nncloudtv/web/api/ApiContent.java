@@ -1084,8 +1084,9 @@ public class ApiContent extends ApiGeneric {
     }
     
     @RequestMapping(value = "tags", method = RequestMethod.GET)
-    public @ResponseBody String[] tags(ApiContext ctx, HttpServletResponse resp) {
+    public @ResponseBody String[] tags(HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         String categoryIdStr = ctx.getParam("categoryId");
         if (categoryIdStr == null) {
             badRequest(resp, MISSING_PARAMETER);
@@ -1124,8 +1125,9 @@ public class ApiContent extends ApiGeneric {
     
     @RequestMapping(value = "categories", method = RequestMethod.GET)
     public @ResponseBody
-    List<Category> categories(ApiContext ctx, HttpServletResponse resp) {
+    List<Category> categories(HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         List<Category> categories = NNF.getCategoryService().getSystemCategories(lang);

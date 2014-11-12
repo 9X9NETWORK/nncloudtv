@@ -504,8 +504,9 @@ public class PlayerApiController {
             @RequestParam(value="session", required=false) String session,
             @RequestParam(value="pdr", required=false) String pdr,
             @RequestParam(value="rx", required=false) String rx,
-            ApiContext ctx, HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         String pdrServer = ctx.getRoot();
         String path = "/playerAPI/pdrServer";
         

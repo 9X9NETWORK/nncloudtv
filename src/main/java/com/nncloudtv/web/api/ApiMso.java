@@ -251,9 +251,10 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.GET)
     public @ResponseBody
-    List<Set> msoSets(ApiContext ctx,
-            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    List<Set> msoSets(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
@@ -1008,9 +1009,10 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/categories", method = RequestMethod.GET)
     public @ResponseBody
-    List<Category> msoCategories(ApiContext ctx,
-            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    List<Category> msoCategories(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
@@ -1038,9 +1040,10 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/categories", method = RequestMethod.POST)
     public @ResponseBody
-    Category msoCategoryCreate(ApiContext ctx,
-            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    Category msoCategoryCreate(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
@@ -1155,9 +1158,10 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.PUT)
     public @ResponseBody
-    Category categoryUpdate(ApiContext ctx,
-            HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
+    Category categoryUpdate(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("categoryId") String categoryIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
             notFound(resp, INVALID_PATH_PARAMETER);
