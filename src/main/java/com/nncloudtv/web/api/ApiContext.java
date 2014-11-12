@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
@@ -24,7 +25,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
-@Component
+@Controller
 @Scope(value = "request")
 public class ApiContext {
     
