@@ -3163,7 +3163,7 @@ public class PlayerApiService {
         } else if (systag.getType() == SysTag.TYPE_WHATSON) {
             channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(systagId, display.getLang(), SysTag.SORT_SEQ, mso.getId()));
         } else {
-            channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(systagId, display.getLang(), systag.getSorting(), mso.getId()));
+            channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(systagId, null, systag.getSorting(), 0));
         }
         List<NnProgram> programs = new ArrayList<NnProgram>();
         Short shortTime = 24;

@@ -1034,7 +1034,6 @@ public class NnChannelManager {
     //ChannelLineup or String
     public Object composeEachChannelLineup(NnChannel channel, ApiContext ctx) {
         Object result = null;
-        log.info("version number: " + ctx.getVersion());
         
         String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVersion(), ctx.getFormat());
         try {
@@ -1043,7 +1042,7 @@ public class NnChannelManager {
             log.info("memcache error");
         }
         if (result != null && channel.getId() != 0) { //id = 0 means fake channel, it is dynamic
-            log.info("get channel lineup from cache" + ". v=" + ctx.getVersion() +";channel=" + channel.getId());
+            log.info("get channel lineup from cache. v=" + ctx.getVersion() +";channel=" + channel.getId());
             return result;
         }
         
@@ -1234,7 +1233,7 @@ public class NnChannelManager {
             lineup.setCuratorThumbnail(""); //userImageUrl
             lineup.setSubscriberProfiles(""); //subscriberProfile, used to be subscriber profile urls, will be removed
             lineup.setSubscriberThumbnails(""); //subscriberImage, used to be subscriber image urls                
-            log.info("set channelLineup cahce for cacheKey:" + cacheKey);
+            log.info("set channelLineup cahce for cacheKey: " + cacheKey);
             CacheFactory.set(cacheKey, lineup);
             return lineup;
         }

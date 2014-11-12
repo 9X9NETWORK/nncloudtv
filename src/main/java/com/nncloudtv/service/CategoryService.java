@@ -375,7 +375,7 @@ public class CategoryService {
         List<Long> blackList = null;
         if (mso != null) {
             blackList = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
-            supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
+            supportedRegion = MsoConfigManager.getSuppoertedRegion(mso, true);
         }
         List<NnChannel> channels = new ArrayList<NnChannel>(candidates);
         Iterator<NnChannel> it = channels.iterator();
@@ -406,7 +406,7 @@ public class CategoryService {
         
         List<String> supportedRegion = null;
         if (mso != null)
-            supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
+            supportedRegion = MsoConfigManager.getSuppoertedRegion(mso, true);
         List<NnChannel> channels = NNF.getChannelDao().getCategoryChannels(categoryId, supportedRegion);
         // filter by mso blacklist
         if (mso != null) {

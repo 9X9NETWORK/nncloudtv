@@ -283,15 +283,7 @@ public class ApiMso extends ApiGeneric {
     Set msoSetCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        Long msoId = null;
-        try {
-            msoId = Long.valueOf(msoIdStr);
-        } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(msoId);
+        Mso mso = NNF.getMsoMngr().findById(msoIdStr);
         if (mso == null) {
             notFound(resp, MSO_NOT_FOUND);
             return null;
@@ -343,7 +335,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         Set set = new Set();
-        set.setMsoId(msoId);
+        set.setMsoId(mso.getId());
         set.setName(name);
         if (seq != null) {
             set.setSeq(seq);
@@ -355,9 +347,14 @@ public class ApiMso extends ApiGeneric {
             set.setTag(tag);
         }
         
+        // FIXME
         String lang = req.getParameter("lang");
         if (lang == null) {
-            lang = LocaleTable.LANG_EN;
+            List<String> suppoertedRegion = MsoConfigManager.getSuppoertedRegion(mso, false);
+            if (suppoertedRegion != null && suppoertedRegion.size() > 0)
+                lang = suppoertedRegion.get(0);
+            else
+                lang = LocaleTable.LANG_EN;
         }
         set.setLang(lang);
         
@@ -926,7 +923,7 @@ public class ApiMso extends ApiGeneric {
             }
         }
         
-        List<String> regions = MsoConfigManager.getSuppoertedResion(mso, false);
+        List<String> regions = MsoConfigManager.getSuppoertedRegion(mso, false);
         if (regions != null)
             mso.setSupportedRegion(StringUtils.join(regions, ","));
         MsoManager.normalize(mso);
