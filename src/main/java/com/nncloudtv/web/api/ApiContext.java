@@ -59,7 +59,7 @@ public class ApiContext {
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     
-    @Autowired HttpServletRequest req;
+    HttpServletRequest req;
     
     Locale language;
     Integer version;
@@ -124,8 +124,10 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
-    public ApiContext() {
+    @Autowired(required = true) 
+    public ApiContext(HttpServletRequest req) {
         
+        this.req = req;
         String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";
         System.out.println("[ApiContext] user-agent = " + userAgent);
