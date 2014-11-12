@@ -211,7 +211,7 @@ public class WatchDogController {
         
         String result = null;
         try {
-            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, new ApiContext(req));
+            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, new ApiContext());
             
         } catch (NotPurchasedException e1) {
             
@@ -283,7 +283,7 @@ public class WatchDogController {
             return "channel does not exist";
         List<NnChannel> channels = new ArrayList<NnChannel>();
         channels.add(c);
-        String result = (String) mngr.composeChannelLineup(channels, new ApiContext(req));
+        String result = (String) mngr.composeChannelLineup(channels, new ApiContext());
         if (result == null) {
             return "error, can't be null";
         }
@@ -493,7 +493,7 @@ public class WatchDogController {
     		@RequestParam(value="id") long id, HttpServletRequest req) {         
        NnChannelManager chMngr = NNF.getChannelMngr();
        NnChannel c = chMngr.findById(id);
-       ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, new ApiContext(req));
+       ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, new ApiContext());
        System.out.println(json);       
        return json;
     }        

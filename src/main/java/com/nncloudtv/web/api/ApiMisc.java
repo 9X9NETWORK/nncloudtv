@@ -238,7 +238,7 @@ public class ApiMisc extends ApiGeneric {
     public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
         HashMap<String, Object> result = new HashMap<String, Object>();
-        ApiContext ctx = new ApiContext(req);
+        ApiContext ctx = new ApiContext();
         
         result.put("flipr.isProduction", ctx.isProductionSite());
         result.put("flipr.mso",          ctx.getMsoName());
@@ -569,7 +569,7 @@ public class ApiMisc extends ApiGeneric {
             log.info("youtube playlist format");
             String playlistId = ytPlaylistMatcher.group(1);
             log.info("playlistId = " + playlistId);
-            ApiContext ctx = new ApiContext(req);
+            ApiContext ctx = new ApiContext();
             
             try {
                 PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);

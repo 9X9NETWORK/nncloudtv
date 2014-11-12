@@ -124,7 +124,7 @@ public class PlayerApiService {
         if (toLog)
             NnNetUtil.logUrl(req);
         
-        this.ctx = new ApiContext(req);
+        this.ctx = new ApiContext();
         
         MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(ctx.getMso(), MsoConfig.APP_EXPIRE);
         if (brandExpireConfig != null) {
@@ -955,11 +955,11 @@ public class PlayerApiService {
         }
         if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
             @SuppressWarnings("unchecked")
-            List<ChannelLineup> lineup = (List<ChannelLineup>) NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, new ApiContext(req), null);
+            List<ChannelLineup> lineup = (List<ChannelLineup>) NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, new ApiContext(), null);
             playerChannelLineup.setChannelLineup(lineup);
             return this.assembleMsgs(NnStatusCode.SUCCESS, playerChannelLineup);
         }
-        Object channelLineup = NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, new ApiContext(req), result);
+        Object channelLineup = NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, new ApiContext(), result);
         return this.assembleMsgs(NnStatusCode.SUCCESS, channelLineup);
     }
     
@@ -1401,7 +1401,7 @@ public class PlayerApiService {
                 return this.assembleMsgs(NnStatusCode.ERROR, "missing param token");
             }
             
-            ApiContext context = new ApiContext(req);
+            ApiContext context = new ApiContext();
             Mso mso = context.getMso();
             
             device = NNF.getDeviceMngr().findDuplicated(token, mso.getId(), type);
@@ -1609,7 +1609,7 @@ public class PlayerApiService {
             String toEmail = "feedback@9x9.tv";
             String toName = "feedback";
             //String subject = "User send a report";
-            ApiContext context = new ApiContext(req);
+            ApiContext context = new ApiContext();
             Mso mso = context.getMso();
             NnUserProfile profile = user.getProfile();
             String body = "user ui-lang:" + profile.getLang() + "\n";

@@ -57,7 +57,8 @@ public class ApiContext {
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     
-    HttpServletRequest httpReq;
+    @Autowired HttpServletRequest req;
+    
     Locale language;
     Integer version;
     String appVersion;
@@ -102,7 +103,7 @@ public class ApiContext {
     }
     
     public String getCookie(String cookieName) {
-        return CookieHelper.getCookie(httpReq, cookieName);
+        return CookieHelper.getCookie(req, cookieName);
     }
     
     public String getRoot() {
@@ -116,15 +117,14 @@ public class ApiContext {
     
     public String getParam(String name, String defaultValue) {
         
-        String value = httpReq.getParameter(name);
+        String value = req.getParameter(name);
         
         return value == null ? defaultValue : value;
     }
     
-    @Autowired
-    public ApiContext(HttpServletRequest req) {
+    
+    public ApiContext() {
         
-        this.httpReq = req;
         String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";
         System.out.println("[ApiContext] user-agent = " + userAgent);
@@ -163,7 +163,7 @@ public class ApiContext {
         if (appVersion != null)
             appVersion = os + " " + appVersion;
         
-        root = NnNetUtil.getUrlRoot(httpReq);
+        root = NnNetUtil.getUrlRoot(req);
         if (root.isEmpty()) {
             root = MsoConfigManager.getServerDomain();
         }
@@ -241,7 +241,7 @@ public class ApiContext {
     
     public HttpServletRequest getReq() {
         
-        return httpReq;
+        return req;
     }
     
     public static NnUser getAuthenticatedUser(HttpServletRequest req, long msoId) {
@@ -262,11 +262,11 @@ public class ApiContext {
     
     public NnUser getAuthenticatedUser(long msoId) {
         
-        return getAuthenticatedUser(httpReq, msoId);
+        return getAuthenticatedUser(req, msoId);
     }
     
     public NnUser getAuthenticatedUser() {
         
-        return getAuthenticatedUser(httpReq, MsoManager.getSystemMsoId());
+        return getAuthenticatedUser(req, MsoManager.getSystemMsoId());
     }
 }

@@ -428,7 +428,7 @@ public class NnUserManager {
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext(req));
+        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext());
         return result;
     }
     

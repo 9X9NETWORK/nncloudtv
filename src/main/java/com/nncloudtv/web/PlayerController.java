@@ -152,7 +152,7 @@ public class PlayerController {
                        @RequestParam(value="ep", required=false) String ep) {
         //additional params
         PlayerService service = new PlayerService();
-        ApiContext context = new ApiContext(req);
+        ApiContext context = new ApiContext();
         
         Mso mso = NNF.getMsoMngr().getByNameFromCache(msoName);
         if (mso == null) {

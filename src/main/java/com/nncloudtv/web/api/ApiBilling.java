@@ -245,7 +245,7 @@ public class ApiBilling extends ApiGeneric {
         // preauth
         if (profile.getCardStatus() < BillingProfile.AUTHED) {
             
-            ApiContext context = new ApiContext(req);
+            ApiContext context = new ApiContext();
             BillingService billingServ = new BillingService();
             CreditCard creditCard = null;
             

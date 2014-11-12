@@ -24,7 +24,7 @@ public class NotificationController {
         
         log.info("notifyId = " + id);
         
-        ApiContext context = new ApiContext(req);
+        ApiContext context = new ApiContext();
         
         // APNs push notification
         NNF.getNotiService().sendToAPNS(id, context.isProductionSite());

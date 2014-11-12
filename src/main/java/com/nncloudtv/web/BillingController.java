@@ -47,7 +47,7 @@ public class BillingController {
         String result = "";
         CreditCard creditCard= null;
         try {
-            creditCard = billingService.checkCreditCard(new ApiContext(req), true);
+            creditCard = billingService.checkCreditCard(new ApiContext(), true);
             
         } catch (NnApiInternalErrorException e) {
             
@@ -93,7 +93,7 @@ public class BillingController {
             
             purchases = (req.getParameter("all") == null) ? NNF.getPurchaseMngr().findAllActive() : NNF.getPurchaseMngr().findAll();
         }
-        ApiContext ctx = new ApiContext(req);
+        ApiContext ctx = new ApiContext();
         
         int cntVerified = 0;
         int cntTotal    = 0;
@@ -126,7 +126,7 @@ public class BillingController {
     public ResponseEntity<String> recurringCharge(HttpServletRequest req) {
         
         List<BillingOrder> orders = NNF.getOrderMngr().findByStatus(BillingOrder.RECURRING);
-        ApiContext context = new ApiContext(req);
+        ApiContext context = new ApiContext();
         String results = "";
         int total = 0;
         
