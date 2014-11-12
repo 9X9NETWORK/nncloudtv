@@ -12,6 +12,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 
@@ -294,6 +295,6 @@ public class GenericDao<T> {
     @Override
     protected void finalize() throws Throwable {
         
-        System.out.println("[finalize] " + getClass().getName());
+        NnLogUtil.logFinalize(getClass().getSimpleName());
     }
 }

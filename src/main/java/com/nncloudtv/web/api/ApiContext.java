@@ -10,10 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
@@ -22,6 +25,12 @@ import com.nncloudtv.service.MsoManager;
 
 @Component
 public class ApiContext {
+    
+    @Override
+    protected void finalize() throws Throwable {
+        
+        NnLogUtil.logFinalize(getClass().getSimpleName());
+    }
     
     public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
     
@@ -49,7 +58,7 @@ public class ApiContext {
     public final static String PARAM_FORMAT      = "format";
     
     HttpServletRequest httpReq;
-    Locale locale;
+    Locale language;
     Integer version;
     String appVersion;
     String os;
@@ -58,83 +67,99 @@ public class ApiContext {
     Boolean productionSite = null;
     short format;
     
-    public short getFormat() {
-        
+    protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
+    
+    public short getFmt() {
         return format;
     }
     
-    public Integer getVersion() {
-        
+    public Integer getVer() {
         return version;
     }
     
     public String getAppVersion() {
-        
     	return appVersion;
     }
     
     public String getOs() {
-        
     	return os;
     }
     
     public Mso getMso() {
-    
         return mso;
     }
     
     public long getMsoId() {
-        
         return mso.getId();
     }
     
     public String getMsoName() {
-        
         return mso.getName();
     }
     
-    protected static final Logger log = Logger.getLogger(ApiContext.class.getName());
+    public String getLang() {
+        return language.getLanguage();
+    }
+    
+    public String getCookie(String cookieName) {
+        return CookieHelper.getCookie(httpReq, cookieName);
+    }
+    
+    public String getRoot() {
+        return root;
+    }
+    
+    public String getParam(String name) {
+        
+        return getParam(name, null);
+    }
+    
+    public String getParam(String name, String defaultValue) {
+        
+        String value = httpReq.getParameter(name);
+        
+        return value == null ? defaultValue : value;
+    }
     
     @Autowired
     public ApiContext(HttpServletRequest req) {
         
-        init(req);
-    }
-    
-    private void init(HttpServletRequest req) {
+        this.httpReq = req;
+        String userAgent = req.getHeader(ApiContext.HEADER_USER_AGENT);
+        if (userAgent == null) userAgent = "";
+        System.out.println("[ApiContext] user-agent = " + userAgent);
         
-        MsoManager msoMngr = NNF.getMsoMngr();
-        httpReq = req;
-        log.info("user-agent = " + req.getHeader(ApiContext.HEADER_USER_AGENT));
-        
-        String returnFormat = httpReq.getParameter(ApiContext.PARAM_FORMAT);
-        if (returnFormat == null || (returnFormat != null && !returnFormat.contains("json"))) {
+        this.format = FORMAT_JSON;
+        String returnFormat = getParam(ApiContext.PARAM_FORMAT);
+        if (returnFormat == null || returnFormat.isEmpty() || !returnFormat.equals("json")) {
             this.format = FORMAT_PLAIN;
-        } else {
-            this.format = FORMAT_JSON;
         }
         
-        String lang = httpReq.getParameter(ApiContext.PARAM_LANG);
+        String lang = getParam(ApiContext.PARAM_LANG);
         if (LocaleTable.isLanguageSupported(lang)) {
-            locale = LocaleTable.getLocale(lang);
+            language = LocaleTable.getLocaleFromLang(lang);
         } else {
-            locale = Locale.ENGLISH; // TODO: from http request
+            language = Locale.ENGLISH;
         }
         
         version = ApiContext.DEFAULT_VERSION;
-        String versionStr = httpReq.getParameter(PARAM_VERSION);
-        if (versionStr != null) {
-            try {
-                version = Integer.parseInt(versionStr);
-            } catch (NumberFormatException e) {
+        Integer versionInt = NnStringUtil.evalInt(getParam(PARAM_VERSION));
+        if (versionInt != null) {
+            version = versionInt;
+        }
+        
+        os = getParam(PARAM_OS);
+        if (os == null) {
+            if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
+                os = OS_IOS;
+            } else if (userAgent.contains("Android")) { 
+                os = OS_ANDROID;
+            } else {
+                os = DEFAULT_OS;
             }
         }
         
-        os = httpReq.getParameter(PARAM_OS);
-        if (os == null || os.length() == 0)
-            os = ApiContext.DEFAULT_OS;
-        
-        appVersion = httpReq.getParameter(PARAM_APP_VERSION);
+        appVersion = getParam(PARAM_APP_VERSION);
         if (appVersion != null)
             appVersion = os + " " + appVersion;
         
@@ -142,19 +167,19 @@ public class ApiContext {
         if (root.isEmpty()) {
             root = MsoConfigManager.getServerDomain();
         }
-        mso = msoMngr.getByNameFromCache(httpReq.getParameter(ApiContext.PARAM_MSO));
+        mso = NNF.getMsoMngr().getByNameFromCache(getParam(ApiContext.PARAM_MSO));
         if (mso == null) {
             String domain = root.replaceAll("^http(s)?:\\/\\/", "");
             String[] split = domain.split("\\.");
             if (split.length > 2) {
-                mso = msoMngr.findByName(split[0]);
+                mso = NNF.getMsoMngr().findByName(split[0]);
             }
             if (mso == null) {
-                mso = msoMngr.getByNameFromCache(Mso.NAME_9X9);
+                mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_9X9);
             }
         }
         
-        log.info("language = " + locale.getLanguage() + "; mso = " + mso.getName() + "; version = " + version + "; root = " + root);
+        System.out.println(String.format("[ApiContext] language = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
     }
     
     public Boolean isProductionSite() {
@@ -206,44 +231,17 @@ public class ApiContext {
     
     public boolean isAndroid() {
         
-        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
-        if (userAgent != null && userAgent.contains("Android")) {
-            log.info("request from android");
-            return true;
-        }
-        return false;
+        return OS_ANDROID.equalsIgnoreCase(os);
     }
     
     public boolean isIos() {
         
-        String userAgent = httpReq.getHeader(ApiContext.HEADER_USER_AGENT);
-        if (userAgent == null)
-            return false;
-        if (userAgent.contains("iPhone") || userAgent.contains("iPad")) {
-            log.info("request from ios");
-            return true;
-        }
-        return false;
+        return OS_IOS.equalsIgnoreCase(os);
     }
     
-    public HttpServletRequest getHttpRequest() {
+    public HttpServletRequest getReq() {
         
         return httpReq;
-    }
-    
-    public String getLang() {
-        
-        return locale.getLanguage();
-    }
-    
-    public String getCookie(String cookieName) {
-        
-        return CookieHelper.getCookie(httpReq, cookieName);
-    }
-    
-    public String getRoot() {
-        
-        return root;
     }
     
     public static NnUser getAuthenticatedUser(HttpServletRequest req, long msoId) {
@@ -260,5 +258,15 @@ public class ApiContext {
     public static NnUser getAuthenticatedUser(HttpServletRequest req) {
         
         return getAuthenticatedUser(req, MsoManager.getSystemMsoId());
+    }
+    
+    public NnUser getAuthenticatedUser(long msoId) {
+        
+        return getAuthenticatedUser(httpReq, msoId);
+    }
+    
+    public NnUser getAuthenticatedUser() {
+        
+        return getAuthenticatedUser(httpReq, MsoManager.getSystemMsoId());
     }
 }

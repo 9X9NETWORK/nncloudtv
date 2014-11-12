@@ -3,6 +3,7 @@ package com.nncloudtv.lib;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.AdPlacementDao;
+import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
@@ -135,6 +136,7 @@ public class NNF {
     protected static NnItemDao         itemDao           = null;
     protected static TitleCardDao      titleCardDao      = null;
     protected static NnChannelPrefDao  chPrefDao         = null;
+    protected static AppDao            appDao            = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -420,6 +422,17 @@ public class NNF {
         }
         
         return chPrefDao;
+    }
+    
+    public static AppDao getAppDao() {
+        
+        if (appDao == null) {
+            
+            log.info("create appDao");
+            appDao = new AppDao();
+        }
+        
+        return appDao;
     }
     
     public static CategoryService getCategoryService() {

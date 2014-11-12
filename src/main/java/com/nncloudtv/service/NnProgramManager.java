@@ -487,7 +487,7 @@ public class NnProgramManager {
         String cacheKey = null;
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
-            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVersion(), ctx.getFormat());
+            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVer(), ctx.getFmt());
             if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
@@ -500,7 +500,7 @@ public class NnProgramManager {
                 }
             }
         }
-        Object output = this.assembleProgramInfo(channel, ctx.getFormat(), start, end, time, ctx.getMso());
+        Object output = this.assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso());
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);

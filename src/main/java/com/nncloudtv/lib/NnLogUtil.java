@@ -6,6 +6,11 @@ public class NnLogUtil {
     
     protected final static Logger log = Logger.getLogger(NnLogUtil.class.getName());
     
+    public static void logFinalize(String className) {
+        
+        System.out.println(String.format("[finalize] %s", className));
+    }
+    
     public static void logException(Exception e) {
         
         if (e == null) {

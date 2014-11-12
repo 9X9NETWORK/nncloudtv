@@ -64,44 +64,43 @@ public class PlayerController {
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="episode", required=false) String episode,
             @RequestParam(value="ch", required=false) String ch,
-            @RequestParam(value="ep", required=false) String ep,            
+            @RequestParam(value="ep", required=false) String ep,
             @RequestParam(value="jsp",required=false) String jsp,
-            @RequestParam(value="js",required=false) String js) {
+            @RequestParam(value="js",required=false) String js, ApiContext ctx) {
         try {
-            ApiContext context = new ApiContext(req);
-        	if (context.isAndroid() || context.isIos()) {
-        	    return "redirect:/mobile/";
-        	}
-        	PlayerService service = new PlayerService();
-        	Mso brand = context.getMso();
-        	if (brand.getType() == Mso.TYPE_FANAPP) {
-        		//below, merge with view
-	            log.info("Fan app sharing");
-	            MsoConfigManager configMngr = NNF.getConfigMngr();
-	            MsoConfig androidConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_ANDROID);
-	            MsoConfig iosConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_IOS);
-	        	String androidStoreUrl = "market://details?id=tv.tv9x9.player";
-	        	String iosStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";        	
-	            if (androidConfig != null) {
-	            	androidStoreUrl = androidConfig.getValue();
-	            }
-	            if (iosConfig != null) {
-	            	iosStoreUrl = iosConfig.getValue();
-	            }
-	        	String reportUrl = service.getGAReportUrl(ch, ep, brand.getName());
-	        	model.addAttribute("reportUrl", reportUrl);
-	        	model.addAttribute("androidStoreUrl", androidStoreUrl);
-	        	model.addAttribute("iosStoreUrl", iosStoreUrl);
-	        	model.addAttribute("brandName", brand.getName());
-	        	return "player/fanapp";
-        	}
-            model = service.prepareBrand(model, context.getMso().getName(), resp);
+            if (ctx.isAndroid() || ctx.isIos()) {
+                return "redirect:/mobile/";
+            }
+            PlayerService service = new PlayerService();
+            Mso brand = ctx.getMso();
+            if (brand.getType() == Mso.TYPE_FANAPP) {
+                //below, merge with view
+                log.info("Fan app sharing");
+                MsoConfigManager configMngr = NNF.getConfigMngr();
+                MsoConfig androidConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_ANDROID);
+                MsoConfig iosConfig = configMngr.findByMsoAndItem(brand, MsoConfig.STORE_IOS);
+                String androidStoreUrl = "market://details?id=tv.tv9x9.player";
+                String iosStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";
+                if (androidConfig != null) {
+                    androidStoreUrl = androidConfig.getValue();
+                }
+                if (iosConfig != null) {
+                    iosStoreUrl = iosConfig.getValue();
+                }
+                String reportUrl = service.getGAReportUrl(ch, ep, brand.getName());
+                model.addAttribute("reportUrl", reportUrl);
+                model.addAttribute("androidStoreUrl", androidStoreUrl);
+                model.addAttribute("iosStoreUrl", iosStoreUrl);
+                model.addAttribute("brandName", brand.getName());
+                return "player/fanapp";
+            }
+            model = service.prepareBrand(model, ctx.getMsoName(), resp);
             model = service.preparePlayer(model, js, jsp, req);
             if (jsp != null && jsp.length() > 0) {
                 return "player/" + jsp;
             }
         } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);            
+            NnLogUtil.logThrowable(t);
         }
         return "player/mini";
     }    

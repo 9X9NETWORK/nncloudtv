@@ -349,7 +349,7 @@ public class ApiUser extends ApiGeneric {
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
-    public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
+    public @ResponseBody NnChannel userChannelCreate(ApiContext ctx, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
@@ -358,7 +358,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -371,7 +371,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null || name.isEmpty()) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -379,40 +379,40 @@ public class ApiUser extends ApiGeneric {
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         
         // imageUrl
-        String imageUrl = getParameter(req, "imageUrl", NnChannel.IMAGE_WATERMARK_URL);
+        String imageUrl = ctx.getParam("imageUrl", NnChannel.IMAGE_WATERMARK_URL);
         
         // lang
-        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         // isPublic
-        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
+        Boolean isPublic = NnStringUtil.evalBool(ctx.getParam("isPublic"), true);
         
         // paidChannel
-        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"), false);
+        Boolean paidChannel = NnStringUtil.evalBool(ctx.getParam("paidChannel"), false);
         
         // tag
-        String tag = req.getParameter("tag");
+        String tag = ctx.getParam("tag");
         
         // sphere
-        String sphere = getParameter(req, "sphere", LocaleTable.LANG_EN);
+        String sphere = ctx.getParam(ApiContext.PARAM_SPHERE, LocaleTable.LANG_EN);
         
         // categoryId
-        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
+        Long categoryId = NnStringUtil.evalLong(ctx.getParam("categoryId"));
         
         // sourceUrl
-        String sourceUrl = req.getParameter("sourceUrl");
+        String sourceUrl = ctx.getParam("sourceUrl");
         
         // sorting
-        Short sorting = NnStringUtil.evalShort(req.getParameter("sorting"));
+        Short sorting = NnStringUtil.evalShort(ctx.getParam("sorting"));
         
         // status
-        Short status = NnStringUtil.evalShort(req.getParameter("status"));
+        Short status = NnStringUtil.evalShort(ctx.getParam("status"));
         
         // contentType
-        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(ctx.getParam("contentType"));
         
         NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
@@ -463,7 +463,7 @@ public class ApiUser extends ApiGeneric {
         channel = NNF.getChannelMngr().save(channel);
         
         // syncNow
-        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+        if (NnStringUtil.evalBool(ctx.getParam("syncNow"), false)) {
             
             channel = NnChannelManager.syncNow(channel);
         }
@@ -474,7 +474,7 @@ public class ApiUser extends ApiGeneric {
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
-        String autoSync = req.getParameter("autoSync");
+        String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
             NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
             if (autosyncPref == null) {

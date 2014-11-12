@@ -159,13 +159,6 @@ public class ApiGeneric {
         internalError(resp, null);
     }
     
-    public String getParameter(HttpServletRequest req, String name, String defaultValue) {
-        
-        String value = req.getParameter(name);
-        
-        return value == null ? defaultValue : value;
-    }
-    
     @ExceptionHandler(Exception.class)
     public void internalError(HttpServletResponse resp, Exception e) {
         

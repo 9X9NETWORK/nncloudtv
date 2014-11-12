@@ -187,20 +187,17 @@ public class PlayerApiController {
      */
     @RequestMapping(value="relatedApps", produces = "text/plain; charset=utf-8")
     public @ResponseBody Object relatedApps(
-            @RequestParam(value="mso", required = false) String mso,
-            @RequestParam(value="stack", required = false) String stack,
-            @RequestParam(value="sphere", required = false) String sphere,
-            @RequestParam(value="os", required = false) String os,
-            HttpServletRequest req, 
-            HttpServletResponse resp) {
+            @RequestParam(value = "stack",  required = false) String stack,
+            @RequestParam(value = "sphere", required = false) String sphere,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.relatedApps(mso, os, stack, sphere, req);
+            output = playerApiService.relatedApps(stack, sphere);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -237,13 +234,13 @@ public class PlayerApiController {
         String text = req.getParameter("text");
         String sphere = req.getParameter("sphere");
         String year = req.getParameter("year");
-        String lang = req.getParameter("ui-lang");
+        String uiLang = req.getParameter("ui-lang");
         String rx = req.getParameter("rx");
         boolean isTemp = Boolean.parseBoolean(req.getParameter("temp"));
                 
         log.info("signup: email=" + email + ";name=" + name + ";mso:" + mso + 
                  ";userToken=" + userToken + ";sphere=" + sphere + 
-                 ";year=" + year + ";ui-lang=" + lang + 
+                 ";year=" + year + ";ui-lang=" + uiLang + 
                  ";rx=" + rx);
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
@@ -252,7 +249,7 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS) {                
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                                            
-            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, gender, isTemp, req, resp);
+            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, uiLang, year, gender, isTemp, req, resp);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -395,22 +392,15 @@ public class PlayerApiController {
      *          2   1   vastAd hello world!!   http://rec.scupio.com/recweb/vast.aspx?creativeid=9x9test&d=15&video=VAD20140507123513649.mp4&adid=133872&rid=7241<br/>
      *         </p>
      */    
-    @RequestMapping(value="brandInfo")
-    public @ResponseBody Object brandInfo(
-            @RequestParam(value="mso", required=false)String brandName,
-            @RequestParam(value="os", required=false)String os,
-            @RequestParam(value="version", required=false)String version,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req, HttpServletResponse resp) {
-        
+    @RequestMapping(value = "brandInfo")
+    public @ResponseBody Object brandInfo(HttpServletRequest req, HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.brandInfo(os, req);
+            output = playerApiService.brandInfo();
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -485,7 +475,7 @@ public class PlayerApiController {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
             }                                    
             boolean flatten = Boolean.parseBoolean(isFlatten);
-            output = playerApiService.category(category, lang, flatten);
+            output = playerApiService.category(category, flatten);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -493,7 +483,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);
     }
-
+    
     /**
      * Collecting PDR
      * 
@@ -513,16 +503,13 @@ public class PlayerApiController {
             @RequestParam(value="device", required=false) String deviceToken,
             @RequestParam(value="session", required=false) String session,
             @RequestParam(value="pdr", required=false) String pdr,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            @RequestParam(value="rx", required=false) String rx,
+            ApiContext ctx, HttpServletResponse resp) {
         
-        String pdrServer = NnNetUtil.getUrlRoot(req);
+        String pdrServer = ctx.getRoot();
         String path = "/playerAPI/pdrServer";
-        PlayerApiService playerApiService = new PlayerApiService();
-        playerApiService.prepService(req, resp, false);
         
-        if (playerApiService.isProductionSite()) {
+        if (ctx.isProductionSite()) {
             pdrServer = "http://v32d.9x9.tv";
         } else {
             log.info("at pdr devel server");
@@ -535,7 +522,7 @@ public class PlayerApiController {
              "&session=" + session +
              "&pdr=" + NnStringUtil.urlencode("" + pdr) +
              "&rx=" + rx +
-             "&mso=" + playerApiService.getMso().getName();
+             "&mso=" + ctx.getMsoName();
             //log.info(urlStr + "?" + params);
             
             URL url = new URL(urlStr);
@@ -553,9 +540,9 @@ public class PlayerApiController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return playerApiService.assembleMsgs(NnStatusCode.SUCCESS, null); 
+        return NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS);
     }
-
+    
     /**
      * To be ignored 
      */
@@ -1293,18 +1280,15 @@ public class PlayerApiController {
     @RequestMapping(value="staticContent")
     public @ResponseBody Object staticContent(
             @RequestParam(value="key", required=false) String key,
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {                                                
+            HttpServletRequest req, HttpServletResponse resp) {
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.staticContent(key, lang);
+            output = playerApiService.staticContent(key);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1350,20 +1334,18 @@ public class PlayerApiController {
      * @return <p>lines of set info.
      *         <p>Set info includes set id, set name, set description, set image, set channel count. Fields are separated by tab.          
      */        
-    @RequestMapping(value="listRecommended")
+    @RequestMapping(value = "listRecommended")
     public @ResponseBody Object listRecommended(
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {                                                
+            HttpServletRequest req, HttpServletResponse resp) {
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS) {
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.listRecommended(lang);
+            }
+            output = playerApiService.listrecommended();
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
@@ -1371,7 +1353,7 @@ public class PlayerApiController {
         }
         return playerApiService.response(output);      
     }
-
+    
     /**
      * Verify device token
      *  
@@ -2660,30 +2642,27 @@ public class PlayerApiController {
      *         <p>*1: 0 stack, 1 subscription, 2 account, 3 channel, 4 directory, 5 search  
      */
     @RequestMapping(value="whatson")
-    public @ResponseBody Object whatson(                      
+    public @ResponseBody Object whatson(
             @RequestParam(value="time", required=false) String time,
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="minimal", required=false) String minimal,            
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            @RequestParam(value="minimal", required=false) String minimal,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
+            if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.whatson(lang, time, isMinimal);    
+            output = playerApiService.whatson(time, isMinimal);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return playerApiService.response(output);
     }
- 
+    
     /**
      * Used by Android device. Things to list on the front page
      * 
@@ -2735,22 +2714,18 @@ public class PlayerApiController {
      */    
     @RequestMapping(value="portal")
     public @ResponseBody Object portal(
-            @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="type", required=false) String type,
             @RequestParam(value="minimal", required=false) String minimal,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
         PlayerApiService playerApiService = new PlayerApiService();
         try {
             int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.portal(lang, time, isMinimal, type);
+            output = playerApiService.portal(time, isMinimal, type);
         } catch (Exception e) {
             output = playerApiService.handleException(e);
         } catch (Throwable t) {

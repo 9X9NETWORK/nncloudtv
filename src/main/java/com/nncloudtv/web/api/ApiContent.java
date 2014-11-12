@@ -40,6 +40,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.StreamFactory;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnChannelPref;
@@ -1083,17 +1084,14 @@ public class ApiContent extends ApiGeneric {
     }
     
     @RequestMapping(value = "tags", method = RequestMethod.GET)
-    public @ResponseBody String[] tags(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody String[] tags(ApiContext ctx, HttpServletResponse resp) {
         
-        String categoryIdStr = req.getParameter("categoryId");
+        String categoryIdStr = ctx.getParam("categoryId");
         if (categoryIdStr == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
-        String lang = req.getParameter("lang");
-        if (lang == null) {
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        }
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         Long categoryId = null;
         try {
@@ -1126,17 +1124,11 @@ public class ApiContent extends ApiGeneric {
     
     @RequestMapping(value = "categories", method = RequestMethod.GET)
     public @ResponseBody
-    List<Category> categories(HttpServletRequest req, HttpServletResponse resp) {
+    List<Category> categories(ApiContext ctx, HttpServletResponse resp) {
         
-        String lang = req.getParameter("lang");
-        if (lang == null) {
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        }
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         List<Category> categories = NNF.getCategoryService().getSystemCategories(lang);
-        if (categories == null) {
-            return new ArrayList<Category>();
-        }
         
         return categories;
     }

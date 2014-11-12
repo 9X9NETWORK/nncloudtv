@@ -851,30 +851,30 @@ public class NnChannelManager {
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
-                channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFormat());
+            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+                channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFmt());
             } else {
-                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFormat());
+                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFmt());
             }
         } else {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
+            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
                 channelOutput += this.composeChannelLineup(channels, ctx);
             else
                 channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, ctx));
         }
         
         if (channelPos) {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
-                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
+            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             else
-                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
+                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFormat());
+                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFmt());
                 result.add(programStr);
             } 
             String size[] = new String[result.size()];
@@ -889,13 +889,13 @@ public class NnChannelManager {
         String output = "";
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
+            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)  {
                 output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
+        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)  {
             return output;
         } else {
             return lineups;
@@ -1035,14 +1035,14 @@ public class NnChannelManager {
     public Object composeEachChannelLineup(NnChannel channel, ApiContext ctx) {
         Object result = null;
         
-        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVersion(), ctx.getFormat());
+        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVer(), ctx.getFmt());
         try {
             result = CacheFactory.get(cacheKey);
         } catch (Exception e) {
             log.info("memcache error");
         }
         if (result != null && channel.getId() != 0) { //id = 0 means fake channel, it is dynamic
-            log.info("get channel lineup from cache. v=" + ctx.getVersion() +";channel=" + channel.getId());
+            log.info("get channel lineup from cache. v=" + ctx.getVer() +";channel=" + channel.getId());
             return result;
         }
         
@@ -1068,11 +1068,11 @@ public class NnChannelManager {
         
         //image url, favorite channel image will be overwritten later
         String imageUrl = channel.getPlayerPrefImageUrl();
-        if (ctx.getVersion() < 32) {
+        if (ctx.getVer() < 32) {
                 imageUrl = imageUrl.indexOf("|") < 0 ? imageUrl : imageUrl.substring(0, imageUrl.indexOf("|"));
                 log.info("v31 imageUrl:" + imageUrl);
         }
-        if (ctx.getVersion() > 31 && (
+        if (ctx.getVer() > 31 && (
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP       ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY    ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MIXED            ||
@@ -1144,7 +1144,7 @@ public class NnChannelManager {
             contentType = NnChannel.CONTENTTYPE_FAVORITE;
         //poi
         String poiStr = "";
-        if (ctx.getVersion() > 32) {
+        if (ctx.getVer() > 32) {
             List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannelId(channel.getId());
             //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
@@ -1169,7 +1169,7 @@ public class NnChannelManager {
                 log.info("poi output:" + poiStr);
             }
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(channel.getIdStr());
@@ -1195,11 +1195,11 @@ public class NnChannelManager {
             ori.add(""); //userImageUrl
             ori.add(sns == null ? "" : sns); //social network, ex: "twitter NBA;facebook ETtoday"
             ori.add(banner == null ? "" : banner); //banner image url
-            if (ctx.getVersion() == 32)
+            if (ctx.getVer() == 32)
                 ori.add(" ");
             else
                 ori.add(lastEpisodeTitle); //lastEpisodeTitle
-            if (ctx.getVersion() > 32)
+            if (ctx.getVer() > 32)
                 ori.add(poiStr);
             String size[] = new String[ori.size()];    
             String output = NnStringUtil.getDelimitedStr(ori.toArray(size));

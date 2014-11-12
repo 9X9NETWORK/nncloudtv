@@ -242,6 +242,9 @@ public class ApiMisc extends ApiGeneric {
         
         result.put("flipr.isProduction", ctx.isProductionSite());
         result.put("flipr.mso",          ctx.getMsoName());
+        result.put("flipr.lang",         ctx.getLang());
+        result.put("flipr.os",           ctx.getOs());
+        result.put("flipr.version",      ctx.getVer());
         
         result.put("java.version",       System.getProperty("java.version"));
         result.put("java.vendor",        System.getProperty("java.vendor"));
@@ -256,7 +259,7 @@ public class ApiMisc extends ApiGeneric {
     @RequestMapping("echo")
     public @ResponseBody Map<String, String> echo(ApiContext ctx, HttpServletResponse resp) {
         
-        Map<String, String[]> names = ctx.getHttpRequest().getParameterMap();
+        Map<String, String[]> names = ctx.getReq().getParameterMap();
         Map<String, String> result = new TreeMap<String, String>();
         
         log.info("isProductionSite = " + ctx.isProductionSite());
@@ -288,7 +291,7 @@ public class ApiMisc extends ApiGeneric {
             }
         }).start();
         
-        if (ctx.getHttpRequest().getMethod().equalsIgnoreCase("POST")) {
+        if (ctx.getReq().getMethod().equalsIgnoreCase("POST")) {
             resp.setStatus(HTTP_201);
         }
         

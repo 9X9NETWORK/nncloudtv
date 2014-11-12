@@ -251,7 +251,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.GET)
     public @ResponseBody
-    List<Set> msoSets(HttpServletRequest req,
+    List<Set> msoSets(ApiContext ctx,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -261,14 +261,14 @@ public class ApiMso extends ApiGeneric {
         }
         
         // lang
-        String lang = req.getParameter("lang");
+        String lang = ctx.getParam(ApiContext.PARAM_LANG);
         
         List<Set> results;
         
-        if (lang != null) {
-            results = NNF.getSetService().findByMsoIdAndLang(mso.getId(), lang);
-        } else {
+        if (lang == null) {
             results = NNF.getSetService().findByMsoId(mso.getId());
+        } else {
+            results = NNF.getSetService().findByMsoIdAndLang(mso.getId(), lang);
         }
         
         for (Set result : results) {
@@ -1008,7 +1008,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/categories", method = RequestMethod.GET)
     public @ResponseBody
-    List<Category> msoCategories(HttpServletRequest req,
+    List<Category> msoCategories(ApiContext ctx,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -1018,11 +1018,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang == null) {
-            
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        }
+        String lang = ctx.getParam("lang", LocaleTable.LANG_EN);
         
         List<Category> results = NNF.getCategoryService().findByMsoId(mso.getId());
         
@@ -1042,7 +1038,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/categories", method = RequestMethod.POST)
     public @ResponseBody
-    Category msoCategoryCreate(HttpServletRequest req,
+    Category msoCategoryCreate(ApiContext ctx,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -1051,7 +1047,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+        NnUser user = ctx.getAuthenticatedUser(mso.getId());
         if (user == null) {
             
             unauthorized(resp);
@@ -1065,7 +1061,7 @@ public class ApiMso extends ApiGeneric {
         
         // seq, default : 1
         Short seq = null;
-        String seqStr = req.getParameter("seq");
+        String seqStr = ctx.getParam("seq");
         if (seqStr != null) {
             try {
                 seq = Short.valueOf(seqStr);
@@ -1078,22 +1074,19 @@ public class ApiMso extends ApiGeneric {
         }
         
         // zhName
-        String zhName = req.getParameter("zhName");
+        String zhName = ctx.getParam("zhName");
         if (zhName != null) {
             zhName = NnStringUtil.htmlSafeAndTruncated(zhName);
         }
         
         // enName
-        String enName = req.getParameter("enName");
+        String enName = ctx.getParam("enName");
         if (enName != null) {
             enName = NnStringUtil.htmlSafeAndTruncated(enName);
         }
         
         // lang
-        String lang = req.getParameter("lang");
-        if (lang == null) {
-            lang = NNF.getUserMngr().findLocaleByHttpRequest(req);
-        }
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         Category category = new Category();
         category.setMsoId(mso.getId());
@@ -1162,7 +1155,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "category/{categoryId}", method = RequestMethod.PUT)
     public @ResponseBody
-    Category categoryUpdate(HttpServletRequest req,
+    Category categoryUpdate(ApiContext ctx,
             HttpServletResponse resp, @PathVariable("categoryId") String categoryIdStr) {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
@@ -1177,7 +1170,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, category.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(category.getMsoId());
         if (user == null) {
             
             unauthorized(resp);
@@ -1190,32 +1183,32 @@ public class ApiMso extends ApiGeneric {
         }
         
         // seq
-        Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
+        Short seq = NnStringUtil.evalShort(ctx.getParam("seq"));
         if (seq != null) {
             category.setSeq(seq);
         }
         
         // zhName
-        String zhName = req.getParameter("zhName");
+        String zhName = ctx.getParam("zhName");
         if (zhName != null) {
             zhName = NnStringUtil.htmlSafeAndTruncated(zhName);
             category.setZhName(zhName);
         }
         
         // enName
-        String enName = req.getParameter("enName");
+        String enName = ctx.getParam("enName");
         if (enName != null) {
             enName = NnStringUtil.htmlSafeAndTruncated(enName);
             category.setEnName(enName);
         }
         
         // lang
-        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         category = NNF.getCategoryService().updateCntChannel(category);
         category = NNF.getCategoryService().save(category);
         
-        if (lang.equals(LocaleTable.LANG_ZH)) {
+        if (lang.equalsIgnoreCase(LocaleTable.LANG_ZH)) {
             category.setLang(LocaleTable.LANG_ZH);
             category.setName(category.getZhName());
         } else {

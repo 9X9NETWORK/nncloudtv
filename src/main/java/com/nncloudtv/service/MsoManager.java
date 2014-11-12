@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -344,27 +342,11 @@ public class MsoManager {
         return info;
     }    
     
-    private String checkOs(String os, HttpServletRequest req) {
-        if (os != null) {
-            if (!os.equals(ApiContext.OS_ANDROID) && !os.equals(ApiContext.OS_IOS)) {
-                return ApiContext.OS_WEB;
-            }
-            return os;
-        }
-        ApiContext service = new ApiContext(req);
-        os = ApiContext.OS_WEB;
-        if (service.isIos()) {
-            os = ApiContext.OS_IOS;
-        } else if (service.isAndroid()) { 
-            os = ApiContext.OS_ANDROID;
-        }
-        return os;
-    }
-    
     @SuppressWarnings("unchecked")
-    public Object getBrandInfo(HttpServletRequest req, Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
-        if (mso == null) {return null; }
-        os = checkOs(os, req);
+    public Object getBrandInfo(ApiContext ctx, String locale, long counter, String acceptLang) {
+        Mso mso = ctx.getMso();
+        String os = ctx.getOs();
+        short format = ctx.getFmt();
         String cacheKey = CacheFactory.getBrandInfoKey(mso, os, format);
         Object cached = null;
         try {
@@ -372,7 +354,7 @@ public class MsoManager {
         } catch (Exception e) {
             log.info("memcache error");
         }
-        if (format == ApiContext.FORMAT_JSON) {
+        if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
             
             BrandInfo json = (BrandInfo) cached;
             if (cached == null) {
@@ -381,7 +363,6 @@ public class MsoManager {
             }
             json.setLocale(locale);
             json.setBrandInfoCounter(counter);
-            json.setPiwik(piwik);
             json.setAcceptLang(acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
@@ -415,7 +396,6 @@ public class MsoManager {
             }
             brandInfo += PlayerApiService.assembleKeyValue("locale", locale);
             brandInfo += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
-            brandInfo += PlayerApiService.assembleKeyValue("piwik", piwik);
             brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
