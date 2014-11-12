@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Component;
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
@@ -20,7 +20,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
-
+@Component
 public class ApiContext {
     
     public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
@@ -44,6 +44,7 @@ public class ApiContext {
     public final static String PARAM_MSO         = "mso";
     public final static String PARAM_LANG        = "lang";
     public final static String PARAM_SPHERE      = "shpere";
+    public final static String PARAM_REGION      = "region";
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     

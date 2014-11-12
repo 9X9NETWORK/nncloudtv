@@ -254,14 +254,12 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping("echo")
-    public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody Map<String, String> echo(ApiContext ctx, HttpServletResponse resp) {
         
-        Map<String, String[]> names = req.getParameterMap();
+        Map<String, String[]> names = ctx.getHttpRequest().getParameterMap();
         Map<String, String> result = new TreeMap<String, String>();
         
-        ApiContext context = new ApiContext(req);
-        
-        log.info("isProductionSite = " + context.isProductionSite());
+        log.info("isProductionSite = " + ctx.isProductionSite());
         
         for (String name : names.keySet()) {
             
@@ -290,7 +288,7 @@ public class ApiMisc extends ApiGeneric {
             }
         }).start();
         
-        if (req.getMethod().equalsIgnoreCase("POST")) {
+        if (ctx.getHttpRequest().getMethod().equalsIgnoreCase("POST")) {
             resp.setStatus(HTTP_201);
         }
         
