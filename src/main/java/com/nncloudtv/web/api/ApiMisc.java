@@ -235,10 +235,9 @@ public class ApiMisc extends ApiGeneric {
     }
     
     @RequestMapping("sysinfo")
-    public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody Map<String, Object> sysinfo(ApiContext ctx, HttpServletResponse resp) {
         
         HashMap<String, Object> result = new HashMap<String, Object>();
-        ApiContext ctx = new ApiContext(req);
         
         result.put("flipr.isProduction", ctx.isProductionSite());
         result.put("flipr.mso",          ctx.getMsoName());
