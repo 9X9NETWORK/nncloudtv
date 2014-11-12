@@ -59,7 +59,9 @@ public class ApiContext {
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     
-    HttpServletRequest httpReq;
+    @Autowired(required = true)
+    private HttpServletRequest httpReq;
+    
     Locale language;
     Integer version;
     String appVersion;
