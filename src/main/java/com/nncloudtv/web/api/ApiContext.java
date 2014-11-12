@@ -8,6 +8,10 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
@@ -20,6 +24,8 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 
+@Component
+@Configurable
 public class ApiContext {
     
     @Override
@@ -118,6 +124,7 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
+    @Autowired
     public ApiContext(HttpServletRequest req) {
         
         this.httpReq = req;
