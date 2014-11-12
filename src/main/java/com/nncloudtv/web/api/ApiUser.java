@@ -160,7 +160,7 @@ public class ApiUser extends ApiGeneric {
         if (msoName != null) {
             mso = NNF.getMsoMngr().findByIdOrName(msoName);
             if (mso != null)
-                supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
+                supportedRegion = MsoConfigManager.getSuppoertedRegion(mso, true);
         }
         
         Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), false);

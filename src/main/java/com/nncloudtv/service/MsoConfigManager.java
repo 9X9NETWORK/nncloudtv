@@ -576,7 +576,7 @@ public class MsoConfigManager {
         return null;
     }
     
-    public static List<String> getSuppoertedResion(Mso mso, boolean appendOther) {
+    public static List<String> getSuppoertedRegion(Mso mso, boolean appendOther) {
         List<String> empty = new ArrayList<String>();
         if (mso == null) return empty;
         MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.SUPPORTED_REGION);
