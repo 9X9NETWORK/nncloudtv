@@ -1178,7 +1178,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        ApiContext ctx = new ApiContext();
+        ApiContext ctx = new ApiContext(req);
         List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channelId);
         if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
             Collections.sort(episodes, NnEpisodeManager.getComparator("reverse"));
@@ -1484,7 +1484,7 @@ public class ApiContent extends ApiGeneric {
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
     public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
         
-        ApiContext ctx = new ApiContext();
+        ApiContext ctx = new ApiContext(req);
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);

@@ -44,6 +44,7 @@ import com.nncloudtv.web.json.cms.Set;
 
 @Controller
 @RequestMapping("api")
+
 public class ApiMso extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
@@ -900,7 +901,7 @@ public class ApiMso extends ApiGeneric {
     Mso mso(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        ApiContext context = new ApiContext();
+        ApiContext context = new ApiContext(req);
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
@@ -1547,7 +1548,7 @@ public class ApiMso extends ApiGeneric {
         if (scheduleDateStr.equalsIgnoreCase("NOW")) {
             
             MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-            ApiContext context = new ApiContext();
+            ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 
@@ -1709,7 +1710,7 @@ public class ApiMso extends ApiGeneric {
             
             Mso mso = NNF.getMsoMngr().findById(notification.getMsoId());
             MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-            ApiContext context = new ApiContext();
+            ApiContext context = new ApiContext(req);
             File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
             if (gcmApiKey != null && gcmApiKey.getValue() != null && gcmApiKey.getValue().isEmpty() == false) {
                 

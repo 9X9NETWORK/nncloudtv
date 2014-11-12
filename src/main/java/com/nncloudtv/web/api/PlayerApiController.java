@@ -437,7 +437,7 @@ public class PlayerApiController {
         }
         NnChannelManager chMngr = NNF.getChannelMngr();
         NnChannel c = chMngr.findById(1);
-        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, new ApiContext());
+        ChannelLineup json = (ChannelLineup) chMngr.composeEachChannelLineup(c, new ApiContext(req));
         return json;
         //return "player/api";
     }
@@ -2517,7 +2517,7 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        ApiContext context = new ApiContext();
+        ApiContext context = new ApiContext(req);
         String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("referer = " + referrer);

@@ -47,7 +47,7 @@ public class FacebookController {
                             ";errorDescription:" + errorDescription + 
                             ";accessToken:" + accessToken + ";stage:" + stage);
         if (code != null && accessToken == null) {
-            ApiContext context = new ApiContext();
+            ApiContext context = new ApiContext(req);
             String fbLoginUri = (req.isSecure() ? "https://" : "http://") + context.getAppDomain() + "/fb/login";
             String[] data = new FacebookLib().getOAuthAccessToken(code, uri, fbLoginUri, context.getMso());
             log.info("FACEBOOK: (login) back from access token request");
