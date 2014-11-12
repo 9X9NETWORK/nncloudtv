@@ -123,6 +123,10 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
+    public ApiContext() {
+        
+    }
+    
     public ApiContext(HttpServletRequest req) {
         
         this.httpReq = req;
