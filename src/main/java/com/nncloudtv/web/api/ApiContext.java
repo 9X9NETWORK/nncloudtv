@@ -125,7 +125,10 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
-    @Autowired(required = true)
+    public ApiContext() {
+        
+    }
+    
     public ApiContext(HttpServletRequest req) {
         
         this.httpReq = req;
