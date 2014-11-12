@@ -295,6 +295,6 @@ public class GenericDao<T> {
     @Override
     protected void finalize() throws Throwable {
         
-        NnLogUtil.logFinalize(getClass().getSimpleName());
+        NnLogUtil.logFinalize(getClass().getName());
     }
 }

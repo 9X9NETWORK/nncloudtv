@@ -107,7 +107,7 @@ public class PlayerApiService {
     @Override
     protected void finalize() throws Throwable {
         
-        NnLogUtil.logFinalize(getClass().getSimpleName());
+        NnLogUtil.logFinalize(getClass().getName());
     }
     
     public int prepService(HttpServletRequest req, HttpServletResponse resp) {

@@ -29,7 +29,7 @@ public class ApiContext {
     @Override
     protected void finalize() throws Throwable {
         
-        NnLogUtil.logFinalize(getClass().getSimpleName());
+        NnLogUtil.logFinalize(getClass().getName());
     }
     
     public final static String PRODUCTION_SITE_URL_REGEX = "^http(s)?:\\/\\/((cc|api|www)\\.)?(9x9|flipr)\\.tv$";
