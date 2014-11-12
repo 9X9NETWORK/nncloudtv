@@ -59,7 +59,7 @@ public class ApiGeneric {
     public static final short HTTP_500 = 500;
     
     @Autowired
-    protected HttpServletRequest httpRequest;
+    protected HttpServletRequest httpReq;
     
     public void unauthorized(HttpServletResponse resp, String message) {
         try {
