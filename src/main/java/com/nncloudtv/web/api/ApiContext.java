@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
@@ -161,8 +163,18 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
+    public ApiContext() {
+        
+        HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        init(req);
+    }
+    
     public ApiContext(HttpServletRequest req) {
         
+        init(req);
+    }
+    
+    private void init(HttpServletRequest req) {
         httpReq = req;
         String userAgent = httpReq.getHeader(HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";

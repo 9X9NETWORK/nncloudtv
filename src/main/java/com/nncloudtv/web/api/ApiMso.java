@@ -47,10 +47,6 @@ import com.nncloudtv.web.json.cms.Set;
 
 public class ApiMso extends ApiContext {
     
-    public ApiMso(HttpServletRequest req) {
-        super(req);
-    }
-    
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
     @RequestMapping(value = "mso_promotions/{id}", method = RequestMethod.PUT)

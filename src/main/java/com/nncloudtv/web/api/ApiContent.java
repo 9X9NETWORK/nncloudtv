@@ -65,10 +65,6 @@ import com.nncloudtv.web.json.cms.Category;
 @RequestMapping("api")
 public class ApiContent extends ApiContext {
     
-    public ApiContent(HttpServletRequest req) {
-        super(req);
-    }
-    
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
     
     @RequestMapping(value = "channels/{channelId}/autosharing/facebook", method = RequestMethod.DELETE)

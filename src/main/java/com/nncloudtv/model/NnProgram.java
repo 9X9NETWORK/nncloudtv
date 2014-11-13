@@ -67,7 +67,7 @@ public class NnProgram implements Serializable {
     private String imageLargeUrl;
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String fileUrl;
     
     @Persistent

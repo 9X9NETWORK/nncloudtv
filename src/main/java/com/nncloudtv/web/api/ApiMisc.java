@@ -64,10 +64,6 @@ import com.nncloudtv.web.json.cms.User;
 @RequestMapping("api")
 public class ApiMisc extends ApiContext {
     
-    public ApiMisc(HttpServletRequest req) {
-        super(req);
-    }
-    
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
     @RequestMapping(value = "feedback", method = RequestMethod.POST)

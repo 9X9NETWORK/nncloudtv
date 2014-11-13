@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
@@ -43,10 +42,6 @@ import com.nncloudtv.web.json.cms.IapInfo;
 @Controller
 @RequestMapping("api/billing")
 public class ApiBilling extends ApiContext {
-    
-    public ApiBilling(HttpServletRequest req) {
-        super(req);
-    }
     
     protected static Logger log = Logger.getLogger(ApiBilling.class.getName());
     
