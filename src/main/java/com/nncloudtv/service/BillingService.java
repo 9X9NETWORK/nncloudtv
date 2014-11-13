@@ -29,6 +29,7 @@ import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.json.cms.CreditCard;
 import com.nncloudtv.web.json.cms.IapInfo;
 
@@ -60,18 +61,18 @@ public class BillingService {
         String cardTypeStr          = req.getParameter(CARD_TYPE);
         
         if (cardTypeStr != null && !cardTypeStr.matches("\\d+"))
-            throw new NnApiBadRequestException(ApiContext.INVALID_PARAMETER + DELIMITER + CARD_TYPE);
+            throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_TYPE);
         if (cardNumber == null)
-            throw new NnApiBadRequestException(ApiContext.MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
+            throw new NnApiBadRequestException(ApiGeneric.MISSING_PARAMETER + DELIMITER + CARD_NUMBER);
         cardNumber = cardNumber.replaceAll("-", "");
         if (cardExpires == null)
-            throw new NnApiBadRequestException(ApiContext.MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
+            throw new NnApiBadRequestException(ApiGeneric.MISSING_PARAMETER + DELIMITER + CARD_EXPIRES);
         if (!cardNumber.matches("\\d{15,16}"))
-            throw new NnApiBadRequestException(ApiContext.INVALID_PARAMETER + DELIMITER + CARD_NUMBER);
+            throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_NUMBER);
         if (!cardExpires.matches("\\d\\d\\/\\d\\d"))
-            throw new NnApiBadRequestException(ApiContext.INVALID_PARAMETER + DELIMITER + CARD_EXPIRES);
+            throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_EXPIRES);
         if (cardVerificationCode != null && !cardVerificationCode.matches("\\d{3,4}"))
-            throw new NnApiBadRequestException(ApiContext.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
+            throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
         CreditCard creditCard = new CreditCard(cardNumber, cardHolderName, cardExpires, cardVerificationCode);
         if (cardTypeStr != null) {
             creditCard.setCardType(Short.valueOf(cardTypeStr));
@@ -82,7 +83,7 @@ public class BillingService {
             CcApiRecord ccOverview = ClearCommerceLib.getOverview(ccResult);
             String txnStatus = ccOverview.getFieldString("TransactionStatus");
             if ("A".equals(txnStatus) == false)
-                throw new NnApiBadRequestException(ApiContext.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
+                throw new NnApiBadRequestException(ApiGeneric.INVALID_PARAMETER + DELIMITER + CARD_VERIFICATION_CODE);
         }
         
         return creditCard;

@@ -62,7 +62,7 @@ import com.nncloudtv.web.json.cms.User;
 
 @Controller
 @RequestMapping("api")
-public class ApiMisc extends ApiContext {
+public class ApiMisc extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiMisc.class.getName());
     
@@ -87,7 +87,7 @@ public class ApiMisc extends ApiContext {
             NNF.getEmailService().sendEmail(mail, null, null);
         }
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
@@ -99,7 +99,7 @@ public class ApiMisc extends ApiContext {
             
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
             if (mso == null) {
-                notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+                notFound(resp, INVALID_PATH_PARAMETER);
                 return null;
             }
             
@@ -134,7 +134,7 @@ public class ApiMisc extends ApiContext {
                 (!type.equals("audio") && !type.equals("image") && !type.equals("video")) ||
                 (!acl.equals("public-read") && !acl.equals("private"))) {
             
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return result;
         }
         
@@ -172,7 +172,7 @@ public class ApiMisc extends ApiContext {
         CookieHelper.deleteCookie(resp, CookieHelper.USER);
         CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "login", method = RequestMethod.GET)
@@ -216,7 +216,7 @@ public class ApiMisc extends ApiContext {
             }
             
         } else {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -237,15 +237,14 @@ public class ApiMisc extends ApiContext {
     @RequestMapping("sysinfo")
     public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
-        init(req);
+        ApiContext ctx = new ApiContext(req);
         HashMap<String, Object> result = new HashMap<String, Object>();
         
-        result.put("flipr.isProduction", isProductionSite());
-        result.put("flipr.mso",          getMsoName());
-        result.put("flipr.lang",         getLang());
-        result.put("flipr.os",           getOs());
-        result.put("flipr.version",      getVer());
-        result.put("flipr.counter",      counter++);
+        result.put("flipr.isProduction", ctx.isProductionSite());
+        result.put("flipr.mso",          ctx.getMsoName());
+        result.put("flipr.lang",         ctx.getLang());
+        result.put("flipr.os",           ctx.getOs());
+        result.put("flipr.version",      ctx.getVer());
         
         result.put("java.version",       System.getProperty("java.version"));
         result.put("java.vendor",        System.getProperty("java.vendor"));
@@ -259,11 +258,11 @@ public class ApiMisc extends ApiContext {
     
     @RequestMapping("echo")
     public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
-        init(req);
+        ApiContext ctx = new ApiContext(req);
         Map<String, String[]> names = req.getParameterMap();
         Map<String, String> result = new TreeMap<String, String>();
         
-        log.info("isProductionSite = " + isProductionSite());
+        log.info("isProductionSite = " + ctx.isProductionSite());
         
         for (String name : names.keySet()) {
             
@@ -274,7 +273,7 @@ public class ApiMisc extends ApiContext {
         
         if (result.isEmpty()) {
             
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             
             return null;
         }
@@ -293,7 +292,7 @@ public class ApiMisc extends ApiContext {
         }).start();
         
         if (req.getMethod().equalsIgnoreCase("POST")) {
-            resp.setStatus(ApiContext.HTTP_201);
+            resp.setStatus(HTTP_201);
         }
         
         return result;
@@ -308,7 +307,7 @@ public class ApiMisc extends ApiContext {
         
         String lang = req.getParameter("lang");
         if (lang == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -340,7 +339,7 @@ public class ApiMisc extends ApiContext {
             internalError(resp, e);
             return null;
         }
-        resp.setContentType(ApiContext.PLAIN_TEXT_UTF8);
+        resp.setContentType(PLAIN_TEXT_UTF8);
         resp.addDateHeader("Expires", System.currentTimeMillis() + 3600000);
         resp.addHeader("Cache-Control", "private, max-age=3600");
         return result;
@@ -373,7 +372,7 @@ public class ApiMisc extends ApiContext {
                 
             } else {
                 
-                message = ApiContext.BLACK_HOLE;
+                message = BLACK_HOLE;
             }
             
         } catch (IOException e) {
@@ -382,12 +381,12 @@ public class ApiMisc extends ApiContext {
             return null;
         }
         
-        if (message.equals(ApiContext.BLACK_HOLE)) {
+        if (message.equals(BLACK_HOLE)) {
             notFound(resp, message);
             return null;
         }
         
-        resp.setContentType(ApiContext.PLAIN_TEXT_UTF8);
+        resp.setContentType(PLAIN_TEXT_UTF8);
         
         return message + "\n";
     }
@@ -397,14 +396,14 @@ public class ApiMisc extends ApiContext {
         
         String urlStr = req.getParameter("url");
         if (urlStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
         StreamLib streamLib = StreamFactory.getStreamLib(urlStr);
         if (streamLib == null || streamLib.getClass() != LiveStreamLib.class) {
             
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return;
         }
         LiveStreamLib livestreamLib = (LiveStreamLib) streamLib; 
@@ -448,7 +447,7 @@ public class ApiMisc extends ApiContext {
         
         String url = req.getParameter("url");
         if (url == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -474,7 +473,7 @@ public class ApiMisc extends ApiContext {
         log.info("urlStr = " + urlStr);
         if (urlStr == null) {
             
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
@@ -499,7 +498,7 @@ public class ApiMisc extends ApiContext {
         log.info("urlStr = " + urlStr);
         if (urlStr == null) {
             
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
@@ -526,7 +525,7 @@ public class ApiMisc extends ApiContext {
         String urlStr = req.getParameter("url");
         log.info("url = " + urlStr);
         if (urlStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
@@ -554,7 +553,7 @@ public class ApiMisc extends ApiContext {
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
         if (videoUrl == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
@@ -604,7 +603,7 @@ public class ApiMisc extends ApiContext {
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
                 
-                resp.setContentType(ApiContext.VND_APPLE_MPEGURL);
+                resp.setContentType(VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
                 IOUtils.copy(bais, System.out);
@@ -667,7 +666,7 @@ public class ApiMisc extends ApiContext {
         String videoUrl = req.getParameter("url");
         log.info("videoUrl = " + videoUrl);
         if (videoUrl == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         

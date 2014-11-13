@@ -27,7 +27,7 @@ import com.nncloudtv.service.TagManager;
 
 @Controller
 @RequestMapping("api")
-public class ApiPoi extends ApiContext {
+public class ApiPoi extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiPoi.class.getName());
     
@@ -39,7 +39,7 @@ public class ApiPoi extends ApiContext {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -72,7 +72,7 @@ public class ApiPoi extends ApiContext {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -88,7 +88,7 @@ public class ApiPoi extends ApiContext {
         // name
         String name = req.getParameter("name");
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -105,7 +105,7 @@ public class ApiPoi extends ApiContext {
             
             startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
@@ -117,14 +117,14 @@ public class ApiPoi extends ApiContext {
             
             endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
         
         if (startDateStr != null && endDateStr != null) {
             if (endDateLong < startDateLong) { 
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             campaign.setStartDate(new Date(startDateLong));
@@ -133,7 +133,7 @@ public class ApiPoi extends ApiContext {
             campaign.setStartDate(null);
             campaign.setEndDate(null);
         } else { // should be pair
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -151,7 +151,7 @@ public class ApiPoi extends ApiContext {
         
         Long campaignId = NnStringUtil.evalLong(campaignIdStr);
         if (campaignId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -183,7 +183,7 @@ public class ApiPoi extends ApiContext {
         
         Long campaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (campaignId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(campaignId);
@@ -215,7 +215,7 @@ public class ApiPoi extends ApiContext {
             
             startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
@@ -227,14 +227,14 @@ public class ApiPoi extends ApiContext {
             
             endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
         
         if (startDateStr != null && endDateStr != null) {
             if (endDateLong < startDateLong) { 
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             campaign.setStartDate(new Date(startDateLong));
@@ -242,7 +242,7 @@ public class ApiPoi extends ApiContext {
         } else if (startDateStr == null && endDateStr == null) {
             // skip
         } else { // should be pair
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -261,7 +261,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -282,7 +282,7 @@ public class ApiPoi extends ApiContext {
         
         NNF.getPoiCampaignMngr().delete(campaign);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.GET)
@@ -293,7 +293,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -318,7 +318,7 @@ public class ApiPoi extends ApiContext {
         if (poiPointIdStr != null) {
             poiPointId = NnStringUtil.evalLong(poiPointIdStr);
             if (poiPointId == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
@@ -342,7 +342,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiCampaignId = NnStringUtil.evalLong(campaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -367,17 +367,17 @@ public class ApiPoi extends ApiContext {
         if (pointIdStr != null) {
             pointId = NnStringUtil.evalLong(pointIdStr);
             if (pointId == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         } else {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
         PoiPoint point = NNF.getPoiPointMngr().findById(pointId);
         if (point == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -387,17 +387,17 @@ public class ApiPoi extends ApiContext {
         if (eventIdStr != null) {
             eventId = NnStringUtil.evalLong(eventIdStr);
             if (eventId == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         } else {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
         PoiEvent event = NNF.getPoiEventMngr().findById(eventId);
         if (event == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -412,7 +412,7 @@ public class ApiPoi extends ApiContext {
         if (startDateStr != null && startDateStr.length() > 0) {
             Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -426,7 +426,7 @@ public class ApiPoi extends ApiContext {
         if (endDateStr != null && endDateStr.length() > 0) {
             Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -441,7 +441,7 @@ public class ApiPoi extends ApiContext {
             if (hoursOfWeek.matches("[01]{168}")) {
                 // valid hoursOfWeek format
             } else {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -466,7 +466,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -504,7 +504,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -536,7 +536,7 @@ public class ApiPoi extends ApiContext {
         if (startDateStr != null && startDateStr.length() > 0) {
             Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -548,7 +548,7 @@ public class ApiPoi extends ApiContext {
         if (endDateStr != null && endDateStr.length() > 0) {
             Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -562,7 +562,7 @@ public class ApiPoi extends ApiContext {
                 // valid hoursOfWeek format
                 poi.setHoursOfWeek(hoursOfWeek);
             } else {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
@@ -578,7 +578,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -604,7 +604,7 @@ public class ApiPoi extends ApiContext {
         
         NNF.getPoiMngr().delete(poi);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.GET)
@@ -615,7 +615,7 @@ public class ApiPoi extends ApiContext {
         
         Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -645,7 +645,7 @@ public class ApiPoi extends ApiContext {
         
         Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -682,7 +682,7 @@ public class ApiPoi extends ApiContext {
         // name
         String name = req.getParameter("name");
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -693,7 +693,7 @@ public class ApiPoi extends ApiContext {
         String startTimeStr = req.getParameter("startTime");
         String endTimeStr = req.getParameter("endTime");
         if (startTimeStr == null || endTimeStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         } else {
             try {
@@ -702,7 +702,7 @@ public class ApiPoi extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if ((startTime == null) || (startTime < 0) || (endTime == null) || (endTime <= 0) || (endTime - startTime <= 0)) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         }
@@ -741,7 +741,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -762,7 +762,7 @@ public class ApiPoi extends ApiContext {
         
         Long pointId = NnStringUtil.evalLong(pointIdStr);
         if (pointId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -804,7 +804,7 @@ public class ApiPoi extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if ((startTime == null) || (startTime < 0)) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
             } else {
@@ -821,7 +821,7 @@ public class ApiPoi extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if ((endTime == null) || (endTime <= 0)) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
             } else {
@@ -830,7 +830,7 @@ public class ApiPoi extends ApiContext {
             }
             
             if (endTime - startTime <= 0) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             // collision check
@@ -866,7 +866,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -892,7 +892,7 @@ public class ApiPoi extends ApiContext {
         
         NNF.getPoiPointMngr().delete(point);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "users/{userId}/poi_events", method = RequestMethod.POST)
@@ -903,7 +903,7 @@ public class ApiPoi extends ApiContext {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -919,7 +919,7 @@ public class ApiPoi extends ApiContext {
         // name
         String name = req.getParameter("name");
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -933,18 +933,18 @@ public class ApiPoi extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (type == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
         } else {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
         // context
         String context = req.getParameter("context");
         if (context == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -961,7 +961,7 @@ public class ApiPoi extends ApiContext {
             
             String notifyMsg = req.getParameter("notifyMsg");
             if (notifyMsg == null) {
-                badRequest(resp, ApiContext.MISSING_PARAMETER);
+                badRequest(resp, MISSING_PARAMETER);
                 return null;
             }
             notifyMsg = NnStringUtil.htmlSafeAndTruncated(notifyMsg);
@@ -972,7 +972,7 @@ public class ApiPoi extends ApiContext {
         if (event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
             String notifyScheduler = req.getParameter("notifyScheduler");
             if (notifyScheduler == null) {
-                badRequest(resp, ApiContext.MISSING_PARAMETER);
+                badRequest(resp, MISSING_PARAMETER);
                 return null;
             }
             String[] timestampList = notifyScheduler.split(",");
@@ -981,7 +981,7 @@ public class ApiPoi extends ApiContext {
                 
                 timestamp = NnStringUtil.evalLong(timestampStr);
                 if (timestamp == null) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
             }
@@ -1007,7 +1007,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1043,7 +1043,7 @@ public class ApiPoi extends ApiContext {
         
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1080,7 +1080,7 @@ public class ApiPoi extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (type == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -1112,7 +1112,7 @@ public class ApiPoi extends ApiContext {
              event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
             String notifyMsg = req.getParameter("notifyMsg");
             if (shouldContainNotifyMsg == true && notifyMsg == null) {
-                badRequest(resp, ApiContext.MISSING_PARAMETER);
+                badRequest(resp, MISSING_PARAMETER);
                 return null;
             }
             if (notifyMsg != null) {
@@ -1125,7 +1125,7 @@ public class ApiPoi extends ApiContext {
         if (event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
             String notifyScheduler = req.getParameter("notifyScheduler");
             if (shouldContainNotifyScheduler == true && notifyScheduler == null) {
-                badRequest(resp, ApiContext.MISSING_PARAMETER);
+                badRequest(resp, MISSING_PARAMETER);
                 return null;
             }
             if (notifyScheduler != null) {
@@ -1135,7 +1135,7 @@ public class ApiPoi extends ApiContext {
                     
                     timestamp = NnStringUtil.evalLong(timestampStr);
                     if (timestamp == null) {
-                        badRequest(resp, ApiContext.INVALID_PARAMETER);
+                        badRequest(resp, INVALID_PARAMETER);
                         return null;
                     }
                 }
@@ -1177,7 +1177,7 @@ public class ApiPoi extends ApiContext {
         
         NNF.getPoiEventMngr().delete(event);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.GET)
@@ -1188,7 +1188,7 @@ public class ApiPoi extends ApiContext {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1215,7 +1215,7 @@ public class ApiPoi extends ApiContext {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1246,7 +1246,7 @@ public class ApiPoi extends ApiContext {
         // name
         String name = req.getParameter("name");
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);

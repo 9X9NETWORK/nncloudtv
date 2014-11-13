@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 
 public class NnNetUtil {
     
@@ -106,7 +107,7 @@ public class NnNetUtil {
     public static ResponseEntity<String> textReturn(String output) {
         
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(ApiContext.PLAIN_TEXT_UTF8));
+        headers.setContentType(MediaType.valueOf(ApiGeneric.PLAIN_TEXT_UTF8));
         
         return new ResponseEntity<String>(output, headers, HttpStatus.OK);
     }
@@ -237,7 +238,7 @@ public class NnNetUtil {
             conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", ApiContext.APPLICATION_JSON_UTF8);
+            conn.setRequestProperty("Content-Type", ApiGeneric.APPLICATION_JSON_UTF8);
             conn.setRequestProperty(ApiContext.HEADER_USER_AGENT, DEFAULT_USER_AGENT);
             
             OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream(), NnStringUtil.UTF8);

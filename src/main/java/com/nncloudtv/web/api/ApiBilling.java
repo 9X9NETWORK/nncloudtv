@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.clearcommerce.ccxclientapi.CcApiBadKeyException;
 import com.clearcommerce.ccxclientapi.CcApiBadValueException;
 import com.clearcommerce.ccxclientapi.CcApiDocument;
@@ -41,7 +42,7 @@ import com.nncloudtv.web.json.cms.IapInfo;
 
 @Controller
 @RequestMapping("api/billing")
-public class ApiBilling extends ApiContext {
+public class ApiBilling extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiBilling.class.getName());
     
@@ -65,16 +66,16 @@ public class ApiBilling extends ApiContext {
         }
         String token = req.getParameter(TOKEN);
         if (token == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + TOKEN);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + TOKEN);
             return null;
         }
         if (!token.equals(profile.getToken())) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + TOKEN);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + TOKEN);
             return null;
         }
         Date now = new Date();
         if (profile.getTokenExpDate() == null || !now.before(profile.getTokenExpDate())) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + TOKEN);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + TOKEN);
             return null;
         }
         
@@ -136,11 +137,11 @@ public class ApiBilling extends ApiContext {
         String name = req.getParameter(NAME);
         String email = req.getParameter(EMAIL);
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + NAME);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + NAME);
             return null;
         }
         if (email == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + EMAIL);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + EMAIL);
             return null;
         }
         
@@ -176,7 +177,7 @@ public class ApiBilling extends ApiContext {
             return null;
         }
         
-        resp.setStatus(ApiContext.HTTP_201);
+        resp.setStatus(HTTP_201);
         return NNF.getBillingProfileMngr().save(profile);
     }
     
@@ -191,20 +192,20 @@ public class ApiBilling extends ApiContext {
         // verify packageId
         String packageIdStr = req.getParameter(PACKAGE_ID);
         if (packageIdStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + PACKAGE_ID);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + PACKAGE_ID);
             return null;
         }
         
         String[] packageIds = packageIdStr.split(",");
         List<BillingPackage> billingPackages = NNF.getPackageMngr().findByIds(packageIds);
         if (billingPackages == null || billingPackages.size() != packageIds.length) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + PACKAGE_ID);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + PACKAGE_ID);
             return null;
         }
         for (BillingPackage pack : billingPackages) {
             
             if (pack.getStatus() != BillingPackage.ONLINE) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + PACKAGE_ID);
+                badRequest(resp, INVALID_PARAMETER + DELIMITER + PACKAGE_ID);
                 return null;
             }
         }
@@ -212,26 +213,26 @@ public class ApiBilling extends ApiContext {
         // verify profileId / profileToken
         String profileIdStr = req.getParameter(PROFILE_ID);
         if (profileIdStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + PROFILE_ID);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + PROFILE_ID);
             return null;
         }
         BillingProfile profile = NNF.getBillingProfileMngr().findById(profileIdStr);
         if (profile == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + PROFILE_ID);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_ID);
             return null;
         }
         String token = req.getParameter("profileToken");
         if (token == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER + DELIMITER + PROFILE_TOKEN);
+            badRequest(resp, MISSING_PARAMETER + DELIMITER + PROFILE_TOKEN);
             return null;
         }
         if (!token.equals(profile.getToken())) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
             return null;
         }
         Date now = new Date();
         if (profile.getTokenExpDate() == null || !now.before(profile.getTokenExpDate())) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
             return null;
         }
         
@@ -285,7 +286,7 @@ public class ApiBilling extends ApiContext {
         
         if (profile.getCardStatus() < BillingProfile.AUTHED) {
             
-            badRequest(resp, ApiContext.INVALID_PARAMETER + DELIMITER + "CreditCard");
+            badRequest(resp, INVALID_PARAMETER + DELIMITER + "CreditCard");
             return null; 
         }
         
@@ -307,7 +308,7 @@ public class ApiBilling extends ApiContext {
             }
         }
         
-        resp.setStatus(ApiContext.HTTP_201);
+        resp.setStatus(HTTP_201);
         return NNF.getOrderMngr().save(orders);
     }
     
@@ -317,7 +318,7 @@ public class ApiBilling extends ApiContext {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
@@ -396,7 +397,7 @@ public class ApiBilling extends ApiContext {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -415,13 +416,13 @@ public class ApiBilling extends ApiContext {
         String msoIdStr = req.getParameter("msoId");
         if (msoIdStr == null) {
             
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         Mso mso = NNF.getMsoMngr().findById(msoIdStr);
         if (mso == null) {
             
-            badRequest(resp, ApiContext.MSO_NOT_FOUND);
+            badRequest(resp, MSO_NOT_FOUND);
             return;
         }
         
@@ -445,7 +446,7 @@ public class ApiBilling extends ApiContext {
             NNF.getItemMngr().save(googleplayItem);
         }
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/iap_items", method = RequestMethod.GET)
@@ -454,7 +455,7 @@ public class ApiBilling extends ApiContext {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
@@ -467,7 +468,7 @@ public class ApiBilling extends ApiContext {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         

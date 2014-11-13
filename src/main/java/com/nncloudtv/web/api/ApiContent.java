@@ -63,7 +63,7 @@ import com.nncloudtv.web.json.cms.Category;
 
 @Controller
 @RequestMapping("api")
-public class ApiContent extends ApiContext {
+public class ApiContent extends ApiGeneric {
     
     protected static Logger log = Logger.getLogger(ApiContent.class.getName());
     
@@ -79,7 +79,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -105,7 +105,7 @@ public class ApiContent extends ApiContext {
         
         prefMngr.delete(prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.FB_AUTOSHARE));
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/brand", method = RequestMethod.GET)
@@ -118,7 +118,7 @@ public class ApiContent extends ApiContext {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -149,7 +149,7 @@ public class ApiContent extends ApiContext {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -171,22 +171,22 @@ public class ApiContent extends ApiContext {
         // brand
         String brand = req.getParameter("brand");
         if (brand == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         Mso mso = NNF.getMsoMngr().findByName(brand);
         if (mso == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return;
         }
         if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
         NNF.getChPrefMngr().setBrand(channel.getId(), mso);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "channels/{channelId}/autosharing/validBrands", method = RequestMethod.GET)
@@ -199,7 +199,7 @@ public class ApiContent extends ApiContext {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -236,12 +236,12 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) { }
         
         if (ytProgramId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         YtProgram ytProgram = NNF.getProgramMngr().findYtProgramById(ytProgramId);
         if (ytProgram == null) {
-            notFound(resp, ApiContext.PROGRAM_NOT_FOUND);
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         return ytProgram;
@@ -257,12 +257,12 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, ApiContext.PROGRAM_NOT_FOUND);
+            notFound(resp, PROGRAM_NOT_FOUND);
             return;
         }
         
@@ -292,7 +292,7 @@ public class ApiContent extends ApiContext {
         }
         
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -319,13 +319,13 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, ApiContext.PROGRAM_NOT_FOUND);
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         
@@ -367,7 +367,7 @@ public class ApiContent extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (subSeq == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             } else {
                 program.setSubSeq(subSeq);
@@ -401,7 +401,7 @@ public class ApiContent extends ApiContext {
             
         } else {
             // ex : new start = 10, old end = 5
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -424,13 +424,13 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            msgResponse(resp, ApiContext.PROGRAM_NOT_FOUND);
+            msgResponse(resp, PROGRAM_NOT_FOUND);
             return;
         }
         
@@ -447,7 +447,7 @@ public class ApiContent extends ApiContext {
         
         NNF.getProgramMngr().delete(program);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     // delete programs in one episode
@@ -458,7 +458,7 @@ public class ApiContent extends ApiContext {
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeIdStr);
         if (episode == null) {
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return;
         }
         
@@ -477,7 +477,7 @@ public class ApiContent extends ApiContext {
         
         String programStr = req.getParameter("programs");
         if (programStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return;
         }
         log.info(programStr);
@@ -509,7 +509,7 @@ public class ApiContent extends ApiContext {
         
         NNF.getProgramMngr().delete(programs);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes/{episodeId}/programs", method = RequestMethod.POST)
@@ -523,12 +523,12 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -546,7 +546,7 @@ public class ApiContent extends ApiContext {
         // name
         String name = req.getParameter("name");
         if (name == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -569,7 +569,7 @@ public class ApiContent extends ApiContext {
         // fileUrl
         String fileUrl = req.getParameter("fileUrl");
         if (fileUrl == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         program.setFileUrl(fileUrl);
@@ -581,7 +581,7 @@ public class ApiContent extends ApiContext {
             
             Short contentType = NnStringUtil.evalShort(contentTypeStr);
             if (contentType == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             program.setContentType(contentType);
@@ -597,7 +597,7 @@ public class ApiContent extends ApiContext {
             
             Short duration = NnStringUtil.evalShort(durationStr);
             if ((duration == null) || (duration < 0)) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             program.setDuration(duration);
@@ -613,7 +613,7 @@ public class ApiContent extends ApiContext {
             
             Short startTime = NnStringUtil.evalShort(startTimeStr);
             if ((startTime == null) || (startTime < 0)) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             program.setStartTime(startTime);
@@ -629,7 +629,7 @@ public class ApiContent extends ApiContext {
             
             Short endTime = NnStringUtil.evalShort(endTimeStr);
             if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             program.setEndTime(endTime);
@@ -650,7 +650,7 @@ public class ApiContent extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (subSeq == null) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             program.setSubSeq(subSeq);
@@ -694,7 +694,7 @@ public class ApiContent extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (userId == null) {
-                notFound(resp, ApiContext.INVALID_PARAMETER);
+                notFound(resp, INVALID_PARAMETER);
                 return null;
             }
             
@@ -870,7 +870,7 @@ public class ApiContent extends ApiContext {
         
         channelIdStr = NnChannelManager.convertChannelId(channelIdStr);
         if (channelIdStr == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -900,7 +900,7 @@ public class ApiContent extends ApiContext {
         
         NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
@@ -1037,13 +1037,13 @@ public class ApiContent extends ApiContext {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1075,7 +1075,7 @@ public class ApiContent extends ApiContext {
             channel.setReadonly(false);
             NNF.getChannelMngr().save(channel);
             
-            msgResponse(resp, ApiContext.OK);
+            msgResponse(resp, OK);
             
         } else {
             
@@ -1089,7 +1089,7 @@ public class ApiContent extends ApiContext {
         ApiContext ctx = new ApiContext(req);
         String categoryIdStr = ctx.getParam("categoryId");
         if (categoryIdStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
@@ -1100,7 +1100,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (categoryId == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -1142,13 +1142,13 @@ public class ApiContent extends ApiContext {
         // categoryId
         String categoryIdStr = req.getParameter("categoryId");
         if (categoryIdStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         log.info("categoryId = " + categoryIdStr);
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null || !CategoryService.isSystemCategory(categoryId)) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -1170,7 +1170,7 @@ public class ApiContent extends ApiContext {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -1209,7 +1209,7 @@ public class ApiContent extends ApiContext {
             }
             writer.println("#EXT-X-ENDLIST");
             writer.flush();
-            resp.setContentType(ApiContext.VND_APPLE_MPEGURL);
+            resp.setContentType(VND_APPLE_MPEGURL);
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             
@@ -1240,7 +1240,7 @@ public class ApiContent extends ApiContext {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1304,13 +1304,13 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, ApiContext.CHANNEL_NOT_FOUND);
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1331,7 +1331,7 @@ public class ApiContent extends ApiContext {
             
             NNF.getEpisodeMngr().reorderChannelEpisodes(channelId);
             
-            msgResponse(resp, ApiContext.OK);
+            msgResponse(resp, OK);
             return;
         }
         String[] splitted = episodeParam.split(",");
@@ -1349,7 +1349,7 @@ public class ApiContent extends ApiContext {
         if (episodeIdList.size() != episodes.size()) {
             
             log.info(String.format("%d not equal %d", episodeIdList.size(), episodes.size()));
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return;
         }
         
@@ -1359,7 +1359,7 @@ public class ApiContent extends ApiContext {
             if (index < 0) {
                 
                 log.info(String.format("episodeId %d is not matched", episode.getId()));
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return;
             }
             
@@ -1369,7 +1369,7 @@ public class ApiContent extends ApiContext {
         NNF.getEpisodeMngr().save(episodes);
         NNF.getChannelMngr().renewUpdateDateOnly(channel);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes", method = RequestMethod.GET)
@@ -1379,7 +1379,7 @@ public class ApiContent extends ApiContext {
             @RequestParam(required = false, value = "channelId") String channelIdStr) {
         
         if (channelIdStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         
@@ -1389,7 +1389,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -1448,14 +1448,14 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            msgResponse(resp, ApiContext.EPISODE_NOT_FOUND);
+            msgResponse(resp, EPISODE_NOT_FOUND);
             return;
         }
         
@@ -1480,7 +1480,7 @@ public class ApiContent extends ApiContext {
             channelMngr.save(channel);
         }
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
     
     @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
@@ -1493,13 +1493,13 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return;
         }
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return;
         }
         
@@ -1520,7 +1520,7 @@ public class ApiContent extends ApiContext {
             writer.println("#EXT-X-ENDLIST");
             writer.flush();
             
-            resp.setContentType(ApiContext.VND_APPLE_MPEGURL);
+            resp.setContentType(VND_APPLE_MPEGURL);
             resp.setContentLength(baos.size());
             IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
             
@@ -1552,13 +1552,13 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -1579,7 +1579,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1587,7 +1587,7 @@ public class ApiContent extends ApiContext {
         
         NnEpisode episode = episodeMngr.findById(episodeId);
         if (episode == null) {
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -1652,7 +1652,7 @@ public class ApiContent extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if (scheduleDateLong == null) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
                 
@@ -1683,7 +1683,7 @@ public class ApiContent extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if (publishDateLong == null) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
                 
@@ -1738,7 +1738,7 @@ public class ApiContent extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (seq == null || seq < 1) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             episode.setSeq(seq);
@@ -1772,7 +1772,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1800,7 +1800,7 @@ public class ApiContent extends ApiContext {
         String name = req.getParameter("name");
         if (name == null || name.isEmpty()) {
             
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -1848,7 +1848,7 @@ public class ApiContent extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if (scheduleDateLong == null) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
                 
@@ -1888,7 +1888,7 @@ public class ApiContent extends ApiContext {
                 } catch (NumberFormatException e) {
                 }
                 if (publishDateLong == null) {
-                    badRequest(resp, ApiContext.INVALID_PARAMETER);
+                    badRequest(resp, INVALID_PARAMETER);
                     return null;
                 }
                 
@@ -1924,7 +1924,7 @@ public class ApiContent extends ApiContext {
             } catch (NumberFormatException e) {
             }
             if (seq == null || seq < 1) {
-                badRequest(resp, ApiContext.INVALID_PARAMETER);
+                badRequest(resp, INVALID_PARAMETER);
                 return null;
             }
             episode.setSeq(seq);
@@ -1969,14 +1969,14 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -2001,7 +2001,7 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -2027,14 +2027,14 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
         if (episode == null) {
             
-            notFound(resp, ApiContext.EPISODE_NOT_FOUND);
+            notFound(resp, EPISODE_NOT_FOUND);
             return null;
         }
         
@@ -2059,12 +2059,12 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAMETER);
             return null;
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, ApiContext.PROGRAM_NOT_FOUND);
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         
@@ -2082,7 +2082,7 @@ public class ApiContent extends ApiContext {
         // type
         String typeStr = req.getParameter("type");
         if (typeStr == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         Short type = null;
@@ -2091,11 +2091,11 @@ public class ApiContent extends ApiContext {
         } catch (NumberFormatException e) {
         }
         if (type == null) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         if (type != TitleCard.TYPE_BEGIN && type != TitleCard.TYPE_END) {
-            badRequest(resp, ApiContext.INVALID_PARAMETER);
+            badRequest(resp, INVALID_PARAMETER);
             return null;
         }
         
@@ -2109,7 +2109,7 @@ public class ApiContent extends ApiContext {
         // message
         String message = req.getParameter("message");
         if (message == null) {
-            badRequest(resp, ApiContext.MISSING_PARAMETER);
+            badRequest(resp, MISSING_PARAMETER);
             return null;
         }
         titleCard.setMessage(NnStringUtil.htmlSafeAndTruncated(message, 2000));
@@ -2200,7 +2200,7 @@ public class ApiContent extends ApiContext {
         
         TitleCard titleCard = NNF.getTitleCardMngr().findById(idStr);
         if (titleCard == null) {
-            notFound(resp, ApiContext.TITLECARD_NOT_FOUND);
+            notFound(resp, TITLECARD_NOT_FOUND);
             return;
         }
         
@@ -2217,6 +2217,6 @@ public class ApiContent extends ApiContext {
         
         NNF.getTitleCardMngr().delete(titleCard);
         
-        msgResponse(resp, ApiContext.OK);
+        msgResponse(resp, OK);
     }
 }
