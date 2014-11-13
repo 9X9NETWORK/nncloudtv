@@ -54,16 +54,15 @@ public class ApiContext {
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
     
-    protected HttpServletRequest httpReq;
-    
-    protected Locale language;
-    protected Integer version;
-    protected String appVersion;
-    protected String os;
-    protected String root;
-    protected Mso mso;
-    protected Boolean productionSite = null;
-    protected short format;
+    HttpServletRequest httpReq;
+    Locale language;
+    Integer version;
+    String appVersion;
+    String os;
+    String root;
+    Mso mso;
+    Boolean productionSite = null;
+    short format;
     
     public short getFmt() {
         return format;
@@ -117,16 +116,8 @@ public class ApiContext {
         return value == null ? defaultValue : value;
     }
     
-    public ApiContext() {
-        
-    }
-    
     public ApiContext(HttpServletRequest req) {
         
-        init(req);
-    }
-    
-    protected ApiContext init(HttpServletRequest req) {
         httpReq = req;
         String userAgent = httpReq.getHeader(HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";
@@ -183,8 +174,6 @@ public class ApiContext {
         }
         
         System.out.println(String.format("[ApiContext] language = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
-        
-        return this;
     }
     
     public Boolean isProductionSite() {
