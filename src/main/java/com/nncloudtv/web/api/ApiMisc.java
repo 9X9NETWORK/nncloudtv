@@ -237,6 +237,7 @@ public class ApiMisc extends ApiContext {
     @RequestMapping("sysinfo")
     public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
+        init(req);
         HashMap<String, Object> result = new HashMap<String, Object>();
         
         result.put("flipr.isProduction", isProductionSite());
