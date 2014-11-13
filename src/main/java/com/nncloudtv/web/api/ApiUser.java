@@ -1,7 +1,6 @@
 package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -220,59 +219,6 @@ public class ApiUser extends ApiGeneric {
             
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));
         }
-        
-        return results;
-    }
-    
-    // TODO remove
-    @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
-    public @ResponseBody
-    List<NnChannel> userPlayableChannels(HttpServletRequest req,
-            HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
-            @PathVariable("userId") String userIdStr) {
-        
-        Long userId = NnStringUtil.evalLong(userIdStr);
-        if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAM);
-            return null;
-        }
-        
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
-        if (user == null) {
-            notFound(resp, USER_NOT_FOUND);
-            return null;
-        }
-        
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        List<NnChannel> results = channelMngr.findByUser(user, 0, true);
-        results = channelMngr.findByUser(user, 0, true);
-        Iterator<NnChannel> it = results.iterator();
-        while (it.hasNext()) {
-            
-            NnChannel channel = it.next();
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                it.remove();
-                continue;
-            }
-        }
-        
-        List<Long> channelIds = NNF.getMsoMngr().getPlayableChannels(results, brand.getId());
-        if (channelIds != null && channelIds.size() > 0) {
-            results = channelMngr.findByIds(channelIds);
-        } else {
-            results = new ArrayList<NnChannel>();
-        }
-        
-        for (NnChannel channel : results) {
-            
-            channelMngr.normalize(channel);
-            channelMngr.populateMoreImageUrl(channel);
-            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
-        }
-        
-        Collections.sort(results, NnChannelManager.getComparator("seq"));
         
         return results;
     }

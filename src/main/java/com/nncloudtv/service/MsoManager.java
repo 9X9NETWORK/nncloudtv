@@ -583,64 +583,6 @@ public class MsoManager {
         }
     }
     
-    // TODO: remove
-    public List<Long> getPlayableChannels(List<NnChannel> channels, Long msoId) {
-        
-        if (channels == null || channels.size() < 1 || msoId == null) {
-            return new ArrayList<Long>();
-        }
-        
-        Mso mso = findById(msoId);
-        if (mso == null) {
-            return new ArrayList<Long>();
-        }
-        List<String> supportedRegion = MsoConfigManager.getSuppoertedResion(mso, true);
-        
-        List<Long> results = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            
-            // official store check
-            if (channel.getStatus() == NnChannel.STATUS_SUCCESS &&
-                    channel.getContentType() != NnChannel.CONTENTTYPE_FAVORITE &&
-                    channel.isPublic() == true) {
-                // the channel is in official store
-            } else {
-                continue; // the channel is not in official store
-            }
-            
-            // MSO support region check
-            if (supportedRegion == null) { // Mso's region support all sphere
-                results.add(channel.getId());
-            } else {
-                for (String sphere : supportedRegion) {
-                    if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
-                        results.add(channel.getId());
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return results;
-    }
-    
-    // TODO remove
-    public boolean isPlayableChannel(NnChannel channel, Long msoId) {
-        
-        if (channel == null || msoId==null) {
-            return false;
-        }
-        
-        List<NnChannel> unverifiedChannels = new ArrayList<NnChannel>();
-        unverifiedChannels.add(channel);
-        
-        List<Long> verifiedChannels = getPlayableChannels(unverifiedChannels, msoId);
-        if (verifiedChannels != null && verifiedChannels.isEmpty() == false) {
-            return true;
-        }
-        return false;
-    }
-    
     public static void normalize(Mso mso) {
         
         mso.setTitle(NnStringUtil.revertHtml(mso.getTitle()));

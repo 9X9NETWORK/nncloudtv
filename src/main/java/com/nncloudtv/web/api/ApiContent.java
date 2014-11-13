@@ -675,7 +675,7 @@ public class ApiContent extends ApiGeneric {
             HttpServletResponse resp,
             @RequestParam(required = false, value = "mso") String msoName,
             @RequestParam(required = false, value = "sphere") String sphereStr,
-            @RequestParam(required = false, value = "channels") String channelIdListStr,
+            @RequestParam(required = false, value = "channels") String channelParam,
             @RequestParam(required = false, value = "keyword") String keyword,
             @RequestParam(required = false, value = "userId") String userIdStr,
             @RequestParam(required = false, value = "ytPlaylistId") String ytPlaylistIdStr,
@@ -708,47 +708,19 @@ public class ApiContent extends ApiGeneric {
             
             Collections.sort(results, NnChannelManager.getComparator("seq"));
             
-        } else if (channelIdListStr != null) {
+        } else if (channelParam != null) {
             
-            Set<Long> channelIds = new HashSet<Long>();
-            for (String channelIdStr : channelIdListStr.split(",")) {
-                
-                Long channelId = null;
-                try {
-                    channelId = Long.valueOf(channelIdStr);
-                } catch (NumberFormatException e) {
-                }
+            Set<Long> channelIdSet = new HashSet<Long>();
+            for (String channelIdStr : channelParam.split(",")) {
+                Long channelId = NnStringUtil.evalLong(channelIdStr);
                 if (channelId != null) {
-                    channelIds.add(channelId);
+                    channelIdSet.add(channelId);
                 }
             }
             
-            results = channelMngr.findByIds(new ArrayList<Long>(channelIds));
-            Set<Long> fetchedChannelIds = new HashSet<Long>();
-            for (NnChannel channel : results) {
-                fetchedChannelIds.add(channel.getId());
-            }
-            for (Long channelId : channelIds) {
-                if (fetchedChannelIds.contains(channelId) == false) {
-                    log.info("channel not found: " + channelId);
-                }
-            }
+            results = channelMngr.findByIds(channelIdSet);
             
             log.info("total channels = " + results.size());
-            if (msoName != null) {
-                // filter out channels that not in MSO's store
-                Set<Long> verifiedChannelIds = new HashSet<Long>(NNF.getMsoMngr().getPlayableChannels(results, mso.getId()));
-                List<NnChannel> verifiedChannels = new ArrayList<NnChannel>();
-                for (NnChannel channel : results) {
-                    if (verifiedChannelIds.contains(channel.getId()) == true) {
-                        verifiedChannels.add(channel);
-                    }
-                }
-                results = verifiedChannels;
-                log.info("total channels (filtered) = " + results.size());
-            }
-            
-            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
             
         } else if (keyword != null && keyword.length() > 0) {
             
@@ -822,12 +794,19 @@ public class ApiContent extends ApiGeneric {
             
             System.out.println("[channel_search] total channels = " + channels.size());
             if (msoName != null) {
-                List<Long> channelIdList = NNF.getMsoMngr().getPlayableChannels(channels, mso.getId());
-                results = channelMngr.findByIds(channelIdList);
-                log.info("total channels (filtered) = " + channelIdList.size());
-            } else {
-                results = channels;
+                // mso blacklist
+                List<Long> blackList = NNF.getStoreListingMngr().findChannelIdsByMsoId(mso.getId());
+                Iterator<NnChannel> it = channels.iterator();
+                while (it.hasNext()) {
+                    NnChannel channel = it.next();
+                    if (blackList.contains(channel.getId())) {
+                        it.remove();
+                        continue;
+                    }
+                }
+                System.out.println("[channel_search] total channels (filtered by mso blacklist) = " + channels.size());
             }
+            results = channels;
             
             Collections.sort(results, NnChannelManager.getComparator("updateDate"));
             
@@ -848,15 +827,7 @@ public class ApiContent extends ApiGeneric {
                 if (result != null) {
                     results.add(result);
                 }
-                
             }
-            
-            // filter part
-            // TODO: rewrite
-            List<Long> verifiedChannel = NNF.getMsoMngr().getPlayableChannels(results, mso.getId());
-            results = channelMngr.findByIds(verifiedChannel);
-            Collections.sort(results, NnChannelManager.getComparator("updateDate"));
-            
         }
         
         results = channelMngr.normalize(results);
