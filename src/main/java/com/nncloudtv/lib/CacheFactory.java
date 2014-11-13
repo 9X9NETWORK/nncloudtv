@@ -81,7 +81,7 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (!alive)
-            log.warning("memcache server " + addr + " is dead");
+            log.warning("memcache server " + addr + " is dead!");
         return alive;
     }
     
@@ -180,7 +180,7 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (obj == null)
-            log.info(String.format("cache [%s] --> missed", key));
+            System.out.println(String.format("[memcache] %s --> missed", key));
         return obj;
     }
     
@@ -220,9 +220,9 @@ public class CacheFactory {
         }
         log.info(String.format("save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (retObj == null)
-            log.info(String.format("cache [%s] --> not saved", key));
+            System.out.println(String.format("[memcache] %s --> NOT saved", key));
         else
-            log.info(String.format("cache [%s] --> saved", key));
+            System.out.println(String.format("[memcache] %s --> saved", key));
         return retObj;
     }    
     
@@ -256,9 +256,9 @@ public class CacheFactory {
         }
         log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
-            log.info(String.format("cache [mass: %d] --> deleted", keys.size()));
+            System.out.println(String.format("[memcache] mass: %d --> deleted", keys.size()));
         } else {
-            log.info(String.format("cache [mass: %d] --> not deleted", keys.size()));
+            System.out.println(String.format("[memcache] mass: %d --> NOT deleted", keys.size()));
         }
     }
     
@@ -288,9 +288,9 @@ public class CacheFactory {
         }
         log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
-            log.info(String.format("cache [%s] --> deleted", key));
+            System.out.println(String.format("[memcache] %s --> deleted", key));
         } else {
-            log.info(String.format("cache [%s] --> not deleted", key));
+            System.out.println(String.format("[memcache] %s --> NOT deleted", key));
         }
     }
     

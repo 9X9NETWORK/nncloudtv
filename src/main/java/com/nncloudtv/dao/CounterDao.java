@@ -7,7 +7,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 import com.nncloudtv.model.Counter;
-import com.nncloudtv.model.CounterShard;
 
 public class CounterDao extends GenericDao<Counter> {
     
