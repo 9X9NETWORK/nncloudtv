@@ -176,6 +176,7 @@ public class NnEpisode implements Serializable {
             log.info("cntView not cached: " + cacheName);
             Counter counter = CounterFactory.getOrCreateCounter(cacheName);
             cntView = counter.getCount();
+            log.info("cntView = " + cntView);
         } catch (Exception e) {
             log.warning(e.getMessage());
             cntView = 0;
