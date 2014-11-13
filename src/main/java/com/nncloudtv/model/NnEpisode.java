@@ -173,16 +173,14 @@ public class NnEpisode implements Serializable {
             if (result != null) {
                 return Integer.parseInt(result);
             }
-            log.info("cntView not cached: " + cacheName);
             Counter counter = CounterFactory.getOrCreateCounter(cacheName);
             cntView = counter.getCount();
             log.info("cntView = " + cntView);
         } catch (Exception e) {
             log.warning(e.getMessage());
             cntView = 0;
-        } finally {
-            CacheFactory.set(cacheName, String.valueOf(cntView));
         }
+        CacheFactory.set(cacheName, String.valueOf(cntView));
         return cntView;
     }
     

@@ -1249,15 +1249,14 @@ public class NnChannelManager {
                 channel.setCntView(Integer.parseInt(result));
                 return channel;
             }
-            log.info("cntView not cached: " + cacheName);
             Counter counter = CounterFactory.getOrCreateCounter(cacheName);
             channel.setCntView(counter.getCount());
+            log.info("cntView = " + channel.getCntView());
         } catch (Exception e) {
             log.warning(e.getMessage());
             channel.setCntView(0);
-        } finally {
-            CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
         }
+        CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
         return channel;
     }
     
