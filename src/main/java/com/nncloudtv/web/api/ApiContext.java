@@ -107,6 +107,7 @@ public class ApiContext {
     protected Mso mso;
     protected Boolean productionSite = null;
     protected short format;
+    protected short counter = 0;
     
     public short getFmt() {
         return format;

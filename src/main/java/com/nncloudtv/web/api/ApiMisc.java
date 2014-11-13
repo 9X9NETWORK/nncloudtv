@@ -244,6 +244,7 @@ public class ApiMisc extends ApiContext {
         result.put("flipr.lang",         ctx.getLang());
         result.put("flipr.os",           ctx.getOs());
         result.put("flipr.version",      ctx.getVer());
+        result.put("flipr.counter",      counter++);
         
         result.put("java.version",       System.getProperty("java.version"));
         result.put("java.vendor",        System.getProperty("java.vendor"));
