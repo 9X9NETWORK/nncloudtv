@@ -32,6 +32,7 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -133,7 +134,7 @@ public class ApiUser extends ApiGeneric {
             user.getProfile().setLang(lang);
         }
         
-        return response(NNF.getUserMngr().save(user));
+        return NnUserManager.composeUser(NNF.getUserMngr().save(user));
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)

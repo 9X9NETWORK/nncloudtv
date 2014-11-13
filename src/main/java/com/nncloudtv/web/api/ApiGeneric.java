@@ -8,16 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.NnUserProfile;
-import com.nncloudtv.model.SysTag;
-import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.web.json.cms.Set;
-import com.nncloudtv.web.json.cms.User;
 
 public class ApiGeneric {
     
@@ -200,58 +192,5 @@ public class ApiGeneric {
             internalError(resp, e);
         }
         
-    }
-    
-    public User response(NnUser nnuser) {
-        
-        User user = new User();
-        
-        user.setId(nnuser.getId());
-        user.setType(nnuser.getType());
-        user.setShard(nnuser.getShard());
-        user.setIdStr(nnuser.getIdStr());
-        user.setCreateDate(nnuser.getCreateDate());
-        user.setUpdateDate(nnuser.getUpdateDate());
-        user.setUserEmail(nnuser.getUserEmail());
-        user.setFbUser(nnuser.isFbUser());
-        user.setPriv(NnUserProfile.PRIV_CMS);
-        
-        NnUserProfile profile = nnuser.getProfile();
-        if (profile != null) {
-            user.setName(NnStringUtil.revertHtml(profile.getName()));
-            user.setIntro(NnStringUtil.revertHtml(profile.getIntro()));
-            user.setImageUrl(profile.getImageUrl());
-            user.setLang(profile.getLang());
-            user.setProfileUrl(profile.getProfileUrl());
-            user.setSphere(profile.getSphere());
-            user.setCntSubscribe(profile.getCntSubscribe());
-            user.setCntChannel(profile.getCntChannel());
-            user.setCntFollower(profile.getCntFollower());
-            user.setMsoId(profile.getMsoId());
-            if (profile != null)
-                user.setPriv(profile.getPriv());
-            Mso mso = NNF.getMsoMngr().findById(profile.getMsoId());
-            if (mso != null)
-                user.setMsoName(mso.getName());
-        }
-        
-        return user;
-    }
-    
-    /** compose set response **/
-    public Set response(SysTag set, SysTagDisplay setMeta) {
-        
-        Set setResp = new Set();
-        
-        setResp.setId(set.getId());
-        setResp.setMsoId(set.getMsoId());
-        setResp.setCntChannel(setMeta.getCntChannel());
-        setResp.setLang(setMeta.getLang());
-        setResp.setSeq(set.getSeq());
-        setResp.setTag(setMeta.getPopularTag());
-        setResp.setName(NnStringUtil.revertHtml(setMeta.getName()));
-        setResp.setSortingType(set.getSorting());
-        
-        return setResp;
     }
 }

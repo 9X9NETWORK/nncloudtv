@@ -40,7 +40,7 @@ import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.json.cms.Category;
-import com.nncloudtv.web.json.cms.Set;
+import com.nncloudtv.web.json.cms.NnSet;
 
 @Controller
 @RequestMapping("api")
@@ -251,7 +251,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.GET)
     public @ResponseBody
-    List<Set> msoSets(HttpServletRequest req, HttpServletResponse resp,
+    List<NnSet> msoSets(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
         ApiContext ctx = new ApiContext(req);
@@ -261,18 +261,9 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        // lang
         String lang = ctx.getParam(ApiContext.PARAM_LANG);
-        
-        List<Set> results;
-        
-        if (lang == null) {
-            results = NNF.getSetService().findByMsoId(mso.getId());
-        } else {
-            results = NNF.getSetService().findByMsoIdAndLang(mso.getId(), lang);
-        }
-        
-        for (Set result : results) {
+        List<NnSet> results = NNF.getSetService().findByMsoIdAndLang(mso.getId(), lang);
+        for (NnSet result : results) {
             result = SetService.normalize(result);
         }
         
@@ -281,7 +272,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "mso/{msoId}/sets", method = RequestMethod.POST)
     public @ResponseBody
-    Set msoSetCreate(HttpServletRequest req,
+    NnSet msoSetCreate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
         Long msoId = null;
@@ -343,7 +334,7 @@ public class ApiMso extends ApiGeneric {
             sortingType = SysTag.SORT_SEQ;
         }
         
-        Set set = new Set();
+        NnSet set = new NnSet();
         set.setMsoId(msoId);
         set.setName(name);
         if (seq != null) {
@@ -379,10 +370,10 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "sets/{setId}", method = RequestMethod.GET)
     public @ResponseBody
-    Set set(HttpServletRequest req,
+    NnSet set(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Set set = NNF.getSetService().findById(setIdStr);
+        NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return null;
@@ -400,7 +391,7 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Set result = NNF.getSetService().findById(set.getId());
+        NnSet result = NNF.getSetService().findById(set.getId());
         if (result == null) {
             notFound(resp, "Set Not Found");
             return null;
@@ -413,7 +404,7 @@ public class ApiMso extends ApiGeneric {
     
     @RequestMapping(value = "sets/{setId}", method = RequestMethod.PUT)
     public @ResponseBody
-    Set setUpdate(HttpServletRequest req,
+    NnSet setUpdate(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
         SysTag sysTag = NNF.getSysTagMngr().findById(setIdStr);
@@ -511,7 +502,7 @@ public class ApiMso extends ApiGeneric {
             QueueFactory.add("/podcastAPI/processThumbnail?set=" + sysTag.getId(), null);
         }
         
-        Set result = NNF.getSetService().composeSet(sysTag, display);
+        NnSet result = NNF.getSetService().composeNnSet(sysTag, display);
         
         return SetService.normalize(result);
     }
@@ -521,7 +512,7 @@ public class ApiMso extends ApiGeneric {
     void setDelete(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Set set = NNF.getSetService().findById(setIdStr);
+        NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;
@@ -548,7 +539,7 @@ public class ApiMso extends ApiGeneric {
     List<NnChannel> setChannels(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Set set = NNF.getSetService().findById(setIdStr);
+        NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, SET_NOT_FOUND);
             return null;
@@ -576,7 +567,7 @@ public class ApiMso extends ApiGeneric {
     public @ResponseBody void setChannelAdd(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Set set = NNF.getSetService().findById(setIdStr);
+        NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;
@@ -651,7 +642,7 @@ public class ApiMso extends ApiGeneric {
             return;
         }
         
-        Set set = NNF.getSetService().findById(setId);
+        NnSet set = NNF.getSetService().findById(setId);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;
@@ -693,7 +684,7 @@ public class ApiMso extends ApiGeneric {
     void setChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("setId") String setIdStr) {
         
-        Set set = NNF.getSetService().findById(setIdStr);
+        NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
             notFound(resp, "Set Not Found");
             return;

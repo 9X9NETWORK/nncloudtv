@@ -55,6 +55,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
@@ -190,7 +191,7 @@ public class ApiMisc extends ApiGeneric {
             user.setProfile(profile);
         }
         
-        return response(user);
+        return NnUserManager.composeUser(user);
     }
     
     /** super profile's msoId priv will replace the result one if super profile exist */
@@ -231,7 +232,7 @@ public class ApiMisc extends ApiGeneric {
             user.setProfile(profile);
         }
         
-        return response(user);
+        return NnUserManager.composeUser(user);
     }
     
     @RequestMapping("sysinfo")

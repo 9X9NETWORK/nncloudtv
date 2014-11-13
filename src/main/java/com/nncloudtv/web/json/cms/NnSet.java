@@ -2,7 +2,7 @@ package com.nncloudtv.web.json.cms;
 
 import com.nncloudtv.model.SysTag;
 
-public class Set extends SysTag {
+public class NnSet extends SysTag {
     
     int    cntChannel;
     String lang;

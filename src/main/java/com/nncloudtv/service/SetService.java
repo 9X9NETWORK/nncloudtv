@@ -13,105 +13,67 @@ import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.web.json.cms.Set;
+import com.nncloudtv.web.json.cms.NnSet;
 
 @Service
 public class SetService {
     
     protected static final Logger log = Logger.getLogger(SetService.class.getName());
     
-    public Set composeSet(SysTag sysTag, SysTagDisplay display) {
+    public NnSet composeNnSet(SysTag sysTag, SysTagDisplay display) {
         
-        Set set = new Set();
+        NnSet nnSet = new NnSet();
         
-        set.setId(sysTag.getId());
-        set.setMsoId(sysTag.getMsoId());
-        set.setSeq(sysTag.getSeq());
-        set.setSorting(sysTag.getSorting());
+        nnSet.setId(sysTag.getId());
+        nnSet.setMsoId(sysTag.getMsoId());
+        nnSet.setSeq(sysTag.getSeq());
+        nnSet.setSorting(sysTag.getSorting());
         
-        set.setCntChannel(display.getCntChannel());
-        set.setLang(display.getLang());
-        set.setTag(display.getPopularTag());
-        set.setName(display.getName());
-        set.setAndroidBannerUrl(display.getBannerImageUrl());
-        set.setIosBannerUrl(display.getBannerImageUrl2());
+        nnSet.setCntChannel(display.getCntChannel());
+        nnSet.setLang(display.getLang());
+        nnSet.setTag(display.getPopularTag());
+        nnSet.setName(display.getName());
+        nnSet.setAndroidBannerUrl(display.getBannerImageUrl());
+        nnSet.setIosBannerUrl(display.getBannerImageUrl2());
         
-        return set;
+        return nnSet;
     }
     
-    public static Set normalize(Set set) {
+    public static NnSet normalize(NnSet set) {
         
         set.setName(NnStringUtil.revertHtml(set.getName()));
         
         return set;
     }
     
-    /**
-     * find Sets that owned by Mso with specify display language
-     * 
-     * @param msoId
-     *            required, result Sets that belong to this specified Mso
-     * @param lang
-     *            optional, result Sets has specified display language
-     * @return list of Sets
-     */
-    public List<Set> findByMsoIdAndLang(Long msoId, String lang) {
+    public List<NnSet> findByMsoIdAndLang(long msoId, String lang) {
         
-        List<Set> results = new ArrayList<Set>();
-        Set result = null;
+        List<NnSet> results = new ArrayList<NnSet>();
+        NnSet nnSet = null;
         
-        if (msoId == null) {
-            return new ArrayList<Set>();
-        }
-        
-        //List<SysTag> results = dao.findByMsoIdAndType(msoId, SysTag.TYPE_SET);
         List<SysTag> sets = NNF.getSysTagMngr().findByMsoIdAndType(msoId, SysTag.TYPE_SET);
         if (sets == null || sets.size() == 0) {
-            return new ArrayList<Set>();
+            return new ArrayList<NnSet>();
         }
         
-        SysTagDisplay setMeta = null;
-        for (SysTag set : sets) {
+        SysTagDisplay display = null;
+        for (SysTag sysTag : sets) {
             
-            if (lang != null) {
-                setMeta = NNF.getDisplayMngr().findBySysTagIdAndLang(set.getId(), lang);
+            if (lang == null) {
+                display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
             } else {
-                setMeta = NNF.getDisplayMngr().findBySysTagId(set.getId());
+                display = NNF.getDisplayMngr().findBySysTagIdAndLang(sysTag.getId(), lang);
             }
-            
-            if (setMeta != null) {
-                result = composeSet(set, setMeta);
-                results.add(result);
-            } else {
-                if (lang == null) {
-                    log.warning("invalid structure : SysTag's Id=" + set.getId()
-                            + " exist but not found any of SysTagDisPlay");
-                } else {
-                    log.info("SysTag's Id=" + set.getId() + " exist but not found match SysTagDisPlay for lang=" + lang);
-                }
+            if (display != null) {
+                nnSet = composeNnSet(sysTag, display);
+                results.add(nnSet);
             }
         }
         
         return results;
     }
     
-    /**
-     * find Sets that owned by Mso
-     * 
-     * @param msoId
-     *            required, result Sets that belong to this specified Mso
-     * @return list of Sets
-     */
-    public List<Set> findByMsoId(Long msoId) {
-        
-        if (msoId == null) {
-            return new ArrayList<Set>();
-        }
-        
-        return findByMsoIdAndLang(msoId, null);
-    }
-    
-    public Set findById(String setIdStr) {
+    public NnSet findById(String setIdStr) {
         
         SysTag sysTag = NNF.getSysTagDao().findById(setIdStr);
         
@@ -120,14 +82,14 @@ public class SetService {
             SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
             if (display != null) {
                 
-                return composeSet(sysTag, display);
+                return composeNnSet(sysTag, display);
             }
         }
         
         return null;
     }
     
-    public Set findById(long setId) {
+    public NnSet findById(long setId) {
         
         SysTag sysTag = NNF.getSysTagDao().findById(setId);
         
@@ -136,7 +98,7 @@ public class SetService {
             SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
             if (display != null) {
                 
-                return composeSet(sysTag, display);
+                return composeNnSet(sysTag, display);
             }
         }
         
@@ -167,7 +129,7 @@ public class SetService {
         return channels;
     }
     
-    public Set create(Set set) {
+    public NnSet create(NnSet set) {
         
         SysTag sysTag = new SysTag();
         sysTag.setType(SysTag.TYPE_SET);
@@ -193,6 +155,6 @@ public class SetService {
         log.info(url);
         QueueFactory.add(url, null);
         
-        return composeSet(sysTag, display);
+        return composeNnSet(sysTag, display);
     }
 }
