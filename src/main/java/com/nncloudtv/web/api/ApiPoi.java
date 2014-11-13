@@ -29,6 +29,10 @@ import com.nncloudtv.service.TagManager;
 @RequestMapping("api")
 public class ApiPoi extends ApiContext {
     
+    public ApiPoi(HttpServletRequest req) {
+        super(req);
+    }
+    
     protected static Logger log = Logger.getLogger(ApiPoi.class.getName());
     
     @RequestMapping(value = "users/{userId}/poi_campaigns", method = RequestMethod.GET)

@@ -44,6 +44,10 @@ import com.nncloudtv.web.json.cms.IapInfo;
 @RequestMapping("api/billing")
 public class ApiBilling extends ApiContext {
     
+    public ApiBilling(HttpServletRequest req) {
+        super(req);
+    }
+    
     protected static Logger log = Logger.getLogger(ApiBilling.class.getName());
     
     static final String DELIMITER = " - ";

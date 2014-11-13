@@ -45,6 +45,10 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 @RequestMapping("api")
 public class ApiUser extends ApiContext {
     
+    public ApiUser(HttpServletRequest req) {
+        super(req);
+    }
+    
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)

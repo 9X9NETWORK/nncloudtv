@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.google.common.base.Joiner;
@@ -99,7 +98,7 @@ public class ApiContext {
     public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
     public static final String API_DOC                = "X-API-DOC";
     
-    @Autowired protected HttpServletRequest httpReq;
+    protected HttpServletRequest httpReq;
     
     protected Locale language;
     protected Integer version;
@@ -163,16 +162,8 @@ public class ApiContext {
     }
     
     public ApiContext(HttpServletRequest req) {
-        httpReq = req;
-        init();
-    }
-    
-    public ApiContext() {
-        init();
-    }
-    
-    private void init() {
         
+        httpReq = req;
         String userAgent = httpReq.getHeader(HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";
         System.out.println("[ApiContext] user-agent = " + userAgent);
