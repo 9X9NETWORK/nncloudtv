@@ -21,30 +21,30 @@ public class ApiGeneric {
         NnLogUtil.logFinalize(getClass().getName());
     }
     
-    public static final String TITLECARD_NOT_FOUND    = "TitleCard Not Found";
-    public static final String PROGRAM_NOT_FOUND      = "Program Not Found";
-    public static final String CATEGORY_NOT_FOUND     = "Category Not Found";
-    public static final String SET_NOT_FOUND          = "Set Not Found";
-    public static final String EPISODE_NOT_FOUND      = "Episode Not Found";
-    public static final String USER_NOT_FOUND         = "User Not Found";
-    public static final String CHANNEL_NOT_FOUND      = "Channel Not Found";
-    public static final String MSO_NOT_FOUND          = "Mso Not Found";
-    public static final String MISSING_PARAMETER      = "Missing Parameter";
-    public static final String INVALID_PATH_PARAMETER = "Invalid Path Parameter";
-    public static final String INVALID_PARAMETER      = "Invalid Parameter";
-    public static final String INVALID_YOUTUBE_URL    = "Invalid YouTube URL";
+    public static final String TITLECARD_NOT_FOUND = "TitleCard Not Found";
+    public static final String PROGRAM_NOT_FOUND   = "Program Not Found";
+    public static final String CATEGORY_NOT_FOUND  = "Category Not Found";
+    public static final String SET_NOT_FOUND       = "Set Not Found";
+    public static final String EPISODE_NOT_FOUND   = "Episode Not Found";
+    public static final String USER_NOT_FOUND      = "User Not Found";
+    public static final String CHANNEL_NOT_FOUND   = "Channel Not Found";
+    public static final String MSO_NOT_FOUND       = "Mso Not Found";
+    public static final String MISSING_PARAMETER   = "Missing Parameter";
+    public static final String INVALID_PATH_PARAM  = "Invalid Path Parameter";
+    public static final String INVALID_PARAMETER   = "Invalid Parameter";
+    public static final String INVALID_YOUTUBE_URL = "Invalid YouTube URL";
     
-    public static final String VND_APPLE_MPEGURL      = "application/vnd.apple.mpegurl";
-    public static final String PLAIN_TEXT_UTF8        = "text/plain; charset=utf-8";
-    public static final String APPLICATION_JSON_UTF8  = "application/json; charset=utf-8";
+    public static final String VND_APPLE_MPEGURL     = "application/vnd.apple.mpegurl";
+    public static final String PLAIN_TEXT_UTF8       = "text/plain; charset=utf-8";
+    public static final String APPLICATION_JSON_UTF8 = "application/json; charset=utf-8";
     
-    public static final String OK                     = "OK";
-    public static final String NULL                   = "null";
-    public static final String BLACK_HOLE             = "Black Hole!";
-    public static final String API_REF_URL            = "http://goo.gl/necjp"; // API reference document url
-    public static final String API_REF                = "X-API-REF";
-    public static final String API_DOC_URL            = "http://goo.gl/H7Jzl"; // API design document url
-    public static final String API_DOC                = "X-API-DOC";
+    public static final String OK          = "OK";
+    public static final String NULL        = "null";
+    public static final String BLACK_HOLE  = "Black Hole!";
+    public static final String API_REF_URL = "http://goo.gl/necjp"; // API reference document url
+    public static final String API_REF     = "X-API-REF";
+    public static final String API_DOC_URL = "http://goo.gl/H7Jzl"; // API design document url
+    public static final String API_DOC     = "X-API-DOC";
     
     public static final short HTTP_200 = 200;
     public static final short HTTP_201 = 201;

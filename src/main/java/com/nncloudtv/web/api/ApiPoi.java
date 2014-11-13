@@ -39,7 +39,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -72,7 +72,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -151,7 +151,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long campaignId = NnStringUtil.evalLong(campaignIdStr);
         if (campaignId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -183,7 +183,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long campaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (campaignId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         PoiCampaign campaign = NNF.getPoiCampaignMngr().findById(campaignId);
@@ -261,7 +261,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -293,7 +293,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -342,7 +342,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiCampaignId = NnStringUtil.evalLong(campaignIdStr);
         if (poiCampaignId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -466,7 +466,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -504,7 +504,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -578,7 +578,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -615,7 +615,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -645,7 +645,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -741,7 +741,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -762,7 +762,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long pointId = NnStringUtil.evalLong(pointIdStr);
         if (pointId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -866,7 +866,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -903,7 +903,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1007,7 +1007,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1043,7 +1043,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1188,7 +1188,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1215,7 +1215,7 @@ public class ApiPoi extends ApiGeneric {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         

@@ -150,7 +150,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -199,7 +199,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -221,7 +221,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -279,7 +279,7 @@ public class ApiMso extends ApiGeneric {
         try {
             msoId = Long.valueOf(msoIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -638,7 +638,7 @@ public class ApiMso extends ApiGeneric {
         
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1108,7 +1108,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1155,7 +1155,7 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1220,7 +1220,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1253,7 +1253,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1275,7 +1275,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1366,7 +1366,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1446,7 +1446,7 @@ public class ApiMso extends ApiGeneric {
         
         Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1656,7 +1656,7 @@ public class ApiMso extends ApiGeneric {
         
         Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1904,7 +1904,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            badRequest(resp, INVALID_PATH_PARAMETER);
+            badRequest(resp, INVALID_PATH_PARAM);
             return null;
         }
         NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());

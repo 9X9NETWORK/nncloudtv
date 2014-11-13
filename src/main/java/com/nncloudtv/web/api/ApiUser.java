@@ -60,7 +60,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         if (shard == null) {
@@ -147,7 +147,7 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
@@ -234,7 +234,7 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -285,7 +285,7 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -355,7 +355,7 @@ public class ApiUser extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -506,7 +506,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -523,7 +523,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -560,7 +560,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -647,7 +647,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -692,7 +692,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         

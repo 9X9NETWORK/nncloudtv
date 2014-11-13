@@ -79,7 +79,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -118,7 +118,7 @@ public class ApiContent extends ApiGeneric {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -149,7 +149,7 @@ public class ApiContent extends ApiGeneric {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -199,7 +199,7 @@ public class ApiContent extends ApiGeneric {
         try {
             channelId = Long.valueOf(channelIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -236,7 +236,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) { }
         
         if (ytProgramId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         YtProgram ytProgram = NNF.getProgramMngr().findYtProgramById(ytProgramId);
@@ -257,7 +257,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);
@@ -292,7 +292,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -319,7 +319,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -424,7 +424,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -523,7 +523,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
@@ -870,7 +870,7 @@ public class ApiContent extends ApiGeneric {
         
         channelIdStr = NnChannelManager.convertChannelId(channelIdStr);
         if (channelIdStr == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1037,7 +1037,7 @@ public class ApiContent extends ApiGeneric {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1170,7 +1170,7 @@ public class ApiContent extends ApiGeneric {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1240,7 +1240,7 @@ public class ApiContent extends ApiGeneric {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1304,7 +1304,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1448,7 +1448,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
@@ -1493,7 +1493,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
@@ -1552,7 +1552,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1579,7 +1579,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1772,7 +1772,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -1969,7 +1969,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -2001,7 +2001,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -2027,7 +2027,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (episodeId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
@@ -2059,7 +2059,7 @@ public class ApiContent extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (programId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         NnProgram program = NNF.getProgramMngr().findById(programId);

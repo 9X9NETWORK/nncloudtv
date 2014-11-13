@@ -100,7 +100,7 @@ public class ApiMisc extends ApiGeneric {
             
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
             if (mso == null) {
-                notFound(resp, INVALID_PATH_PARAMETER);
+                notFound(resp, INVALID_PATH_PARAM);
                 return null;
             }
             
