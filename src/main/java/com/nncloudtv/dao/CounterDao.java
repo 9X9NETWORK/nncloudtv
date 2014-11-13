@@ -21,7 +21,7 @@ public class CounterDao extends GenericDao<Counter> {
         PersistenceManager pm = getPersistenceManager();
         Counter result = null;
         try {
-            Query query = pm.newQuery(CounterShard.class);
+            Query query = pm.newQuery(Counter.class);
             query.setFilter("counterName == counterNameParam");
             query.declareParameters("String counterNameParam");
             @SuppressWarnings("unchecked")
