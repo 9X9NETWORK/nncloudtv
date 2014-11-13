@@ -45,7 +45,7 @@ import com.nncloudtv.web.json.cms.Set;
 @Controller
 @RequestMapping("api")
 
-public class ApiMso extends ApiGeneric {
+public class ApiMso extends ApiContext {
     
     protected static Logger log = Logger.getLogger(ApiMso.class.getName());
     
@@ -141,7 +141,7 @@ public class ApiMso extends ApiGeneric {
         
         NNF.getMsoPromotionMngr().delete(NNF.getMsoPromotionMngr().findById(promotionIdStr));
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/promotions", method = RequestMethod.POST)
@@ -150,7 +150,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -170,11 +170,11 @@ public class ApiMso extends ApiGeneric {
         String logoUrl = req.getParameter("logoUrl");
         Short  type    = NnStringUtil.evalShort(req.getParameter("type"));
         if (link == null || logoUrl == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         if (type == null) {
-            badRequest(resp, INVALID_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PARAMETER);
             return null;
         }
         Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
@@ -199,7 +199,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -221,7 +221,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -257,7 +257,7 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -288,13 +288,13 @@ public class ApiMso extends ApiGeneric {
         try {
             msoId = Long.valueOf(msoIdStr);
         } catch (NumberFormatException e) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -313,7 +313,7 @@ public class ApiMso extends ApiGeneric {
         // name
         String name = req.getParameter("name");
         if (name == null || name.isEmpty()) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -418,7 +418,7 @@ public class ApiMso extends ApiGeneric {
         
         SysTag sysTag = NNF.getSysTagMngr().findById(setIdStr);
         if (sysTag == null) {
-            notFound(resp, SET_NOT_FOUND);
+            notFound(resp, ApiContext.SET_NOT_FOUND);
             return null;
         }
         
@@ -447,7 +447,7 @@ public class ApiMso extends ApiGeneric {
             try {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return null;
             }
         }
@@ -540,7 +540,7 @@ public class ApiMso extends ApiGeneric {
         }
         NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(set.getId()));;
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.GET)
@@ -550,7 +550,7 @@ public class ApiMso extends ApiGeneric {
         
         Set set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
-            notFound(resp, SET_NOT_FOUND);
+            notFound(resp, ApiContext.SET_NOT_FOUND);
             return null;
         }
         
@@ -601,11 +601,11 @@ public class ApiMso extends ApiGeneric {
             try {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
         } else {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         
@@ -637,7 +637,7 @@ public class ApiMso extends ApiGeneric {
         }
         NNF.getSysTagMngr().addChannel(set.getId(), channelId, alwaysOnTop, featured, (short) 0);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels", method = RequestMethod.DELETE)
@@ -647,7 +647,7 @@ public class ApiMso extends ApiGeneric {
         
         Long setId = NnStringUtil.evalLong(setIdStr);
         if (setId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -675,17 +675,17 @@ public class ApiMso extends ApiGeneric {
             try {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
         } else {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         
         NNF.getSysTagMapMngr().delete(NNF.getSysTagMapMngr().findOne(setId, channelId));
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "sets/{setId}/channels/sorting", method = RequestMethod.PUT)
@@ -713,7 +713,7 @@ public class ApiMso extends ApiGeneric {
         
         String channelIdsStr = req.getParameter("channels");
         if (channelIdsStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         
@@ -733,7 +733,7 @@ public class ApiMso extends ApiGeneric {
         List<SysTagMap> origList = NNF.getSysTagMapMngr().findBySysTagId(set.getId());
         if (channelIdList.size() != origList.size()) {
             log.info("list size is not equal");
-            badRequest(resp, INVALID_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PARAMETER);
             return;
         }
         for (SysTagMap map : origList) {
@@ -741,14 +741,14 @@ public class ApiMso extends ApiGeneric {
             int seq = channelIdList.indexOf(map.getChannelId());
             if (seq < 0) {
                 log.info("list item is not match");
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
             map.setSeq((short) (seq + 1));
         }
         NNF.getSysTagMapMngr().save(origList);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.GET)
@@ -758,21 +758,21 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
         String categoryIdStr = req.getParameter("categoryId");
         String channelParam = req.getParameter("channels");
         if (categoryIdStr == null && channelParam == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         
         // categoryId
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId != null && !CategoryService.isSystemCategory(categoryId)) {
-            badRequest(resp, INVALID_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PARAMETER);
             return null;
         }
         
@@ -807,7 +807,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return;
         }
         
@@ -826,7 +826,7 @@ public class ApiMso extends ApiGeneric {
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         String[] channelIdsStr = channelsStr.split(",");
@@ -845,7 +845,7 @@ public class ApiMso extends ApiGeneric {
         }
         NNF.getStoreListingMngr().addChannelsToBlackList(channelIds, mso.getId());
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store", method = RequestMethod.POST)
@@ -855,7 +855,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return;
         }
         
@@ -874,7 +874,7 @@ public class ApiMso extends ApiGeneric {
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         String[] channelIdsStr = channelsStr.split(",");
@@ -894,7 +894,7 @@ public class ApiMso extends ApiGeneric {
         
         NNF.getStoreListingMngr().removeChannelsFromBlackList(channelIds, mso.getId());
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "mso/{msoId}", method = RequestMethod.GET)
@@ -967,7 +967,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1015,7 +1015,7 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1046,7 +1046,7 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1069,7 +1069,7 @@ public class ApiMso extends ApiGeneric {
             try {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return null;
             }
         } else {
@@ -1117,13 +1117,13 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, CATEGORY_NOT_FOUND);
+            notFound(resp, ApiContext.CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1164,13 +1164,13 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, CATEGORY_NOT_FOUND);
+            notFound(resp, ApiContext.CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1229,7 +1229,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -1252,7 +1252,7 @@ public class ApiMso extends ApiGeneric {
         }
         NNF.getSysTagMngr().delete(NNF.getSysTagMngr().findById(categoryId));
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "category/{categoryId}/channels", method = RequestMethod.GET)
@@ -1262,13 +1262,13 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, CATEGORY_NOT_FOUND);
+            notFound(resp, ApiContext.CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1284,13 +1284,13 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
         Category category = NNF.getCategoryService().findById(categoryId);
         if (category == null) {
-            notFound(resp, CATEGORY_NOT_FOUND);
+            notFound(resp, ApiContext.CATEGORY_NOT_FOUND);
             return;
         }
         
@@ -1335,7 +1335,7 @@ public class ApiMso extends ApiGeneric {
             try {
                 channelId = Long.valueOf(channelIdStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
         }
@@ -1347,7 +1347,7 @@ public class ApiMso extends ApiGeneric {
             try {
                 seq = Short.valueOf(seqStr);
             } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
         }
@@ -1365,7 +1365,7 @@ public class ApiMso extends ApiGeneric {
             NNF.getCategoryService().addChannels(categoryId, channelIds);
         }
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "category/{categoryId}/channels", method = RequestMethod.DELETE)
@@ -1375,7 +1375,7 @@ public class ApiMso extends ApiGeneric {
         
         Long categoryId = NnStringUtil.evalLong(categoryIdStr);
         if (categoryId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -1400,7 +1400,7 @@ public class ApiMso extends ApiGeneric {
         // channels
         String channelsStr = req.getParameter("channels");
         if (channelsStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         String[] channelIdsStr = channelsStr.split(",");
@@ -1419,7 +1419,7 @@ public class ApiMso extends ApiGeneric {
         }
         NNF.getCategoryService().removeChannels(categoryId, channelIds);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "mso/{msoId}/store/categoryLocks", method = RequestMethod.GET)
@@ -1429,7 +1429,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1455,13 +1455,13 @@ public class ApiMso extends ApiGeneric {
         
         Long msoId = NnStringUtil.evalLong(msoIdStr);
         if (msoId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Mso mso = NNF.getMsoMngr().findById(msoId);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1480,7 +1480,7 @@ public class ApiMso extends ApiGeneric {
         // categories, indicate which system categories to be locked 
         String categoriesStr = req.getParameter("categories");
         if (categoriesStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         String[] categoryIdsStr = categoriesStr.split(",");
@@ -1502,7 +1502,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1520,7 +1520,7 @@ public class ApiMso extends ApiGeneric {
         
         String message = req.getParameter("message");
         if (message == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         
@@ -1533,7 +1533,7 @@ public class ApiMso extends ApiGeneric {
         
         String scheduleDateStr = req.getParameter("scheduleDate");
         if (scheduleDateStr == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
             
         } else if (scheduleDateStr.equalsIgnoreCase("NOW")) {
@@ -1541,7 +1541,7 @@ public class ApiMso extends ApiGeneric {
             
             Long scheduleDateLong = NnStringUtil.evalLong(scheduleDateStr);
             if (scheduleDateLong == null) {
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return null;
             }
             notification.setScheduleDate(new Date(scheduleDateLong));
@@ -1577,7 +1577,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
+            notFound(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         
@@ -1631,7 +1631,7 @@ public class ApiMso extends ApiGeneric {
         
         NNF.getMsoNotiMngr().saveAll(notifications);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "push_notifications/{notificationId}", method = RequestMethod.GET)
@@ -1665,7 +1665,7 @@ public class ApiMso extends ApiGeneric {
         
         Long notificationId = NnStringUtil.evalLong(notificationIdStr);
         if (notificationId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -1757,7 +1757,7 @@ public class ApiMso extends ApiGeneric {
         
         NNF.getMsoNotiMngr().delete(notification);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.DELETE)
@@ -1786,7 +1786,7 @@ public class ApiMso extends ApiGeneric {
             NNF.getLibraryMngr().delete(library);
         }
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "my_library/{libraryId}", method = RequestMethod.PUT)
@@ -1863,7 +1863,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            badRequest(resp, MSO_NOT_FOUND);
+            badRequest(resp, ApiContext.MSO_NOT_FOUND);
             return null;
         }
         NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
@@ -1885,7 +1885,7 @@ public class ApiMso extends ApiGeneric {
             contentType = MyLibrary.CONTENTTYPE_DIRECTLINK;
         }
         if (name == null || fileUrl == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         Short seq = NnStringUtil.evalShort(req.getParameter("seq"));
@@ -1913,7 +1913,7 @@ public class ApiMso extends ApiGeneric {
         
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            badRequest(resp, INVALID_PATH_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());

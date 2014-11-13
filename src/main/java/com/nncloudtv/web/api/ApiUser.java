@@ -43,8 +43,8 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 
 @Controller
 @RequestMapping("api")
-public class ApiUser extends ApiGeneric {
-
+public class ApiUser extends ApiContext {
+    
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
@@ -59,7 +59,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         if (shard == null) {
@@ -104,7 +104,7 @@ public class ApiUser extends ApiGeneric {
             
         } else if (oldPassword != null || newPassword != null) {
             
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         
@@ -146,12 +146,12 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
         if (user == null) {
-            notFound(resp, USER_NOT_FOUND);
+            notFound(resp, ApiContext.USER_NOT_FOUND);
             return null;
         }
         
@@ -233,14 +233,14 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
         Mso brand = NNF.getMsoMngr().findOneByName(mso);
         NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
         if (user == null) {
-            notFound(resp, USER_NOT_FOUND);
+            notFound(resp, ApiContext.USER_NOT_FOUND);
             return null;
         }
         
@@ -284,7 +284,7 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -302,7 +302,7 @@ public class ApiUser extends ApiGeneric {
         
         String channelsParam = req.getParameter("channels");
         if (channelsParam == null) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         List<Long> channelIdList = new ArrayList<Long>();
@@ -326,7 +326,7 @@ public class ApiUser extends ApiGeneric {
         if (channelIdList.size() != channels.size()) {
             
             log.info(String.format("%d not equal %d", channelIdList.size(), channels.size()));
-            badRequest(resp, INVALID_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PARAMETER);
             return;
         }
         
@@ -336,7 +336,7 @@ public class ApiUser extends ApiGeneric {
             if (index < 0) {
                 
                 log.info(String.format("channelId %d is not matched", channel.getId()));
-                badRequest(resp, INVALID_PARAMETER);
+                badRequest(resp, ApiContext.INVALID_PARAMETER);
                 return;
             }
             
@@ -345,7 +345,7 @@ public class ApiUser extends ApiGeneric {
         
         NNF.getChannelMngr().save(channels, false);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
@@ -354,7 +354,7 @@ public class ApiUser extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
@@ -373,7 +373,7 @@ public class ApiUser extends ApiGeneric {
         // name
         String name = ctx.getParam("name");
         if (name == null || name.isEmpty()) {
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return null;
         }
         name = NnStringUtil.htmlSafeAndTruncated(name);
@@ -505,7 +505,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -522,7 +522,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -545,7 +545,7 @@ public class ApiUser extends ApiGeneric {
         channel.setPublic(false);
         channelMngr.save(channel);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.POST)
@@ -559,7 +559,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -576,13 +576,13 @@ public class ApiUser extends ApiGeneric {
         String accessToken = req.getParameter("accessToken");
         if (fbUserId == null || accessToken == null) {
             
-            badRequest(resp, MISSING_PARAMETER);
+            badRequest(resp, ApiContext.MISSING_PARAMETER);
             return;
         }
         
         String[] longLivedAccessToken = FacebookLib.getLongLivedAccessToken(accessToken, MsoManager.getSystemMso());
         if (longLivedAccessToken[0] == null) {
-            badRequest(resp, INVALID_PARAMETER);
+            badRequest(resp, ApiContext.INVALID_PARAMETER);
             return;
         }
         accessToken = longLivedAccessToken[0];
@@ -632,7 +632,7 @@ public class ApiUser extends ApiGeneric {
         }
         prefMngr.save(user, userPref);
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.DELETE)
@@ -646,7 +646,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return;
         }
         
@@ -677,7 +677,7 @@ public class ApiUser extends ApiGeneric {
             prefMngr.delete(user, userPref);
         }
         
-        msgResponse(resp, OK);
+        msgResponse(resp, ApiContext.OK);
     }
     
     @RequestMapping(value = "users/{userId}/sns_auth/facebook", method = RequestMethod.GET)
@@ -691,7 +691,7 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, ApiContext.INVALID_PATH_PARAMETER);
             return null;
         }
         
