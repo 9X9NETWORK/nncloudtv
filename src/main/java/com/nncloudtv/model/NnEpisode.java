@@ -12,6 +12,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.CounterFactory;
 
@@ -177,7 +178,7 @@ public class NnEpisode implements Serializable {
             cntView = counter.getCount();
             log.info("cntView = " + cntView);
         } catch (Exception e) {
-            log.warning(e.getMessage());
+            NnLogUtil.logException(e);
             cntView = 0;
         }
         CacheFactory.set(cacheName, String.valueOf(cntView));

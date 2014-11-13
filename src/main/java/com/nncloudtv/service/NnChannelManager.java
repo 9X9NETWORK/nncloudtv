@@ -23,6 +23,7 @@ import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -1253,7 +1254,7 @@ public class NnChannelManager {
             channel.setCntView(counter.getCount());
             log.info("cntView = " + channel.getCntView());
         } catch (Exception e) {
-            log.warning(e.getMessage());
+            NnLogUtil.logException(e);
             channel.setCntView(0);
         }
         CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
