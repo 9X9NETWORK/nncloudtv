@@ -165,8 +165,8 @@ public class ApiContext {
     
     public ApiContext() {
         
-        HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        init(req);
+        //HttpServletRequest req = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        //init(req);
     }
     
     public ApiContext(HttpServletRequest req) {
@@ -174,7 +174,7 @@ public class ApiContext {
         init(req);
     }
     
-    private void init(HttpServletRequest req) {
+    private ApiContext init(HttpServletRequest req) {
         httpReq = req;
         String userAgent = httpReq.getHeader(HEADER_USER_AGENT);
         if (userAgent == null) userAgent = "";
@@ -231,6 +231,8 @@ public class ApiContext {
         }
         
         System.out.println(String.format("[ApiContext] language = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
+        
+        return this;
     }
     
     public Boolean isProductionSite() {
