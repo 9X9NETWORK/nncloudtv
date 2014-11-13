@@ -7,6 +7,8 @@ import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
+import com.nncloudtv.dao.CounterDao;
+import com.nncloudtv.dao.CounterShardDao;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
@@ -137,6 +139,8 @@ public class NNF {
     protected static TitleCardDao      titleCardDao      = null;
     protected static NnChannelPrefDao  chPrefDao         = null;
     protected static AppDao            appDao            = null;
+    protected static CounterDao        counterDao        = null;
+    protected static CounterShardDao   shardDao          = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -433,6 +437,28 @@ public class NNF {
         }
         
         return appDao;
+    }
+    
+    public static CounterDao getCounterDao() {
+        
+        if (counterDao == null) {
+            
+            log.info("create counterDao");
+            counterDao = new CounterDao();
+        }
+        
+        return counterDao;
+    }
+    
+    public static CounterShardDao getShardDao() {
+        
+        if (shardDao == null) {
+            
+            log.info("create shardDao");
+            shardDao = new CounterShardDao();
+        }
+        
+        return shardDao;
     }
     
     public static CategoryService getCategoryService() {

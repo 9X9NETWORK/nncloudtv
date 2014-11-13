@@ -25,7 +25,8 @@ public class CacheFactory {
     
     protected static final Logger log = Logger.getLogger(CacheFactory.class.getName());
     
-    public static final int EXP_DEFAULT = 2592000;
+    public static final int EXP_DEFAULT = 2592000; // 30 days
+    public static final int EXP_SHORT = 100;  // seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
     public static final int MINIMUM_LOG_INTERVAL = 10;
@@ -56,7 +57,7 @@ public class CacheFactory {
                     NnLogUtil.logFinalize(getClass().getName());
                 }
             };
-            cache.set(key, EXP_DEFAULT, addr);
+            cache.set(key, EXP_SHORT, addr);
             future = cache.asyncGet(key);
             if (future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS) != null) {
                 alive = true;
@@ -185,6 +186,12 @@ public class CacheFactory {
     
     public static Object set(String key, Object obj) {
         
+        return set(key, obj, 0);
+    }
+    
+    public static Object set(String key, Object obj, int exp) {
+        
+        
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
         long before = NnDateUtil.timestamp();
@@ -194,7 +201,7 @@ public class CacheFactory {
         Future<Object> future = null;
         Object retObj = null;
         try {
-            cache.set(key, EXP_DEFAULT, obj);
+            cache.set(key, exp == 0 ? EXP_DEFAULT : exp, obj);
             future = cache.asyncGet(key);
             retObj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (CheckedOperationTimeoutException e){

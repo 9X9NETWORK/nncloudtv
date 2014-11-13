@@ -165,71 +165,66 @@ public class NnEpisode implements Serializable {
 		this.seq = seq;
 	}
 
-    public long getCntView() {    
+    public long getCntView() {
+        //v_ch10514_e21688
+        String cacheName = "u_ch" + channelId + "_e" + id;
         try {
-            //v_ch10514_e21688
-            String name = "u_ch" + channelId + "_e" + id;        
-            String result = (String)CacheFactory.get(name);
+            String result = (String) CacheFactory.get(cacheName);
             if (result != null) {
                 return Integer.parseInt(result);
             }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();
-            cntView = factory.getCount(name);
-            CacheFactory.set(name, String.valueOf(cntView));
+            log.info("cntView not cached: " + cacheName);
+            Counter counter = CounterFactory.getOrCreateCounter(cacheName);
+            cntView = counter.getCount();
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0;            
+            log.warning(e.getMessage());
+            cntView = 0;
+        } finally {
+            CacheFactory.set(cacheName, String.valueOf(cntView));
         }
         return cntView;
     }
-
-    /*
-    public void setCntView(int cntView) {    
-        this.cntView = cntView;
-    }
-    */
-
+    
     public int getDuration() {
     
         return duration;
     }
-
+    
     public void setDuration(int duration) {
     
         this.duration = duration;
     }
-
+    
     public String getPlaybackUrl() {
     
         return playbackUrl;
     }
-
+    
     public void setPlaybackUrl(String playbackUrl) {
     
         this.playbackUrl = playbackUrl;
     }
-
-	public Date getScheduleDate() {
-		return scheduleDate;
-	}
-
-	public void setScheduleDate(Date scheduleDate) {
-		this.scheduleDate = scheduleDate;
-	}
-
+    
+    public Date getScheduleDate() {
+        return scheduleDate;
+    }
+    
+    public void setScheduleDate(Date scheduleDate) {
+        this.scheduleDate = scheduleDate;
+    }
+    
     public long getStorageId() {
         return storageId;
     }
-
+    
     public void setStorageId(long storageId) {
         this.storageId = storageId;
     }
-
+    
     public short getContentType() {
         return contentType;
     }
-
+    
     public void setContentType(short contentType) {
         this.contentType = contentType;
     }

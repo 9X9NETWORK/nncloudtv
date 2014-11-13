@@ -182,17 +182,6 @@ public class PlayerApiService {
         return this.assembleMsgs(NnStatusCode.ERROR, null);
     }
     
-    public long addMsoInfoVisitCounter(boolean readOnly) {
-        if (!readOnly) {
-            if (NNF.getConfigMngr().isQueueEnabled(true)) {
-            } else {
-                log.info("quque not enabled");
-                return NNF.getMsoMngr().addMsoVisitCounter(readOnly);
-            }
-        }
-        return NNF.getMsoMngr().addMsoVisitCounter(readOnly);
-    }
-    
     //assemble key and value string
     public static String assembleKeyValue(String key, String value) {
         return key + "\t" + value + "\n";

@@ -27,6 +27,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
+import com.nncloudtv.model.Counter;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
@@ -1241,43 +1242,21 @@ public class NnChannelManager {
     
     public NnChannel populateCntView(NnChannel channel) {
         
+        String cacheName = "u_ch" + channel.getId();
         try {
-            String name = "u_ch" + channel.getId();
-            String result = (String)CacheFactory.get(name);
+            String result = (String) CacheFactory.get(cacheName);
             if (result != null) {
                 channel.setCntView(Integer.parseInt(result));
                 return channel;
             }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();
-            long cntView = factory.getCount(name);
-            channel.setCntView(cntView);
-            CacheFactory.set(name, String.valueOf(cntView));
+            log.info("cntView not cached: " + cacheName);
+            Counter counter = CounterFactory.getOrCreateCounter(cacheName);
+            channel.setCntView(counter.getCount());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warning(e.getMessage());
             channel.setCntView(0);
-        }
-        return channel;
-    }
-    
-    public NnChannel populateCntVisit(NnChannel channel) { // is CntVisit == CntView ??
-        try {
-            String name = "u_ch" + channel.getId();
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                channel.setCntVisit(Integer.parseInt(result));
-                return channel;
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            long cntVisit = factory.getCount(name);
-            channel.setCntVisit(cntVisit);
-            CacheFactory.set(name, String.valueOf(cntVisit));
-        } catch (Exception e){
-            //e.printStackTrace();
-            System.out.println("msg:" + e.getMessage());
-            System.out.println("cause:" + e.getCause());
-            channel.setCntVisit(0);
+        } finally {
+            CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
         }
         return channel;
     }

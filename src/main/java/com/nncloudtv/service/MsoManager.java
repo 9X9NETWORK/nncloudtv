@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
-import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
@@ -41,16 +40,6 @@ public class MsoManager {
         }
         
         return getSystemMso();
-    }
-    
-    public long addMsoVisitCounter(boolean readOnly) {
-        String counterName = "9x9" + "BrandInfo";
-        CounterFactory factory = new CounterFactory();
-        ShardedCounter counter = factory.getOrCreateCounter(counterName);
-        if (!readOnly) {
-            counter.increment();
-        }
-        return counter.getCount();
     }
     
     // only 9x9 mso will be stored in cache

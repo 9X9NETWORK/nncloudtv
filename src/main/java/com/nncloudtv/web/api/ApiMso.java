@@ -569,7 +569,7 @@ public class ApiMso extends ApiGeneric {
         
         NnSet set = NNF.getSetService().findById(setIdStr);
         if (set == null) {
-            notFound(resp, "Set Not Found");
+            notFound(resp, SET_NOT_FOUND);
             return;
         }
         
@@ -586,30 +586,16 @@ public class ApiMso extends ApiGeneric {
         }
         
         // channelId
-        Long channelId = null;
         String channelIdStr = req.getParameter("channelId");
-        if (channelIdStr != null) {
-            try {
-                channelId = Long.valueOf(channelIdStr);
-            } catch (NumberFormatException e) {
-                badRequest(resp, INVALID_PARAMETER);
-                return;
-            }
-        } else {
+        if (channelIdStr == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
         }
         
         NnChannel channel = null;
-        channel = NNF.getChannelMngr().findById(channelId);
+        channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            badRequest(resp, "Channel Not Found");
-            return;
-        }
-        
-        Mso mso = NNF.getMsoMngr().findById(set.getMsoId());
-        if (NNF.getMsoMngr().isPlayableChannel(channel, mso.getId()) == false) {
-            badRequest(resp, "Channel Cant Play On This Mso");
+            badRequest(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -626,7 +612,7 @@ public class ApiMso extends ApiGeneric {
         if (featuredStr != null) {
             featured = Boolean.valueOf(featuredStr);
         }
-        NNF.getSysTagMngr().addChannel(set.getId(), channelId, alwaysOnTop, featured, (short) 0);
+        NNF.getSysTagMngr().addChannel(set.getId(), channel.getId(), alwaysOnTop, featured, (short) 0);
         
         msgResponse(resp, OK);
     }
