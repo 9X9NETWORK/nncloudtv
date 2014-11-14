@@ -13,7 +13,7 @@ import com.nncloudtv.service.CounterFactory;
 @EnableScheduling
 public class CounterTask extends CounterFactory {
     
-    static final int CC_INTERVAL = 294001; // clean counter interval (milliseconds)
+    public static final int CC_INTERVAL = 294001; // clean counter interval (milliseconds)
     
     @Scheduled(fixedDelay = CC_INTERVAL)
     public void cleanDirtyCounter() {
