@@ -31,7 +31,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * aggregate to be incremented rapidly.
  *
  */
-@PersistenceCapable(table = "counter_shard", identityType = IdentityType.APPLICATION)
+@PersistenceCapable(table = "counter_shard", detachable = "true", identityType = IdentityType.APPLICATION)
 public class CounterShard {
     
     @PrimaryKey

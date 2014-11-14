@@ -30,7 +30,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Represents a counter in the datastore and stores the number of shards.
  *
  */
-@PersistenceCapable(table = "counter", identityType = IdentityType.APPLICATION)
+@PersistenceCapable(table = "counter", detachable = "true", identityType = IdentityType.APPLICATION)
 public class Counter {
     
     @PrimaryKey
