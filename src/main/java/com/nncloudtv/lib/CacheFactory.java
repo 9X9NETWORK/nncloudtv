@@ -218,11 +218,13 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
-        log.info(String.format("save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
-        if (retObj == null)
+        if (retObj == null) {
             System.out.println(String.format("[memcache] %s --> NOT saved", key));
-        else
+        } else {
             System.out.println(String.format("[memcache] %s --> saved", key));
+        }
+        System.out.println(String.format("[memcache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        
         return retObj;
     }    
     
@@ -254,12 +256,12 @@ public class CacheFactory {
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
-        log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
             System.out.println(String.format("[memcache] mass: %d --> deleted", keys.size()));
         } else {
             System.out.println(String.format("[memcache] mass: %d --> NOT deleted", keys.size()));
         }
+        System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void delete(String key) {
@@ -286,12 +288,12 @@ public class CacheFactory {
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
-        log.info(String.format("delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         if (isDeleted) {
             System.out.println(String.format("[memcache] %s --> deleted", key));
         } else {
             System.out.println(String.format("[memcache] %s --> NOT deleted", key));
         }
+        System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static String getMaoConfigKey(long msoId, String key) {

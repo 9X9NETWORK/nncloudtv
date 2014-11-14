@@ -3,8 +3,6 @@ package com.nncloudtv.dao;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
-
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -18,7 +16,6 @@ import com.nncloudtv.lib.PMF;
 
 public class GenericDao<T> {
     
-    protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
     protected Class<T> daoClass;
         
     public GenericDao(Class<T> daoClass) {
@@ -52,7 +49,7 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        log.info(String.format("save %s", daoClass.getSimpleName()));
+        System.out.println(String.format("[dao] save %s", daoClass.getSimpleName()));
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
@@ -67,7 +64,7 @@ public class GenericDao<T> {
         if (list == null) return list;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        log.info(String.format("saveAll %s, count = %d", daoClass.getSimpleName(), list.size()));
+        System.out.println(String.format("[dao] saveAll %s, count = %d", daoClass.getSimpleName(), list.size()));
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -79,7 +76,7 @@ public class GenericDao<T> {
                 tx.rollback();
             }
             pm.close();
-            log.info(String.format("costs %d miliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[dao] costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
         return list;
     }
@@ -88,7 +85,7 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        log.info(String.format("delete %s", daoClass.getSimpleName()));
+        System.out.println(String.format("[dao] delete %s", daoClass.getSimpleName()));
         try {
             pm.deletePersistent(dao);
         } finally {
@@ -102,14 +99,14 @@ public class GenericDao<T> {
         
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
-        log.info(String.format("deletes %s, count = %d", daoClass.getSimpleName(), list.size()));
+        System.out.println(String.format("[dao] deletes %s, count = %d", daoClass.getSimpleName(), list.size()));
         try {
             tx.begin();
             pm.deletePersistentAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {
-                log.warning("rolling back");
+                System.out.println("[dao] rolling back");
                 tx.rollback();
             }
             pm.close();
