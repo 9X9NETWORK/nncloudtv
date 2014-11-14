@@ -102,15 +102,17 @@ public class CounterFactory {
         }
     }
     
-    private static void addShard(Counter counter) {
+    private static CounterShard addShard(Counter counter) {
         
-        if (counter == null) return;
+        if (counter == null) return null;
         
         int shardNum = counter.getNumShards() + 1;
         counter.setNumShards(shardNum);
-        NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
+        CounterShard shard = NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
         NNF.getCounterDao().save(counter);
         System.out.println(String.format("[counter] add shard of %s, total shard number = %d", counter.getCounterName(), counter.getNumShards()));
+        
+        return shard;
     }
     
 }
