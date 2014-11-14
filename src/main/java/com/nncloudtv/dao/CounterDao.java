@@ -19,7 +19,6 @@ public class CounterDao extends GenericDao<Counter> {
     public Counter findByCounterName(String counterName) {
         PersistenceManager pm = getPersistenceManager();
         Counter result = null;
-        log.info("counterName = " + counterName);
         try {
             Query query = pm.newQuery(Counter.class);
             query.setFilter("counterName == counterNameParam");

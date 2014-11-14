@@ -1251,7 +1251,7 @@ public class NnChannelManager {
                 return channel;
             }
             Counter counter = CounterFactory.getOrCreateCounter(cacheName);
-            channel.setCntView(counter.getCount());
+            channel.setCntView(CounterFactory.getCount(counter));
             log.info("cntView = " + channel.getCntView());
         } catch (Exception e) {
             NnLogUtil.logException(e);

@@ -36,27 +36,24 @@ public class CounterFactory {
             // Create a counter with 0 shards.
             counter = NNF.getCounterDao().save(new Counter(counterName));
             System.out.println(String.format("[counter] created %s, id = %d", counter.getCounterName(), counter.getId()));
-            // Add a first shard to the counter.
-            //addShard(counter);
             
             return counter;
         }
         
-        return populateCount(counter);
+        return counter;
     }
     
-    private static Counter populateCount(Counter counter) {
+    public static long getCount(Counter counter) {
         
-        if (counter == null) return null;
+        if (counter == null) return 0;
         
         List<CounterShard> shards = NNF.getShardDao().findByCounterName(counter.getCounterName());
         long sum = 0;
         for (CounterShard shardCounter : shards) {
             sum += shardCounter.getCount();
         }
-        counter.setCount(sum);
         
-        return counter;
+        return sum;
     }
     
     public static void increment(Counter counter) {
@@ -80,7 +77,6 @@ public class CounterFactory {
         for (CounterShard shardCounter : shards) {
             sum += shardCounter.getCount();
         }
-        counter.setCount(sum);
         
         if ((sum - next * 10) % 10000 == 0) {
             counter.setNumShards(shards.size());
@@ -114,16 +110,7 @@ public class CounterFactory {
         counter.setNumShards(shardNum);
         NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
         NNF.getCounterDao().save(counter);
-        System.out.println("[counter] add shard of " + counter.getCounterName());
-    }
-    
-    public static Counter getCounter(String counterName) {
-        
-        Counter counter = NNF.getCounterDao().findByCounterName(counterName);
-        if (counter == null)
-            return null;
-        
-        return populateCount(counter);
+        System.out.println(String.format("[counter] add shard of %s, total shard number = %d", counter.getCounterName(), counter.getNumShards()));
     }
     
 }

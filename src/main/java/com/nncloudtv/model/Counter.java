@@ -18,7 +18,6 @@ package com.nncloudtv.model;
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -45,9 +44,6 @@ public class Counter {
     @Persistent
     private int numShards;
     
-    @NotPersistent
-    private long count;
-    
     public Counter(String counterName) {
       this.counterName = counterName;
       this.numShards = 0;
@@ -59,14 +55,6 @@ public class Counter {
     
     public String getCounterName() {
       return counterName;
-    }
-    
-    public long getCount() {
-        return count;
-    }
-    
-    public void setCount(long count) {
-        this.count = count;
     }
     
     public int getNumShards() {
