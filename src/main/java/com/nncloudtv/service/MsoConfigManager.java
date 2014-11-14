@@ -309,7 +309,7 @@ public class MsoConfigManager {
         try {
             MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);
             if (result != null){
-                log.info("value from cache: key=" + cacheKey + ", value=" + result.getValue());
+                log.fine("value from cache: key=" + cacheKey + ", value=" + result.getValue());
                 return result;
             }    
         } catch (Exception e) {
