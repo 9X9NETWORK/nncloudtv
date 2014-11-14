@@ -584,7 +584,7 @@ public class NnUserManager {
             user.setCntChannel(profile.getCntChannel());
             user.setCntFollower(profile.getCntFollower());
             user.setMsoId(profile.getMsoId());
-            if (profile != null)
+            if (profile.getPriv() != null)
                 user.setPriv(profile.getPriv());
             Mso mso = NNF.getMsoMngr().findById(profile.getMsoId());
             if (mso != null)
