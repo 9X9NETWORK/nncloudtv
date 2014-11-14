@@ -49,7 +49,7 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        //System.out.println(String.format("[dao] save %s", daoClass.getSimpleName()));
+        System.out.println(String.format("[dao] save %s", daoClass.getSimpleName()));
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
