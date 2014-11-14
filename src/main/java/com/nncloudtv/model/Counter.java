@@ -37,8 +37,8 @@ public class Counter {
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
     
-    @Persistent
     @Unique
+    @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String counterName;
     

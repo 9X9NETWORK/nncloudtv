@@ -36,7 +36,7 @@ public class CounterShard {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private Long id;
+    private long id;
     
     @Persistent
     private int shardNumber;
