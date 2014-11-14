@@ -466,7 +466,7 @@ public class MsoManager {
         try {
             Mso cached = (Mso) CacheFactory.get(cacheKey);
             if (cached != null) {
-                log.info("get mso object from cache: " + name);
+                log.fine("get mso object from cache: " + name);
                 return cached;
             }
         } catch (Exception e) {
