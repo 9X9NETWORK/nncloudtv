@@ -32,7 +32,7 @@ public class CounterFactory {
     
     protected static Map<String, Integer> dirtyCounters = new HashMap<String, Integer>();
     
-    private static Counter getOrCreateCounter(String counterName) {
+    synchronized private static Counter getOrCreateCounter(String counterName) {
         
         if (counterName == null || counterName.isEmpty()) return null;
         
@@ -63,12 +63,15 @@ public class CounterFactory {
     
     public static void increment(String counterName) {
         
-        if (counterName == null) return;
-        Integer count = dirtyCounters.get(counterName);
-        dirtyCounters.put(counterName, count == null ? 1 : count + 1);
+        synchronized (dirtyCounters) {
+            
+            if (counterName == null) return;
+            Integer count = dirtyCounters.get(counterName);
+            dirtyCounters.put(counterName, count == null ? 1 : count + 1);
+        }
     }
     
-    protected static void increment(String counterName, int amount) {
+    synchronized protected static void increment(String counterName, int amount) {
         
         if (counterName == null) return;
         
@@ -110,10 +113,9 @@ public class CounterFactory {
             if (numShards > counter.getNumShards())
                 addShard(counter); // auto sharding
         }
-        
     }
     
-    private static CounterShard addShard(Counter counter) {
+    synchronized private static CounterShard addShard(Counter counter) {
         
         if (counter == null) return null;
         
