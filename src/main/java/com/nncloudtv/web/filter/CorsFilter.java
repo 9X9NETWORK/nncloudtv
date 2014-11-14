@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.nncloudtv.model.Counter;
 import com.nncloudtv.service.CounterFactory;
 
 public class CorsFilter extends OncePerRequestFilter {
