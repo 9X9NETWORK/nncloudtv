@@ -87,7 +87,7 @@ public class CounterFactory {
             sum += shardCounter.getCount();
         }
         
-        if ((sum - index * 10) % 1000 == 0) {
+        if ((sum - index * 10) % 10000 == 0) {
             Counter counter = getOrCreateCounter(counterName);
             counter.setNumShards(shards.size());
             /**
@@ -110,6 +110,7 @@ public class CounterFactory {
             if (numShards > counter.getNumShards())
                 addShard(counter); // auto sharding
         }
+        
     }
     
     private static CounterShard addShard(Counter counter) {
