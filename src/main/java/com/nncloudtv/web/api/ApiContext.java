@@ -194,7 +194,6 @@ public class ApiContext {
             String[] splits = domain.split("\\.");
             if (splits.length == 3) {
                 String subdomain = splits[0];
-                log.info("sub-domain = " + subdomain);
                 if (NNF.getMsoMngr().findByName(subdomain) != null) {
                     
                     return (productionSite = true);
