@@ -6,7 +6,7 @@ import com.nncloudtv.lib.CacheFactory;
 
 public class ApplicationListenerTask implements ApplicationListener<ContextRefreshedEvent> {
     
-    boolean startup = false;
+    static boolean startup = false;
     
     synchronized public void onApplicationEvent(ContextRefreshedEvent event) {
         
