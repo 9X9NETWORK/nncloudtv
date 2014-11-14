@@ -43,6 +43,11 @@ public class CounterFactory {
         return counter;
     }
     
+    public static long getCount(String counterName) {
+        
+        return getCount(NNF.getCounterDao().findByCounterName(counterName));
+    }
+    
     public static long getCount(Counter counter) {
         
         if (counter == null) return 0;
@@ -54,6 +59,11 @@ public class CounterFactory {
         }
         
         return sum;
+    }
+    
+    public static void increment(String counterName) {
+        
+        increment(NNF.getCounterDao().findByCounterName(counterName), 1);
     }
     
     public static void increment(Counter counter) {

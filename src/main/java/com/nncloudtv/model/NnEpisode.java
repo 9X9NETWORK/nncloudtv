@@ -174,8 +174,7 @@ public class NnEpisode implements Serializable {
             if (result != null) {
                 return Integer.parseInt(result);
             }
-            Counter counter = CounterFactory.getOrCreateCounter(cacheName);
-            cntView = CounterFactory.getCount(counter);
+            cntView = CounterFactory.getCount(cacheName);
         } catch (Exception e) {
             NnLogUtil.logException(e);
             cntView = 0;

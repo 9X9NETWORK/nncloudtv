@@ -28,7 +28,6 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
 import com.nncloudtv.lib.stream.YouTubeLib;
-import com.nncloudtv.model.Counter;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
@@ -1250,8 +1249,7 @@ public class NnChannelManager {
                 channel.setCntView(Integer.parseInt(result));
                 return channel;
             }
-            Counter counter = CounterFactory.getOrCreateCounter(cacheName);
-            channel.setCntView(CounterFactory.getCount(counter));
+            channel.setCntView(CounterFactory.getCount(cacheName));
             log.info("cntView = " + channel.getCntView());
         } catch (Exception e) {
             NnLogUtil.logException(e);
