@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.nncloudtv.model.Counter;
+import com.nncloudtv.service.CounterFactory;
+
 public class CorsFilter extends OncePerRequestFilter {
     
     protected static final Logger log = Logger.getLogger(CorsFilter.class.getName());
@@ -39,6 +42,10 @@ public class CorsFilter extends OncePerRequestFilter {
             resp.addHeader("Access-Control-Max-Age", "1728000");
             return ;
         }
+        
+        Counter counter = CounterFactory.getOrCreateCounter(req.getRequestURI());
+        if (counter != null)
+            CounterFactory.increment(counter);
         
         filterChain.doFilter(req, resp);
     }

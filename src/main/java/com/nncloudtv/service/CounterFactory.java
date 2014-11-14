@@ -17,8 +17,6 @@ package com.nncloudtv.service;
 
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
-
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Counter;
@@ -28,15 +26,16 @@ import com.nncloudtv.model.CounterShard;
  * Finds or creates a sharded counter with the desired name.
  */
 public class CounterFactory {
-    protected static final Logger log = Logger.getLogger(CounterFactory.class.getName());
     
     public static Counter getOrCreateCounter(String counterName) {
+        
+        if (counterName == null || counterName.isEmpty()) return null;
         
         Counter counter = NNF.getCounterDao().findByCounterName(counterName);
         if (counter == null) {
             // Create a counter with 0 shards.
             counter = NNF.getCounterDao().save(new Counter(counterName));
-            log.info("created counter " + counterName);
+            System.out.println("[counter] created " + counterName);
             // Add a first shard to the counter.
             addShard(counter);
             
@@ -75,22 +74,36 @@ public class CounterFactory {
             next = random.nextInt(shards.size());
             CounterShard shardCounter = shards.get(next);
             shardCounter.increment(amount);
-            shardCounter = NNF.getShardDao().save(shardCounter);
+            NNF.getShardDao().save(shardCounter);
         }
-        //long sum = 0;
-        //for (CounterShard shardCounter : shards) {
-        //    sum += shardCounter.getCount();
-        //}
+        long sum = 0;
+        for (CounterShard shardCounter : shards) {
+            sum += shardCounter.getCount();
+        }
+        counter.setCount(sum);
         
-        
-        
-//        int numShards = (int) Math.sqrt(sum) / 100 + 1; // Sharding Fomula
-//        if (numShards > counter.getNumShards()) {
-//            addShard(counter);
-//        }
-        
-        
-        
+        if ((sum - next * 10) % 10000 == 0) {
+            counter.setNumShards(shards.size());
+            /**
+             * Sharding Formula
+             * 
+             * To estimate how many shards needed
+             * 
+             *      0 ~   9999: 1 shard
+             *  10000 ~  39999: 2 shards
+             *  40000 ~  89999: 3 shards
+             *  90000 ~ 159999: 4 shards
+             * 160000 ~ 249999: 5 shards
+             * ... etc
+             * 
+             * @author Louis Jeng <louis.jeng@flipr.tv>
+             */
+            int numShards = (int) Math.sqrt(sum) / 100 + 1; // Sharding Formula
+            System.out.println(String.format("[counter] %s shard number = %d (%d expected), count = %d",
+                                   counter.getCounterName(), counter.getNumShards(), numShards, sum));
+            if (numShards > counter.getNumShards())
+                addShard(counter);
+        }
     }
     
     public static void addShard(Counter counter) {
@@ -101,6 +114,7 @@ public class CounterFactory {
         counter.setNumShards(shardNum);
         NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
         NNF.getCounterDao().save(counter);
+        System.out.println("[counter] add shard of " + counter.getCounterName());
     }
     
     public static Counter getCounter(String counterName) {
