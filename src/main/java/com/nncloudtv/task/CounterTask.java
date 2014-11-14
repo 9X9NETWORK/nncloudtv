@@ -2,11 +2,14 @@ package com.nncloudtv.task;
 
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.nncloudtv.service.CounterFactory;
 
+@Component
 @EnableScheduling
 public class CounterTask extends CounterFactory {
     
