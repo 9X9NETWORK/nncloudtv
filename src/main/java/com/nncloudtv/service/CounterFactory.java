@@ -35,9 +35,9 @@ public class CounterFactory {
         if (counter == null) {
             // Create a counter with 0 shards.
             counter = NNF.getCounterDao().save(new Counter(counterName));
-            System.out.println("[counter] created " + counterName);
+            System.out.println(String.format("[counter] created %s, id = %d", counter.getCounterName(), counter.getId()));
             // Add a first shard to the counter.
-            addShard(counter);
+            //addShard(counter);
             
             return counter;
         }
@@ -106,7 +106,7 @@ public class CounterFactory {
         }
     }
     
-    public static void addShard(Counter counter) {
+    private static void addShard(Counter counter) {
         
         if (counter == null) return;
         
