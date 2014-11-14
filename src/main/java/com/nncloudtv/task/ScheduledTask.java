@@ -5,12 +5,12 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 
-@Component
+@Service
 @EnableScheduling
 public class ScheduledTask {
     
