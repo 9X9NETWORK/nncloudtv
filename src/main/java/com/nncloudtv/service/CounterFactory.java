@@ -63,7 +63,7 @@ public class CounterFactory {
     
     public static void increment(String counterName) {
         
-        increment(NNF.getCounterDao().findByCounterName(counterName), 1);
+        increment(getOrCreateCounter(counterName), 1);
     }
     
     public static void increment(Counter counter) {
