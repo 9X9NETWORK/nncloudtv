@@ -1259,17 +1259,24 @@ public class NnChannelManager {
         return channel;
     }
     
+    public void populateBannerImageUrl(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        if (channelPref != null)
+            channel.setBannerImageUrl(channelPref.getValue());
+    }
+    
     public void populateAutoSync(NnChannel channel) {
         
         if (channel == null) return;
         
         NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-        if (channelPref == null) {
-            
+        if (channelPref == null)
             channel.setAutoSync(NnChannelPref.OFF);
-            return;
-        }
-        channel.setAutoSync(channelPref.getValue());
+        else
+            channel.setAutoSync(channelPref.getValue());
     }
     
     public int calculateUserChannels(NnUser user) {

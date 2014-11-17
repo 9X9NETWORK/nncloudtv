@@ -41,6 +41,9 @@ public class NnChannel implements Serializable {
     @NotPersistent
     private String moreImageUrl;
     
+    @NotPersistent
+    private String bannerImageUrl;
+    
     //be warned: for youtube channels, imageUrl actually include 3 imageUrls, separated by "|"
     //related functions are: getMoreImageUrl(three episode), 
     //                       getPlayerPrefImageUrl(reflect the status), 
@@ -674,5 +677,13 @@ public class NnChannel implements Serializable {
     
     public void setPaidChannel(boolean paidChannel) {
         this.paidChannel = paidChannel;
+    }
+    
+    public String getBannerImageUrl() {
+        return bannerImageUrl;
+    }
+    
+    public void setBannerImageUrl(String bannerImageUrl) {
+        this.bannerImageUrl = bannerImageUrl;
     }
 }

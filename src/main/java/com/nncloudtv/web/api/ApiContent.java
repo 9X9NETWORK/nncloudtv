@@ -856,6 +856,7 @@ public class ApiContent extends ApiGeneric {
         if (channel.isReadonly() == false) {
             channelMngr.populateMoreImageUrl(channel);
         }
+        channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
         
@@ -867,15 +868,15 @@ public class ApiContent extends ApiGeneric {
     NnChannel channelUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        
         NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
             notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -888,56 +889,56 @@ public class ApiContent extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null) {
             channel.setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // lang
-        String lang = req.getParameter("lang");
+        String lang = ctx.getParam("lang");
         if (lang != null) {
             channel.setLang(lang);
         }
         
         // sphere
-        String sphere = req.getParameter("sphere");
+        String sphere = ctx.getParam("sphere");
         if (sphere != null) {
             channel.setSphere(sphere);
         }
         
         // isPublic
-        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"));
+        Boolean isPublic = NnStringUtil.evalBool(ctx.getParam("isPublic"));
         if (isPublic != null) {
             channel.setPublic(isPublic);
         }
         
         // paidChannel
-        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"));
+        Boolean paidChannel = NnStringUtil.evalBool(ctx.getParam("paidChannel"));
         if (paidChannel != null) {
             channel.setPaidChannel(paidChannel);
         }
         
         // tag
-        String tag = req.getParameter("tag");
+        String tag = ctx.getParam("tag");
         if (tag != null) {
             channel.setTag(tag);
         }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
+        String imageUrl = ctx.getParam("imageUrl");
         if (imageUrl != null) {
             channel.setImageUrl(imageUrl);
         }
         
         // categoryId
         Long categoryId = null;
-        String categoryIdStr = req.getParameter("categoryId");
+        String categoryIdStr = ctx.getParam("categoryId");
         if (categoryIdStr != null) {
             
             categoryId = NnStringUtil.evalLong(categoryIdStr);
@@ -948,14 +949,14 @@ public class ApiContent extends ApiGeneric {
         }
         
         // updateDate
-        String updateDateStr = req.getParameter("updateDate");
+        String updateDateStr = ctx.getParam("updateDate");
         if (updateDateStr != null) {
             channel.setUpdateDate(NnDateUtil.now());
         }
         
         // sorting
         Short sorting = null;
-        String sortingStr = req.getParameter("sorting");
+        String sortingStr = ctx.getParam("sorting");
         if (sortingStr != null) {
             sorting = NnStringUtil.evalShort(sortingStr);
             if (sorting != null) {
@@ -965,14 +966,15 @@ public class ApiContent extends ApiGeneric {
         }
         
         // status
-        Short status = NnStringUtil.evalShort(req.getParameter("status"));
+        Short status = NnStringUtil.evalShort(ctx.getParam("status"));
         if (status != null && status != channel.getStatus()) {
             user.setProfile(NNF.getProfileMngr().pickupBestProfile(user));
             if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_SYSTEM_STORE))
                 channel.setStatus(status);
         }
         
-        String autoSync = req.getParameter("autoSync");
+        // autoSync
+        String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
             NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
             if (autosyncPref == null) {
@@ -986,15 +988,27 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
+        // bannerImageUrl
+        String bannerImage = ctx.getParam("bannerImageUrl");
+        if (bannerImage != null) {
+            NnChannelPref bannerImagePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+            if (bannerImagePref == null)
+                bannerImagePref = new NnChannelPref(channel.getId(), NnChannelPref.BANNER_IMAGE, bannerImage);
+            else
+                bannerImagePref.setValue(bannerImage);
+            NNF.getChPrefMngr().save(bannerImagePref);
+        }
+        
         channel = NNF.getChannelMngr().save(channel);
         
         // syncNow
-        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+        if (NnStringUtil.evalBool(ctx.getParam("syncNow"), false)) {
             
             channel = NnChannelManager.syncNow(channel);
         }
         
         channelMngr.populateCategoryId(channel);
+        channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
         

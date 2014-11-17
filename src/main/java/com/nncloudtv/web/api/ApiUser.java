@@ -298,7 +298,9 @@ public class ApiUser extends ApiGeneric {
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.POST)
     public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
+        
         ApiContext ctx = new ApiContext(req);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -407,7 +409,7 @@ public class ApiUser extends ApiGeneric {
             channel.setContentType(contentType);
         }
         
-        channel = NNF.getChannelMngr().save(channel);
+        channel = channelMngr.save(channel);
         
         // syncNow
         if (NnStringUtil.evalBool(ctx.getParam("syncNow"), false)) {
@@ -421,21 +423,32 @@ public class ApiUser extends ApiGeneric {
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
+        // autoSync
         String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
             NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-            if (autosyncPref == null) {
-                
+            if (autosyncPref == null)
                 autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-            }
             autosyncPref.setValue(autoSync);
             NNF.getChPrefMngr().save(autosyncPref);
         }
         
-        NNF.getChannelMngr().reorderUserChannels(user);
-        NNF.getChannelMngr().populateCategoryId(channel);
-        NNF.getChannelMngr().populateAutoSync(channel);
-        NNF.getChannelMngr().normalize(channel);
+        // bannerImageUrl
+        String bannerImage = ctx.getParam("bannerImageUrl");
+        if (bannerImage != null) {
+            NnChannelPref bannerImagePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+            if (bannerImagePref == null)
+                bannerImagePref = new NnChannelPref(channel.getId(), NnChannelPref.BANNER_IMAGE, bannerImage);
+            else
+                bannerImagePref.setValue(bannerImage);
+            NNF.getChPrefMngr().save(bannerImagePref);
+        }
+        
+        channelMngr.reorderUserChannels(user);
+        channelMngr.populateCategoryId(channel);
+        channelMngr.populateBannerImageUrl(channel);
+        channelMngr.populateAutoSync(channel);
+        channelMngr.normalize(channel);
         
         return channel;
     }
