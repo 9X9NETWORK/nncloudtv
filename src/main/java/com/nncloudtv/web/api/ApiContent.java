@@ -313,6 +313,7 @@ public class ApiContent extends ApiGeneric {
     NnProgram programUpdate(@PathVariable("programId") String programIdStr,
             HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         Long programId = null;
         try {
             programId = Long.valueOf(programIdStr);
@@ -329,7 +330,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -341,25 +342,25 @@ public class ApiContent extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null) {
             program.setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             program.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
         }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
+        String imageUrl = ctx.getParam("imageUrl");
         if (imageUrl != null) {
             program.setImageUrl(imageUrl);
         }
         
         // subSeq
-        String subSeqStr = req.getParameter("subSeq");
+        String subSeqStr = ctx.getParam("subSeq");
         if (subSeqStr != null && subSeqStr.length() > 0) {
             Short subSeq = null;
             try {
@@ -375,35 +376,19 @@ public class ApiContent extends ApiGeneric {
         }
         
         // startTime
-        String startTimeStr = req.getParameter("startTime");
-        if (startTimeStr != null) {
-            Integer startTime = NnStringUtil.evalInt(startTimeStr);
-            if (startTime != null && startTime >= 0) {
-                program.setStartTime(startTime);
-            }
-        }
+        Short startTime = NnStringUtil.evalShort(ctx.getParam("startTime"));
+        if (startTime != null)
+            program.setStartTime(startTime);
         
         // endTime
-        String endTimeStr = req.getParameter("endTime");
-        if (endTimeStr != null) {
-            Integer endTime = NnStringUtil.evalInt(endTimeStr);
-            if (endTime != null && endTime >= program.getStartTimeInt()) {
-                program.setEndTime(endTime);
-            }
-        }
+        Short endTime = NnStringUtil.evalShort(ctx.getParam("endTime"));
+        if (endTime != null)
+            program.setEndTime(endTime);
         
-        // update duration = endTime - startTime
-        if (program.getEndTimeInt() == program.getStartTimeInt()) {
-            
-        } else if (program.getEndTimeInt() - program.getStartTimeInt() > 0) {
-            
-            program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
-            
-        } else {
-            // ex : new start = 10, old end = 5
-            badRequest(resp, INVALID_PARAMETER);
-            return null;
-        }
+        // duration
+        Short duration = NnStringUtil.evalShort(ctx.getParam("duration"));
+        if (duration != null)
+            program.setDuration(duration);
         
         program = NNF.getProgramMngr().save(program);
         
@@ -517,6 +502,7 @@ public class ApiContent extends ApiGeneric {
     NnProgram programCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("episodeId") String episodeIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long episodeId = null;
         try {
             episodeId = Long.valueOf(episodeIdStr);
@@ -532,7 +518,7 @@ public class ApiContent extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -544,7 +530,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -552,13 +538,13 @@ public class ApiContent extends ApiGeneric {
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             intro = NnStringUtil.htmlSafeAndTruncated(intro);
         }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
+        String imageUrl = ctx.getParam("imageUrl");
         if (imageUrl == null) {
             imageUrl = NnChannel.IMAGE_WATERMARK_URL;
         }
@@ -567,7 +553,7 @@ public class ApiContent extends ApiGeneric {
         program.setPublic(true);
         
         // fileUrl
-        String fileUrl = req.getParameter("fileUrl");
+        String fileUrl = ctx.getParam("fileUrl");
         if (fileUrl == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -576,7 +562,7 @@ public class ApiContent extends ApiGeneric {
         
         // contentType
         program.setContentType(NnProgram.CONTENTTYPE_YOUTUBE);
-        String contentTypeStr = req.getParameter("contentType");
+        String contentTypeStr = ctx.getParam("contentType");
         if (contentTypeStr != null) {
             
             Short contentType = NnStringUtil.evalShort(contentTypeStr);
@@ -588,58 +574,28 @@ public class ApiContent extends ApiGeneric {
         }
         
         // duration
-        String durationStr = req.getParameter("duration");
-        if (durationStr == null) {
-            
+        Short duration = NnStringUtil.evalShort(ctx.getParam("duration"));
+        if (duration == null)
             program.setDuration((short) 0);
-            
-        } else {
-            
-            Short duration = NnStringUtil.evalShort(durationStr);
-            if ((duration == null) || (duration < 0)) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        else
             program.setDuration(duration);
-        }
         
         // startTime
-        String startTimeStr = req.getParameter("startTime");
-        if (startTimeStr == null) {
-            
+        Short startTime = NnStringUtil.evalShort(ctx.getParam("startTime"));
+        if (startTime == null)
             program.setStartTime(0);
-            
-        } else {
-            
-            Short startTime = NnStringUtil.evalShort(startTimeStr);
-            if ((startTime == null) || (startTime < 0)) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        else
             program.setStartTime(startTime);
-        }
         
         // endTime
-        String endTimeStr = req.getParameter("endTime");
-        if (endTimeStr == null) {
-            
-            program.setEndTime(program.getStartTimeInt() + program.getDurationInt());
-            
-        } else {
-            
-            Short endTime = NnStringUtil.evalShort(endTimeStr);
-            if ((endTime == null) || (endTime < program.getStartTimeInt()) ) {
-                badRequest(resp, INVALID_PARAMETER);
-                return null;
-            }
+        Short endTime = NnStringUtil.evalShort(ctx.getParam("endTime"));
+        if (endTime == null)
+            program.setEndTime(0);
+        else
             program.setEndTime(endTime);
-        }
-        
-        // duration = endTime - startTime
-        program.setDuration((short)(program.getEndTimeInt() - program.getStartTimeInt()));
         
         // subSeq
-        String subSeqStr = req.getParameter("subSeq");
+        String subSeqStr = ctx.getParam("subSeq");
         if (subSeqStr == null || subSeqStr.isEmpty()) {
             
             program.setSubSeq(0);
