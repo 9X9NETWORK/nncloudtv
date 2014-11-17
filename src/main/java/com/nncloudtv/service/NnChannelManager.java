@@ -1263,7 +1263,7 @@ public class NnChannelManager {
         
         if (channel == null) return;
         
-        NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
+        NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
         if (channelPref != null)
             channel.setBannerImageUrl(channelPref.getValue());
     }
