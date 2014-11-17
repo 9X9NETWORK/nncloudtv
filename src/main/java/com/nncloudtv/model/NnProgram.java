@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 import javax.jdo.annotations.*;
 
@@ -14,9 +13,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Episode: aka NnEpisode. Only 9x9 programs has "episode". It is "super-program", store each sub-episode's metadata.    
  */
 @PersistenceCapable(table = "nnprogram", detachable = "true")
-public class NnProgram implements Serializable {
-    
-    private static final long serialVersionUID = 5553891672235566066L;
+public class NnProgram {
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -38,7 +35,7 @@ public class NnProgram implements Serializable {
     
     @Persistent
     private short contentType;
-    public static final short CONTENTTYPE_DIRECTLINK = 0; // direct link (not specifying type)
+    public static final short CONTENTTYPE_UNKNOWN    = 0; // not specified explicitly
     public static final short CONTENTTYPE_YOUTUBE    = 1; // 3rd party
     public static final short CONTENTTYPE_SCRIPT     = 2; // (not used)
     public static final short CONTENTTYPE_RADIO      = 3; // (not used)

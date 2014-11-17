@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -12,14 +11,13 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.CounterFactory;
 
-@PersistenceCapable(table="nnepisode", detachable="true")
-public class NnEpisode implements Serializable {
-    
-    private static final long serialVersionUID = -2365225197711392350L;
+@PersistenceCapable(table = "nnepisode", detachable = "true")
+public class NnEpisode {
     
     protected static final Logger log = Logger.getLogger(NnEpisode.class.getName());
     
@@ -85,7 +83,7 @@ public class NnEpisode implements Serializable {
     
     public NnEpisode(long channelId) {
         this.channelId = channelId;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.updateDate = now;
         this.publishDate = now;
     } 
@@ -93,79 +91,79 @@ public class NnEpisode implements Serializable {
     public long getId() {
         return id;
     }
-
+    
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getImageUrl() {
         return imageUrl;
     }
-
+    
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
+    
     public String getIntro() {
         return intro;
     }
-
+    
     public void setIntro(String intro) {
         this.intro = intro;
     }
-
+    
     public Date getPublishDate() {
         return publishDate;
     }
-
+    
     public void setPublishDate(Date publishDate) {
         this.publishDate = publishDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public long getChannelId() {
         return channelId;
     }
-
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
-
-	public boolean isPublic() {
-		return isPublic;
-	}
-
-	public boolean getIsPublic() {
+    
+    public boolean isPublic() {
         return isPublic;
     }
-	
-	public void setPublic(boolean isPublic) {
-		this.isPublic = isPublic;
-	}
-
-	public int getSeq() {
-		return seq;
-	}
-
-	public void setSeq(int seq) {
-		this.seq = seq;
-	}
-
+    
+    public boolean getIsPublic() {
+        return isPublic;
+    }
+    
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+    
+    public int getSeq() {
+        return seq;
+    }
+    
+    public void setSeq(int seq) {
+        this.seq = seq;
+    }
+    
     public long getCntView() {
         //v_ch10514_e21688
         String cacheName = "u_ch" + channelId + "_e" + id;
