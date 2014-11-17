@@ -79,8 +79,9 @@ public class CounterFactory {
         if (shards.isEmpty())
             shards.add(addShard(getOrCreateCounter(counterName)));
         int index = 0;
+        int shardSize = shards.size();
         Random random = new Random(NnDateUtil.timestamp());
-        index = random.nextInt(shards.size());
+        index = random.nextInt(shardSize);
         CounterShard randShard = shards.get(index);
         randShard.increment(amount);
         NNF.getShardDao().save(randShard);
@@ -90,9 +91,7 @@ public class CounterFactory {
             sum += shardCounter.getCount();
         }
         
-        if ((sum - index * 10) % 10000 == 0) {
-            Counter counter = getOrCreateCounter(counterName);
-            counter.setNumShards(shards.size());
+        if (sum - index * 10 > shardSize * shardSize * 10000) {
             /**
              * Sharding Formula
              * 
@@ -108,10 +107,13 @@ public class CounterFactory {
              * @author Louis Jeng <louis.jeng@flipr.tv>
              */
             int numShards = (int) Math.sqrt(sum) / 100 + 1; // Sharding Formula
+            Counter counter = getOrCreateCounter(counterName);
             System.out.println(String.format("[counter] \"%s\" shard number = %d (%d expected), count = %d",
                                    counter.getCounterName(), counter.getNumShards(), numShards, sum));
-            if (numShards > counter.getNumShards())
+            if (numShards > shardSize) {
+                counter.setNumShards(shardSize);
                 addShard(counter); // auto sharding
+            }
         }
     }
     
