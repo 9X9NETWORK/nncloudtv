@@ -106,6 +106,18 @@ public class ApiContext {
         init(req);
     }
     
+    public String getParam(String name) {
+        
+        return getParam(name, null);
+    }
+    
+    public String getParam(String name, String defaultValue) {
+        
+        String value = httpReq.getParameter(name);
+        
+        return value == null ? defaultValue : value;
+    }
+    
     private void init(HttpServletRequest req) {
         
         MsoManager msoMngr = NNF.getMsoMngr();
@@ -265,5 +277,15 @@ public class ApiContext {
     public static NnUser getAuthenticatedUser(HttpServletRequest req) {
         
         return getAuthenticatedUser(req, MsoManager.getSystemMsoId());
+    }
+    
+    public NnUser getAuthenticatedUser(long msoId) {
+        
+        return getAuthenticatedUser(httpReq, msoId);
+    }
+    
+    public NnUser getAuthenticatedUser() {
+        
+        return getAuthenticatedUser(httpReq, MsoManager.getSystemMsoId());
     }
 }
