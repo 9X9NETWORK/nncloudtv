@@ -191,11 +191,11 @@ public class NnChannelDao extends GenericDao<NnChannel> {
     }    
     
     //select id from nnchannel where poolType > 10 order by rand() limit 10;
-    public List<NnChannel> findSpecial(short type, String lang, int limit) {
+    public List<NnChannel> findSpecial(short type, String sphere, int limit) {
         
         String query = "SELECT * FROM nnchannel " 
                      + "        WHERE poolType >= " + type 
-                     + "          AND (sphere = '" + lang + "' OR sphere = 'other') "
+                     + "          AND (sphere = " + NnStringUtil.escapedQuote(sphere) + " OR sphere = 'other') "
                      + "     ORDER BY rand() ";
         
         if (limit > 0) 

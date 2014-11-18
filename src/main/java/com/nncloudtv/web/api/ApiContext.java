@@ -1,5 +1,6 @@
 package com.nncloudtv.web.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
@@ -18,6 +21,8 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnStatusMsg;
+import com.nncloudtv.web.json.player.ApiStatus;
 
 public class ApiContext {
     
@@ -261,5 +266,57 @@ public class ApiContext {
     public NnUser getAuthenticatedUser() {
         
         return getAuthenticatedUser(httpReq, MsoManager.getSystemMsoId());
+    }
+    
+    /**
+     * assemble final output to player
+     * 1. status line in the front
+     * 2. raw: for each section needs to be separated by separator string, "--\n"
+     * @param ctx TODO
+     */
+    public Object assemblePlayerMsgs(int status, Object data) {
+        if (format == ApiContext.FORMAT_JSON) {
+            ApiStatus apiStatus = new ApiStatus();
+            apiStatus.setCode(status);
+            apiStatus.setMessage(NnStatusMsg.getPlayerMsgText(status));
+            apiStatus.setData(data);
+            return apiStatus;
+        }
+        String result = NnStatusMsg.getPlayerMsg(status);
+        String[] raw = (String[]) data;
+        String separatorStr = "--\n";
+        if (raw != null && raw.length > 0) {
+            result = result + separatorStr;
+            for (String s : raw) {
+                if (s != null) {
+                    s = s.replaceAll("null", "");
+                }
+                result += s + separatorStr;
+            }
+        }
+        if (result.substring(result.length()-3, result.length()).equals(separatorStr)) {
+            result = result.substring(0, result.length()-3);
+        }
+        return result;
+    }
+    
+    public Object assemblePlayerMsgs(int status) {
+        
+        return assemblePlayerMsgs(status, null);
+    }
+    
+    public Object playerResponse(Object output, HttpServletResponse resp) {
+        
+        if (format == ApiContext.FORMAT_PLAIN) {
+            try {
+                resp.setContentType(ApiGeneric.PLAIN_TEXT_UTF8);
+                resp.getWriter().print(output);
+                resp.flushBuffer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        return output;
     }
 }

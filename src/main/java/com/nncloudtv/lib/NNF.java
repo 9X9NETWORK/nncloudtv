@@ -56,6 +56,7 @@ import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.NotificationService;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
 import com.nncloudtv.service.PoiManager;
@@ -105,12 +106,13 @@ public class NNF {
     protected static NnItemManager          itemMngr            = null;
     protected static TitleCardManager       titleCardMngr       = null;
     
-    protected static SetService      setService      = null;
-    protected static CategoryService categoryService = null;
-    protected static DepotService    depotService    = null;
-    protected static EmailService    emailService    = null;
-    protected static NotificationService notiService = null;
-    protected static BillingService  billingService  = null;
+    protected static SetService       setService       = null;
+    protected static CategoryService  categoryService  = null;
+    protected static DepotService     depotService     = null;
+    protected static EmailService     emailService     = null;
+    protected static NotificationService notiService   = null;
+    protected static BillingService   billingService   = null;
+    protected static PlayerApiService playerApiService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -525,6 +527,17 @@ public class NNF {
         }
         
         return billingService;
+    }
+    
+    public static PlayerApiService getPlayerApiService() {
+        
+        if (playerApiService == null) {
+            
+            log.info("create playerApiService");
+            playerApiService = new PlayerApiService();
+        }
+        
+        return playerApiService;
     }
     
     public static StoreListingManager getStoreListingMngr() {

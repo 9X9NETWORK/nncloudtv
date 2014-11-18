@@ -48,8 +48,8 @@ public class YtChannelManager {
     	return channel;
     }
     
-    public Object findRecommend(String userToken, String lang, int version, short format) {
-        List<YtChannel> channels = this.findRandomChannels(userToken, lang);
+    public Object findRecommend(String userToken, String sphere, int version, short format) {
+        List<YtChannel> channels = this.findRandomChannels(userToken, sphere);
         List<ChannelLineup> objs = new ArrayList<ChannelLineup>();
         String output = "";
         for (YtChannel c : channels) {
@@ -64,13 +64,13 @@ public class YtChannelManager {
         } else {
             List<String> result = new ArrayList<String>();
             result.add(output);
-	        String size[] = new String[result.size()];	                    
+	        String size[] = new String[result.size()];
 	        return result.toArray(size);
         }
     }
     
-    public List<YtChannel> findRandomChannels(String userToken, String lang) {
-        return dao.findRandomTen(lang);
+    public List<YtChannel> findRandomChannels(String userToken, String sphere) {
+        return dao.findRandomTen(sphere);
     }    
     
     public Object composeEachChannelLineup(YtChannel c, int version, short format) {

@@ -284,6 +284,7 @@ public class NnUserManager {
         return user;
     }
     
+    // TODO rewrite
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
         short shard = getShardByLocale(req);
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
@@ -409,7 +410,7 @@ public class NnUserManager {
         return user;
     }
     
-    public String composeCuratorInfo(List<NnUser> users, boolean chCntLimit, boolean isAllChannel, HttpServletRequest req, int version) {
+    public String composeCuratorInfo(ApiContext ctx, List<NnUser> users, boolean chCntLimit, boolean isAllChannel) {
         log.info("looking for all channels of a curator?" + isAllChannel);
         String result = "";
         NnChannelManager chMngr = NNF.getChannelMngr();
@@ -426,11 +427,11 @@ public class NnUserManager {
             if (channels.size() > 0) {
                 ch = channels.get(0).getIdStr();
             }
-            result += this.composeCuratorInfoStr(u, ch, req) + "\n";
+            result += this.composeCuratorInfoStr(u, ch, ctx) + "\n";
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext(req));
+        result += chMngr.composeChannelLineup(curatorChannels, ctx);
         return result;
     }
     
@@ -442,12 +443,12 @@ public class NnUserManager {
         return "";
     }
     
-    public String composeCuratorInfoStr(NnUser user, String channelId, HttpServletRequest req) {
+    public String composeCuratorInfoStr(NnUser user, String channelId, ApiContext ctx) {
         //#!curator=xxxxxxxx
         String profileUrl = "";
         NnUserProfile profile = user.getProfile();
         if (profile.getProfileUrl() != null) {
-            profileUrl = NnNetUtil.getUrlRoot(req) + "/#!curator=" + profile.getProfileUrl();
+            profileUrl = ctx.getRoot() + "/#!curator=" + profile.getProfileUrl();
         }
         
         String[] info = {

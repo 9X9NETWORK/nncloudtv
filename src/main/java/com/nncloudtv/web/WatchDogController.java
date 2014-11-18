@@ -199,9 +199,10 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         
-        PlayerApiService service = new PlayerApiService();
-        service.prepService(new ApiContext(req));
-        String output = (String) service.assembleMsgs(NnStatusCode.SUCCESS, result);
+        PlayerApiService service = NNF.getPlayerApiService();
+        ApiContext ctx = new ApiContext(req);
+        service.prepService(ctx);
+        String output = (String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    
     

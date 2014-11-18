@@ -138,12 +138,13 @@ public class HelloController {
             @RequestParam(value="mso", required=false) String msoName,
             @RequestParam(value="program", required=false) String program) { 
         PlayerApiService apiservice = new PlayerApiService();
-        apiservice.prepService(new ApiContext(req));
+        ApiContext ctx = new ApiContext(req);
+        apiservice.prepService(ctx);
         String detail = " w\t" + channel + "\t" + program;
         System.out.println("detail:" + detail);
-        String result = (String) apiservice.pdr(userToken, null, "1", detail, req);       
+        String result = (String) apiservice.pdr(ctx, userToken, null, "1", detail);
         return result;
-    }                
+    }
     
     //cache test
     @RequestMapping("cache")

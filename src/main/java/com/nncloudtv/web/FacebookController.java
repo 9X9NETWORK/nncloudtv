@@ -24,10 +24,9 @@ import com.nncloudtv.web.json.facebook.FBPost;
 public class FacebookController {
     protected static final Logger log = Logger.getLogger(FacebookController.class.getName());
 
-    @RequestMapping("login")    
+    @RequestMapping("login")
     public String login(
-            HttpServletRequest req,
-            HttpServletResponse resp,            
+            HttpServletRequest req, HttpServletResponse resp,
             @RequestParam(value="uri", required=false) String uri,
             @RequestParam(value="mso", required=false) String mso,
             @RequestParam(value="stage", required=false) String stage,
@@ -52,7 +51,7 @@ public class FacebookController {
             log.info("FACEBOOK: (login) back from access token request");
             if (data[0] != null) {               
                 log.info("FACEBOOK: (login) going to use data from facebook");
-                new PlayerApiService().fbWebSignup(data[0], data[1], mso, req, resp);
+                new PlayerApiService().fbWebSignup(new ApiContext(req), data[0], data[1], mso, resp);
                 log.info("FACEBOOK: (login) have used data from facebook to create a 9x9 account");
             }                         
         }
