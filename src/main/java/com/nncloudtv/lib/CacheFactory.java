@@ -17,6 +17,7 @@ import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.internal.CheckedOperationTimeoutException;
 
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.api.ApiContext;
@@ -181,6 +182,8 @@ public class CacheFactory {
         }
         if (obj == null)
             System.out.println(String.format("[memcache] %s --> missed", key));
+        else
+            CounterFactory.increment("HIT " + key); // HIT
         return obj;
     }
     
