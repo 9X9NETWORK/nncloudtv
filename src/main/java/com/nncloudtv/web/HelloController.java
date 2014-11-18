@@ -137,7 +137,7 @@ public class HelloController {
             @RequestParam(value="mso", required=false) String msoName,
             @RequestParam(value="program", required=false) String program) { 
         PlayerApiService apiservice = new PlayerApiService();
-        apiservice.prepService(req, resp, true);
+        apiservice.prepService(req, true);
         String detail = " w\t" + channel + "\t" + program;
         System.out.println("detail:" + detail);
         String result = (String) apiservice.pdr(userToken, null, "1", detail, req);       

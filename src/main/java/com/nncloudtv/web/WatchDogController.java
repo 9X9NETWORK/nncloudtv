@@ -200,7 +200,7 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         
         PlayerApiService s = new PlayerApiService();
-        s.prepService(req, resp);        
+        s.prepService(req);        
         String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    

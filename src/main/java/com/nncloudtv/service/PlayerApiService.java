@@ -80,6 +80,7 @@ import com.nncloudtv.model.YtProgram;
 import com.nncloudtv.validation.BasicValidator;
 import com.nncloudtv.validation.NnUserValidator;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.ApiStatus;
@@ -102,7 +103,6 @@ public class PlayerApiService {
     public final static int   MAX_EPISODES   = 200;
     
     private ApiContext ctx = null;
-    HttpServletResponse resp;
     
     @Override
     protected void finalize() throws Throwable {
@@ -110,14 +110,12 @@ public class PlayerApiService {
         NnLogUtil.logFinalize(getClass().getName());
     }
     
-    public int prepService(HttpServletRequest req, HttpServletResponse resp) {
+    public int prepService(HttpServletRequest req) {
         
-        return prepService(req, resp, true);
+        return prepService(req, true);
     }
     
-    public int prepService(HttpServletRequest req, HttpServletResponse resp, boolean toLog) {
-        
-        this.resp = resp;
+    public int prepService(HttpServletRequest req, boolean toLog) {
         
         req.getSession().setMaxInactiveInterval(60);
         
@@ -156,11 +154,11 @@ public class PlayerApiService {
             return checkRO();
     }
     
-    public Object response(Object output) {
+    public Object response(HttpServletResponse resp, Object output) {
         
         if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
             try {
-                resp.setContentType("text/plain;charset=utf-8");
+                resp.setContentType(ApiGeneric.PLAIN_TEXT_UTF8);
                 resp.getWriter().print(output);
                 resp.flushBuffer();
             } catch (IOException e) {
