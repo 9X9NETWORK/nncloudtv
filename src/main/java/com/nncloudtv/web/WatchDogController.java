@@ -199,12 +199,12 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         
-        PlayerApiService s = new PlayerApiService();
-        s.prepService(req);        
-        String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
+        PlayerApiService service = new PlayerApiService();
+        service.prepService(new ApiContext(req));
+        String output = (String) service.assembleMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    
-
+    
     @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel, HttpServletRequest req) {

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NnLogUtil;
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.facebook.FBPost;
@@ -37,12 +36,12 @@ public class FacebookController {
             @RequestParam(value="errorReason", required=false) String errorReason,
             @RequestParam(value="errorDescription", required=false) String errorDescription,
             @RequestParam(value="accessToken", required=false) String accessToken,
-            @RequestParam(value="expirse", required=false) String expires                    
-            ) throws IOException {
+            @RequestParam(value="expirse", required=false) String expires) throws IOException {
+        
         log.info("FACEBOOK: (login) - back from facebook page(uri):" + uri);
-        NnNetUtil.logUrl(req);
+        NnLogUtil.logUrl(req);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
-        log.info("FACEBOOK: (login) - our cookie:" + userCookie);                                                      
+        log.info("FACEBOOK: (login) - our cookie:" + userCookie);
         log.info("FACEBOOK: (login) error:" + error + ";errorReason:" + errorReason + 
                             ";errorDescription:" + errorDescription + 
                             ";accessToken:" + accessToken + ";stage:" + stage);

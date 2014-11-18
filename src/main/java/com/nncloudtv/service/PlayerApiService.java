@@ -110,19 +110,13 @@ public class PlayerApiService {
         NnLogUtil.logFinalize(getClass().getName());
     }
     
-    public int prepService(HttpServletRequest req) {
+    public int prepService(ApiContext ctx) {
         
-        return prepService(req, true);
-    }
-    
-    public int prepService(HttpServletRequest req, boolean toLog) {
+        HttpServletRequest req = ctx.getReq();
         
         req.getSession().setMaxInactiveInterval(60);
         
-        if (toLog)
-            NnNetUtil.logUrl(req);
-        
-        this.ctx = new ApiContext(req);
+        NnLogUtil.logUrl(req);
         
         MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(ctx.getMso(), MsoConfig.APP_EXPIRE);
         if (brandExpireConfig != null) {
