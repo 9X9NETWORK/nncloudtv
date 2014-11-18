@@ -307,18 +307,26 @@ public class MsoConfigManager {
         
         String cacheKey = CacheFactory.getMaoConfigKey(mso.getId(), item);
         try {
-            MsoConfig result = (MsoConfig)CacheFactory.get(cacheKey);
+            MsoConfig result = (MsoConfig) CacheFactory.get(cacheKey);
             if (result != null){
-                log.fine("value from cache: key=" + cacheKey + ", value=" + result.getValue());
-                return result;
+                if (result.getValue() == null || result.getValue().isEmpty()) {
+                    log.fine("empty config from cache: key=" + cacheKey);
+                    return null;
+                } else {
+                    log.fine("value from cache: key=" + cacheKey + ", value=" + result.getValue());
+                    return result;
+                }
             }    
         } catch (Exception e) {
             log.info("memcache error");
         }
-        MsoConfig config = this.findByMsoAndItem(mso, item);
+        MsoConfig config = findByMsoAndItem(mso, item);
         if (config != null) {
             log.info("set value to cache: key=" + cacheKey + ", value=" + config.getValue());
             CacheFactory.set(cacheKey, config);
+        } else {
+            log.info("set empty config to cache: key=" + cacheKey);
+            CacheFactory.set(cacheKey, new MsoConfig());
         }
         return config;
         
