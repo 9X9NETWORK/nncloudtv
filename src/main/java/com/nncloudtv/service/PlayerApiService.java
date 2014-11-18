@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Service;
 
-import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.exception.NotPurchasedException;
@@ -140,17 +139,6 @@ public class PlayerApiService {
             return NnStatusCode.API_FORCE_UPGRADE;
         else
             return checkRO();
-    }
-    
-    public Object handleException(Exception e, ApiContext ctx) {
-        if (e.getClass().equals(NumberFormatException.class)) {
-            return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
-        } else if (e.getClass().equals(CommunicationsException.class)) {
-            log.info("return db error");
-            return ctx.assemblePlayerMsgs(NnStatusCode.DATABASE_ERROR);
-        }
-        NnLogUtil.logException(e);
-        return ctx.assemblePlayerMsgs(NnStatusCode.ERROR);
     }
     
     //assemble key and value string

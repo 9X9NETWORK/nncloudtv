@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.common.base.Joiner;
+import com.mysql.jdbc.CommunicationsException;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
@@ -320,4 +321,14 @@ public class ApiContext {
         return output;
     }
     
+    public Object handlePlayerException(Exception e) {
+        if (e.getClass().equals(NumberFormatException.class)) {
+            return assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
+        } else if (e.getClass().equals(CommunicationsException.class)) {
+            log.info("return db error");
+            return assemblePlayerMsgs(NnStatusCode.DATABASE_ERROR);
+        }
+        NnLogUtil.logException(e);
+        return assemblePlayerMsgs(NnStatusCode.ERROR);
+    }
 }
