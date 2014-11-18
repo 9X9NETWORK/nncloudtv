@@ -305,7 +305,7 @@ public class ApiContext {
         return assemblePlayerMsgs(status, null);
     }
     
-    public Object playerResponse(Object output, HttpServletResponse resp) {
+    public Object playerResponse(HttpServletResponse resp, Object output) {
         
         if (format == ApiContext.FORMAT_PLAIN) {
             try {

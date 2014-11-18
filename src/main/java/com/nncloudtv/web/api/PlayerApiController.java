@@ -166,15 +166,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.guestRegister(ctx, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     } 
     
     /**
@@ -198,10 +198,10 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.relatedApps(ctx, stack, sphere);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
@@ -250,15 +250,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.signup(ctx, email, password, name, userToken, captcha, text, sphere, uiLang, year, gender, isTemp, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -296,15 +296,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.fbDeviceSignup(ctx, me, expire, msoString, resp);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
         
      }
     
@@ -329,15 +329,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.userTokenVerify(ctx, token, resp);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -356,17 +356,17 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             CookieHelper.deleteCookie(resp, CookieHelper.USER);
             CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
             output = NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -405,14 +405,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.brandInfo(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     //http://stackoverflow.com/questions/4403643/supporting-multiple-content-types-in-a-spring-mvc-controller/4404881#4404881
@@ -476,16 +476,16 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean flatten = Boolean.parseBoolean(isFlatten);
             output = playerApiService.category(ctx, category, flatten);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -572,11 +572,11 @@ public class PlayerApiController {
             }
             output = playerApiService.pdr(ctx, userToken, deviceToken, session, pdr);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -626,15 +626,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.setInfo(ctx, id, name, time, isProgramInfo);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /** 
@@ -668,15 +668,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }                                    
             output = playerApiService.tagInfo(ctx, name, start, count);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /** 
@@ -719,16 +719,16 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
             output = playerApiService.categoryInfo(ctx, id, tag, start, count, sort, isProgramInfo);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
         
     /**
@@ -761,14 +761,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.subscribe(ctx, userToken, channelId, gridId);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -803,15 +803,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.unsubscribe(ctx, userToken, channelId, grid, pos);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -840,16 +840,16 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean isReduced= Boolean.parseBoolean(reduced);
             output = playerApiService.channelStack(ctx, stack, sphere, userToken, channel, isReduced);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -876,7 +876,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             if (channelIdStr == null)
                 ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
@@ -885,11 +885,11 @@ public class PlayerApiController {
             
             output = playerApiService.shareInChannelList(ctx, channelId);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -995,7 +995,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             boolean isSetInfo  = Boolean.parseBoolean(setInfo);
             boolean isRequired = Boolean.parseBoolean(required);
@@ -1003,11 +1003,11 @@ public class PlayerApiController {
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
             output = playerApiService.channelLineup(ctx, userToken, curatorIdStr, subscriptions, isUserInfo, channelIds, isSetInfo, isRequired, isReduced, isProgramInfo, sort);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1028,11 +1028,11 @@ public class PlayerApiController {
             playerApiService.prepService(ctx);
             output = playerApiService.subscriberLineup(ctx, userToken, curatorIdStr);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1110,18 +1110,18 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(ctx, channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (NotPurchasedException e){
             output = ctx.assemblePlayerMsgs(NnStatusCode.IAP_NOT_PURCHASED);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1160,15 +1160,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.channelSubmit(ctx, categoryIds, userToken, url, grid, name, image, tags);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1205,15 +1205,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.login(ctx, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1240,15 +1240,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.setUserPref(ctx, user, key, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1274,15 +1274,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.setSetInfo(ctx, userToken, name, pos);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1303,14 +1303,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.staticContent(ctx, key);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1333,15 +1333,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.deviceRegister(ctx, userToken, type, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1361,15 +1361,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.listrecommended(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1391,15 +1391,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.deviceTokenVerify(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1423,15 +1423,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.deviceAddUser(ctx, deviceToken, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1455,14 +1455,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.deviceRemoveUser(ctx, deviceToken, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1497,7 +1497,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }            
             String query = req.getQueryString();
             String[] params = query.split("&");
@@ -1512,11 +1512,11 @@ public class PlayerApiController {
                 comment = value;
             output = playerApiService.userReport(ctx, user, device, session, type, item, comment);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1550,7 +1550,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             String query = req.getQueryString();
             String[] params = query.split("&");
@@ -1562,11 +1562,11 @@ public class PlayerApiController {
             log.info("set user profile: key(" + key + ");value(" + value + ")");
             output = playerApiService.setUserProfile(ctx, user, key, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -1587,15 +1587,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.forgotpwd(ctx, email);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1620,15 +1620,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.resetpwd(ctx, email, token, password);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -1651,15 +1651,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.getUserProfile(ctx, user);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1693,15 +1693,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.shareByEmail(ctx, userToken, toEmail, toName, subject, content, captcha, text);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1725,15 +1725,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.requestCaptcha(ctx, token, action);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1760,14 +1760,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.saveSorting(ctx, userToken, channelId, sorting);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1833,14 +1833,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.personalHistory(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1869,17 +1869,17 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean isChannelInfo = Boolean.parseBoolean(channelInfo);
             boolean isEpisodeIndex = Boolean.parseBoolean(episodeIndex);
             output = playerApiService.userWatched(ctx, userToken, count, isChannelInfo, isEpisodeIndex, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1905,15 +1905,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.copyChannel(ctx, userToken, channelId, grid);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }    
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1940,15 +1940,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.moveChannel(ctx, userToken, grid1, grid2);
         } catch (Exception e){
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }    
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1990,15 +1990,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.search(ctx, text, stack, type, start, count);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2024,14 +2024,14 @@ public class PlayerApiController {
         try {
             int systemStatus = playerApiService.prepService(ctx);
             if (systemStatus != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(systemStatus), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(systemStatus));
             output = playerApiService.programRemove(ctx, programId, ytVideoId, userToken, secret, status);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2060,15 +2060,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isTemp= Boolean.parseBoolean(temp);
             output = playerApiService.channelCreate(ctx, user, name, description, image, isTemp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2102,15 +2102,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isTemp= Boolean.parseBoolean(temp);
             output = playerApiService.programCreate(ctx, channel, name, description, image, audio, video, isTemp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2136,14 +2136,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.setProgramProperty(ctx, program, property, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2169,14 +2169,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.setChannelProperty(ctx, channel, property, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2205,14 +2205,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.quickLogin(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2241,14 +2241,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.auxLogin(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2274,14 +2274,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status == NnStatusCode.API_FORCE_UPGRADE)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.sphereData(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2303,15 +2303,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.graphSearch(ctx, email, name);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }            
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2337,15 +2337,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.userInvite(ctx, userToken, toEmail, toName, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2365,15 +2365,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }            
             output = playerApiService.inviteStatus(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2397,15 +2397,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.disconnect(ctx, userToken, toEmail, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2427,15 +2427,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.notifySubscriber(ctx, userToken, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2472,15 +2472,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.curator(ctx, profile, user, stack);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     /**
      * <p> Record user's favorite channel and episode.</p>
@@ -2520,15 +2520,15 @@ public class PlayerApiController {
             boolean del = Boolean.parseBoolean(delete);
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.favorite(ctx, user, channel, program, fileUrl, name, imageUrl, duration, del);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2617,15 +2617,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.virtualChannel(ctx, stack, userToken, channel, true);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="latestEpisode")
@@ -2640,15 +2640,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.latestEpisode(ctx, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
    
     /**
@@ -2674,15 +2674,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isMinimal = Boolean.parseBoolean(minimal);
             output = playerApiService.whatson(ctx, time, isMinimal);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2710,15 +2710,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.frontpage(ctx, time, stack, user);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2747,15 +2747,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isMinimal = Boolean.parseBoolean(minimal);
             output = playerApiService.portal(ctx, time, isMinimal, type);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="bulkIdentifier")
@@ -2770,16 +2770,16 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             ytUsers = req.getParameter("channelNames");
             output = playerApiService.bulkIdentifier(ctx, ytUsers);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="bulkSubscribe")
@@ -2796,17 +2796,17 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             ytUsers = req.getParameter("channelNames");
             userToken = req.getParameter("user");
             output = playerApiService.bulkSubscribe(ctx, userToken, ytUsers);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="virtualChannelAdd")
@@ -2824,7 +2824,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {                
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
@@ -2836,11 +2836,11 @@ public class PlayerApiController {
             
             output = playerApiService.virtualChannelAdd(ctx, user, channel, payload, isQueued);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     //used by android only, no cookie is set
@@ -2859,14 +2859,14 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.obtainAccount(ctx, email, password, name, req, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -2892,7 +2892,7 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
             log.info("in queue?" + isQueued);
@@ -2900,11 +2900,11 @@ public class PlayerApiController {
             payload = req.getParameter("payload");
             output = playerApiService.channelUpdate(ctx, user, payload, isQueued);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="endpointRegister")
@@ -2923,15 +2923,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.endpointRegister(ctx, userToken, device, vendor, action);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     //http://www.9x9.tv/poiaction?poiId={}&userId={}&select={}
@@ -2952,15 +2952,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.poiAction(ctx, userToken, deviceToken, vendor, poiId, select);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /*
@@ -3005,15 +3005,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.getDirectUrl(ctx, url.trim());
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3032,15 +3032,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.generateSignedUrls(ctx, url);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3064,15 +3064,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.notificationList(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     /**
      * Add a purchase
@@ -3092,15 +3092,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.addPurchase(ctx, userToken, productIdRef, purchaseToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3118,15 +3118,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.getPurchases(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3141,15 +3141,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.getItems(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3166,15 +3166,15 @@ public class PlayerApiController {
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS) {
-                return ctx.playerResponse(ctx.assemblePlayerMsgs(status), resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             }
             output = playerApiService.chat(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(ctx, e);
+            output = playerApiService.handleException(e, ctx);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return ctx.playerResponse(output, resp);
+        return ctx.playerResponse(resp, output);
     }
     
 }

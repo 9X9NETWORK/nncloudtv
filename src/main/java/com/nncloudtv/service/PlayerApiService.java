@@ -142,7 +142,7 @@ public class PlayerApiService {
             return checkRO();
     }
     
-    public Object handleException(ApiContext ctx, Exception e) {
+    public Object handleException(Exception e, ApiContext ctx) {
         if (e.getClass().equals(NumberFormatException.class)) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
         } else if (e.getClass().equals(CommunicationsException.class)) {
