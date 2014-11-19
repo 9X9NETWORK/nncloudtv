@@ -155,7 +155,7 @@ public class SysTagDisplayManager {
         //在Store裡, "最新上架"就是"alwaysOnTop".            
         String latest = this.getTag(display.getSystagId(), "store");
         //1. category info                
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             List<String> result = new ArrayList<String>();            
             String categoryInfo = "";
             categoryInfo += PlayerApiService.assembleKeyValue("id", id);
@@ -350,7 +350,7 @@ public class SysTagDisplayManager {
             String bannerImageUrl = display.getBannerImageUrl();
             String bannerImageUrl2 = display.getBannerImageUrl2();
             String channeltag = this.getTag(display.getSystagId(), "portal");
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 String[] obj = {
                     id,
                     name,
@@ -392,19 +392,19 @@ public class SysTagDisplayManager {
                 }
                 channels.addAll(NNF.getSysTagMngr().findPlayerAllChannelsById(displays.get(0).getSystagId(), ctx.getLang(), sort, 0));
             }
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 channelStr = (String)NNF.getChannelMngr().composeChannelLineup(channels, ctx);
             } else {
                 channelLineup = (List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels, ctx);
             }
             //3. list of the latest episode of each channel of the first set
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFmt());
             } else {
                 programInfo = (List<ProgramInfo>) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFmt());
             }
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             if (minimal) {
                 String result[] = { setStr };
                 return result;
@@ -437,7 +437,7 @@ public class SysTagDisplayManager {
         String bannerImageUrl = display.getBannerImageUrl();
         String bannerImageUrl2 = display.getBannerImageUrl2();
         
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             
             String result[] = { "", "", "", "" };
             //mso info

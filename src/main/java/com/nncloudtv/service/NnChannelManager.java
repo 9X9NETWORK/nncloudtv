@@ -852,26 +852,26 @@ public class NnChannelManager {
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFmt());
             } else {
                 channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFmt());
             }
         } else {
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+            if (ctx.isPlainFmt())
                 channelOutput += this.composeChannelLineup(channels, ctx);
             else
                 channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, ctx));
         }
         
         if (channelPos) {
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+            if (ctx.isPlainFmt())
                 channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             else
                 channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
@@ -890,13 +890,13 @@ public class NnChannelManager {
         String output = "";
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)  {
+            if (ctx.isPlainFmt())  {
                 output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)  {
+        if (ctx.isPlainFmt())  {
             return output;
         } else {
             return lineups;
@@ -1113,19 +1113,7 @@ public class NnChannelManager {
                         imageUrl += "|" + episodes.get(i).getImageUrl();
                     }
                 }
-            } else if (channel.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
-                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channel.getId());
-                log.info("programs = " + programs.size());
-                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
-                for (int i=0; i<3; i++) {
-                    if (i < programs.size()) {
-                       imageUrl += "|" + programs.get(i).getImageUrl();
-                       log.info("imageUrl = " + imageUrl);
-                    } else {
-                       i=4;
-                    }
-                }
-            } else {
+            } else if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
                 List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
                 Collections.sort(episodes, NnEpisodeManager.getComparator("isPublicFirst"));
@@ -1133,6 +1121,18 @@ public class NnChannelManager {
                     if (i < episodes.size()) {
                        lastEpisodeTitle += "|" + episodes.get(i).getName();
                        imageUrl += "|" + episodes.get(i).getImageUrl();
+                       log.info("imageUrl = " + imageUrl);
+                    } else {
+                       i=4;
+                    }
+                }
+            } else {
+                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channel.getId());
+                log.info("programs = " + programs.size());
+                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
+                for (int i=0; i<3; i++) {
+                    if (i < programs.size()) {
+                       imageUrl += "|" + programs.get(i).getImageUrl();
                        log.info("imageUrl = " + imageUrl);
                     } else {
                        i=4;
@@ -1147,10 +1147,9 @@ public class NnChannelManager {
         String poiStr = "";
         if (ctx.getVer() > 32) {
             List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannelId(channel.getId());
-            //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
-            for (PoiPoint p : points) {
-                PoiEvent event = NNF.getPoiEventMngr().findByPointId(p.getId());
+            for (PoiPoint point : points) {
+                PoiEvent event = NNF.getPoiEventMngr().findByPointId(point.getId());
                 events.add(event);
             }
             if (points.size() != events.size()) {
@@ -1170,7 +1169,7 @@ public class NnChannelManager {
                 log.info("poi output:" + poiStr);
             }
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(channel.getIdStr());

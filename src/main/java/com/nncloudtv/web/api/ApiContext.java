@@ -74,6 +74,14 @@ public class ApiContext {
         return format;
     }
     
+    public boolean isJsonFmt() {
+        return format == FORMAT_JSON;
+    }
+    
+    public boolean isPlainFmt() {
+        return format == FORMAT_PLAIN;
+    }
+    
     public Integer getVer() {
         return version;
     }

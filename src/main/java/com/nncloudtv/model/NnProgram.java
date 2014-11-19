@@ -133,6 +133,9 @@ public class NnProgram {
     @NotPersistent
     private int cntView;
     
+    @NotPersistent
+    private int cntPoi;
+    
     public NnProgram(long channelId, String name, String intro, String imageUrl) {    
         this.channelId = channelId;
         this.name = name;
@@ -148,7 +151,7 @@ public class NnProgram {
     
     public NnProgram(long channelId, long episodeId, String name, String intro,
             String imageUrl) {
-    
+        
         this.channelId = channelId;
         this.episodeId = episodeId;
         this.name = name;
@@ -163,25 +166,25 @@ public class NnProgram {
     
         return id;
     }
-
+    
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public long getChannelId() {
         return channelId;
     }
-
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
-
+    
     public String getName() {
         if (name != null)
             name = NnStringUtil.revertHtml(name);
         return name;
     }
-
+    
     public String getPlayerName() {
     	String name = this.getName(); 
         if (name != null) {        	
@@ -194,39 +197,39 @@ public class NnProgram {
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getImageUrl() {
         return imageUrl;
     }
-
+    
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }    
-
+    
     public String getImageLargeUrl() {
         return imageLargeUrl;
     }
-
+    
     public void setImageLargeUrl(String imageLargeUrl) {
         this.imageLargeUrl = imageLargeUrl;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public String getIntro() {
         if (intro != null)
             intro = NnStringUtil.revertHtml(intro);
@@ -240,11 +243,11 @@ public class NnProgram {
         }
         return pintro;
     }
-
+    
     public void setIntro(String intro) {
         this.intro = intro;
     }
-
+    
     public boolean isPublic() {
         return isPublic;
     }
@@ -252,15 +255,15 @@ public class NnProgram {
     public boolean getIsPublic() {
         return isPublic;
     }
-
+    
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
-
+    
     public String getErrorCode() {
         return errorCode;
     }
-
+    
     public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
     }
@@ -282,23 +285,23 @@ public class NnProgram {
     public String getDuration() {
         return duration;
     }
-
+    
     public void setDuration(String duration) {
         this.duration = duration;
     }
-
+    
     public void setDuration(short duration) {
         this.duration = String.valueOf(duration);
     }
-
+    
     public short getStatus() {
         return status;
     }
-
+    
     public void setStatus(short status) {        
         this.status = status;
     }
-
+    
     public String getStorageId() {
         return storageId;
     }
@@ -306,37 +309,37 @@ public class NnProgram {
     public void setStorageId(String storageId) {
         this.storageId = storageId;
     }
-
+    
     public String getFileUrl() {
         return fileUrl;
     }
-
+    
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
     }
-
+    
     public String getAudioFileUrl() {
         return audioFileUrl;
     }
-
+    
     public void setAudioFileUrl(String audioFileUrl) {
         this.audioFileUrl = audioFileUrl;
     }
-
+    
     public String getComment() {
         if (comment != null)
             comment = NnStringUtil.revertHtml(comment);
         return comment;
     }
-
+    
     public void setComment(String comment) {
         this.comment = comment;
     }
-
+    
     public short getContentType() {
         return contentType;
     }
-
+    
     public void setContentType(short contentType) {
         this.contentType = contentType;
     }
@@ -392,7 +395,7 @@ public class NnProgram {
     public void setSubSeq(String subSeq) {
         this.subSeq = subSeq;
     }
-
+    
     public void setStartTime(int startTime) {
         this.startTime = String.format("%d", startTime);
     }
@@ -444,23 +447,23 @@ public class NnProgram {
     public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
-
+    
     public Date getPublishDate() {
         return publishDate;
     }
-
+    
     public void setPublishDate(Date publishDate) {
         this.publishDate = publishDate;
     }
-
+    
     public long getEpisodeId() {
         return episodeId;
     }
-
+    
     public void setEpisodeId(long episodeId) {
         this.episodeId = episodeId;
     }
-
+    
     public long getStorageIdInt() {
         
         if (storageId == null) {
@@ -475,7 +478,7 @@ public class NnProgram {
         
         return (id == null) ? 0 : id;
     }
-
+    
     public int getCntView() {
     
         return cntView;
@@ -483,5 +486,13 @@ public class NnProgram {
     
     public void setCntView(int cntView) {
         this.cntView = cntView;
+    }
+    
+    public int getCntPoi() {
+        return cntPoi;
+    }
+    
+    public void setCntPoi(int cntPoi) {
+        this.cntPoi = cntPoi;
     }
 }

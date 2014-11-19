@@ -343,7 +343,7 @@ public class MsoManager {
         } catch (Exception e) {
             log.info("memcache error");
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
+        if (ctx.isJsonFmt()) {
             
             BrandInfo json = (BrandInfo) cached;
             if (cached == null) {

@@ -197,7 +197,7 @@ public class PlayerApiService {
                  result[i] += NnStringUtil.getDelimitedStr(obj) + "\n";
            }
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_JSON)
+        if (ctx.isJsonFmt())
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, new RelatedApp());
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
      }
@@ -264,7 +264,7 @@ public class PlayerApiService {
         
         Object result = prepareUserInfo(ctx, user, null, true);
         this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             String[] value = {(String) result};
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, value);
         }
@@ -332,7 +332,7 @@ public class PlayerApiService {
         
         Object result = prepareUserInfo(ctx, user, guest, true);
         this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             String[] value = {(String) result};
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, value);
         }
@@ -395,7 +395,7 @@ public class PlayerApiService {
             userMngr.save(user); //FIXME: change last login time (ie updateTime)
         }
         Object result = prepareUserInfo(ctx, user, guest, true);
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             String[] value = {(String) result};
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, value);
         }
@@ -452,7 +452,7 @@ public class PlayerApiService {
             String name = display.getName();
             int cntChannel = display.getCntChannel();
             String subItemHint = "ch"; //what's under this level
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 String[] str = {cId,
                                 name,
                                 String.valueOf(cntChannel),
@@ -468,7 +468,7 @@ public class PlayerApiService {
         }
         
         //flatten result process
-        if (categoryIdStr.equals("0") && flatten && ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (categoryIdStr.equals("0") && flatten && ctx.isPlainFmt()) {
             log.info("return flatten data");
             List<String> flattenResult = new ArrayList<String>();
             flattenResult.add(result[0]);
@@ -476,7 +476,7 @@ public class PlayerApiService {
             String size[] = new String[flattenResult.size()];
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, flattenResult.toArray(size));
         } else {
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+            if (ctx.isPlainFmt())
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
             else
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, playerCategories);
@@ -757,7 +757,7 @@ public class PlayerApiService {
         //user info
         if (userInfo) {
             log.info("userInfo is added");
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+            if (ctx.isPlainFmt())
                 result.add((String) prepareUserInfo(ctx, user, guest, true));
             else
                 playerChannelLineup.setUserInfo(((UserInfo) prepareUserInfo(ctx, user, guest, true)));
@@ -771,7 +771,7 @@ public class PlayerApiService {
                 String[] list = new String[9];
                 if (user != null) {
                     groups.addAll(groupMngr.findByUser(user));
-                    if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+                    if (ctx.isPlainFmt()) {
                         for (NnUserSubscribeGroup g : groups) {
                             String[] obj = {
                                     String.valueOf(g.getSeq()),
@@ -871,7 +871,7 @@ public class PlayerApiService {
                 }
             }
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
+        if (ctx.isJsonFmt()) {
             @SuppressWarnings("unchecked")
             List<ChannelLineup> lineup = (List<ChannelLineup>) NNF.getChannelMngr().getPlayerChannelLineup(channels, channelPos, programInfo, isReduced, ctx, null);
             playerChannelLineup.setChannelLineup(lineup);
@@ -968,7 +968,7 @@ public class PlayerApiService {
             Object result = prepareUserInfo(ctx, user, null, true);
             NNF.getUserMngr().save(user); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 String[] raw = {(String)result};
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, raw);
             }
@@ -1145,7 +1145,7 @@ public class PlayerApiService {
                 if (ctx.getVer() < 32) {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
-                    if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+                    if (ctx.isPlainFmt()) {
                         programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, ctx);
                         if (pagination) {
                             NnChannel c = NNF.getChannelMngr().findById(l);
@@ -1161,7 +1161,7 @@ public class PlayerApiService {
             
             long cId = Long.parseLong(channelIds);
             NnChannel channel = NNF.getChannelMngr().findById(cId);
-            if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+            if (ctx.isPlainFmt()) {
                 
                 programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt());
                 if (pagination && channel != null) {
@@ -1188,7 +1188,7 @@ public class PlayerApiService {
                     log.info("ios program info debug string:" + debugStr);
                 }
             } else {
-                if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+                if (ctx.isPlainFmt()) {
                     long cId = Long.parseLong(channelIds);
                     programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, ctx);
                     if (pagination) {
@@ -1208,7 +1208,7 @@ public class PlayerApiService {
         if (userInfo) {
             if (user == null && userToken != null)  {
                 user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
-                if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+                if (ctx.isPlainFmt()) {
                     userInfoStr = (String) prepareUserInfo(ctx, user, null, true);
                     result.add(userInfoStr);
                 } else {
@@ -1216,10 +1216,10 @@ public class PlayerApiService {
                 }
             }
         }
-        if (pagination && ctx.getFmt() == ApiContext.FORMAT_PLAIN)
+        if (pagination && ctx.isPlainFmt())
             result.add(paginationStr);
             
-        if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
+        if (ctx.isJsonFmt()) {
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, playerProgramInfo);
         } else {
             result.add(programInfoStr);
@@ -1938,7 +1938,7 @@ public class PlayerApiService {
         int numOfCuratorTotal = users.size();
         int numOfSuggestTotal = suggestion.size();
         
-        if (ctx.getFmt() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             String[] result = {"", "", "", ""}; //count, curator, curator's channels, channels, suggestion channels
             //matched curators && their channels [important, two sections]
             result[1] = (String) NNF.getUserMngr().composeCuratorInfo(ctx, users, true, false);
@@ -2025,7 +2025,7 @@ public class PlayerApiService {
         if (token == null || token.length() == 0 || name == null || name.length() == 0 ||  imageUrl == null || imageUrl.length() == 0) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
         }
-        if (ctx.getFmt() == ApiContext.FORMAT_JSON) {
+        if (ctx.isJsonFmt()) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
         }
         NnUser user = NNF.getUserMngr().findByToken(token, ctx.getMsoId());
