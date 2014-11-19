@@ -1021,6 +1021,7 @@ public class NnChannelManager {
         
     }
     
+    // TODO rewrite with cache
     public void populateCategoryId(NnChannel channel) {
         
         if (channel == null) { return; }
@@ -1258,13 +1259,50 @@ public class NnChannelManager {
         return channel;
     }
     
+    public void populateSocialFeeds(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        NnChannelPref channelPref = NNF.getChPrefMngr().getByChannelIdAndItem(channel.getId(), NnChannelPref.SOCIAL_FEEDS);
+        if (channelPref != null)
+            channel.setSocialFeeds(channelPref.getValue());
+    }
+    
+    public void populateSocialFeeds(long channelId, String socialFeeds) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.SOCIAL_FEEDS);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.SOCIAL_FEEDS, socialFeeds);
+        else
+            pref.setValue(socialFeeds);
+        
+        // update cache
+        String cacheKey = CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.SOCIAL_FEEDS);
+        CacheFactory.set(cacheKey, prefMngr.save(pref));
+    }
+    
     public void populateBannerImageUrl(NnChannel channel) {
         
         if (channel == null) return;
         
-        NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
-        if (channelPref != null)
-            channel.setBannerImageUrl(channelPref.getValue());
+        NnChannelPref pref = NNF.getChPrefMngr().getByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+        if (pref != null)
+            channel.setBannerImageUrl(pref.getValue());
+    }
+    
+    public void populateBannerImageUrl(long channelId, String bannerImage) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.BANNER_IMAGE);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.BANNER_IMAGE, bannerImage);
+        else
+            pref.setValue(bannerImage);
+        
+        // update cache
+        String cacheKey = CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.BANNER_IMAGE);
+        CacheFactory.set(cacheKey, prefMngr.save(pref));
     }
     
     public void populateAutoSync(NnChannel channel) {

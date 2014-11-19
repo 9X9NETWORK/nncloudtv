@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
@@ -812,6 +813,7 @@ public class ApiContent extends ApiGeneric {
         if (channel.isReadonly() == false) {
             channelMngr.populateMoreImageUrl(channel);
         }
+        channelMngr.populateSocialFeeds(channel);
         channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
@@ -947,15 +949,14 @@ public class ApiContent extends ApiGeneric {
         // bannerImageUrl
         String bannerImage = ctx.getParam("bannerImageUrl");
         if (bannerImage != null) {
-            NnChannelPref bannerImagePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
-            if (bannerImagePref == null)
-                bannerImagePref = new NnChannelPref(channel.getId(), NnChannelPref.BANNER_IMAGE, bannerImage);
-            else
-                bannerImagePref.setValue(bannerImage);
-            NNF.getChPrefMngr().save(bannerImagePref);
+            channelMngr.populateBannerImageUrl(channel.getId(), bannerImage);
         }
-        
-        channel = NNF.getChannelMngr().save(channel);
+        // socialFeeds
+        String socialFeeds = ctx.getParam("socialFeeds");
+        if (socialFeeds != null) {
+            channelMngr.populateSocialFeeds(channel.getId(), socialFeeds);
+        }
+        channel = channelMngr.save(channel);
         
         // syncNow
         if (NnStringUtil.evalBool(ctx.getParam("syncNow"), false)) {
@@ -964,6 +965,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         channelMngr.populateCategoryId(channel);
+        channelMngr.populateSocialFeeds(channel);
         channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);

@@ -305,7 +305,7 @@ public class MsoConfigManager {
     //find: access db directly; get: through cache
     public MsoConfig getByMsoAndItem(Mso mso, String item) {
         
-        String cacheKey = CacheFactory.getMaoConfigKey(mso.getId(), item);
+        String cacheKey = CacheFactory.getMsoConfigKey(mso.getId(), item);
         try {
             MsoConfig result = (MsoConfig) CacheFactory.get(cacheKey);
             if (result != null){

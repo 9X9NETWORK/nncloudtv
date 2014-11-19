@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelPrefDao;
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Mso;
@@ -54,14 +55,39 @@ public class NnChannelPrefManager {
         return dao.findByChannelId(channelId);
     }
     
-    public NnChannelPref findByChannelIdAndItem(long channelId, String item) {
+    // "get" is from cache, "find" is from DB
+    public NnChannelPref getByChannelIdAndItem(long channelId, String item) {
         
-        List<NnChannelPref> prefs = dao.findByChannelIdAndItem(channelId, item);
-        if (prefs.size() > 0) {
-            
-            return prefs.get(0);
+        String cacheKey = CacheFactory.getNnChannelPrefKey(channelId, item);
+        NnChannelPref pref = (NnChannelPref) CacheFactory.get(cacheKey);
+        
+        if (pref != null){
+            if (pref.getValue() == null || pref.getValue().isEmpty()) {
+                log.fine("empty nnchannelpref from cache, key = " + cacheKey);
+                return null;
+            } else {
+                log.fine("nnchannelpref from cache, key = " + cacheKey + ", value = " + pref.getValue());
+                return pref;
+            }
         }
         
+        pref = findByChannelIdAndItem(channelId, item);
+        
+        if (pref != null) {
+            log.info("set nnchannelpref to cache, key = " + cacheKey + ", value = " + pref.getValue());
+            CacheFactory.set(cacheKey, pref);
+        } else {
+            log.info("set empty nnchannelpref to cache, key = " + cacheKey);
+            CacheFactory.set(cacheKey, new NnChannelPref());
+        }
+        return pref;
+        
+    }
+    
+    public NnChannelPref findByChannelIdAndItem(long channelId, String item) {
+        List<NnChannelPref> prefs = dao.findByChannelIdAndItem(channelId, item);
+        if (prefs.size() > 0)
+            return prefs.get(0);
         return null;
     }
     

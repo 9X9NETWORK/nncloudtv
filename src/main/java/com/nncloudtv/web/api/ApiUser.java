@@ -436,16 +436,18 @@ public class ApiUser extends ApiGeneric {
         // bannerImageUrl
         String bannerImage = ctx.getParam("bannerImageUrl");
         if (bannerImage != null) {
-            NnChannelPref bannerImagePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
-            if (bannerImagePref == null)
-                bannerImagePref = new NnChannelPref(channel.getId(), NnChannelPref.BANNER_IMAGE, bannerImage);
-            else
-                bannerImagePref.setValue(bannerImage);
-            NNF.getChPrefMngr().save(bannerImagePref);
+            channelMngr.populateBannerImageUrl(channel.getId(), bannerImage);
         }
+        // socialFeeds
+        String socialFeeds = ctx.getParam("socialFeeds");
+        if (socialFeeds != null) {
+            channelMngr.populateSocialFeeds(channel.getId(), socialFeeds);
+        }
+        channel = channelMngr.save(channel);
         
         channelMngr.reorderUserChannels(user);
         channelMngr.populateCategoryId(channel);
+        channelMngr.populateSocialFeeds(channel);
         channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);

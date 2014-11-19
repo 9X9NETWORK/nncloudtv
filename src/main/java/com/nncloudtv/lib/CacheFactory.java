@@ -299,9 +299,14 @@ public class CacheFactory {
         System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
-    public static String getMaoConfigKey(long msoId, String key) {
+    public static String getNnChannelPrefKey(long channelId, String item) {
         
-        return String.format("msoconfig(%d)(%s)", msoId, key);
+        return String.format("nnchannel(%d)(%s)", channelId, item);
+    }
+    
+    public static String getMsoConfigKey(long msoId, String item) {
+        
+        return String.format("msoconfig(%d)(%s)", msoId, item);
     }
     
     // example: mso(9x9)

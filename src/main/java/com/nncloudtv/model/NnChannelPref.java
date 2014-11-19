@@ -49,6 +49,10 @@ public class NnChannelPref implements Serializable {
     public static final String OFF    = "off";
     public static final String FAILED = "failed";
     
+    public NnChannelPref() {
+        
+    }
+    
     public NnChannelPref(Long channelId, String item, String value) {
         this.channelId = channelId;
         this.item = item;
