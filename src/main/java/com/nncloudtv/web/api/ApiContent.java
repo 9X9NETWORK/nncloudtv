@@ -1106,6 +1106,7 @@ public class ApiContent extends ApiGeneric {
         return results;
     }
     
+    // TODO cache
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
     public void channelStream(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
@@ -1118,7 +1119,7 @@ public class ApiContent extends ApiGeneric {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -1131,6 +1132,8 @@ public class ApiContent extends ApiGeneric {
         } else {
             Collections.sort(episodes, NnEpisodeManager.getComparator("seq"));
         }
+        if (episodes.size() > 150)
+            episodes = episodes.subList(0, 150); // trim
         
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
