@@ -23,7 +23,6 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
@@ -426,13 +425,8 @@ public class ApiUser extends ApiGeneric {
         // autoSync
         String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
-            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-            if (autosyncPref == null)
-                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-            autosyncPref.setValue(autoSync);
-            NNF.getChPrefMngr().save(autosyncPref);
+            channelMngr.populateAutoSync(channel.getId(), autoSync);
         }
-        
         // bannerImageUrl
         String bannerImage = ctx.getParam("bannerImageUrl");
         if (bannerImage != null) {

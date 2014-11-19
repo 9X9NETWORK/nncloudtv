@@ -299,6 +299,11 @@ public class CacheFactory {
         System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
+    public static String getSystemCategoryKey(long channelId) {
+        
+        return String.format("systemCategory(%d)", channelId);
+    }
+    
     public static String getNnChannelPrefKey(long channelId, String item) {
         
         return String.format("nnchannel(%d)(%s)", channelId, item);
@@ -362,7 +367,6 @@ public class CacheFactory {
         
         return keys;
     }
-    
     
     /**
      * cache the 1st program of channel

@@ -390,6 +390,11 @@ public class ApiContent extends ApiGeneric {
         if (duration != null)
             program.setDuration(duration);
         
+        // cntPoi
+        Short cntPoi = NnStringUtil.evalShort(ctx.getParam("cntPoi"));
+        if (cntPoi != null)
+            program.setCntPoi(cntPoi);
+        
         program = NNF.getProgramMngr().save(program);
         
         program.setName(NnStringUtil.revertHtml(program.getName()));
@@ -579,6 +584,11 @@ public class ApiContent extends ApiGeneric {
             program.setDuration((short) 0);
         else
             program.setDuration(duration);
+        
+        // cntPoi
+        Short cntPoi = NnStringUtil.evalShort(ctx.getParam("cntPoi"));
+        if (cntPoi != null)
+            program.setCntPoi(cntPoi);
         
         // startTime
         Short startTime = NnStringUtil.evalShort(ctx.getParam("startTime"));
@@ -933,18 +943,8 @@ public class ApiContent extends ApiGeneric {
         // autoSync
         String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
-            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-            if (autosyncPref == null) {
-                
-                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-            }
-            if (!autoSync.equals(autosyncPref.getValue())) {
-                
-                autosyncPref.setValue(autoSync);
-                NNF.getChPrefMngr().save(autosyncPref);
-            }
+            channelMngr.populateAutoSync(channel.getId(), autoSync);
         }
-        
         // bannerImageUrl
         String bannerImage = ctx.getParam("bannerImageUrl");
         if (bannerImage != null) {

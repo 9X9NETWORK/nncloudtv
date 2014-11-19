@@ -20,6 +20,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnStatusMsg;
@@ -137,7 +138,7 @@ public class ApiContext {
         if (userAgent == null)
             userAgent = "";
         else
-            System.out.println("[ApiContext] user-agent = " + userAgent);
+            System.out.println("[ApiContext] UA = " + userAgent);
         
         this.format = FORMAT_JSON;
         String returnFormat = getParam(PARAM_FORMAT);
@@ -189,7 +190,8 @@ public class ApiContext {
             }
         }
         
-        System.out.println(String.format("[ApiContext] language = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
+        System.out.println(String.format("[ApiContext] lang = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
+        CounterFactory.increment("new ApiContext(req)");
     }
     
     public Boolean isProductionSite() {

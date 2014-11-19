@@ -796,8 +796,7 @@ public class NnChannelManager {
             return output;
         else
             return channelLineup;
-    }    
-
+    }
     
     public Object composeEachReducedChannelLineup(NnChannel c, short format) {
         String ytName = c.getSourceUrl() != null ? YouTubeLib.getYouTubeChannelName(c.getSourceUrl()) : "";        
@@ -1021,16 +1020,18 @@ public class NnChannelManager {
         
     }
     
-    // TODO rewrite with cache
     public void populateCategoryId(NnChannel channel) {
         
         if (channel == null) { return; }
         
-        List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
-        
-        if (categoryIds.size() > 0) {
-            channel.setCategoryId(categoryIds.get(0));
+        String cacheKey = CacheFactory.getSystemCategoryKey(channel.getId());
+        Long categoryId = (Long) CacheFactory.get(cacheKey);
+        if (categoryId == null) {
+            List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
+            categoryId = categoryIds.size() > 0 ? categoryIds.get(0) : Long.valueOf(0);
+            CacheFactory.set(cacheKey, categoryId);
         }
+        channel.setCategoryId(categoryId);
     }
     
     //ChannelLineup or String
@@ -1276,10 +1277,9 @@ public class NnChannelManager {
             pref = new NnChannelPref(channelId, NnChannelPref.SOCIAL_FEEDS, socialFeeds);
         else
             pref.setValue(socialFeeds);
-        
-        // update cache
-        String cacheKey = CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.SOCIAL_FEEDS);
-        CacheFactory.set(cacheKey, prefMngr.save(pref));
+        prefMngr.save(pref);
+        // clean cache
+        CacheFactory.delete(CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.SOCIAL_FEEDS));
     }
     
     public void populateBannerImageUrl(NnChannel channel) {
@@ -1299,10 +1299,9 @@ public class NnChannelManager {
             pref = new NnChannelPref(channelId, NnChannelPref.BANNER_IMAGE, bannerImage);
         else
             pref.setValue(bannerImage);
-        
-        // update cache
-        String cacheKey = CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.BANNER_IMAGE);
-        CacheFactory.set(cacheKey, prefMngr.save(pref));
+        prefMngr.save(pref);
+        // clean cache
+        CacheFactory.delete(CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.BANNER_IMAGE));
     }
     
     public void populateAutoSync(NnChannel channel) {
@@ -1314,6 +1313,18 @@ public class NnChannelManager {
             channel.setAutoSync(NnChannelPref.OFF);
         else
             channel.setAutoSync(channelPref.getValue());
+    }
+    
+    public void populateAutoSync(long channelId, String autoSync) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+        if (autoSync.equals(pref.getValue()) == false) {
+            pref.setValue(autoSync);
+            prefMngr.save(pref);
+        }
     }
     
     public int calculateUserChannels(NnUser user) {

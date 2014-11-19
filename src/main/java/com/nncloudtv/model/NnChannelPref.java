@@ -58,57 +58,57 @@ public class NnChannelPref implements Serializable {
         this.item = item;
         this.value = value;
     }
-	
+    
     @Persistent
     private Date createDate;
     
     @Persistent
     private Date updateDate;
-
+    
     public long getId() {
         return id;
     }
-
+    
     public void setId(long id) {
         this.id = id;
     }
-
+    
     public long getChannelId() {
         return channelId;
     }
-
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
-
+    
     public String getItem() {
         return item;
     }
-
+    
     public void setItem(String item) {
         this.item = item;
     }
-
+    
     public String getValue() {
         return value;
     }
-
+    
     public void setValue(String value) {
         this.value = value;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }        
