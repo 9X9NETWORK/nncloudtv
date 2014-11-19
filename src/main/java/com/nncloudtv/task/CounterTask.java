@@ -1,5 +1,6 @@
 package com.nncloudtv.task;
 
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -19,11 +20,13 @@ public class CounterTask extends CounterFactory {
     public void cleanDirtyCounter() {
         synchronized (dirtyCounters) {
             Set<Entry<String,Integer>> entrySet = dirtyCounters.entrySet();
-            for (Entry<String, Integer> entry : entrySet) {
-                System.out.println(String.format("[counter] \"%s\" increment %d", entry.getKey(), entry.getValue()));
+            Iterator<Entry<String, Integer>> it = entrySet.iterator();
+            while (it.hasNext()) {
+                Entry<String, Integer> entry = it.next();
                 increment(entry.getKey(), entry.getValue());
+                System.out.println(String.format("[counter] \"%s\" increment %d", entry.getKey(), entry.getValue()));
+                it.remove();
             }
-            dirtyCounters.clear();
         }
     }
 }

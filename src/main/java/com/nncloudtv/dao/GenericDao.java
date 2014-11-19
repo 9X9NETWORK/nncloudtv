@@ -18,10 +18,12 @@ import com.nncloudtv.service.CounterFactory;
 
 public class GenericDao<T> {
     
-    protected Class<T> daoClass;
+    protected final Class<T> daoClass;
+    protected final String daoClassName;
         
     public GenericDao(Class<T> daoClass) {
         this.daoClass = daoClass;
+        this.daoClassName = daoClass.getSimpleName();
     }
     
     public void evictAll() {
@@ -51,7 +53,7 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        String msg = String.format("[dao] %s.save()", daoClass.getName());
+        String msg = String.format("[dao] %s.save()", daoClassName);
         System.out.println(msg);
         try {
             pm.makePersistent(dao);
@@ -68,7 +70,7 @@ public class GenericDao<T> {
         if (list == null) return list;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.saveAll()", daoClass.getName());
+        String msg = String.format("[dao] %s.saveAll()", daoClassName);
         System.out.println(msg);
         Transaction tx = pm.currentTransaction();
         try {
@@ -91,7 +93,7 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.delete()", daoClass.getName());
+        String msg = String.format("[dao] %s.delete()", daoClassName);
         System.out.println(msg);
         try {
             pm.deletePersistent(dao);
@@ -107,7 +109,7 @@ public class GenericDao<T> {
         
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
-        String msg = String.format("[dao] %s.deleteAll()", daoClass.getName());
+        String msg = String.format("[dao] %s.deleteAll()", daoClassName);
         System.out.println(msg);
         try {
             tx.begin();
@@ -228,7 +230,7 @@ public class GenericDao<T> {
             
             return null;
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClass.getName(), id));
+        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClassName, id));
         return findById(id);
     }
     
@@ -242,7 +244,7 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClass.getName(), id));
+        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClassName, id));
         return dao;
     }
     

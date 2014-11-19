@@ -134,8 +134,10 @@ public class ApiContext {
         
         httpReq = req;
         String userAgent = httpReq.getHeader(HEADER_USER_AGENT);
-        if (userAgent == null) userAgent = "";
-        System.out.println("[ApiContext] user-agent = " + userAgent);
+        if (userAgent == null)
+            userAgent = "";
+        else
+            System.out.println("[ApiContext] user-agent = " + userAgent);
         
         this.format = FORMAT_JSON;
         String returnFormat = getParam(PARAM_FORMAT);
