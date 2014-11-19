@@ -183,7 +183,7 @@ public class CacheFactory {
         if (obj == null)
             System.out.println(String.format("[memcache] %s --> missed", key));
         else
-            CounterFactory.increment("HIT " + key); // HIT
+            CounterFactory.increment("[memcache] HIT " + key); // HIT
         return obj;
     }
     
