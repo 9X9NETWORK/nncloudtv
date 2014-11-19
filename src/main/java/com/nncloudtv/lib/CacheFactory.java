@@ -306,7 +306,7 @@ public class CacheFactory {
     
     public static String getNnChannelPrefKey(long channelId, String item) {
         
-        return String.format("nnchannel(%d)(%s)", channelId, item);
+        return String.format("nnchannelpref(%d)(%s)", channelId, item);
     }
     
     public static String getMsoConfigKey(long msoId, String item) {
