@@ -3,6 +3,7 @@ package com.nncloudtv.dao;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -13,6 +14,7 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
+import com.nncloudtv.service.CounterFactory;
 
 public class GenericDao<T> {
     
@@ -49,13 +51,15 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        System.out.println(String.format("[dao] save %s", daoClass.getSimpleName()));
+        String msg = String.format("[dao] %s.save()", daoClass.getName());
+        System.out.println(msg);
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return dao;
     }
     
@@ -64,7 +68,8 @@ public class GenericDao<T> {
         if (list == null) return list;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        System.out.println(String.format("[dao] saveAll %s, count = %d", daoClass.getSimpleName(), list.size()));
+        String msg = String.format("[dao] %s.saveAll()", daoClass.getName());
+        System.out.println(msg);
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -78,6 +83,7 @@ public class GenericDao<T> {
             pm.close();
             System.out.println(String.format("[dao] costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
+        CounterFactory.increment(msg);
         return list;
     }
     
@@ -85,12 +91,14 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        System.out.println(String.format("[dao] delete %s", daoClass.getSimpleName()));
+        String msg = String.format("[dao] %s.delete()", daoClass.getName());
+        System.out.println(msg);
         try {
             pm.deletePersistent(dao);
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
     }
     
     public void deleteAll(Collection<T> list) {
@@ -99,7 +107,8 @@ public class GenericDao<T> {
         
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
-        System.out.println(String.format("[dao] deletes %s, count = %d", daoClass.getSimpleName(), list.size()));
+        String msg = String.format("[dao] %s.deleteAll()", daoClass.getName());
+        System.out.println(msg);
         try {
             tx.begin();
             pm.deletePersistentAll(list);
@@ -111,6 +120,7 @@ public class GenericDao<T> {
             }
             pm.close();
         }
+        CounterFactory.increment(msg);
     }
     
     /**
@@ -218,7 +228,7 @@ public class GenericDao<T> {
             
             return null;
         }
-        
+        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClass.getName(), id));
         return findById(id);
     }
     
@@ -232,6 +242,7 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
+        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClass.getName(), id));
         return dao;
     }
     
@@ -285,7 +296,7 @@ public class GenericDao<T> {
             
             pm.close();
         }
-        
+        CounterFactory.increment("[dao] sql_query");
         return detached;
     }
     
