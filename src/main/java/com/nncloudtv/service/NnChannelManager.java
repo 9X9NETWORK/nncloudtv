@@ -386,7 +386,7 @@ public class NnChannelManager {
         return channel;
     }
     
-    public List<NnChannel> save(List<NnChannel> channels, boolean resetCache) {
+    public Collection<NnChannel> save(Collection<NnChannel> channels, boolean resetCache) {
         
         if (resetCache)
             resetCache(channels);
@@ -762,7 +762,7 @@ public class NnChannelManager {
         return sorting;
     }
     
-    public void resetCache(List<NnChannel> channels) {
+    public void resetCache(Collection<NnChannel> channels) {
         
         if (channels == null || channels.isEmpty()) return;
         

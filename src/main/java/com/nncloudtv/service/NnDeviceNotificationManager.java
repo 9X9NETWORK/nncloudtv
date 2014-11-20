@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,7 +42,7 @@ public class NnDeviceNotificationManager {
         return notification;
     }
     
-    public List<NnDeviceNotification> save(List<NnDeviceNotification> notifications) {
+    public Collection<NnDeviceNotification> save(Collection<NnDeviceNotification> notifications) {
         
         if (notifications == null) return new ArrayList<NnDeviceNotification>();
         

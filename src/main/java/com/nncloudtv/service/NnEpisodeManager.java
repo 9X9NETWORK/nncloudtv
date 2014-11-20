@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -65,7 +66,7 @@ public class NnEpisodeManager {
         
     }
     
-    public List<NnEpisode> save(List<NnEpisode> episodes) {
+    public Collection<NnEpisode> save(Collection<NnEpisode> episodes) {
         
         Date now = NnDateUtil.now();
         List<Long> channelIds = new ArrayList<Long>();

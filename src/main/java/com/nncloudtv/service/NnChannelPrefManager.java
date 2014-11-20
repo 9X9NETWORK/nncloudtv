@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class NnChannelPrefManager {
         return dao.save(pref);
     }
     
-    public List<NnChannelPref> save(List<NnChannelPref> prefs) {
+    public Collection<NnChannelPref> save(Collection<NnChannelPref> prefs) {
         
         Date now = NnDateUtil.now();
         for (NnChannelPref pref : prefs) {

@@ -290,7 +290,7 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
-        orders = NNF.getOrderMngr().save(orders);
+        NNF.getOrderMngr().save(orders);
         
         if (req.getParameter(NO_MAIL) == null) {
             try {
@@ -309,7 +309,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         resp.setStatus(HTTP_201);
-        return NNF.getOrderMngr().save(orders);
+        return orders;
     }
     
     @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.POST)

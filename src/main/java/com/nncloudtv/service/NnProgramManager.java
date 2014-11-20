@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -86,17 +87,17 @@ public class NnProgramManager {
      * @param programs
      * @return programs
      */
-    public List<NnProgram> save(List<NnProgram> programs) {
+    public Collection<NnProgram> save(Collection<NnProgram> programs) {
         
         List<Long> channelIds = new ArrayList<Long>();
         
-        for (NnProgram program : programs) {            
-            Date now = new Date();
+        for (NnProgram program : programs) {
+            Date now = NnDateUtil.now();
             if (program.getCreateDate() == null)
                 program.setCreateDate(now);
             if (program.getUpdateDate() == null) {
                 program.setUpdateDate(now);
-            }            
+            }
             
             if (channelIds.indexOf(program.getChannelId()) < 0) {
                 channelIds.add(program.getChannelId());

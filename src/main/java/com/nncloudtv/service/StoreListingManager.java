@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.StoreListingDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.StoreListing;
 
@@ -84,23 +86,19 @@ public class StoreListingManager {
         
     }
     
-    private List<StoreListing> saveAll(List<StoreListing> storeListing) {
+    private Collection<StoreListing> saveAll(Collection<StoreListing> storeListing) {
         
-        if (storeListing == null) {
+        if (storeListing == null)
             return null;
-        }
-        if (storeListing.size() == 0) {
+        
+        if (storeListing.size() == 0)
             return storeListing;
-        }
         
-        Date now = new Date();
-        for (StoreListing item : storeListing) {
+        Date now = NnDateUtil.now();
+        for (StoreListing item : storeListing)
             item.setUpdateDate(now);
-        }
         
-        storeListing = dao.saveAll(storeListing);
-        
-        return storeListing;
+        return dao.saveAll(storeListing);
     }
     
     /** call when NnChannel is going to delete **/

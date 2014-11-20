@@ -67,7 +67,7 @@ public class GenericDao<T> {
     
     public Collection<T> saveAll(Collection<T> list) {
         
-        if (list == null) return list;
+        if (list == null) return null;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
         String msg = String.format("[dao] %s.saveAll()", daoClassName);
@@ -75,8 +75,8 @@ public class GenericDao<T> {
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
-            pm.makePersistentAll(list);
-            list = (List<T>) pm.detachCopyAll(list);
+            list = pm.makePersistentAll(list);
+            list = (Collection<T>) pm.detachCopyAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {

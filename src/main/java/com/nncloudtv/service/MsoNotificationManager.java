@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ public class MsoNotificationManager {
         return dao.save(notification);
     }
     
-    public List<MsoNotification> saveAll(List<MsoNotification> notifications) {
+    public Collection<MsoNotification> saveAll(Collection<MsoNotification> notifications) {
         Date now = new Date();
         for (MsoNotification notification : notifications) {
             notification.setUpdateDate(now);
