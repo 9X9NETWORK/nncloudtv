@@ -188,7 +188,7 @@ public class GenericDao<T> {
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
-            if (filter != null && !filter.isEmpty())
+            if (filter != null)
                 query.setFilter(filter);
             if (sort != null)
                 query.setOrdering(sort);
