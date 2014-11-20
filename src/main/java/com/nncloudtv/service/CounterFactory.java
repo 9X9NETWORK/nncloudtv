@@ -71,9 +71,9 @@ public class CounterFactory {
         }
     }
     
-    synchronized protected static void increment(String counterName, int amount) {
+    synchronized protected static CounterShard increment(String counterName, int amount) {
         
-        if (counterName == null) return;
+        if (counterName == null) return null;
         
         List<CounterShard> shards = NNF.getShardDao().findByCounterName(counterName);
         if (shards.isEmpty())
@@ -84,7 +84,6 @@ public class CounterFactory {
         index = random.nextInt(shardSize);
         CounterShard randShard = shards.get(index);
         randShard.increment(amount);
-        NNF.getShardDao().save(randShard);
         
         long sum = 0;
         for (CounterShard shardCounter : shards) {
@@ -115,6 +114,8 @@ public class CounterFactory {
                 addShard(counter); // auto sharding
             }
         }
+        
+        return randShard;
     }
     
     synchronized private static CounterShard addShard(Counter counter) {

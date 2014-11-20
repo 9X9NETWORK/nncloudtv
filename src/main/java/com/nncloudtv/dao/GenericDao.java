@@ -65,7 +65,7 @@ public class GenericDao<T> {
         return dao;
     }
     
-    public List<T> saveAll(List<T> list) {
+    public Collection<T> saveAll(Collection<T> list) {
         
         if (list == null) return list;
         long before = NnDateUtil.timestamp();
