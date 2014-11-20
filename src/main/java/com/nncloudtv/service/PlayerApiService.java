@@ -259,7 +259,7 @@ public class PlayerApiService {
         } else {
             user = userMngr.setFbProfile(user, me);
             log.info("FACEBOOK: original FB user login with fbId - " + user.getEmail() + ";email:" + user.getFbId());
-            userMngr.save(user);
+            userMngr.save(user, true);
         }
         
         Object result = prepareUserInfo(ctx, user, null, true);
@@ -392,7 +392,7 @@ public class PlayerApiService {
                     log.info("reset fb info:" + user.getId());
                 }
             }
-            userMngr.save(user); //FIXME: change last login time (ie updateTime)
+            userMngr.save(user, false); //FIXME: change last login time (ie updateTime)
         }
         Object result = prepareUserInfo(ctx, user, guest, true);
         if (ctx.isPlainFmt()) {
@@ -966,7 +966,7 @@ public class PlayerApiService {
         NnUser user = NNF.getUserMngr().findAuthenticatedUser(email, password, ctx.getMsoId(), ctx.getReq());
         if (user != null) {
             Object result = prepareUserInfo(ctx, user, null, true);
-            NNF.getUserMngr().save(user); //change last login time (ie updateTime)
+            NNF.getUserMngr().save(user, false); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
             if (ctx.isPlainFmt()) {
                 String[] raw = {(String)result};
@@ -1615,7 +1615,7 @@ public class PlayerApiService {
             user.setPassword(password);
             user.setSalt(AuthLib.generateSalt());
             user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
-            NNF.getUserMngr().save(user);
+            NNF.getUserMngr().save(user, true);
         }
         profileMngr.save(user, profile);
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS);
@@ -1872,7 +1872,7 @@ public class PlayerApiService {
                 return ctx.assemblePlayerMsgs(status);
             user.setPassword(password);
             userMngr.resetPassword(user);
-            userMngr.save(user);
+            userMngr.save(user, true);
             log.info("reset password success:" + user.getEmail());
         } else {
             log.info("reset password token mismatch");

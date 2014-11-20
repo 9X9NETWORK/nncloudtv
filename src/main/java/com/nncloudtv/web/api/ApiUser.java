@@ -49,7 +49,7 @@ public class ApiUser extends ApiGeneric {
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
     public @ResponseBody
     User userInfoUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(value = "mso", required = false) String msoIdStr,
+            @RequestParam(value = "mso", required = false) String msoIdStr, // FIXME msoId
             @PathVariable("userId") String userIdStr, @RequestParam(required = false) Short shard) {
         
         Long userId = null;
@@ -132,7 +132,7 @@ public class ApiUser extends ApiGeneric {
             user.getProfile().setLang(lang);
         }
         
-        return NnUserManager.composeUser(NNF.getUserMngr().save(user));
+        return NnUserManager.composeUser(NNF.getUserMngr().save(user, false));
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)

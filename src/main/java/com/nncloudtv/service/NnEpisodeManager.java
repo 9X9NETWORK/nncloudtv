@@ -88,13 +88,12 @@ public class NnEpisodeManager {
         return dao.findByChannelId(channelId);
     }
     
-    public static Comparator<NnEpisode> getComparator(String sort) {
+    public static Comparator<NnEpisode> getComparator(String comparator) {
         
-        if (sort == null) {
-            sort = "default";
-        }
+        if (comparator == null)
+            comparator = "default";
         
-        if (sort.equals("timedLinear")) {
+        if (comparator.equals("timedLinear")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -133,7 +132,7 @@ public class NnEpisodeManager {
                     }
                 }
             };
-        } else if (sort.equals("publishDate")) {
+        } else if (comparator.equals("publishDate")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -160,7 +159,7 @@ public class NnEpisodeManager {
                     }
                 }
             };
-        } else if (sort.equals("isPublicFirst")) {
+        } else if (comparator.equals("isPublicFirst")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -179,7 +178,7 @@ public class NnEpisodeManager {
                     return 1;
                 }
             };
-        } else if (sort.equals("reverse")) {
+        } else if (comparator.equals("reverse")) {
             
             return new Comparator<NnEpisode>() {
                 

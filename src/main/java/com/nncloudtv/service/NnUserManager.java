@@ -96,7 +96,7 @@ public class NnUserManager {
         user.setShard((short)1);
         user.setMsoId(1);
         NnUserProfile profile = user.getProfile();
-        user = this.save(user);
+        user = this.save(user, true);
         profile.setProfileUrl(name);
         profile.setImageUrl(imageUrl);
         profile.setUserId(user.getId());
@@ -221,7 +221,7 @@ public class NnUserManager {
         return guest;
     }
     
-    public NnUser save(NnUser user) {
+    public NnUser save(NnUser user, boolean resetCache) {
         if (user == null) {
             return null;
         }
@@ -233,7 +233,8 @@ public class NnUserManager {
         user.setUpdateDate(NnDateUtil.now());
         NnUserProfile profile = user.getProfile();
         profile = NNF.getProfileMngr().save(user, profile);
-        resetChannelCache(user);
+        if (resetCache)
+            resetChannelCache(user);
         long msoId = user.getMsoId();
         user = dao.save(user);
         user.setMsoId(msoId);
@@ -299,8 +300,7 @@ public class NnUserManager {
         user.setPassword(user.getPassword());
         user.setSalt(AuthLib.generateSalt());
         user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
-        this.save(user);
-        return user;
+        return save(user, true);
     }
      
     public void subscibeDefaultChannels(NnUser user) {

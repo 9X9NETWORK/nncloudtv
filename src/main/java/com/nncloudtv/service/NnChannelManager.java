@@ -380,21 +380,21 @@ public class NnChannelManager {
             
             this.processChannelRelatedCounter(channels);
         }
-        this.processChannelTag(channel);
-        this.resetCache(channel.getId());
+        processChannelTag(channel);
+        resetCache(channel.getId());
         
         return channel;
     }
     
     public List<NnChannel> save(List<NnChannel> channels, boolean resetCache) {
         
-        if (resetCache) {
+        if (resetCache)
             resetCache(channels);
-        }
         return dao.saveAll(channels);
     }
     
     public void processChannelRelatedCounter(NnChannel[] channels) {
+        
     }
         
     public List<NnChannel> searchBySvi(String queryStr, short userShard, long userId, String sphere) {

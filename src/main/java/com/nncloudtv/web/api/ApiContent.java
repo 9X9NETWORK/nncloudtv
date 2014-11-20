@@ -1231,9 +1231,8 @@ public class ApiContent extends ApiGeneric {
         }
         
         episodeMngr.normalize(results);
-        for (NnEpisode episode : results) {
+        for (NnEpisode episode : results)
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
-        }
         
         return results;
     }

@@ -30,12 +30,10 @@ public class CacheFactory {
     public static final int EXP_SHORT = 100;  // seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
-    public static final int MINIMUM_LOG_INTERVAL = 10;
     public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
     public static boolean isRunning = false;
-    private static long lastLogTime = 0;
     private static List<InetSocketAddress> memcacheServers = null;
     private static MemcachedClient cache = null;
     private static MemcachedClient outdated = null;
@@ -237,6 +235,7 @@ public class CacheFactory {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
                     cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    CounterFactory.increment("[memcache] delete " + key);
                 }
             }
             isDeleted = true;
@@ -271,6 +270,7 @@ public class CacheFactory {
         
         try {
             cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+            CounterFactory.increment("[memcache] delete " + key);
             isDeleted = true;
         } catch (CheckedOperationTimeoutException e){
             log.warning("get CheckedOperationTimeoutException");
@@ -355,7 +355,7 @@ public class CacheFactory {
         } else {
             key = "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
         }
-        log.info("brandInfoKey:" + key);
+        log.fine("brandInfoKey:" + key);
         return key;
     }
     
@@ -375,7 +375,7 @@ public class CacheFactory {
         } else {
             str += "text";
         }
-        log.info("programInfo cache key:" + str);
+        log.fine("programInfo cache key:" + str);
         return str;
     }
     
@@ -383,7 +383,7 @@ public class CacheFactory {
         
         List<String> keys = new ArrayList<String>();
         
-        log.info("get all programInfo keys from ch" + channelId + " in format " + format);
+        log.fine("get all programInfo keys from ch" + channelId + " in format " + format);
         
         for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
             
@@ -435,11 +435,7 @@ public class CacheFactory {
         	key += "-text";
         }
         
-        // cool log down
-        if (NnDateUtil.timestamp() - lastLogTime > MINIMUM_LOG_INTERVAL) {
-            log.info("channelLineup key = " + key);
-            lastLogTime = NnDateUtil.timestamp();
-        }
+        log.fine("[memcache] channelLineup key = " + key);
         
         return key;
     }
@@ -450,19 +446,19 @@ public class CacheFactory {
      */
     public static String getDayPartingChannelKey(long msoId, short time, String lang) {
     	String key = "daypartChannel" + msoId + "-" + lang + "-" + time;
-    	log.info("daypartChannel cache key:" + key);
+    	log.fine("daypartChannel cache key:" + key);
     	return key;
     }
     
     public static String getDaypartingProgramsKey(long msoId, short time, String lang) {
     	String key = "daypartProgram" + msoId + "-" + lang + "-" + time;
-    	log.info("daypartProgram cache key:" + key);
+    	log.fine("daypartProgram cache key:" + key);
     	return key;    	
     }
     
     public static String getYtProgramInfoKey(long channelId) {
         String key = "ytprogram-" + channelId; 
-        log.info("ytprogram key:" + key);
+        log.fine("ytprogram key:" + key);
         return key;
     }
     
@@ -473,7 +469,7 @@ public class CacheFactory {
         } else {
             key = "adInfo(" + mso.getName() + ")[json]";
         }
-        log.info("adInfoKey:" + key);
+        log.fine("adInfoKey:" + key);
         return key;
     }
     
