@@ -25,7 +25,7 @@ public class CounterTask extends CounterFactory {
             dirtyCounters.clear();
             for (Entry<String, Integer> entry : counterSet) {
                 shardSet.add(increment(entry.getKey(), entry.getValue()));
-                System.out.println(String.format("[counter] increment %03d, \"%s\"", entry.getValue(), entry.getKey()));
+                System.out.println(String.format("[counter] increment %3d, \"%s\"", entry.getValue(), entry.getKey()));
             }
             NNF.getShardDao().saveAll(shardSet);
         }
