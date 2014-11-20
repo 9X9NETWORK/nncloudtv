@@ -65,16 +65,6 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         return sql(query);
     }    
     
-    public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
-        
-        String query = "SELECT * FROM nnepisode "
-                     + "        WHERE " + filter
-                     + "     ORDER BY " + sorting
-                     + "        LIMIT " + start + ", " + limit;
-        
-        return sql(query);
-    }
-    
     public List<NnEpisode> findPlayerLatestEpisode(long channelId, short sort) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
         PersistenceManager pm = getPersistenceManager();

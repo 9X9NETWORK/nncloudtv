@@ -1208,19 +1208,19 @@ public class ApiContent extends ApiGeneric {
         if (rows == null) {
             rows = (long) 0;
         }
-        
+        NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         List<NnEpisode> results = new ArrayList<NnEpisode>();
         if (page > 0 && rows > 0) {
             
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
-                results = NNF.getEpisodeMngr().list(page, rows, "seq DESC", "channelId == " + channelId);
+                results = episodeMngr.list(page, rows, "seq DESC", "channelId == " + channelId);
             } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
-                results = NNF.getEpisodeMngr().listV2(page -1, rows, NnEpisodeDao.LINEAR_ORDERING, "channelId = " + channelId);
+                results = episodeMngr.list(page, rows, NnEpisodeDao.LINEAR_ORDERING, "channelId = " + channelId);
             } else {
-                results = NNF.getEpisodeMngr().list(page, rows, "seq ASC", "channelId == " + channelId);
+                results = episodeMngr.list(page, rows, "seq ASC", "channelId == " + channelId);
             }
         } else {
-            results = NNF.getEpisodeMngr().findByChannelId(channelId);
+            results = episodeMngr.findByChannelId(channelId);
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                 Collections.sort(results, NnEpisodeManager.getComparator("reverse"));
             } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
@@ -1230,7 +1230,7 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        NNF.getEpisodeMngr().normalize(results);
+        episodeMngr.normalize(results);
         for (NnEpisode episode : results) {
             episode.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, episode.getChannelId(), episode.getId()));
         }

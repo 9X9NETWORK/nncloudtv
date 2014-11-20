@@ -16,6 +16,11 @@ public class CounterDao extends GenericDao<Counter> {
         super(Counter.class);
     }
     
+    public List<Counter> getViewCounters() {
+        
+        return sql("SELECT * FROM counter WHERE counterName LIKE ('u_%') OR ('v_%')");
+    }
+    
     public Counter findByCounterName(String counterName) {
         PersistenceManager pm = getPersistenceManager();
         Counter result = null;

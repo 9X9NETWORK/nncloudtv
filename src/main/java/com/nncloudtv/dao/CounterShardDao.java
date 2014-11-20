@@ -42,11 +42,6 @@ public class CounterShardDao extends GenericDao<CounterShard> {
         super(CounterShard.class);
     }
     
-    public List<CounterShard> getViewCounters() {
-        
-        return sql("SELECT * FROM counter_shard WHERE counterName LIKE ('u_%') OR ('v_%')");
-    }
-    
     public List<CounterShard> findByCounterName(String counterName) {
         PersistenceManager pm = getPersistenceManager();
         List<CounterShard> results = new ArrayList<CounterShard>();

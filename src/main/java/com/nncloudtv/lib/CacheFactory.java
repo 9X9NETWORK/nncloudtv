@@ -87,7 +87,7 @@ public class CacheFactory {
     }
     
     // needs to shutdown manually (for public use)
-    public static MemcachedClient getClient() {
+    private static MemcachedClient getClient() {
         
         try {
             if (isRunning && isEnabled) {
@@ -101,12 +101,6 @@ public class CacheFactory {
             e.printStackTrace();
         }
         return null;
-    }
-    
-    // don't need to shutdown manually (for speed, internally use)
-    private static MemcachedClient getSharedClient() {
-        
-        return cache;
     }
     
     public static void reconfigClient() {
@@ -159,7 +153,6 @@ public class CacheFactory {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
-        MemcachedClient cache = getSharedClient();
         if (cache == null) return null;
         
         Object obj = null;
@@ -299,9 +292,43 @@ public class CacheFactory {
         System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
+    public static void flush() {
+        
+        if (!isEnabled || !isRunning) return;
+        
+        long before = NnDateUtil.timestamp();
+        MemcachedClient cache = getClient();
+        if (cache == null) return;
+        
+        try {
+            cache.flush().get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (CheckedOperationTimeoutException e){
+            log.warning("get CheckedOperationTimeoutException");
+        } catch (OperationTimeoutException e) {
+            log.severe("memcache OperationTimeoutException");
+        } catch (Exception e) {
+            log.severe("flush Exception");
+            log.severe(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+        }
+        
+        System.out.println(String.format("[memcache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+    }
+    
     public static String getSystemCategoryKey(long channelId) {
         
         return String.format("systemCategory(%d)", channelId);
+    }
+    
+    //////////////////////////////////////////////
+    //////// start of cache key functions ////////
+    //////////////////////////////////////////////
+    
+    public static String getNnChannelMoreImageUrlKey(long channelId) {
+        
+        return String.format("NnChannel.getMoreImageUrl(%d)", channelId);
     }
     
     public static String getNnChannelPrefKey(long channelId, String item) {
@@ -322,14 +349,14 @@ public class CacheFactory {
     
     // example: brandInfo(9x9)[json]
     public static String getBrandInfoKey(Mso mso, String os, short format) {
-    	String key = "";
-    	if (format == ApiContext.FORMAT_PLAIN) {
-    		key = "brandInfo(" + mso.getName() + ")(" + os + ")";
-    	} else {
-    		key = "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
-    	}
-    	log.info("brandInfoKey:" + key);
-    	return key;
+        String key = "";
+        if (format == ApiContext.FORMAT_PLAIN) {
+            key = "brandInfo(" + mso.getName() + ")(" + os + ")";
+        } else {
+            key = "brandInfo(" + mso.getName() + ")(" + os + ")" + "[json]";
+        }
+        log.info("brandInfoKey:" + key);
+        return key;
     }
     
     /**

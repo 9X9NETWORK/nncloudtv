@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
+import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
@@ -905,50 +906,32 @@ public class NnChannelManager {
     public void populateMoreImageUrl(NnChannel channel) {
         
         List<String> imgs = new ArrayList<String>();
+        String cacheKey = CacheFactory.getNnChannelMoreImageUrlKey(channel.getId());
         
-        if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-            String filter = "channelId == " + channel.getId();
-            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate desc", filter);
-            
-            for (int i = 0; i < programs.size() && imgs.size() < 3; i++) {
-                
-                String img = programs.get(i).getImageUrl();
-                if (img != null && img.length() > 0) {
-                    imgs.add(img);
-                }
-            }
-            
-        } else {
-            
-            String filter = "channelId == " + channel.getId();
-            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq asc", filter);
-            
-            for (int i = 0; i < episodes.size() && imgs.size() < 3; i++) {
-                
-                String img = episodes.get(i).getImageUrl();
-                
-                if (img != null && img.length() > 0) {
-                    imgs.add(img);
-                }
-            }
+        String result = (String) CacheFactory.get(cacheKey);
+        if (result != null) {
+            channel.setMoreImageUrl(result);
+            return;
         }
+        
+        String filter = String.format("channelId == %d and imageUrl != NULL and isPublic = TRUE", channel.getId());
+        String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq ASC" : "seq DESC";
+        if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
+            sort = NnEpisodeDao.LINEAR_ORDERING;
+        
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 3, sort, filter);
+        
+        for (NnEpisode episode : episodes)
+            imgs.add(episode.getImageUrl());
         
         // fill up with default episode thubmnail
-        while (imgs.size() < 3) {
+        while (imgs.size() < 3)
             imgs.add(NnChannel.IMAGE_EPISODE_URL);
-        }
         
-        if (imgs.size() > 0) {
-            
-            String moreImageUrl = imgs.remove(0);
-            for (String imageUrl : imgs) {
-                
-                moreImageUrl += "|" + imageUrl;
-            }
-            
-            channel.setMoreImageUrl(moreImageUrl);
-        }
+        result = StringUtils.join(imgs, "|");
+        channel.setMoreImageUrl(result);
         
+        CacheFactory.set(cacheKey, result);
     }
     
     public void reorderUserChannels(final NnUser user) {
