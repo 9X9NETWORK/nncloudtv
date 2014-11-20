@@ -41,6 +41,15 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         }
         return detached;
     }
+    public List<NnEpisode> list(long start, long limit, String sorting, String filter) {
+        
+        String query = "SELECT * FROM nnepisode "
+                     + "        WHERE " + filter
+                     + "     ORDER BY " + sorting
+                     + "        LIMIT " + start + ", " + limit;
+        
+        return sql(query);
+    }
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {
         
