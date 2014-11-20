@@ -35,58 +35,13 @@ public class NnEpisodeManager {
     }
     
     public NnEpisode findById(long id) {
+        
         return dao.findById(id);
     }
     
     public NnEpisode save(NnEpisode episode) {
         
-        Date now = new Date();
-        
-        episode.setUpdateDate(now);
-        
-        NNF.getProgramMngr().resetCache(episode.getChannelId());
-        
-        return dao.save(episode);
-        
-    }
-    
-    public List<NnEpisode> save(List<NnEpisode> episodes) {
-        
-        Date now = new Date();
-        List<Long> channelIds = new ArrayList<Long>();
-        
-        for (NnEpisode episode : episodes) {
-            episode.setUpdateDate(now);
-            
-            if (channelIds.indexOf(episode.getChannelId()) < 0) {
-                channelIds.add(episode.getChannelId());
-            }
-        }
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            NNF.getProgramMngr().resetCache(channelId);
-        }
-        
-        return dao.saveAll(episodes);
-    }
-    
-    public NnEpisode save(NnEpisode episode, boolean rerun) {
-    
-        // rerun - to make episode on top again and public
-        if (rerun) {
-            
-            log.info("rerun!");
-            
-            episode.setPublishDate(new Date());
-            episode.setPublic(true);
-            episode.setSeq(0);
-            save(episode);
-            
-            reorderChannelEpisodes(episode.getChannelId());
-            
-            return episode;
-        }
+        Date now = NnDateUtil.now();
         
         log.info("isPublic = " + episode.isPublic() + ", publishDate = " + episode.getPublishDate());
         if (episode.isPublic() == false && episode.getPublishDate() != null) {
@@ -97,10 +52,35 @@ public class NnEpisodeManager {
         } else if (episode.isPublic() && episode.getPublishDate() == null) {
             
             log.warning("to force pubishDate be not null when is published, just in case");
-            episode.setPublishDate(NnDateUtil.now());
+            episode.setPublishDate(now);
         }
         
-        return save(episode);
+        if (episode.getCreateDate() == null)
+            episode.setCreateDate(now);
+        episode.setUpdateDate(now);
+        
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
+        
+        return dao.save(episode);
+        
+    }
+    
+    public List<NnEpisode> save(List<NnEpisode> episodes) {
+        
+        Date now = NnDateUtil.now();
+        List<Long> channelIds = new ArrayList<Long>();
+        
+        for (NnEpisode episode : episodes) {
+            episode.setUpdateDate(now);
+            if (channelIds.contains(episode.getChannelId()) == false)
+                channelIds.add(episode.getChannelId());
+        }
+        
+        log.info("channel count = " + channelIds.size());
+        for (Long channelId : channelIds)
+            NNF.getProgramMngr().resetCache(channelId);
+        
+        return dao.saveAll(episodes);
     }
     
     public List<NnEpisode> findByChannelId(long channelId) {

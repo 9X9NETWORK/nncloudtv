@@ -1654,13 +1654,6 @@ public class ApiContent extends ApiGeneric {
             }
         }
         
-        // rerun
-        String rerunStr = req.getParameter("rerun");
-        boolean rerun = false;
-        if (rerunStr != null && Boolean.valueOf(rerunStr)) {
-            rerun = true;
-        }
-        
         // duration
         String durationStr = req.getParameter("duration");
         if (durationStr != null) {
@@ -1689,7 +1682,7 @@ public class ApiContent extends ApiGeneric {
             episode.setSeq(seq);
         }
         
-        episode = episodeMngr.save(episode, rerun);
+        episode = episodeMngr.save(episode);
         
         episode.setName(NnStringUtil.revertHtml(episode.getName()));
         episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
@@ -1725,7 +1718,7 @@ public class ApiContent extends ApiGeneric {
         
         NnChannel channel = channelMngr.findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         

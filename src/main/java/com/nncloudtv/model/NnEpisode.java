@@ -69,6 +69,10 @@ public class NnEpisode {
     @Persistent
     private Date updateDate;
     
+    // TODO create DB field
+    @NotPersistent
+    private Date createDate;
+    
     @NotPersistent
     private long cntView;
     
@@ -223,6 +227,14 @@ public class NnEpisode {
     
     public void setContentType(short contentType) {
         this.contentType = contentType;
+    }
+    
+    public Date getCreateDate() {
+        return createDate;
+    }
+    
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
      
 }
