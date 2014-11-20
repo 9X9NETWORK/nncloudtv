@@ -43,8 +43,7 @@ import com.nncloudtv.web.json.player.SubEpisode;
 @Service
 public class NnProgramManager {
     
-    protected static final Logger log = Logger.getLogger(NnProgramManager.class
-                                              .getName());
+    protected static final Logger log = Logger.getLogger(NnProgramManager.class.getName());
     
     private NnProgramDao dao = NNF.getProgramDao();
     
@@ -60,7 +59,7 @@ public class NnProgramManager {
         return program;
     }
     
-    public void create(NnChannel channel, NnProgram program) {        
+    public void create(NnChannel channel, NnProgram program) {
         Date now = new Date();
         program.setCreateDate(now);
         program.setUpdateDate(now);
@@ -337,14 +336,17 @@ public class NnProgramManager {
         log.info("reset program info cache: " + channelId);
         List<String> keys = new ArrayList<String>();
         
+        //moreImageUrl
+        keys.add(CacheFactory.getNnChannelMoreImageUrlKey(channelId));
+        
         //programInfo version 40, format json
         keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
         //programInfo, version 40, format text
         keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
         
         //programInfo, version 31
-        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
-        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 31, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 32, ApiContext.FORMAT_PLAIN));
         //latestProgramInfo
         keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
         keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));

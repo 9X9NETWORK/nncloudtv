@@ -14,7 +14,7 @@ import com.nncloudtv.model.NnEpisode;
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
-    public static final String V2_LINEAR_SORTING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
+    public static final String V2_LINEAR_SORTING = "isPublic asc, (case when isPublic = true then publishDate else scheduleDate end desc)";
     
     public NnEpisodeDao() {
         super(NnEpisode.class);
