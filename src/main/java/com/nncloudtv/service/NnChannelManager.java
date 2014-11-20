@@ -916,9 +916,9 @@ public class NnChannelManager {
         
         String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq ASC" : "seq DESC";
         if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
-            sort = NnEpisodeDao.LINEAR_ORDERING;
+            sort = NnEpisodeDao.LINEAR_ORDERING_V2;
         
-        List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, PlayerApiService.PAGING_ROWS, sort, "channelId == " + channel.getId());
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().listV2(1, PlayerApiService.PAGING_ROWS, sort, "channelId = " + channel.getId());
         
         for (NnEpisode episode : episodes) {
             if (imgs.size() < 3) {

@@ -1215,7 +1215,7 @@ public class ApiContent extends ApiGeneric {
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
                 results = episodeMngr.list(page, rows, "seq DESC", "channelId == " + channelId);
             } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
-                results = episodeMngr.list(page, rows, NnEpisodeDao.LINEAR_ORDERING, "channelId = " + channelId);
+                results = episodeMngr.listV2(page, rows, NnEpisodeDao.LINEAR_ORDERING_V2, "channelId = " + channelId);
             } else {
                 results = episodeMngr.list(page, rows, "seq ASC", "channelId == " + channelId);
             }

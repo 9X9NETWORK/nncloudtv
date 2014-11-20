@@ -14,7 +14,7 @@ import com.nncloudtv.model.NnEpisode;
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
-    public static final String LINEAR_ORDERING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
+    public static final String LINEAR_ORDERING_V2 = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
     
     public NnEpisodeDao() {
         super(NnEpisode.class);
@@ -41,7 +41,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         }
         return detached;
     }
-    public List<NnEpisode> list(long start, long limit, String sorting, String filter) {
+    public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
         
         String query = "SELECT * FROM nnepisode "
                      + "        WHERE " + filter
@@ -64,7 +64,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         } else if (sort == NnChannel.SORT_TIMED_LINEAR) {
             
             filtering = "(isPublic || scheduleDate is not null) && channelId = " + channelId;
-            ordering = LINEAR_ORDERING;
+            ordering = LINEAR_ORDERING_V2;
         }
         
         String query = "select * from nnepisode where " + filtering
