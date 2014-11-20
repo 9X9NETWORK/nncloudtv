@@ -486,12 +486,12 @@ public class MsoManager {
         return dao.findAll();
     }
     
-    public List<Mso> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<Mso> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<Mso> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<Mso> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public int total() {

@@ -146,12 +146,12 @@ public class NnUserSubscribeManager {
     }
     
     
-    public List<NnUserSubscribe> list(int page, int limit, String sidx, String sord) {
-        return subDao.list(page, limit, sidx, sord);
+    public List<NnUserSubscribe> list(int page, int limit, String sort) {
+        return subDao.list(page, limit, sort);
     }
     
-    public List<NnUserSubscribe> list(int page, int limit, String sidx, String sord, String filter) {
-        return subDao.list(page, limit, sidx, sord, filter);
+    public List<NnUserSubscribe> list(int page, int limit, String sort, String filter) {
+        return subDao.list(page, limit, sort, filter);
     }
     
     public int total() {

@@ -1213,11 +1213,11 @@ public class ApiContent extends ApiGeneric {
         if (page > 0 && rows > 0) {
             
             if (channel.getSorting() == NnChannel.SORT_POSITION_REVERSE) {
-                results = NNF.getEpisodeMngr().list(page, rows, "seq", "desc", "channelId == " + channelId);
+                results = NNF.getEpisodeMngr().list(page, rows, "seq DESC", "channelId == " + channelId);
             } else if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
                 results = NNF.getEpisodeMngr().listV2(page -1, rows, NnEpisodeDao.LINEAR_ORDERING, "channelId = " + channelId);
             } else {
-                results = NNF.getEpisodeMngr().list(page, rows, "seq", "asc", "channelId == " + channelId);
+                results = NNF.getEpisodeMngr().list(page, rows, "seq ASC", "channelId == " + channelId);
             }
         } else {
             results = NNF.getEpisodeMngr().findByChannelId(channelId);
@@ -1360,7 +1360,7 @@ public class ApiContent extends ApiGeneric {
         
         if (page > 0 && rows > 0) {
             
-            results = NNF.getEpisodeMngr().list(page, rows, "seq", "asc", "channelId == " + channelId);
+            results = NNF.getEpisodeMngr().list(page, rows, "seq ASC", "channelId == " + channelId);
             
         } else {
             

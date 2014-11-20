@@ -1572,7 +1572,7 @@ public class ApiMso extends ApiGeneric {
         
         if ("history".equals(type)) {
             
-            return NNF.getMsoNotiMngr().list(1, 20, "publishDate", "desc", "msoId == " + mso.getId());
+            return NNF.getMsoNotiMngr().list(1, 20, "publishDate DESC", "msoId == " + mso.getId());
             
         } else if ("schedule".equals(type)) {
             
@@ -1580,7 +1580,7 @@ public class ApiMso extends ApiGeneric {
             
         } else {
             
-            return NNF.getMsoNotiMngr().list(1, 20, "createDate", "desc", "msoId == " + mso.getId());
+            return NNF.getMsoNotiMngr().list(1, 20, "createDate DESC", "msoId == " + mso.getId());
         }
     }
     

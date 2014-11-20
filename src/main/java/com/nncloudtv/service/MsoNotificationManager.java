@@ -35,8 +35,8 @@ public class MsoNotificationManager {
         return dao.saveAll(notifications);
     }
     
-    public List<MsoNotification> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<MsoNotification> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public List<MsoNotification> listScheduled(int page, int limit, String filter) {

@@ -364,12 +364,12 @@ public class NnProgramManager {
         return dao.total(filter);
     }
     
-    public List<NnProgram> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnProgram> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnProgram> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnProgram> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public List<NnProgram> findByEpisodeId(long episodeId) {

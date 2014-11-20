@@ -246,15 +246,14 @@ public class NnEpisodeManager {
         dao.delete(episode);
     }
     
-    public List<NnEpisode> list(long page, long rows, String sidx, String sord,
-            String filter) {
+    public List<NnEpisode> list(long page, long rows, String sort, String filter) {
     
-        return dao.list(page, rows, sidx, sord, filter);
+        return dao.list(page, rows, sort, filter);
     }
     
-    public List<NnEpisode> listV2(long start,long limit, String sorting, String filter) {
+    public List<NnEpisode> listV2(long start,long limit, String sort, String filter) {
         
-        return dao.listV2(start, limit, sorting, filter);
+        return dao.listV2(start, limit, sort, filter);
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {

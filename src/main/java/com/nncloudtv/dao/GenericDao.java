@@ -136,17 +136,20 @@ public class GenericDao<T> {
     
     @SuppressWarnings("unchecked")
     public int total(String filter) {
-        
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.total(\"%s\")", daoClassName, filter);
+        System.out.println(msg);
         int result = 0;
         try {
             Query query = pm.newQuery(daoClass);
             if (filter != null && !filter.isEmpty())
                 query.setFilter(filter);
             result = ((List<T>) query.execute()).size();
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return result;
     }
     
@@ -155,44 +158,49 @@ public class GenericDao<T> {
      *
      * @param page   the page number (start from 1)
      * @param limit  number of items per page
-     * @param sidx   sorting field
-     * @param sord   sorting direction (asc, desc)
+     * @param sort   sorting field
      */
-    public List<T> list(int page, int limit, String sidx, String sord) {
-        
+    public List<T> list(int page, int limit, String sort) {
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.list(%d, %d, \"%s\")", daoClassName, page, limit, sort);
+        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
-            if (sidx != null && sidx != "" && sord != null && sord != "")
-                query.setOrdering(sidx + " " + sord);
+            if (sort != null)
+                query.setOrdering(sort);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
             List<T> tmp = (List<T>) query.execute();
             results = (List<T>) pm.detachCopyAll(tmp);
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return results;
     }
     
-    public List<T> list(long page, long limit, String sidx, String sord, String filter) {
-        
+    public List<T> list(long page, long limit, String sort, String filter) {
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.list(%d, %d, \"%s\", \"%s\")", daoClassName, page, limit, sort, filter);
+        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
             if (filter != null && !filter.isEmpty())
                 query.setFilter(filter);
-            if (sidx != null || sord != null)
-                query.setOrdering(sidx + " " + sord);
+            if (sort != null)
+                query.setOrdering(sort);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
             List<T> tmp = (List<T>) query.execute();
             results = (List<T>) pm.detachCopyAll(tmp);
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return results;
     }
     

@@ -67,9 +67,10 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
     
     public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
         
-        String query = "select * from nnepisode where " + filter
-                     + "     order by " + sorting
-                     + "        limit " + start + ", " + limit;
+        String query = "SELECT * FROM nnepisode "
+                     + "        WHERE " + filter
+                     + "     ORDER BY " + sorting
+                     + "        LIMIT " + start + ", " + limit;
         
         return sql(query);
     }

@@ -652,12 +652,12 @@ public class NnChannelManager {
         return dao.findAll();
     }
     
-    public List<NnChannel> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnChannel> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnChannel> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnChannel> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public int total() {
@@ -908,7 +908,7 @@ public class NnChannelManager {
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
             String filter = "channelId == " + channel.getId();
-            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate", "desc", filter);
+            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate desc", filter);
             
             for (int i = 0; i < programs.size() && imgs.size() < 3; i++) {
                 
@@ -921,7 +921,7 @@ public class NnChannelManager {
         } else {
             
             String filter = "channelId == " + channel.getId();
-            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq", "asc", filter);
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq asc", filter);
             
             for (int i = 0; i < episodes.size() && imgs.size() < 3; i++) {
                 
