@@ -914,16 +914,21 @@ public class NnChannelManager {
             return;
         }
         
-        String filter = String.format("channelId == %d && imageUrl != '' && isPublic == 1", channel.getId());
         String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq ASC" : "seq DESC";
         if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
             sort = NnEpisodeDao.LINEAR_ORDERING;
         
-        List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 3, sort, filter);
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, PlayerApiService.PAGING_ROWS, sort, "channelId == " + channel.getId());
         
-        for (NnEpisode episode : episodes)
-            imgs.add(episode.getImageUrl());
-        
+        for (NnEpisode episode : episodes) {
+            if (imgs.size() < 3) {
+                String imageUrl = episode.getImageUrl();
+                if (episode.isPublic() && imageUrl != null && imageUrl.length() > 0)
+                    imgs.add(episode.getImageUrl());
+            } else {
+                break;
+            }
+        }
         // fill up with default episode thubmnail
         while (imgs.size() < 3)
             imgs.add(NnChannel.IMAGE_EPISODE_URL);
