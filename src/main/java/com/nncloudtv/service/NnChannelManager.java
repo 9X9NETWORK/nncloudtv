@@ -914,11 +914,12 @@ public class NnChannelManager {
             return;
         }
         
+        String filter = String.format("channelId = %d AND imageUrl IS NOT NULL AND isPublic = TRUE", channel.getId());
         String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq ASC" : "seq DESC";
         if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
-            sort = NnEpisodeDao.LINEAR_ORDERING_V2;
+            sort = NnEpisodeDao.V2_LINEAR_SORTING;
         
-        List<NnEpisode> episodes = NNF.getEpisodeMngr().listV2(1, PlayerApiService.PAGING_ROWS, sort, "channelId = " + channel.getId());
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().listV2(0, 3, sort, filter);
         
         for (NnEpisode episode : episodes) {
             if (imgs.size() < 3) {

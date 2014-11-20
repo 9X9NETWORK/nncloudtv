@@ -246,11 +246,6 @@ public class NnEpisodeManager {
         dao.delete(episode);
     }
     
-    public List<NnEpisode> list(long page, long rows, String sort, String filter) {
-    
-        return dao.list(page, rows, sort, filter);
-    }
-    
     public List<NnEpisode> listV2(long page, long rows, String sort, String filter) {
     
         return dao.listV2(page, rows, sort, filter);
