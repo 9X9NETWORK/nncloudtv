@@ -915,7 +915,7 @@ public class NnChannelManager {
         }
         
         String filter = String.format("channelId = %d AND isPublic = TRUE AND imageUrl IS NOT NULL", channel.getId());
-        String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq ASC" : "seq DESC";
+        String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq DESC" : "seq ASC";
         if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
             sort = NnEpisodeDao.V2_LINEAR_SORTING;
         
