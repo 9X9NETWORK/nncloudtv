@@ -41,7 +41,7 @@ public class CacheFactory {
     private static boolean checkServer(InetSocketAddress addr) {
         
         String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
-        System.out.println("[memcache] key = " + key);
+        System.out.println("[cache] key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
@@ -73,7 +73,7 @@ public class CacheFactory {
             log.warning(e.getMessage());
         } finally {
             long delta = NnDateUtil.timestamp() - before;
-            System.out.println("[memcache] it takes " + delta + " milliseconds");
+            System.out.println("[cache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
@@ -108,7 +108,7 @@ public class CacheFactory {
         Logger.getLogger("net.spy.memcached").setLevel(Level.SEVERE);
         String serverStr = MsoConfigManager.getMemcacheServer();
         List<InetSocketAddress> checkedServers = new ArrayList<InetSocketAddress>();
-        System.out.println("[memcache] server = " + serverStr);
+        System.out.println("[cache] server = " + serverStr);
         String[] serverList = serverStr.split(",");
         for (String server : serverList) {
             
@@ -172,9 +172,9 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (obj == null)
-            System.out.println(String.format("[memcache] %s --> missed", key));
+            System.out.println(String.format("[cache] %s --> missed", key));
         else
-            CounterFactory.increment("[memcache] HIT " + key); // HIT
+            CounterFactory.increment("[cache] HIT " + key); // HIT
         return obj;
     }
     
@@ -213,11 +213,11 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (retObj == null) {
-            System.out.println(String.format("[memcache] %s --> NOT saved", key));
+            System.out.println(String.format("[cache] %s --> NOT saved", key));
         } else {
-            System.out.println(String.format("[memcache] %s --> saved", key));
+            System.out.println(String.format("[cache] %s --> saved", key));
         }
-        System.out.println(String.format("[memcache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         
         return retObj;
     }    
@@ -235,7 +235,7 @@ public class CacheFactory {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
                     cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-                    CounterFactory.increment("[memcache] delete " + key);
+                    CounterFactory.increment("[cache] delete " + key);
                 }
             }
             isDeleted = true;
@@ -252,11 +252,11 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         if (isDeleted) {
-            System.out.println(String.format("[memcache] mass: %d --> deleted", keys.size()));
+            System.out.println(String.format("[cache] mass: %d --> deleted", keys.size()));
         } else {
-            System.out.println(String.format("[memcache] mass: %d --> NOT deleted", keys.size()));
+            System.out.println(String.format("[cache] mass: %d --> NOT deleted", keys.size()));
         }
-        System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void delete(String key) {
@@ -270,7 +270,7 @@ public class CacheFactory {
         
         try {
             cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-            CounterFactory.increment("[memcache] delete " + key);
+            CounterFactory.increment("[cache] delete " + key);
             isDeleted = true;
         } catch (CheckedOperationTimeoutException e){
             log.warning("get CheckedOperationTimeoutException");
@@ -285,11 +285,11 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         if (isDeleted) {
-            System.out.println(String.format("[memcache] %s --> deleted", key));
+            System.out.println(String.format("[cache] %s --> deleted", key));
         } else {
-            System.out.println(String.format("[memcache] %s --> NOT deleted", key));
+            System.out.println(String.format("[cache] %s --> NOT deleted", key));
         }
-        System.out.println(String.format("[memcache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void flush() {
@@ -314,7 +314,7 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         
-        System.out.println(String.format("[memcache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static String getSystemCategoryKey(long channelId) {
@@ -435,7 +435,7 @@ public class CacheFactory {
         	key += "-text";
         }
         
-        log.fine("[memcache] channelLineup key = " + key);
+        log.fine("[cache] channelLineup key = " + key);
         
         return key;
     }

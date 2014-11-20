@@ -41,10 +41,10 @@ public class ScheduledTask {
         
         if (CacheFactory.isEnabled) {
             
-            System.out.println("[memcache] checking memcache server(s) ...");
+            System.out.println("[cache] checking memcache server(s) ...");
             long before = NnDateUtil.timestamp();
             CacheFactory.reconfigClient();
-            System.out.println(String.format("[memcache] reconfig costs %d milliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[cache] reconfig costs %d milliseconds", NnDateUtil.timestamp() - before));
         }
         
     }
