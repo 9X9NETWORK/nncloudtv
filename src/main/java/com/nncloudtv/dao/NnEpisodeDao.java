@@ -48,7 +48,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
                      + "     ORDER BY " + sorting
                      + "        LIMIT " + start + ", " + limit;
         
-        return sql(query);
+        return sql(query, true);
     }
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {

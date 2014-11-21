@@ -272,12 +272,22 @@ public class GenericDao<T> {
         return results;
     }
     
+    public List<T> sql(String queryStr, boolean fine) {
+        
+        return sql(queryStr, getPersistenceManager(), fine);
+    }
+    
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getPersistenceManager());
+        return sql(queryStr, getPersistenceManager(), false);
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
+        
+        return sql(queryStr, pm, false);
+    }
+    
+    public List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
         List<T> detached = new ArrayList<T>();
         
@@ -290,7 +300,8 @@ public class GenericDao<T> {
             
             return detached;
         }
-        System.out.println(String.format("[sql] %s;", queryStr));
+        if (!fine)
+            System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
         try {
             
