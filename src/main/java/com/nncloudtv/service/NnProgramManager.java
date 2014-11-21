@@ -303,7 +303,7 @@ public class NnProgramManager {
             return NnProgram.CONTENTTYPE_RADIO;
         if (program.getFileUrl().contains("youtube.com"))
             return NnProgram.CONTENTTYPE_YOUTUBE;
-        return NnProgram.CONTENTTYPE_MP4;
+        return NnProgram.CONTENTTYPE_DIRECTLINK;
     }
     
     public YtProgram findYtProgramById(Long ytProgramId) {
