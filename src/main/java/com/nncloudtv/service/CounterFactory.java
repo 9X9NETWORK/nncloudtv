@@ -40,7 +40,7 @@ public class CounterFactory {
         if (counter == null) {
             // Create a counter with 0 shards.
             counter = NNF.getCounterDao().save(new Counter(counterName));
-            System.out.println(String.format("[counter] created \"%s\", id = %d", counter.getCounterName(), counter.getId()));
+            System.out.println(String.format("[counter] created {%s}, id = %d", counter.getCounterName(), counter.getId()));
             
             return counter;
         }
@@ -107,7 +107,7 @@ public class CounterFactory {
              */
             int numShards = (int) Math.sqrt(sum) / 100 + 1; // Sharding Formula
             Counter counter = getOrCreateCounter(counterName);
-            System.out.println(String.format("[counter] \"%s\" shard number = %d (%d expected), count = %d",
+            System.out.println(String.format("[counter] {%s} shard number = %d (%d expected), count = %d",
                                    counter.getCounterName(), counter.getNumShards(), numShards, sum));
             if (numShards > shardSize) {
                 counter.setNumShards(shardSize);
@@ -126,7 +126,7 @@ public class CounterFactory {
         counter.setNumShards(shardNum);
         CounterShard shard = NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
         NNF.getCounterDao().save(counter);
-        System.out.println(String.format("[counter] add shard to \"%s\", total shard number = %d", counter.getCounterName(), counter.getNumShards()));
+        System.out.println(String.format("[counter] add shard to {%s}, total shard number = %d", counter.getCounterName(), counter.getNumShards()));
         
         return shard;
     }
