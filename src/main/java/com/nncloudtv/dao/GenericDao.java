@@ -12,7 +12,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import com.nncloudtv.lib.NnDateUtil;
-import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 
