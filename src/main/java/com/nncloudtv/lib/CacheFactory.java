@@ -4,18 +4,13 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.OperationTimeoutException;
-import net.spy.memcached.internal.CheckedOperationTimeoutException;
-
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
@@ -30,7 +25,6 @@ public class CacheFactory {
     public static final int EXP_SHORT = 100;  // seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
-    public static final String ERROR = "ERROR";
     
     public static boolean isEnabled = true;
     public static boolean isRunning = false;
@@ -61,15 +55,8 @@ public class CacheFactory {
             if (future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS) != null) {
                 alive = true;
             }
-        } catch (NullPointerException e) {
-            log.warning(e.getMessage());
-        } catch (InterruptedException e) {
-            log.warning(e.getMessage());
-        } catch (ExecutionException e) {
-            log.warning(e.getMessage());
-        } catch (TimeoutException e) {
-            log.warning(e.getMessage());
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.warning(e.getClass().getName());
             log.warning(e.getMessage());
         } finally {
             long delta = NnDateUtil.timestamp() - before;
@@ -88,15 +75,10 @@ public class CacheFactory {
     private static MemcachedClient getClient() {
         
         try {
-            if (isRunning && isEnabled) {
-                
+            if (isRunning && isEnabled)
                 return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
-            }
         } catch (IOException e) {
-            log.severe("memcache io exception");
-        } catch (Exception e) {
-            log.severe("memcache exception");
-            e.printStackTrace();
+            log.severe(e.getMessage());
         }
         return null;
     }
@@ -111,11 +93,9 @@ public class CacheFactory {
         System.out.println("[cache] server = " + serverStr);
         String[] serverList = serverStr.split(",");
         for (String server : serverList) {
-            
             InetSocketAddress addr = new InetSocketAddress(server, PORT_DEFAULT);
-            if (checkServer(addr)) {
+            if (checkServer(addr))
                 checkedServers.add(addr);
-            }
         }
         memcacheServers = checkedServers;
         isRunning = (memcacheServers == null || memcacheServers.isEmpty()) ? false : true;
@@ -131,7 +111,6 @@ public class CacheFactory {
         MemcachedClient newCache = null;
         try {
             newCache = isRunning ? new MemcachedClient(new BinaryConnectionFactory(), memcacheServers) : null;
-            
         } catch (IOException e) {
             log.severe("memcache io exception");
             log.severe(e.getMessage());
@@ -140,6 +119,7 @@ public class CacheFactory {
             log.severe(e.getMessage());
         } catch (Exception e) {
             log.severe("memcache exception");
+            log.severe(e.getClass().getName());
             log.severe(e.getMessage());
             e.printStackTrace();
         } finally {
@@ -158,15 +138,12 @@ public class CacheFactory {
         try {
             future = cache.asyncGet(key);
             obj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS); // Asynchronously 
-        } catch (CheckedOperationTimeoutException e) {
-            log.warning("get CheckedOperationTimeoutException");
-        } catch (OperationTimeoutException e) {
-            log.severe("get OperationTimeoutException");
         } catch (NullPointerException e) {
+            log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
-            log.severe("get Exception");
-            e.printStackTrace();
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         } finally {
             if (future != null)
                 future.cancel(false);
@@ -185,7 +162,6 @@ public class CacheFactory {
     
     public static Object set(String key, Object obj, int exp) {
         
-        
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
         long before = NnDateUtil.timestamp();
@@ -198,15 +174,12 @@ public class CacheFactory {
             cache.set(key, exp == 0 ? EXP_DEFAULT : exp, obj);
             future = cache.asyncGet(key);
             retObj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (CheckedOperationTimeoutException e){
-            log.warning("get CheckedOperationTimeoutException");
-        } catch (OperationTimeoutException e) {
-            log.severe("memcache OperationTimeoutException");
         } catch (NullPointerException e) {
+            log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
-            log.severe("get Exception");
-            e.printStackTrace();
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
             if (future != null)
@@ -239,15 +212,12 @@ public class CacheFactory {
                 }
             }
             isDeleted = true;
-        } catch (CheckedOperationTimeoutException e){
-            log.warning("get CheckedOperationTimeoutException");
-        } catch (OperationTimeoutException e) {
-            log.severe("memcache OperationTimeoutException");
         } catch (NullPointerException e) {
+            log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
-            log.severe("get Exception");
-            e.printStackTrace();
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
@@ -272,15 +242,12 @@ public class CacheFactory {
             cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
             CounterFactory.increment("[cache] delete " + key);
             isDeleted = true;
-        } catch (CheckedOperationTimeoutException e){
-            log.warning("get CheckedOperationTimeoutException");
-        } catch (OperationTimeoutException e) {
-            log.severe("memcache OperationTimeoutException");
         } catch (NullPointerException e) {
+            log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
-            log.severe("get Exception");
-            e.printStackTrace();
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
@@ -302,14 +269,9 @@ public class CacheFactory {
         
         try {
             cache.flush().get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (CheckedOperationTimeoutException e){
-            log.warning("get CheckedOperationTimeoutException");
-        } catch (OperationTimeoutException e) {
-            log.severe("memcache OperationTimeoutException");
         } catch (Exception e) {
-            log.severe("flush Exception");
-            log.severe(e.getMessage());
-            e.printStackTrace();
+            log.warning(e.getClass().getName());
+            log.warning(e.getMessage());
         } finally {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
@@ -317,14 +279,14 @@ public class CacheFactory {
         System.out.println(String.format("[cache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
+    //////////////////////////////////////////////
+    //////// start of cache key functions ////////
+    //////////////////////////////////////////////
+    
     public static String getSystemCategoryKey(long channelId) {
         
         return String.format("systemCategory(%d)", channelId);
     }
-    
-    //////////////////////////////////////////////
-    //////// start of cache key functions ////////
-    //////////////////////////////////////////////
     
     public static String getNnChannelMoreImageUrlKey(long channelId) {
         

@@ -45,7 +45,7 @@ public class NnLogUtil {
             queryStr = "?" + (queryStr.length() > 150 ? queryStr.substring(0, 147) + "..." : queryStr);
         else 
             queryStr = "";
-        url = url + queryStr;
+        url +=  queryStr;
         NnNetUtil.log.info(url);
     }
     

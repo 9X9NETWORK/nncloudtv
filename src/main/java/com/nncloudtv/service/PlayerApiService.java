@@ -94,8 +94,8 @@ public class PlayerApiService {
     
     protected static final Logger log = Logger.getLogger(PlayerApiService.class.getName());
     
-    public final static int   PAGING_ROWS    = 50;
-    public final static int   MAX_EPISODES   = 200;
+    public final static int PAGING_ROWS  = 50;
+    public final static int MAX_EPISODES = 200;
     
     @Override
     protected void finalize() throws Throwable {

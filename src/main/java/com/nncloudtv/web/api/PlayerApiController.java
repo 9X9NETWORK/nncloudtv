@@ -133,7 +133,7 @@ public class PlayerApiController {
     
     protected static final Logger log = Logger.getLogger(PlayerApiController.class.getName());
     
-    protected static final PlayerApiService playerApiService = NNF.getPlayerApiService();
+    protected static final PlayerApiService playerApiService = NNF.getPlayerApiService(); // reusable, save memory
     protected static final String PLAYER_ERR_MSG = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
     
     /**
@@ -162,9 +162,8 @@ public class PlayerApiController {
         ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            }
             output = playerApiService.guestRegister(ctx, resp);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
@@ -244,9 +243,8 @@ public class PlayerApiController {
         ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            }
             output = playerApiService.signup(ctx, email, password, name, userToken, captcha, text, sphere, uiLang, year, gender, isTemp, resp);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
@@ -289,9 +287,8 @@ public class PlayerApiController {
         ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            }
             output = playerApiService.fbDeviceSignup(ctx, me, expire, msoString, resp);
         } catch (Exception e){
             output = ctx.handlePlayerException(e);
@@ -321,9 +318,8 @@ public class PlayerApiController {
         ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            }
             output = playerApiService.userTokenVerify(ctx, token, resp);
         } catch (Exception e){
             output = ctx.handlePlayerException(e);
@@ -347,9 +343,8 @@ public class PlayerApiController {
         ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
-            if (status != NnStatusCode.SUCCESS) {
+            if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            }
             CookieHelper.deleteCookie(resp, CookieHelper.USER);
             CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
             output = NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS);
@@ -995,7 +990,9 @@ public class PlayerApiController {
         Object output = PLAYER_ERR_MSG;
         ApiContext ctx = new ApiContext(req);
         try {
-            playerApiService.prepService(ctx);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             output = playerApiService.subscriberLineup(ctx, userToken, curatorIdStr);
         } catch (Exception e){
             output = ctx.handlePlayerException(e);
@@ -2807,9 +2804,9 @@ public class PlayerApiController {
     */
     
     /**
-     *  Get vimeo video url. Server backup solution.
+     *  Get (vimeo) video url. Server backup solution.
      *  
-     *  @param url vimeo video url
+     *  @param url (vimeo) video url
      *  @return list of video files. current there are two entries: hd and all. <br/>
      *          example: <br/>
      *          hd    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
