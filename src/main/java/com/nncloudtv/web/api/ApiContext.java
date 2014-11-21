@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Joiner;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
-import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
