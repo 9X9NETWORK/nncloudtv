@@ -28,10 +28,10 @@ public class CounterTask extends CounterFactory {
             for (Entry<String, Integer> entry : counterSet) {
                 if (entry.getValue() > 1) {
                     shardSet.add(increment(entry.getKey(), entry.getValue()));
+                    System.out.println(String.format("[counter] \"%s\" increment %d", entry.getKey(), entry.getValue()));
                 } else {
-                    dirtyCounters.put(entry.getKey(), entry.getValue());
+                    dirtyCounters.put(entry.getKey(), entry.getValue()); // put it back
                 }
-                System.out.println(String.format("[counter] \"%s\" increment %d", entry.getKey(), entry.getValue()));
             }
             if (shardSet.size() > 0)
                 NNF.getShardDao().saveAll(shardSet);
