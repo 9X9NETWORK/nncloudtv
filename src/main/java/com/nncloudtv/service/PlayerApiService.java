@@ -3356,6 +3356,29 @@ public class PlayerApiService {
     }
     */
     
+
+    public Object getUserNames(String ids) {
+        if (ids == null)
+           return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+        NnUserProfileManager profileMngr = NNF.getProfileMngr();
+        String[] idstr = ids.split(",");
+        String returnStr = "";
+        for (String id : idstr) {
+            NnUser user = NNF.getUserMngr().findByIdStr(id, mso.getId());
+            if (user != null) {
+                NnUserProfile profile = profileMngr.findByUser(user);
+                if (profile != null)
+                  returnStr += id + "\t" + profile.getName() + "\n";
+                else
+                  returnStr += id + "\t" + "anonymous" + "\n";
+            } else {
+                returnStr += id + "\t" + "anonymous" + "\n";
+            }
+        }
+        String[] result = {returnStr};
+        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+    }
+
     public Object getDirectUrl(String url) {
         if (url == null)
             return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
