@@ -19,10 +19,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnChannelDao;
+import com.nncloudtv.dao.NnEpisodeDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.SearchLib;
@@ -378,21 +380,21 @@ public class NnChannelManager {
             
             this.processChannelRelatedCounter(channels);
         }
-        this.processChannelTag(channel);
-        this.resetCache(channel.getId());
+        processChannelTag(channel);
+        resetCache(channel.getId());
         
         return channel;
     }
     
-    public List<NnChannel> save(List<NnChannel> channels, boolean resetCache) {
+    public Collection<NnChannel> save(Collection<NnChannel> channels, boolean resetCache) {
         
-        if (resetCache) {
+        if (resetCache)
             resetCache(channels);
-        }
         return dao.saveAll(channels);
     }
     
     public void processChannelRelatedCounter(NnChannel[] channels) {
+        
     }
         
     public List<NnChannel> searchBySvi(String queryStr, short userShard, long userId, String sphere) {
@@ -651,12 +653,12 @@ public class NnChannelManager {
         return dao.findAll();
     }
     
-    public List<NnChannel> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnChannel> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnChannel> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnChannel> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public int total() {
@@ -760,7 +762,7 @@ public class NnChannelManager {
         return sorting;
     }
     
-    public void resetCache(List<NnChannel> channels) {
+    public void resetCache(Collection<NnChannel> channels) {
         
         if (channels == null || channels.isEmpty()) return;
         
@@ -795,8 +797,7 @@ public class NnChannelManager {
             return output;
         else
             return channelLineup;
-    }    
-
+    }
     
     public Object composeEachReducedChannelLineup(NnChannel c, short format) {
         String ytName = c.getSourceUrl() != null ? YouTubeLib.getYouTubeChannelName(c.getSourceUrl()) : "";        
@@ -851,30 +852,30 @@ public class NnChannelManager {
         String channelOutput = "";
         if (isReduced) {
             log.info("output reduced string");
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
-                channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFormat());
+            if (ctx.isPlainFmt()) {
+                channelOutput += (String)this.composeReducedChannelLineup(channels, ctx.getFmt());
             } else {
-                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFormat());
+                channelLineup = (List<ChannelLineup>)this.composeReducedChannelLineup(channels, ctx.getFmt());
             }
         } else {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
+            if (ctx.isPlainFmt())
                 channelOutput += this.composeChannelLineup(channels, ctx);
             else
                 channelLineup.addAll((List<ChannelLineup>)this.composeChannelLineup(channels, ctx));
         }
         
         if (channelPos) {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)
-                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
+            if (ctx.isPlainFmt())
+                channelOutput = (String)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             else
-                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFormat());
+                channelLineup = (List<ChannelLineup>)this.chAdjust(channels, channelOutput, channelLineup, ctx.getFmt());
             
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             result.add(channelOutput);
             String programStr = "";
             if (programInfo) {
-                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFormat());
+                programStr = (String) NNF.getProgramMngr().findLatestProgramInfoByChannels(channels, ctx.getFmt());
                 result.add(programStr);
             } 
             String size[] = new String[result.size()];
@@ -889,13 +890,13 @@ public class NnChannelManager {
         String output = "";
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
-            if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
+            if (ctx.isPlainFmt())  {
                 output += this.composeEachChannelLineup(c, ctx) + "\n";
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN)  {
+        if (ctx.isPlainFmt())  {
             return output;
         } else {
             return lineups;
@@ -905,50 +906,38 @@ public class NnChannelManager {
     public void populateMoreImageUrl(NnChannel channel) {
         
         List<String> imgs = new ArrayList<String>();
+        String cacheKey = CacheFactory.getNnChannelMoreImageUrlKey(channel.getId());
         
-        if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-            String filter = "channelId == " + channel.getId();
-            List<NnProgram> programs = NNF.getProgramMngr().list(1, 50, "updateDate", "desc", filter);
-            
-            for (int i = 0; i < programs.size() && imgs.size() < 3; i++) {
-                
-                String img = programs.get(i).getImageUrl();
-                if (img != null && img.length() > 0) {
-                    imgs.add(img);
-                }
-            }
-            
-        } else {
-            
-            String filter = "channelId == " + channel.getId();
-            List<NnEpisode> episodes = NNF.getEpisodeMngr().list(1, 50, "seq", "asc", filter);
-            
-            for (int i = 0; i < episodes.size() && imgs.size() < 3; i++) {
-                
-                String img = episodes.get(i).getImageUrl();
-                
-                if (img != null && img.length() > 0) {
-                    imgs.add(img);
-                }
-            }
+        String result = (String) CacheFactory.get(cacheKey);
+        if (result != null) {
+            channel.setMoreImageUrl(result);
+            return;
         }
         
+        String filter = String.format("channelId = %d AND isPublic = TRUE AND imageUrl IS NOT NULL", channel.getId());
+        String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq DESC" : "seq ASC";
+        if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
+            sort = NnEpisodeDao.V2_LINEAR_SORTING;
+        
+        List<NnEpisode> episodes = NNF.getEpisodeMngr().listV2(0, 3, sort, filter);
+        
+        for (NnEpisode episode : episodes) {
+            if (imgs.size() < 3) {
+                String imageUrl = episode.getImageUrl();
+                if (episode.isPublic() && imageUrl != null && imageUrl.length() > 0)
+                    imgs.add(episode.getImageUrl());
+            } else {
+                break;
+            }
+        }
         // fill up with default episode thubmnail
-        while (imgs.size() < 3) {
+        while (imgs.size() < 3)
             imgs.add(NnChannel.IMAGE_EPISODE_URL);
-        }
         
-        if (imgs.size() > 0) {
-            
-            String moreImageUrl = imgs.remove(0);
-            for (String imageUrl : imgs) {
-                
-                moreImageUrl += "|" + imageUrl;
-            }
-            
-            channel.setMoreImageUrl(moreImageUrl);
-        }
+        result = StringUtils.join(imgs, "|");
+        channel.setMoreImageUrl(result);
         
+        CacheFactory.set(cacheKey, result);
     }
     
     public void reorderUserChannels(final NnUser user) {
@@ -1024,25 +1013,28 @@ public class NnChannelManager {
         
         if (channel == null) { return; }
         
-        List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
-        
-        if (categoryIds.size() > 0) {
-            channel.setCategoryId(categoryIds.get(0));
+        String cacheKey = CacheFactory.getSystemCategoryKey(channel.getId());
+        Long categoryId = (Long) CacheFactory.get(cacheKey);
+        if (categoryId == null) {
+            List<Long> categoryIds = NNF.getCategoryService().findSystemCategoryIdsByChannel(channel);
+            categoryId = categoryIds.size() > 0 ? categoryIds.get(0) : Long.valueOf(0);
+            CacheFactory.set(cacheKey, categoryId);
         }
+        channel.setCategoryId(categoryId);
     }
     
     //ChannelLineup or String
     public Object composeEachChannelLineup(NnChannel channel, ApiContext ctx) {
         Object result = null;
         
-        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVersion(), ctx.getFormat());
+        String cacheKey = CacheFactory.getChannelLineupKey(String.valueOf(channel.getId()), ctx.getVer(), ctx.getFmt());
         try {
             result = CacheFactory.get(cacheKey);
         } catch (Exception e) {
             log.info("memcache error");
         }
         if (result != null && channel.getId() != 0) { //id = 0 means fake channel, it is dynamic
-            log.info("get channel lineup from cache. v=" + ctx.getVersion() +";channel=" + channel.getId());
+            log.info("get channel lineup from cache. v=" + ctx.getVer() +";channel=" + channel.getId());
             return result;
         }
         
@@ -1068,11 +1060,11 @@ public class NnChannelManager {
         
         //image url, favorite channel image will be overwritten later
         String imageUrl = channel.getPlayerPrefImageUrl();
-        if (ctx.getVersion() < 32) {
+        if (ctx.getVer() < 32) {
                 imageUrl = imageUrl.indexOf("|") < 0 ? imageUrl : imageUrl.substring(0, imageUrl.indexOf("|"));
                 log.info("v31 imageUrl:" + imageUrl);
         }
-        if (ctx.getVersion() > 31 && (
+        if (ctx.getVer() > 31 && (
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP       ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY    ||
             channel.getContentType() == NnChannel.CONTENTTYPE_MIXED            ||
@@ -1112,19 +1104,7 @@ public class NnChannelManager {
                         imageUrl += "|" + episodes.get(i).getImageUrl();
                     }
                 }
-            } else if (channel.getContentType() != NnChannel.CONTENTTYPE_MIXED) {
-                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channel.getId());
-                log.info("programs = " + programs.size());
-                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
-                for (int i=0; i<3; i++) {
-                    if (i < programs.size()) {
-                       imageUrl += "|" + programs.get(i).getImageUrl();
-                       log.info("imageUrl = " + imageUrl);
-                    } else {
-                       i=4;
-                    }
-                }
-            } else {
+            } else if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
                 List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), 0, 50);
                 log.info("episodes = " + episodes.size());
                 Collections.sort(episodes, NnEpisodeManager.getComparator("isPublicFirst"));
@@ -1137,6 +1117,18 @@ public class NnChannelManager {
                        i=4;
                     }
                 }
+            } else {
+                List<NnProgram> programs = NNF.getProgramMngr().findPlayerProgramsByChannel(channel.getId());
+                log.info("programs = " + programs.size());
+                Collections.sort(programs, NNF.getProgramMngr().getProgramComparator("updateDate"));
+                for (int i=0; i<3; i++) {
+                    if (i < programs.size()) {
+                       imageUrl += "|" + programs.get(i).getImageUrl();
+                       log.info("imageUrl = " + imageUrl);
+                    } else {
+                       i=4;
+                    }
+                }
             }
         }
         short contentType = channel.getContentType();
@@ -1144,12 +1136,11 @@ public class NnChannelManager {
             contentType = NnChannel.CONTENTTYPE_FAVORITE;
         //poi
         String poiStr = "";
-        if (ctx.getVersion() > 32) {
+        if (ctx.getVer() > 32) {
             List<PoiPoint> points = NNF.getPoiPointMngr().findCurrentByChannelId(channel.getId());
-            //List<Poi> pois = pointMngr.findCurrentPoiByChannel(c.getId());
             List<PoiEvent> events = new ArrayList<PoiEvent>();
-            for (PoiPoint p : points) {
-                PoiEvent event = NNF.getPoiEventMngr().findByPointId(p.getId());
+            for (PoiPoint point : points) {
+                PoiEvent event = NNF.getPoiEventMngr().findByPointId(point.getId());
                 events.add(event);
             }
             if (points.size() != events.size()) {
@@ -1169,7 +1160,7 @@ public class NnChannelManager {
                 log.info("poi output:" + poiStr);
             }
         }
-        if (ctx.getFormat() == ApiContext.FORMAT_PLAIN) {
+        if (ctx.isPlainFmt()) {
             List<String> ori = new ArrayList<String>();
             ori.add("0");
             ori.add(channel.getIdStr());
@@ -1195,11 +1186,11 @@ public class NnChannelManager {
             ori.add(""); //userImageUrl
             ori.add(sns == null ? "" : sns); //social network, ex: "twitter NBA;facebook ETtoday"
             ori.add(banner == null ? "" : banner); //banner image url
-            if (ctx.getVersion() == 32)
+            if (ctx.getVer() == 32)
                 ori.add(" ");
             else
                 ori.add(lastEpisodeTitle); //lastEpisodeTitle
-            if (ctx.getVersion() > 32)
+            if (ctx.getVer() > 32)
                 ori.add(poiStr);
             String size[] = new String[ori.size()];    
             String output = NnStringUtil.getDelimitedStr(ori.toArray(size));
@@ -1241,45 +1232,65 @@ public class NnChannelManager {
     
     public NnChannel populateCntView(NnChannel channel) {
         
+        String cacheName = "u_ch" + channel.getId();
         try {
-            String name = "u_ch" + channel.getId();
-            String result = (String)CacheFactory.get(name);
+            String result = (String) CacheFactory.get(cacheName);
             if (result != null) {
                 channel.setCntView(Integer.parseInt(result));
                 return channel;
             }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();
-            long cntView = factory.getCount(name);
-            channel.setCntView(cntView);
-            CacheFactory.set(name, String.valueOf(cntView));
+            channel.setCntView(CounterFactory.getCount(cacheName));
+            log.info("cntView = " + channel.getCntView());
         } catch (Exception e) {
-            e.printStackTrace();
+            NnLogUtil.logException(e);
             channel.setCntView(0);
         }
+        CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
         return channel;
     }
     
-    public NnChannel populateCntVisit(NnChannel channel) { // is CntVisit == CntView ??
-        try {
-            String name = "u_ch" + channel.getId();
-            String result = (String)CacheFactory.get(name);
-            if (result != null) {
-                channel.setCntVisit(Integer.parseInt(result));
-                return channel;
-            }
-            log.info("cnt view not in the cache:" + name);
-            CounterFactory factory = new CounterFactory();            
-            long cntVisit = factory.getCount(name);
-            channel.setCntVisit(cntVisit);
-            CacheFactory.set(name, String.valueOf(cntVisit));
-        } catch (Exception e){
-            //e.printStackTrace();
-            System.out.println("msg:" + e.getMessage());
-            System.out.println("cause:" + e.getCause());
-            channel.setCntVisit(0);
-        }
-        return channel;
+    public void populateSocialFeeds(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        NnChannelPref channelPref = NNF.getChPrefMngr().getByChannelIdAndItem(channel.getId(), NnChannelPref.SOCIAL_FEEDS);
+        if (channelPref != null)
+            channel.setSocialFeeds(channelPref.getValue());
+    }
+    
+    public void populateSocialFeeds(long channelId, String socialFeeds) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.SOCIAL_FEEDS);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.SOCIAL_FEEDS, socialFeeds);
+        else
+            pref.setValue(socialFeeds);
+        prefMngr.save(pref);
+        // clean cache
+        CacheFactory.delete(CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.SOCIAL_FEEDS));
+    }
+    
+    public void populateBannerImageUrl(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        NnChannelPref pref = NNF.getChPrefMngr().getByChannelIdAndItem(channel.getId(), NnChannelPref.BANNER_IMAGE);
+        if (pref != null)
+            channel.setBannerImageUrl(pref.getValue());
+    }
+    
+    public void populateBannerImageUrl(long channelId, String bannerImage) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.BANNER_IMAGE);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.BANNER_IMAGE, bannerImage);
+        else
+            pref.setValue(bannerImage);
+        prefMngr.save(pref);
+        // clean cache
+        CacheFactory.delete(CacheFactory.getNnChannelPrefKey(channelId, NnChannelPref.BANNER_IMAGE));
     }
     
     public void populateAutoSync(NnChannel channel) {
@@ -1287,12 +1298,22 @@ public class NnChannelManager {
         if (channel == null) return;
         
         NnChannelPref channelPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-        if (channelPref == null) {
-            
+        if (channelPref == null)
             channel.setAutoSync(NnChannelPref.OFF);
-            return;
+        else
+            channel.setAutoSync(channelPref.getValue());
+    }
+    
+    public void populateAutoSync(long channelId, String autoSync) {
+        
+        NnChannelPrefManager prefMngr = NNF.getChPrefMngr();
+        NnChannelPref pref = prefMngr.findByChannelIdAndItem(channelId, NnChannelPref.AUTO_SYNC);
+        if (pref == null)
+            pref = new NnChannelPref(channelId, NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
+        if (autoSync.equals(pref.getValue()) == false) {
+            pref.setValue(autoSync);
+            prefMngr.save(pref);
         }
-        channel.setAutoSync(channelPref.getValue());
     }
     
     public int calculateUserChannels(NnUser user) {

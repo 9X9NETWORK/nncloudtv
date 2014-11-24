@@ -167,40 +167,28 @@ public class NnProgramDao extends GenericDao<NnProgram> {
         return good;
     }
         
-    public List<NnProgram> findPlayerProgramsByChannel(NnChannel c) {
-        List<NnProgram> detached = new ArrayList<NnProgram>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            String ordering = "seq asc, subSeq asc"; 
-            if (c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP) {
-                ordering = "seq asc, subSeq asc"; 
-            } else if (c.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY) {
-                ordering = "seq desc, subSeq asc";    
-            } else if (c.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
-                ordering = "seq asc, subSeq asc";
-            } else if (c.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_SPECIAL_SORTING) {
-                ordering = "seq desc, subSeq asc";
-            } else {
-                ordering = "updateDate desc";
-            }
-            log.info("ordering:" + ordering);
-            String sql = "select * " +
-                           "from nnprogram " +
-                          "where channelId = " + c.getId() + " " + 
-                            "and isPublic = true " +
-                            "and status != " + NnProgram.STATUS_ERROR + " " +
-             "order by " + ordering;
-            
-            log.info("sql:" + sql);
-            Query q= pm.newQuery("javax.jdo.query.SQL", sql);
-            q.setClass(NnProgram.class);
-            @SuppressWarnings("unchecked")
-            List<NnProgram> programs = (List<NnProgram>) q.execute();
-            detached = (List<NnProgram>)pm.detachCopyAll(programs);            
-        } finally {
-            pm.close();
+    public List<NnProgram> findPlayerProgramsByChannel(NnChannel channel) {
+        
+        String ordering = "seq ASC, subSeq ASC"; 
+        if (channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_SOAP) {
+            ordering = "seq ASC, subSeq ASC"; 
+        } else if (channel.getContentType() == NnChannel.CONTENTTYPE_MAPLE_VARIETY) {
+            ordering = "seq DESC, subSeq ASC";    
+        } else if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED) {
+            ordering = "seq ASC, subSeq ASC";
+        } else if (channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_SPECIAL_SORTING) {
+            ordering = "seq DESC, subSeq ASC";
+        } else {
+            ordering = "updateDate DESC";
         }
-        return detached;
+        log.info("ordering = " + ordering);
+        String query = "SELECT * FROM nnprogram "
+                     + "        WHERE channelId = " + channel.getId() 
+                     + "          AND isPublic = true "
+                     + "          AND status != " + NnProgram.STATUS_ERROR
+                     + "     ORDER BY " + ordering;
+        
+        return sql(query);
     }
     
     public List<NnProgram> findByChannel(long channelId) {
@@ -224,31 +212,19 @@ public class NnProgramDao extends GenericDao<NnProgram> {
     }
     
     public List<NnProgram> findPlayerNnProgramsByChannel(long channelId) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        List<NnProgram> detached = new ArrayList<NnProgram>();
-        try {
-        	String sql = "select * from nnprogram a1 " + 
-        			      " inner join ( " + 
-        			      "select p.id " + 
-        			       " from nnprogram p, nnepisode e, nnchannel c " + 
-        			      " where c.id = " + channelId + 
-        			        " and p.channelId = c.id " +    
-        			        " and e.id = p.episodeId " + 
-        			        " and p.status !=  " + NnProgram.STATUS_ERROR +  
-        			        " order by e.seq, p.seq, p.subSeq " +
-        			        ") a2 on a1.id=a2.id";
+        String query = "SELECT * FROM nnprogram a1 "
+                     + "   INNER JOIN ( " 
+                     + "               SELECT p.id "
+                     + "                 FROM nnprogram p, nnepisode e, nnchannel c "
+                     + "                WHERE c.id = " + channelId
+                     + "                  AND p.channelId = c.id "
+                     + "                  AND e.id = p.episodeId "
+                     + "                  AND p.status != " + NnProgram.STATUS_ERROR
+                     + "             ORDER BY e.seq, p.seq, p.subSeq "
+                     + "              ) a2 "
+                     + "           ON a1.id = a2.id";
         
-            log.info("sql:" + sql);
-            Query query = pm.newQuery("javax.jdo.query.SQL", sql);
-            query.setClass(NnProgram.class);
-            @SuppressWarnings("unchecked")
-            List<NnProgram> results = (List<NnProgram>) query.execute();
-            detached = (List<NnProgram>)pm.detachCopyAll(results);
-        } finally {            
-            pm.close();
-        } 
-        return detached;
-        
+        return sql(query);
     }
     
     //based on one program id to find all sub-episodes belong to the same episode
@@ -260,33 +236,6 @@ public class NnProgramDao extends GenericDao<NnProgram> {
                      + "     ORDER BY subSeq"; // seq is not maintained anymore
         
         return sql(query);
-    }
-    
-    public List<NnProgram> findByChannels(List<NnChannel> channels) {
-        List<NnProgram> detached = new ArrayList<NnProgram>();
-        String ids = "";
-        for (NnChannel c : channels) {
-            ids += "," + String.valueOf(c.getId());
-        }
-        if (ids.length() == 0) return detached;
-        if (ids.length() > 0) ids = ids.replaceFirst(",", "");
-        log.info("find in these channels:" + ids);
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            String sql = "select * " +
-                           "from nnprogram " +
-                         " where channelId in (" + ids + ") " + 
-                         " order by updateDate desc limit 50";
-            log.info("sql:" + sql);
-            Query query = pm.newQuery("javax.jdo.query.SQL", sql);
-            query.setClass(NnProgram.class);
-            @SuppressWarnings("unchecked")
-            List<NnProgram> results = (List<NnProgram>) query.execute();
-            detached = (List<NnProgram>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        } 
-        return detached;
     }
     
     public List<NnProgram> findAllByEpisodeId(long episodeId) {

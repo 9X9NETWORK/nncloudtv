@@ -39,17 +39,6 @@ public class NnNetUtil {
                                                                   System.getProperty("os.arch"),
                                                                   System.getProperty("java.version"));
     
-    public static void logUrl(HttpServletRequest req) {
-        String url = req.getRequestURL().toString();
-        String queryStr = req.getQueryString();
-        if (queryStr != null && !queryStr.equals("null"))
-            queryStr = "?" + queryStr;
-        else 
-            queryStr = "";
-        url = url + queryStr;
-        log.info(url);
-    }
-    
     public static PipingTask prerenderTo(String urlStr, HttpServletResponse resp) throws IOException {
         
         return proxyTo(PRERENDER_SERVICE + urlStr, resp);

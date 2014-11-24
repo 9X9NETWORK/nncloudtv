@@ -3,9 +3,12 @@ package com.nncloudtv.lib;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.AdPlacementDao;
+import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
+import com.nncloudtv.dao.CounterDao;
+import com.nncloudtv.dao.CounterShardDao;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
@@ -53,6 +56,7 @@ import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.NotificationService;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.PoiCampaignManager;
 import com.nncloudtv.service.PoiEventManager;
 import com.nncloudtv.service.PoiManager;
@@ -102,12 +106,13 @@ public class NNF {
     protected static NnItemManager          itemMngr            = null;
     protected static TitleCardManager       titleCardMngr       = null;
     
-    protected static SetService      setService      = null;
-    protected static CategoryService categoryService = null;
-    protected static DepotService    depotService    = null;
-    protected static EmailService    emailService    = null;
-    protected static NotificationService notiService = null;
-    protected static BillingService  billingService  = null;
+    protected static SetService       setService       = null;
+    protected static CategoryService  categoryService  = null;
+    protected static DepotService     depotService     = null;
+    protected static EmailService     emailService     = null;
+    protected static NotificationService notiService   = null;
+    protected static BillingService   billingService   = null;
+    protected static PlayerApiService playerApiService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -135,6 +140,9 @@ public class NNF {
     protected static NnItemDao         itemDao           = null;
     protected static TitleCardDao      titleCardDao      = null;
     protected static NnChannelPrefDao  chPrefDao         = null;
+    protected static AppDao            appDao            = null;
+    protected static CounterDao        counterDao        = null;
+    protected static CounterShardDao   shardDao          = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -422,6 +430,39 @@ public class NNF {
         return chPrefDao;
     }
     
+    public static AppDao getAppDao() {
+        
+        if (appDao == null) {
+            
+            log.info("create appDao");
+            appDao = new AppDao();
+        }
+        
+        return appDao;
+    }
+    
+    public static CounterDao getCounterDao() {
+        
+        if (counterDao == null) {
+            
+            log.info("create counterDao");
+            counterDao = new CounterDao();
+        }
+        
+        return counterDao;
+    }
+    
+    public static CounterShardDao getShardDao() {
+        
+        if (shardDao == null) {
+            
+            log.info("create shardDao");
+            shardDao = new CounterShardDao();
+        }
+        
+        return shardDao;
+    }
+    
     public static CategoryService getCategoryService() {
         
         if (categoryService == null) {
@@ -486,6 +527,17 @@ public class NNF {
         }
         
         return billingService;
+    }
+    
+    public static PlayerApiService getPlayerApiService() {
+        
+        if (playerApiService == null) {
+            
+            log.info("create playerApiService");
+            playerApiService = new PlayerApiService();
+        }
+        
+        return playerApiService;
     }
     
     public static StoreListingManager getStoreListingMngr() {

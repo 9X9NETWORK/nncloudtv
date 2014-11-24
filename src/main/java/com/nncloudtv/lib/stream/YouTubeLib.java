@@ -42,7 +42,7 @@ public class YouTubeLib  implements StreamLib {
     public static final String REGEX_VIDEO_ID_STR      = "v=([^&]+)";
     public static final String YOUTUBE_CHANNEL_PREFIX  = "http://www.youtube.com/user/";
     public static final String YOUTUBE_PLAYLIST_PREFIX = "http://www.youtube.com/view_play_list?p=";
-        
+    
     /** 
      * 1. remove those invalid keywords we already know.
      * 2. merge the following youtube channel formats to one, http://www.youtube.com/user/<userid>
@@ -73,7 +73,7 @@ public class YouTubeLib  implements StreamLib {
      *    http://www.youtube.com/watch?v=-dQltKG3NlI&p=03D59E2ECDDA66DF
      *    http://www.youtube.com/watch?v=-dQltKG3NlI&playnext=1&list=PL03D59E2ECDDA66DF
      *    http://www.youtube.com/watch?v=-dQltKG3NlI&playnext=1&list=PL03D59E2ECDDA66DF&feature=list_related
-     */        
+     */
     public static String formatCheck(String urlStr) {
         if (urlStr == null) {return null;}
         String[] invalid = {"index", "videos",
@@ -195,18 +195,18 @@ public class YouTubeLib  implements StreamLib {
     
     public static Map<String, String> getYouTubeVideo(String videoId) {
         Map<String, String> results = new HashMap<String, String>();
-        HttpRequestFactory factory = YouTubeLib.getFactory();        
+        HttpRequestFactory factory = YouTubeLib.getFactory();
         HttpRequest request;
         MyFeed feed;
         try {
-            //https://gdata.youtube.com/feeds/api/videos/nIbzpk8FjbU?v=2&alt=jsonc            
+            //https://gdata.youtube.com/feeds/api/videos/nIbzpk8FjbU?v=2&alt=jsonc
             YouTubeUrl videoUrl = new YouTubeUrl("https://gdata.youtube.com/feeds/api/videos");
             videoUrl.q = videoId;
             videoUrl.maxResults = 1;
             request = factory.buildGetRequest(videoUrl);
             feed = request.execute().parseAs(MyFeed.class);
-            if (feed.items != null) {                
-                Video video = feed.items.get(0);                
+            if (feed.items != null) {
+                Video video = feed.items.get(0);
                 results.put("title", video.title);
                 results.put("description", video.description);
                 results.put("imageUrl", video.thumbnail.sqDefault);
@@ -229,7 +229,7 @@ public class YouTubeLib  implements StreamLib {
            url = "http://gdata.youtube.com/feeds/api/users/" + userIdStr;
         else
            url = "https://gdata.youtube.com/feeds/api/playlists/" + userIdStr;
-
+        
         url = url + "?v=2&alt=json";
         log.info("url:" + url);
         String jsonStr = NnNetUtil.urlGet(url);
@@ -260,21 +260,21 @@ public class YouTubeLib  implements StreamLib {
            results.put("author", author);
            results.put("total", total);
         } catch (JSONException e){
-           e.printStackTrace();               
+           e.printStackTrace();
         }
-        return results;        
+        return results;
     }
-            
+    
     public static String getYouTubeChannelName(String urlStr) {
         String channelUrl = "http://www.youtube.com/user/";
         String playListUrl = "http://www.youtube.com/view_play_list?p=";
-        String name = urlStr.substring(channelUrl.length(), urlStr.length());        
+        String name = urlStr.substring(channelUrl.length(), urlStr.length());
         if (urlStr.contains("view_play_list")) {
             name = urlStr.substring(playListUrl.length(), urlStr.length()); 
         }
         return name;
     }
-
+    
     /**
      * YouTube API request format, http://gdata.youtube.com/feeds/api/users/androidcentral
      * This function currently checks only if the query status is not 200.
@@ -426,11 +426,10 @@ public class YouTubeLib  implements StreamLib {
         
         return youtubeDL(urlStr);
     }
-//        public static Map<String, String> getYouTubeEntry(String userIdStr, boolean channel) {        
-
+    
     //https://gdata.youtube.com/feeds/api/playlists/nSXHekhWES_OhBZcFPWQ1f5q-BKHXx-O?v=2&alt=json
     //http://gdata.youtube.com/feeds/api/users/crashcourse?alt=json&v=2
-    public static Map<String, String> test(String userIdStr, boolean channel) {       
+    public static Map<String, String> test(String userIdStr, boolean channel) {
         Map<String, String> results = new HashMap<String, String>();
         results.put("status", String.valueOf(NnStatusCode.SUCCESS));
         String url = "";
@@ -438,7 +437,7 @@ public class YouTubeLib  implements StreamLib {
            url = "http://gdata.youtube.com/feeds/api/users/" + userIdStr;
         else
            url = "https://gdata.youtube.com/feeds/api/playlists/" + userIdStr;
-
+        
         url = url + "?v=2&alt=json";
         log.info("url:" + url);
         String jsonStr = NnNetUtil.urlGet(url);
@@ -469,10 +468,10 @@ public class YouTubeLib  implements StreamLib {
            results.put("author", author);
            results.put("total", total);
         } catch (JSONException e){
-           e.printStackTrace();               
+           e.printStackTrace();
         }
-        return results;        
+        return results;
     }
-          
+    
 }
 

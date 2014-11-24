@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,7 +42,7 @@ public class NnDeviceNotificationManager {
         return notification;
     }
     
-    public List<NnDeviceNotification> save(List<NnDeviceNotification> notifications) {
+    public Collection<NnDeviceNotification> save(Collection<NnDeviceNotification> notifications) {
         
         if (notifications == null) return new ArrayList<NnDeviceNotification>();
         
@@ -92,13 +93,12 @@ public class NnDeviceNotificationManager {
         return NnStringUtil.getDelimitedStr(ori);
     }
     
-    public List<NnDeviceNotification> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnDeviceNotification> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnDeviceNotification> list(int page, int limit, String sidx, String sord, String filter) {
-        
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnDeviceNotification> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public List<NnDeviceNotification> findUnreadByDeviceId(long deviceId) {

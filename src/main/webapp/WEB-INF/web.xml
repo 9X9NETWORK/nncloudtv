@@ -32,11 +32,6 @@
         <url-pattern>*.swf</url-pattern>
         <url-pattern>*.html</url-pattern>
     </servlet-mapping>
-    <listener>
-        <listener-class>
-           org.springframework.web.context.ContextLoaderListener
-        </listener-class>
-    </listener>
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/nncloudtv-servlet.xml</param-value>

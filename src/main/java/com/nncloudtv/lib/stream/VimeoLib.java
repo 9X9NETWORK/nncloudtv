@@ -18,17 +18,15 @@ public class VimeoLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(VimeoLib.class.getName());
     
-    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/vimeo\\.com\\/(channels\\/.+\\/)?([0-9]+)$";
+    public static final String REGEX_VIMEO_VIDEO_URL = "^https?:\\/\\/(www\\.)?vimeo\\.com\\/(channels\\/.+\\/)?([0-9]+)$";
     
     public String normalizeUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
         
         Matcher matcher = Pattern.compile(REGEX_VIMEO_VIDEO_URL).matcher(urlStr);
-        if (matcher.find()) {
-            
-            return "https://vimeo.com/" + matcher.group(2);
-        }
+        if (matcher.find())
+            return "https://vimeo.com/" + matcher.group(3);
         
         return null;
     }

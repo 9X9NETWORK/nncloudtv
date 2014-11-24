@@ -6,14 +6,10 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.OperationTimeoutException;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
@@ -199,12 +195,13 @@ public class WatchDogController {
         result[0] += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
         result[0] += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         
-        PlayerApiService s = new PlayerApiService();
-        s.prepService(req, resp);        
-        String output = (String) s.assembleMsgs(NnStatusCode.SUCCESS, result);
+        PlayerApiService service = NNF.getPlayerApiService();
+        ApiContext ctx = new ApiContext(req);
+        service.prepService(ctx);
+        String output = (String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
         return NnNetUtil.textReturn(output);
     }    
-
+    
     @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channel,
@@ -435,48 +432,30 @@ public class WatchDogController {
     //delete cache with key
     @RequestMapping("cache_delete")
     public ResponseEntity<String> cache_delete(@RequestParam(value="key", required=false)String key) {
-        MemcachedClient cache = CacheFactory.getClient();
-        try {
-            cache.delete(key).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        cache.shutdown(); //unsure
+        
+        CacheFactory.delete(key);
+        
         return NnNetUtil.textReturn("cache delete:" + key);
     }
-
+    
     @RequestMapping("cache_get")
     public ResponseEntity<String> cache_get(@RequestParam(value="key", required=false)String key) {
-        MemcachedClient cache = CacheFactory.getClient();
-        String value = "";
-        if (cache != null) { 
-            value = (String)cache.get(key);        
-            cache.shutdown();
-        }
+        
+        String value = (String) CacheFactory.get(key);
+        
         return NnNetUtil.textReturn("cache get:" + value);
     }
-
+    
     @RequestMapping("cache_set")
     public ResponseEntity<String> cache_set(
             @RequestParam(value="key", required=false)String key,
             @RequestParam(value="value", required=false)String value) {
-        MemcachedClient cache = null;
-        try {
-            cache = CacheFactory.getClient();
-        } catch (OperationTimeoutException e) {
-            log.info("memcache down");
-        }
-        String setValue = "";
-        if (cache != null) { 
-            cache.set(key, CacheFactory.EXP_DEFAULT, value);
-            setValue = (String)cache.get(key);
-            cache.shutdown();
-        }
+        
+        String setValue = (String) CacheFactory.set(key, value);
+        
         return NnNetUtil.textReturn("cache get:" + setValue);
     }
-
+    
     @RequestMapping("reset")
     public ResponseEntity<String> resetPassword(
             @RequestParam(value="email")String email, 

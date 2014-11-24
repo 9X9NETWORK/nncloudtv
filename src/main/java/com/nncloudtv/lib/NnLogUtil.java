@@ -2,6 +2,8 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import javax.servlet.http.HttpServletRequest;
+
 public class NnLogUtil {
     
     protected final static Logger log = Logger.getLogger(NnLogUtil.class.getName());
@@ -34,6 +36,17 @@ public class NnLogUtil {
         }
         log.severe("exception:" + t.toString());
         log.severe("exception stacktrace:\n" + detail);
+    }
+    
+    public static void logUrl(HttpServletRequest req) {
+        String url = req.getRequestURL().toString();
+        String queryStr = req.getQueryString();
+        if (queryStr != null && !queryStr.equals("null"))
+            queryStr = "?" + (queryStr.length() > 150 ? queryStr.substring(0, 147) + "..." : queryStr);
+        else 
+            queryStr = "";
+        url +=  queryStr;
+        NnNetUtil.log.info(url);
     }
     
 }

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +26,7 @@ import com.nncloudtv.model.Pdr;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnUserReportManager;
 import com.nncloudtv.service.PdrManager;
-import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 
 @Controller
@@ -40,26 +42,27 @@ public class PdrController {
     @RequestMapping("listDevice")
     public ResponseEntity<String> listDevice(
             @RequestParam(required=false,value="user") String userToken,
-            @RequestParam(required=false,value="mso")  String msoName) {
+            @RequestParam(required=false,value="mso")  String msoName,
+            HttpServletRequest req) {
         
-        PlayerApiService pservice = new PlayerApiService();
+        ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByName(msoName);
         if (mso == null) {
             mso = MsoManager.getSystemMso();
         }
         NnUser u = NNF.getUserMngr().findByToken(userToken, mso.getId());
         if (u == null)
-            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null));
+            return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID));
         List<NnDevice> devices = NNF.getDeviceMngr().findByUser(u);
         
         if (devices.size() == 0)
-            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, null));
+            return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS));
         
         String[] result = {""};
         for (NnDevice d : devices) {
             result[0] += d.getToken() + "\t" + d.getType() + "\n";
         }
-        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));
+        return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result));
     }    
     
     /**
@@ -79,10 +82,11 @@ public class PdrController {
             @RequestParam(required=false) String device,
             @RequestParam(required=false) String session,
             @RequestParam(required=false) String ip,
-            @RequestParam(required=false) String since) {
+            @RequestParam(required=false) String since,
+            HttpServletRequest req) {
         
         PdrManager pdrMngr = new PdrManager();
-        PlayerApiService pservice = new PlayerApiService();
+        ApiContext ctx = new ApiContext(req);
         NnUser u = null;
         List<NnDevice> ds = new ArrayList<NnDevice>();
         Mso mso = NNF.getMsoMngr().findByName(msoName);
@@ -93,16 +97,16 @@ public class PdrController {
         if (userToken != null) {
             u = NNF.getUserMngr().findByToken(userToken, mso.getId());
             if (u == null)
-                return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.USER_INVALID, null)); 
+                return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID)); 
         }
         if (device!= null) {
             ds = NNF.getDeviceMngr().findByToken(device);
             if (ds.size() == 0)
-                return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.DEVICE_INVALID, null));
+                return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.DEVICE_INVALID));
             d = ds.get(0);
         }
         if ((ip != null && since == null) || (ip == null && since != null)) 
-            return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.INPUT_MISSING, null));
+            return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING));
         
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");        
         Date sinceDate = null;
@@ -122,9 +126,9 @@ public class PdrController {
             result[0] += token + "\t" + r.getSession() + "\t" + r.getIp() + "\n" +  
                          r.getDetail() + "\n\n";
         }
-        return NnNetUtil.textReturn((String) pservice.assembleMsgs(NnStatusCode.SUCCESS, result));        
+        return NnNetUtil.textReturn((String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result));
     }
-
+    
     /**
      * List any issue users report. Please note: Return format does not comply with playerAPI.
      * 

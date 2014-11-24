@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -43,8 +44,7 @@ import com.nncloudtv.web.json.player.SubEpisode;
 @Service
 public class NnProgramManager {
     
-    protected static final Logger log = Logger.getLogger(NnProgramManager.class
-                                              .getName());
+    protected static final Logger log = Logger.getLogger(NnProgramManager.class.getName());
     
     private NnProgramDao dao = NNF.getProgramDao();
     
@@ -60,7 +60,7 @@ public class NnProgramManager {
         return program;
     }
     
-    public void create(NnChannel channel, NnProgram program) {        
+    public void create(NnChannel channel, NnProgram program) {
         Date now = new Date();
         program.setCreateDate(now);
         program.setUpdateDate(now);
@@ -87,17 +87,17 @@ public class NnProgramManager {
      * @param programs
      * @return programs
      */
-    public List<NnProgram> save(List<NnProgram> programs) {
+    public Collection<NnProgram> save(Collection<NnProgram> programs) {
         
         List<Long> channelIds = new ArrayList<Long>();
         
-        for (NnProgram program : programs) {            
-            Date now = new Date();
+        for (NnProgram program : programs) {
+            Date now = NnDateUtil.now();
             if (program.getCreateDate() == null)
                 program.setCreateDate(now);
             if (program.getUpdateDate() == null) {
                 program.setUpdateDate(now);
-            }            
+            }
             
             if (channelIds.indexOf(program.getChannelId()) < 0) {
                 channelIds.add(program.getChannelId());
@@ -303,7 +303,7 @@ public class NnProgramManager {
             return NnProgram.CONTENTTYPE_RADIO;
         if (program.getFileUrl().contains("youtube.com"))
             return NnProgram.CONTENTTYPE_YOUTUBE;
-        return NnProgram.CONTENTTYPE_MP4;
+        return NnProgram.CONTENTTYPE_DIRECTLINK;
     }
     
     public YtProgram findYtProgramById(Long ytProgramId) {
@@ -337,14 +337,17 @@ public class NnProgramManager {
         log.info("reset program info cache: " + channelId);
         List<String> keys = new ArrayList<String>();
         
+        //moreImageUrl
+        keys.add(CacheFactory.getNnChannelMoreImageUrlKey(channelId));
+        
         //programInfo version 40, format json
         keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_JSON));
         //programInfo, version 40, format text
         keys.addAll(CacheFactory.getAllprogramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
         
         //programInfo, version 31
-        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 31, ApiContext.FORMAT_PLAIN));
-        keys.add(CacheFactory.getProgramInfoKey(channelId,   0, 32, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 31, ApiContext.FORMAT_PLAIN));
+        keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 32, ApiContext.FORMAT_PLAIN));
         //latestProgramInfo
         keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
         keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
@@ -364,12 +367,12 @@ public class NnProgramManager {
         return dao.total(filter);
     }
     
-    public List<NnProgram> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnProgram> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnProgram> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnProgram> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public List<NnProgram> findByEpisodeId(long episodeId) {
@@ -484,7 +487,7 @@ public class NnProgramManager {
         String cacheKey = null;
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
-            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVersion(), ctx.getFormat());
+            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVer(), ctx.getFmt());
             if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
@@ -497,7 +500,7 @@ public class NnProgramManager {
                 }
             }
         }
-        Object output = this.assembleProgramInfo(channel, ctx.getFormat(), start, end, time, ctx.getMso());
+        Object output = this.assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso());
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);

@@ -21,47 +21,47 @@ import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Unique;
+
+import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * Represents a counter in the datastore and stores the number of shards.
  *
  */
-@PersistenceCapable(table="counter", identityType = IdentityType.APPLICATION)
+@PersistenceCapable(table = "counter", detachable = "true", identityType = IdentityType.APPLICATION)
 public class Counter {
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private Long id;
-  
+    private long id;
+    
+    @Unique
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String counterName;
-  
+    
     @Persistent
-    private Integer numShards;
-  
+    private int numShards;
+    
     public Counter(String counterName) {
       this.counterName = counterName;
-      this.numShards = new Integer(0);
+      this.numShards = 0;
     }
-  
-    public Counter(String counterName, Integer numShards) {
-      this.counterName = counterName;
-      this.numShards = numShards;
-    }
-  
-    public Long getId() {
+    
+    public long getId() {
       return id;
     }
-  
+    
     public String getCounterName() {
       return counterName;
     }
-  
-    public Integer getShardCount() {
-      return numShards;
+    
+    public int getNumShards() {
+        return numShards;
     }
-  
-    public void setShardCount(int count) {
-      this.numShards = new Integer(count);
+    
+    public void setNumShards(int numShards) {
+        this.numShards = numShards;
     }
 }

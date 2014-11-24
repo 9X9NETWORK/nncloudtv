@@ -14,7 +14,6 @@ import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.web.api.ApiContext;
-import com.nncloudtv.web.api.ApiGeneric;
 
 public class NnStringUtil {
     
@@ -300,7 +299,7 @@ public class NnStringUtil {
         try {
             longValue = Long.valueOf(longStr);
         } catch (NumberFormatException e) {
-            ApiGeneric.log.info("String value \"" + longStr + "\" can't evaluate to type Long.");
+            log.info("String value \"" + longStr + "\" can't evaluate to type Long.");
             return null;
         }
         
@@ -317,7 +316,7 @@ public class NnStringUtil {
         try {
             intValue = Integer.valueOf(intStr);
         } catch (NumberFormatException e) {
-            ApiGeneric.log.info("String value \"" + intStr + "\" can't evaluate to type Int.");
+            log.info("String value \"" + intStr + "\" can't evaluate to type Int.");
             return null;
         }
         
@@ -334,7 +333,7 @@ public class NnStringUtil {
         try {
             shortValue = Short.valueOf(shortStr);
         } catch (NumberFormatException e) {
-            ApiGeneric.log.info("String value \"" + shortStr + "\" can't evaluate to type Short.");
+            log.info("String value \"" + shortStr + "\" can't evaluate to type Short.");
             return null;
         }
         

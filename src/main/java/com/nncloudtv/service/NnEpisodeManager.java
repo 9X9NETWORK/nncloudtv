@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -35,58 +36,13 @@ public class NnEpisodeManager {
     }
     
     public NnEpisode findById(long id) {
+        
         return dao.findById(id);
     }
     
     public NnEpisode save(NnEpisode episode) {
         
-        Date now = new Date();
-        
-        episode.setUpdateDate(now);
-        
-        NNF.getProgramMngr().resetCache(episode.getChannelId());
-        
-        return dao.save(episode);
-        
-    }
-    
-    public List<NnEpisode> save(List<NnEpisode> episodes) {
-        
-        Date now = new Date();
-        List<Long> channelIds = new ArrayList<Long>();
-        
-        for (NnEpisode episode : episodes) {
-            episode.setUpdateDate(now);
-            
-            if (channelIds.indexOf(episode.getChannelId()) < 0) {
-                channelIds.add(episode.getChannelId());
-            }
-        }
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            NNF.getProgramMngr().resetCache(channelId);
-        }
-        
-        return dao.saveAll(episodes);
-    }
-    
-    public NnEpisode save(NnEpisode episode, boolean rerun) {
-    
-        // rerun - to make episode on top again and public
-        if (rerun) {
-            
-            log.info("rerun!");
-            
-            episode.setPublishDate(new Date());
-            episode.setPublic(true);
-            episode.setSeq(0);
-            save(episode);
-            
-            reorderChannelEpisodes(episode.getChannelId());
-            
-            return episode;
-        }
+        Date now = NnDateUtil.now();
         
         log.info("isPublic = " + episode.isPublic() + ", publishDate = " + episode.getPublishDate());
         if (episode.isPublic() == false && episode.getPublishDate() != null) {
@@ -97,10 +53,35 @@ public class NnEpisodeManager {
         } else if (episode.isPublic() && episode.getPublishDate() == null) {
             
             log.warning("to force pubishDate be not null when is published, just in case");
-            episode.setPublishDate(NnDateUtil.now());
+            episode.setPublishDate(now);
         }
         
-        return save(episode);
+        if (episode.getCreateDate() == null)
+            episode.setCreateDate(now);
+        episode.setUpdateDate(now);
+        
+        NNF.getProgramMngr().resetCache(episode.getChannelId());
+        
+        return dao.save(episode);
+        
+    }
+    
+    public Collection<NnEpisode> save(Collection<NnEpisode> episodes) {
+        
+        Date now = NnDateUtil.now();
+        List<Long> channelIds = new ArrayList<Long>();
+        
+        for (NnEpisode episode : episodes) {
+            episode.setUpdateDate(now);
+            if (channelIds.contains(episode.getChannelId()) == false)
+                channelIds.add(episode.getChannelId());
+        }
+        
+        log.info("channel count = " + channelIds.size());
+        for (Long channelId : channelIds)
+            NNF.getProgramMngr().resetCache(channelId);
+        
+        return dao.saveAll(episodes);
     }
     
     public List<NnEpisode> findByChannelId(long channelId) {
@@ -108,13 +89,12 @@ public class NnEpisodeManager {
         return dao.findByChannelId(channelId);
     }
     
-    public static Comparator<NnEpisode> getComparator(String sort) {
+    public static Comparator<NnEpisode> getComparator(String comparator) {
         
-        if (sort == null) {
-            sort = "default";
-        }
+        if (comparator == null)
+            comparator = "default";
         
-        if (sort.equals("timedLinear")) {
+        if (comparator.equals("timedLinear")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -153,7 +133,7 @@ public class NnEpisodeManager {
                     }
                 }
             };
-        } else if (sort.equals("publishDate")) {
+        } else if (comparator.equals("publishDate")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -180,7 +160,7 @@ public class NnEpisodeManager {
                     }
                 }
             };
-        } else if (sort.equals("isPublicFirst")) {
+        } else if (comparator.equals("isPublicFirst")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -199,7 +179,7 @@ public class NnEpisodeManager {
                     return 1;
                 }
             };
-        } else if (sort.equals("reverse")) {
+        } else if (comparator.equals("reverse")) {
             
             return new Comparator<NnEpisode>() {
                 
@@ -246,15 +226,9 @@ public class NnEpisodeManager {
         dao.delete(episode);
     }
     
-    public List<NnEpisode> list(long page, long rows, String sidx, String sord,
-            String filter) {
+    public List<NnEpisode> listV2(long page, long rows, String sort, String filter) {
     
-        return dao.list(page, rows, sidx, sord, filter);
-    }
-    
-    public List<NnEpisode> listV2(long start,long limit, String sorting, String filter) {
-        
-        return dao.listV2(start, limit, sorting, filter);
+        return dao.listV2(page, rows, sort, filter);
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, int start, int end) {

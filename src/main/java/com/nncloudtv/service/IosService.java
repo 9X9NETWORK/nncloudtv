@@ -107,11 +107,11 @@ public class IosService {
         return str;
     }    
     
-    public String search(String text) {
+    public String search(ApiContext ctx, String text) {
         List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
         String[] result = { "" };
         result[0] = this.composeChannelLineup(searchResults);
-        return (String) new PlayerApiService().assembleMsgs(NnStatusCode.SUCCESS, result);
+        return (String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
     }
     
     public String composeProgramInfoStr(List<NnProgram> programs) {

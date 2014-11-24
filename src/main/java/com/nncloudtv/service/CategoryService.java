@@ -328,19 +328,21 @@ public class CategoryService {
     
     public void setupChannelCategory(long categoryId, long channelId) {
         
-        List<SysTagMap> maps = NNF.getSysTagMapMngr().findCategoryMaps(channelId, MsoManager.getSystemMsoId());
+        SysTagMapManager mapMngr = NNF.getSysTagMapMngr();
+        List<SysTagMap> maps = mapMngr.findCategoryMaps(channelId, MsoManager.getSystemMsoId());
         SysTagMap hit = null;
         for (SysTagMap map : maps) {
             if (map.getSysTagId() == categoryId) {
                 hit = map;
             } else {
                 log.info(String.format("delete systagmap (%d, %d)", map.getSysTagId(), map.getChannelId()));
-                NNF.getSysTagMapMngr().delete(map);
+                mapMngr.delete(map);
             }
         }
         if (hit == null) {
             log.info(String.format("create systagmap (%d, %d)", categoryId, channelId));
-            NNF.getSysTagMapMngr().save(new SysTagMap(categoryId, channelId));
+            mapMngr.save(new SysTagMap(categoryId, channelId));
+            // TODO clean cache
         } else {
             log.info("categoryId not changed");
         }

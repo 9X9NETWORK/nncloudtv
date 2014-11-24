@@ -2,18 +2,15 @@ package com.nncloudtv.lib;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.internal.GetFuture;
 
@@ -51,39 +48,6 @@ public class CacheFactoryTest {
         
         CacheFactory.isEnabled = savedStateIsEnabled;
         CacheFactory.isRunning = savedStateIsRunning;
-    }
-    
-    @Test
-    public void testGetClient() {
-        
-        CacheFactory.isEnabled = true;
-        CacheFactory.isRunning = true;
-        
-        // mock object
-        BinaryConnectionFactory binaryConnectionFactory = Mockito.mock(BinaryConnectionFactory.class);
-        MemcachedClient memcachedClient = Mockito.mock(MemcachedClient.class);
-        
-        // stubs
-        try {
-            PowerMockito.whenNew(BinaryConnectionFactory.class).withNoArguments().thenReturn(binaryConnectionFactory);
-            PowerMockito.whenNew(MemcachedClient.class).withAnyArguments().thenReturn(memcachedClient);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        // execute
-        MemcachedClient actual = CacheFactory.getClient();
-        
-        // verify
-        try {
-            PowerMockito.verifyNew(BinaryConnectionFactory.class).withNoArguments();
-            PowerMockito.verifyNew(MemcachedClient.class)
-                .withArguments((BinaryConnectionFactory) anyObject(), anyListOf(InetSocketAddress.class));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        assertEquals(memcachedClient, actual);
     }
     
     @Test

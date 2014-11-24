@@ -10,7 +10,7 @@ import com.nncloudtv.lib.NnStringUtil;
 /**
  * a Multimedia service operator
  */
-@PersistenceCapable(table="mso", detachable="true")
+@PersistenceCapable(table = "mso", detachable = "true")
 public class Mso implements Serializable {
 
     private static final long serialVersionUID = 352047930355952392L;

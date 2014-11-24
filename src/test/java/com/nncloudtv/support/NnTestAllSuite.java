@@ -10,10 +10,7 @@ import com.nncloudtv.lib.FacebookLibTest;
 import com.nncloudtv.lib.NnUtilStringTest;
 import com.nncloudtv.lib.YouTubeLibTest;
 import com.nncloudtv.service.MsoConfigManagerTest;
-import com.nncloudtv.service.MsoManagerTest;
-import com.nncloudtv.service.PlayerApiServiceTest;
 import com.nncloudtv.service.PlayerServiceTest;
-import com.nncloudtv.web.api.PlayerApiControllerTest;
 
 @RunWith(Categories.class)
 @IncludeCategory(NnTestAll.class)
@@ -23,11 +20,8 @@ import com.nncloudtv.web.api.PlayerApiControllerTest;
                YouTubeLibTest.class,
                
                MsoConfigManagerTest.class,
-               MsoManagerTest.class,
-               PlayerApiServiceTest.class,
                PlayerServiceTest.class,
-               
-               PlayerApiControllerTest.class})
+             })
 public class NnTestAllSuite {
 
 }
