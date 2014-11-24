@@ -2804,7 +2804,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.getDirectUrl(ctx, url.trim(), programIdStr);
+            output = playerApiService.getDirectUrl(ctx, url, programIdStr);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {

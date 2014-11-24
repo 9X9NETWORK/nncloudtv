@@ -3120,6 +3120,8 @@ public class PlayerApiService {
             if (program == null)
                 return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
             url = program.getFileUrl();
+        } else {
+            url = url.trim();
         }
         StreamLib streamLib = StreamFactory.getStreamLib(url);
         if (streamLib == null)
