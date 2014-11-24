@@ -230,7 +230,7 @@ public class ApiContent extends ApiGeneric {
         return ytProgram;
     }
     
-    @RequestMapping(value = "programs/{programId}.ts", method = RequestMethod.GET)
+    @RequestMapping(value = "programs/{programId}.ts", method = {RequestMethod.HEAD, RequestMethod.GET})
     public void programStream(@PathVariable("programId") String programIdStr,
             HttpServletRequest req, HttpServletResponse resp) {
         
@@ -250,16 +250,17 @@ public class ApiContent extends ApiGeneric {
         }
         
         resp.setContentType("video/mp2t");;
-        
-        try {
-            
-            StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
-            
-        } catch (IOException e) {
-            
-            log.info(e.getClass().getName());
-            log.info(e.getMessage());
-            internalError(resp);
+        if (!req.getMethod().equalsIgnoreCase("HEAD")) {
+            try {
+                
+                StreamFactory.streaming(program.getFileUrl(), resp.getOutputStream());
+                
+            } catch (IOException e) {
+                
+                log.info(e.getClass().getName());
+                log.info(e.getMessage());
+                internalError(resp);
+            }
         }
     }
     
