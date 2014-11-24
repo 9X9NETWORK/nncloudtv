@@ -204,15 +204,17 @@ public class WatchDogController {
     
     @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
     public @ResponseBody String programInfo(
-            @RequestParam(value="channel", required=false) String channel, HttpServletRequest req) {
+            @RequestParam(value="channel", required=false) String channel,
+            @RequestParam(value="user", required=false) String userToken,
+            HttpServletRequest req) {
         
         String result = null;
         try {
-            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, new ApiContext(req));
+            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, userToken, new ApiContext(req));
             
-        } catch (NotPurchasedException e1) {
+        } catch (NotPurchasedException e) {
             
-            return "paid channel";
+            return e.getMessage();
         }
         if (result == null)
             return "null, error";

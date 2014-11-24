@@ -459,28 +459,25 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, short time, ApiContext ctx) throws NotPurchasedException {
+    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, short time, String userToken, ApiContext ctx)
+            throws NotPurchasedException {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) { return ""; }
         
         // paid channel check
         if (channel.isPaidChannel()) {
-            
             String errMsg = "paid channel";
-            String userToken = ctx.getCookie(CookieHelper.USER);
             if (userToken == null) {
-                
-                throw new NotPurchasedException(errMsg);
+                userToken = ctx.getCookie(CookieHelper.USER);
+                if (userToken == null)
+                    throw new NotPurchasedException(errMsg);
             }
             NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
             if (user == null) {
-                
                 throw new NotPurchasedException(errMsg);
             }
-            
             if (NNF.getPurchaseMngr().isPurchased(user, channel) == false) {
-                
                 throw new NotPurchasedException(errMsg);
             }
         }

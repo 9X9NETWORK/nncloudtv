@@ -1146,14 +1146,14 @@ public class PlayerApiService {
                     programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
                 } else {
                     if (ctx.isPlainFmt()) {
-                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, ctx);
+                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
                         if (pagination) {
                             NnChannel c = NNF.getChannelMngr().findById(l);
                             if (c != null)
                                 paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                         }
                     } else {
-                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, ctx);
+                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
                     }
                 }
             }
@@ -1190,14 +1190,14 @@ public class PlayerApiService {
             } else {
                 if (ctx.isPlainFmt()) {
                     long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, ctx);
+                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, userToken, ctx);
                     if (pagination) {
                         NnChannel c = NNF.getChannelMngr().findById(cId);
                         if (c != null)
                             paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
                     }
                 } else {
-                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, ctx);
+                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, userToken, ctx);
                     playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
