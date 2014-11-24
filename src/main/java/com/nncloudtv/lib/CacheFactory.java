@@ -43,10 +43,8 @@ public class CacheFactory {
         long before = NnDateUtil.timestamp();
         try {
             cache = new MemcachedClient(addr) {
-                
                 @Override
                 protected void finalize() throws Throwable {
-                    
                     NnLogUtil.logFinalize(getClass().getName());
                 }
             };
@@ -73,7 +71,6 @@ public class CacheFactory {
     
     // needs to shutdown manually (for public use)
     private static MemcachedClient getClient() {
-        
         try {
             if (isRunning && isEnabled)
                 return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
@@ -148,10 +145,12 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
-        if (obj == null)
-            System.out.println(String.format("[cache] %s --> missed", key));
-        else
+        if (obj == null) {
+            System.out.println(String.format("[cache] {%s} --> missed", key));
+            CounterFactory.increment("[cache] MISS " + key); // MISS
+        } else {
             CounterFactory.increment("[cache] HIT " + key); // HIT
+        }
         return obj;
     }
     
@@ -186,9 +185,10 @@ public class CacheFactory {
                 future.cancel(false);
         }
         if (retObj == null) {
-            System.out.println(String.format("[cache] %s --> NOT saved", key));
+            System.out.println(String.format("[cache] {%s} --> NOT saved", key));
         } else {
-            System.out.println(String.format("[cache] %s --> saved", key));
+            System.out.println(String.format("[cache] {%s} --> saved", key));
+            CounterFactory.increment(String.format("[cache] SAVE %s", key));
         }
         System.out.println(String.format("[cache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         
@@ -208,7 +208,7 @@ public class CacheFactory {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
                     cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-                    CounterFactory.increment("[cache] delete " + key);
+                    CounterFactory.increment("[cache] DELETE " + key);
                 }
             }
             isDeleted = true;
@@ -240,7 +240,6 @@ public class CacheFactory {
         
         try {
             cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-            CounterFactory.increment("[cache] delete " + key);
             isDeleted = true;
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
@@ -252,9 +251,10 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         if (isDeleted) {
-            System.out.println(String.format("[cache] %s --> deleted", key));
+            System.out.println(String.format("[cache] {%s} --> deleted", key));
+            CounterFactory.increment("[cache] DELETE " + key);
         } else {
-            System.out.println(String.format("[cache] %s --> NOT deleted", key));
+            System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
         }
         System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
