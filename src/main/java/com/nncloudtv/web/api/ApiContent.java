@@ -1788,7 +1788,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         Short seq = NnStringUtil.evalShort(ctx.getParam("seq"));
-        episode.setSeq(req == null ? 0 : seq);
+        episode.setSeq(seq == null ? 0 : seq);
         
         NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         
