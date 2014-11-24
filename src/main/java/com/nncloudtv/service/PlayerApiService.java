@@ -3089,27 +3089,14 @@ public class PlayerApiService {
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    /*
-    public Object solr(String text) {
-        //check input
-        if (text == null) {
-            return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-        }
-        SolrLib lib = new SolrLib();
-        lib.searchBySolrJ(text);
-        return this.assembleMsgs(NnStatusCode.SUCCESS, null);
-    }
-    */
-    
-
-    public Object getUserNames(String ids) {
+    public Object getUserNames(ApiContext ctx, String ids) {
         if (ids == null)
-           return this.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
+           return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
         NnUserProfileManager profileMngr = NNF.getProfileMngr();
         String[] idstr = ids.split(",");
         String returnStr = "";
         for (String id : idstr) {
-            NnUser user = NNF.getUserMngr().findByIdStr(id, mso.getId());
+            NnUser user = NNF.getUserMngr().findByIdStr(id, ctx.getMsoId());
             if (user != null) {
                 NnUserProfile profile = profileMngr.findByUser(user);
                 if (profile != null)
@@ -3121,13 +3108,19 @@ public class PlayerApiService {
             }
         }
         String[] result = {returnStr};
-        return this.assembleMsgs(NnStatusCode.SUCCESS, result);
+        return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
     }
-
-    public Object getDirectUrl(ApiContext ctx, String url) {
-        if (url == null)
+    
+    public Object getDirectUrl(ApiContext ctx, String url, String programIdStr) {
+        if (url == null && programIdStr == null)
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
-        log.info("url = " + url);
+        log.info("url = " + url + ", programId = " + programIdStr);
+        if (url == null) {
+            NnProgram program = NNF.getProgramMngr().findById(programIdStr);
+            if (program == null)
+                return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
+            url = program.getFileUrl();
+        }
         StreamLib streamLib = StreamFactory.getStreamLib(url);
         if (streamLib == null)
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);

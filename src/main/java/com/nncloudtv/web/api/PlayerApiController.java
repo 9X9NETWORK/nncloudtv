@@ -2783,26 +2783,6 @@ public class PlayerApiController {
         return ctx.playerResponse(resp, output);
     }
     
-    /*
-    @RequestMapping(value="solr")
-    public @ResponseBody Object solr(
-            @RequestParam(value="text", required=false) String text,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
-        try {
-            playerApiService.prepService(req, resp, true);
-            output = playerApiService.solr(text);
-        } catch (Exception e) {
-            output = playerApiService.handleException(e);
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return playerApiService.response(output);
-    }        
-    */
-    
     /**
      *  Get (vimeo) video url. Server backup solution.
      *  
@@ -2815,7 +2795,8 @@ public class PlayerApiController {
      */
     @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
     public @ResponseBody Object getDirectUrl (
-            @RequestParam(value="url", required=true) String url,
+            @RequestParam(value="originalUrl", required=false) String url,
+            @RequestParam(value="programId", required=false) String programIdStr,
             HttpServletRequest req, HttpServletResponse resp) {
         Object output = PLAYER_ERR_MSG;
         ApiContext ctx = new ApiContext(req);
@@ -2823,7 +2804,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.getDirectUrl(ctx, url.trim());
+            output = playerApiService.getDirectUrl(ctx, url.trim(), programIdStr);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
@@ -2835,22 +2816,20 @@ public class PlayerApiController {
     @RequestMapping(value={"getUserNames"})
     public @ResponseBody Object getUserNames (
             @RequestParam(value="id", required=true) String ids,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.getUserNames(ids);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getUserNames(ctx, ids);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
  
     /**
