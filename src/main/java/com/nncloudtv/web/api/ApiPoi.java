@@ -37,13 +37,14 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -70,13 +71,14 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -86,7 +88,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -100,7 +102,7 @@ public class ApiPoi extends ApiGeneric {
         
         // startDate
         Long startDateLong = null;
-        String startDateStr = req.getParameter("startDate");
+        String startDateStr = ctx.getParam("startDate");
         if (startDateStr != null) {
             
             startDateLong = NnStringUtil.evalLong(startDateStr);
@@ -112,7 +114,7 @@ public class ApiPoi extends ApiGeneric {
         
         // endDate
         Long endDateLong = null;
-        String endDateStr = req.getParameter("endDate");
+        String endDateStr = ctx.getParam("endDate");
         if (endDateStr != null) {
             
             endDateLong = NnStringUtil.evalLong(endDateStr);
@@ -149,6 +151,7 @@ public class ApiPoi extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("campaignId") String campaignIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long campaignId = NnStringUtil.evalLong(campaignIdStr);
         if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -161,7 +164,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -177,10 +180,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}", method = RequestMethod.PUT)
     public @ResponseBody
-    PoiCampaign campaignUpdate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiCampaign campaignUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long campaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (campaignId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -192,7 +195,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -202,7 +205,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null) {
             name = NnStringUtil.htmlSafeAndTruncated(name);
             campaign.setName(name);
@@ -210,7 +213,7 @@ public class ApiPoi extends ApiGeneric {
         
         // startDate
         Long startDateLong = null;
-        String startDateStr = req.getParameter("startDate");
+        String startDateStr = ctx.getParam("startDate");
         if (startDateStr != null) {
             
             startDateLong = NnStringUtil.evalLong(startDateStr);
@@ -222,7 +225,7 @@ public class ApiPoi extends ApiGeneric {
         
         // endDate
         Long endDateLong = null;
-        String endDateStr = req.getParameter("endDate");
+        String endDateStr = ctx.getParam("endDate");
         if (endDateStr != null) {
             
             endDateLong = NnStringUtil.evalLong(endDateStr);
@@ -255,10 +258,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    void campaignDelete(HttpServletRequest req,
-            HttpServletResponse resp,
+    void campaignDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -271,7 +274,7 @@ public class ApiPoi extends ApiGeneric {
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -287,10 +290,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.GET)
     public @ResponseBody
-    List<Poi> campaignPois(HttpServletRequest req,
-            HttpServletResponse resp,
+    List<Poi> campaignPois(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiCampaignId") String poiCampaignIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiCampaignId = NnStringUtil.evalLong(poiCampaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -303,7 +306,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -314,7 +317,7 @@ public class ApiPoi extends ApiGeneric {
         
         // poiPointId
         Long poiPointId = null;
-        String poiPointIdStr = req.getParameter("poiPointId");
+        String poiPointIdStr = ctx.getParam("poiPointId");
         if (poiPointIdStr != null) {
             poiPointId = NnStringUtil.evalLong(poiPointIdStr);
             if (poiPointId == null) {
@@ -334,12 +337,12 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_campaigns/{poiCampaignId}/pois", method = RequestMethod.POST)
     public @ResponseBody
-    Poi campaignPoiCreate(HttpServletRequest req,
-            HttpServletResponse resp,
+    Poi campaignPoiCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiCampaignId") String campaignIdStr) {
         
         // TODO: auth check
         
+        ApiContext ctx = new ApiContext(req);
         Long poiCampaignId = NnStringUtil.evalLong(campaignIdStr);
         if (poiCampaignId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -352,7 +355,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -363,7 +366,7 @@ public class ApiPoi extends ApiGeneric {
         
         // pointId
         Long pointId = null;
-        String pointIdStr = req.getParameter("pointId");
+        String pointIdStr = ctx.getParam("pointId");
         if (pointIdStr != null) {
             pointId = NnStringUtil.evalLong(pointIdStr);
             if (pointId == null) {
@@ -383,7 +386,7 @@ public class ApiPoi extends ApiGeneric {
         
         // eventId
         Long eventId = null;
-        String eventIdStr = req.getParameter("eventId");
+        String eventIdStr = ctx.getParam("eventId");
         if (eventIdStr != null) {
             eventId = NnStringUtil.evalLong(eventIdStr);
             if (eventId == null) {
@@ -408,7 +411,7 @@ public class ApiPoi extends ApiGeneric {
         poi.setEventId(event.getId());
         
         // startDate
-        String startDateStr = req.getParameter("startDate");
+        String startDateStr = ctx.getParam("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
             Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
@@ -422,7 +425,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // endDate
-        String endDateStr = req.getParameter("endDate");
+        String endDateStr = ctx.getParam("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
             Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
@@ -436,7 +439,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // hoursOfWeek
-        String hoursOfWeek = req.getParameter("hoursOfWeek");
+        String hoursOfWeek = ctx.getParam("hoursOfWeek");
         if (hoursOfWeek != null) {
             if (hoursOfWeek.matches("[01]{168}")) {
                 // valid hoursOfWeek format
@@ -460,10 +463,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.GET)
     public @ResponseBody
-    Poi poi(HttpServletRequest req,
-            HttpServletResponse resp,
+    Poi poi(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -484,7 +487,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -498,10 +501,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.PUT)
     public @ResponseBody
-    Poi poiUpdate(HttpServletRequest req,
-            HttpServletResponse resp,
+    Poi poiUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -522,7 +525,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -532,7 +535,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // startDate
-        String startDateStr = req.getParameter("startDate");
+        String startDateStr = ctx.getParam("startDate");
         if (startDateStr != null && startDateStr.length() > 0) {
             Long startDateLong = NnStringUtil.evalLong(startDateStr);
             if (startDateLong == null) {
@@ -544,7 +547,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // endDate
-        String endDateStr = req.getParameter("endDate");
+        String endDateStr = ctx.getParam("endDate");
         if (endDateStr != null && endDateStr.length() > 0) {
             Long endDateLong = NnStringUtil.evalLong(endDateStr);
             if (endDateLong == null) {
@@ -556,7 +559,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // hoursOfWeek
-        String hoursOfWeek = req.getParameter("hoursOfWeek");
+        String hoursOfWeek = ctx.getParam("hoursOfWeek");
         if (hoursOfWeek != null) {
             if (hoursOfWeek.matches("[01]{168}")) {
                 // valid hoursOfWeek format
@@ -572,10 +575,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "pois/{poiId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    void poiDelete(HttpServletRequest req,
-            HttpServletResponse resp,
+    void poiDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiId") String poiIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiId = NnStringUtil.evalLong(poiIdStr);
         if (poiId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -593,7 +596,7 @@ public class ApiPoi extends ApiGeneric {
             // ownership crashed
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -639,10 +642,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "programs/{programId}/poi_points", method = RequestMethod.POST)
     public @ResponseBody
-    PoiPoint programPointCreate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiPoint programPointCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("programId") String programIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long programId = NnStringUtil.evalLong(programIdStr);
         if (programId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -651,7 +654,7 @@ public class ApiPoi extends ApiGeneric {
         
         NnProgram program = NNF.getProgramMngr().findById(programId);
         if (program == null) {
-            notFound(resp, "Program Not Found");
+            notFound(resp, PROGRAM_NOT_FOUND);
             return null;
         }
         
@@ -661,7 +664,7 @@ public class ApiPoi extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -680,7 +683,7 @@ public class ApiPoi extends ApiGeneric {
         Short targetType = PoiPoint.TYPE_SUBEPISODE;
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -690,8 +693,8 @@ public class ApiPoi extends ApiGeneric {
         // startTime & endTime
         Integer startTime = null;
         Integer endTime = null;
-        String startTimeStr = req.getParameter("startTime");
-        String endTimeStr = req.getParameter("endTime");
+        String startTimeStr = ctx.getParam("startTime");
+        String endTimeStr = ctx.getParam("endTime");
         if (startTimeStr == null || endTimeStr == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -715,14 +718,14 @@ public class ApiPoi extends ApiGeneric {
         point.setEndTime(endTime);
         
         // tag
-        String tag = req.getParameter("tag");;
+        String tag = ctx.getParam("tag");;
         if (tag != null) {
             point.setTag(TagManager.processTagText(tag));
         }
         
         // active, default : true
         Boolean active = true;
-        String activeStr = req.getParameter("active");
+        String activeStr = ctx.getParam("active");
         if (activeStr != null) {
             active = Boolean.valueOf(activeStr);
         }
@@ -756,10 +759,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_points/{pointId}", method = RequestMethod.PUT)
     public @ResponseBody
-    PoiPoint pointUpdate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiPoint pointUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("pointId") String pointIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long pointId = NnStringUtil.evalLong(pointIdStr);
         if (pointId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -777,7 +780,7 @@ public class ApiPoi extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -787,7 +790,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null) {
             name = NnStringUtil.htmlSafeAndTruncated(name);
             point.setName(name);
@@ -797,7 +800,7 @@ public class ApiPoi extends ApiGeneric {
             
             // startTime
             Integer startTime = null;
-            String startTimeStr = req.getParameter("startTime");
+            String startTimeStr = ctx.getParam("startTime");
             if (startTimeStr != null) {
                 try {
                     startTime = Integer.valueOf(startTimeStr);
@@ -814,7 +817,7 @@ public class ApiPoi extends ApiGeneric {
             
             // endTime
             Integer endTime = null;
-            String endTimeStr = req.getParameter("endTime");
+            String endTimeStr = ctx.getParam("endTime");
             if (endTimeStr != null) {
                 try {
                     endTime = Integer.valueOf(endTimeStr);
@@ -839,7 +842,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // tag
-        String tagText = req.getParameter("tag");
+        String tagText = ctx.getParam("tag");
         String tag = null;
         if (tagText != null) {
             tag = TagManager.processTagText(tagText);
@@ -848,7 +851,7 @@ public class ApiPoi extends ApiGeneric {
         
         // active
         Boolean active;
-        String activeStr = req.getParameter("active");
+        String activeStr = ctx.getParam("active");
         if (activeStr != null) {
             active = Boolean.valueOf(activeStr);
             point.setActive(active);
@@ -860,10 +863,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    void pointDelete(HttpServletRequest req,
-            HttpServletResponse resp,
+    void pointDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiPointId") String poiPointIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiPointId = NnStringUtil.evalLong(poiPointIdStr);
         if (poiPointId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -881,7 +884,7 @@ public class ApiPoi extends ApiGeneric {
             forbidden(resp);
             return;
         }
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -897,17 +900,17 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "users/{userId}/poi_events", method = RequestMethod.POST)
     public @ResponseBody
-    PoiEvent eventCreate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiEvent eventCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -917,7 +920,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -926,7 +929,7 @@ public class ApiPoi extends ApiGeneric {
         
         // type
         Short type = null;
-        String typeStr = req.getParameter("type");
+        String typeStr = ctx.getParam("type");
         if (typeStr != null) {
             try {
                 type = Short.valueOf(typeStr);
@@ -942,7 +945,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // context
-        String context = req.getParameter("context");
+        String context = ctx.getParam("context");
         if (context == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -959,7 +962,7 @@ public class ApiPoi extends ApiGeneric {
         if (event.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
              event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
             
-            String notifyMsg = req.getParameter("notifyMsg");
+            String notifyMsg = ctx.getParam("notifyMsg");
             if (notifyMsg == null) {
                 badRequest(resp, MISSING_PARAMETER);
                 return null;
@@ -970,7 +973,7 @@ public class ApiPoi extends ApiGeneric {
         
         // notifyScheduler
         if (event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            String notifyScheduler = req.getParameter("notifyScheduler");
+            String notifyScheduler = ctx.getParam("notifyScheduler");
             if (notifyScheduler == null) {
                 badRequest(resp, MISSING_PARAMETER);
                 return null;
@@ -1001,10 +1004,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_events/{poiEventId}", method = RequestMethod.GET)
     public @ResponseBody
-    PoiEvent event(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiEvent event(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -1017,7 +1020,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -1037,10 +1040,10 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_events/{poiEventId}", method = RequestMethod.PUT)
     public @ResponseBody
-    PoiEvent eventUpdate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiEvent eventUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("poiEventId") String poiEventIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long poiEventId = NnStringUtil.evalLong(poiEventIdStr);
         if (poiEventId == null) {
             notFound(resp, INVALID_PATH_PARAM);
@@ -1053,7 +1056,7 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -1063,7 +1066,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null) {
             name = NnStringUtil.htmlSafeAndTruncated(name);
             event.setName(name);
@@ -1073,7 +1076,7 @@ public class ApiPoi extends ApiGeneric {
         Boolean shouldContainNotifyScheduler = false; // TODO rewrite flag control
         // type
         Short type = null;
-        String typeStr = req.getParameter("type");
+        String typeStr = ctx.getParam("type");
         if (typeStr != null) {
             try {
                 type = Short.valueOf(typeStr);
@@ -1102,7 +1105,7 @@ public class ApiPoi extends ApiGeneric {
         }
         
         // context
-        String context = req.getParameter("context");
+        String context = ctx.getParam("context");
         if (context != null) {
             event.setContext(context);
         }
@@ -1110,7 +1113,7 @@ public class ApiPoi extends ApiGeneric {
         // notifyMsg
         if (event.getType() == PoiEvent.TYPE_INSTANTNOTIFICATION ||
              event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            String notifyMsg = req.getParameter("notifyMsg");
+            String notifyMsg = ctx.getParam("notifyMsg");
             if (shouldContainNotifyMsg == true && notifyMsg == null) {
                 badRequest(resp, MISSING_PARAMETER);
                 return null;
@@ -1123,7 +1126,7 @@ public class ApiPoi extends ApiGeneric {
         
         // notifyScheduler
         if (event.getType() == PoiEvent.TYPE_SCHEDULEDNOTIFICATION) {
-            String notifyScheduler = req.getParameter("notifyScheduler");
+            String notifyScheduler = ctx.getParam("notifyScheduler");
             if (shouldContainNotifyScheduler == true && notifyScheduler == null) {
                 badRequest(resp, MISSING_PARAMETER);
                 return null;
@@ -1156,17 +1159,17 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "poi_events/{eventId}", method = RequestMethod.DELETE)
     public @ResponseBody
-    void eventDelete(HttpServletRequest req,
-            HttpServletResponse resp,
+    void eventDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("eventId") String eventIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         PoiEvent event = NNF.getPoiEventMngr().findById(eventIdStr);
         if (event == null) {
             notFound(resp, "PoiEvent Not Found");
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -1182,8 +1185,7 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.GET)
     public @ResponseBody
-    List<PoiPoint> channelPoints(HttpServletRequest req,
-            HttpServletResponse resp,
+    List<PoiPoint> channelPoints(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
@@ -1194,7 +1196,7 @@ public class ApiPoi extends ApiGeneric {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelId);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
@@ -1209,23 +1211,17 @@ public class ApiPoi extends ApiGeneric {
     
     @RequestMapping(value = "channels/{channelId}/poi_points", method = RequestMethod.POST)
     public @ResponseBody
-    PoiPoint channelPointCreate(HttpServletRequest req,
-            HttpServletResponse resp,
+    PoiPoint channelPointCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = NnStringUtil.evalLong(channelIdStr);
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAM);
-            return null;
-        }
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
+        ApiContext ctx = new ApiContext(req);
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -1244,7 +1240,7 @@ public class ApiPoi extends ApiGeneric {
         Short targetType = PoiPoint.TYPE_CHANNEL;
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -1259,7 +1255,7 @@ public class ApiPoi extends ApiGeneric {
         point.setEndTime(0);
         
         // tag
-        String tag = req.getParameter("tag");
+        String tag = ctx.getParam("tag");
         if (tag != null) {
             tag = TagManager.processTagText(tag);
             point.setTag(tag);
@@ -1267,7 +1263,7 @@ public class ApiPoi extends ApiGeneric {
         
         // active, default : true
         Boolean active = true;
-        String activeStr = req.getParameter("active");
+        String activeStr = ctx.getParam("active");
         if (activeStr != null) {
             active = Boolean.valueOf(activeStr);
         }

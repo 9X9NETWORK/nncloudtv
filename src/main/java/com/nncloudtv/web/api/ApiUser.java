@@ -52,6 +52,7 @@ public class ApiUser extends ApiGeneric {
             @RequestParam(value = "mso", required = false) String msoIdStr, // FIXME msoId
             @PathVariable("userId") String userIdStr, @RequestParam(required = false) Short shard) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
@@ -70,7 +71,7 @@ public class ApiUser extends ApiGeneric {
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, mso == null ? MsoManager.getSystemMsoId() : mso.getId());
+        NnUser user = ctx.getAuthenticatedUser(mso == null ? MsoManager.getSystemMsoId() : mso.getId());
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -80,8 +81,8 @@ public class ApiUser extends ApiGeneric {
         }
         
         // password
-        String oldPassword = req.getParameter("oldPassword");
-        String newPassword = req.getParameter("newPassword");
+        String oldPassword = ctx.getParam("oldPassword");
+        String newPassword = ctx.getParam("newPassword");
         if (oldPassword != null && newPassword != null) {
             
             if (user.isFbUser()) {
@@ -108,25 +109,25 @@ public class ApiUser extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null && name.length() > 0){
             user.getProfile().setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             user.getProfile().setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
         }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
+        String imageUrl = ctx.getParam("imageUrl");
         if (imageUrl != null) {            
             user.getProfile().setImageUrl(imageUrl);
         }
         
         // lang
-        String lang = req.getParameter("lang");
+        String lang = ctx.getParam("lang");
         if (lang != null) {
             
             user.getProfile().setLang(lang);
@@ -228,13 +229,14 @@ public class ApiUser extends ApiGeneric {
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
             notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -246,7 +248,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        String channelsParam = req.getParameter("channels");
+        String channelsParam = ctx.getParam("channels");
         if (channelsParam == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
@@ -455,20 +457,11 @@ public class ApiUser extends ApiGeneric {
             @PathVariable("userId") String userIdStr,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAM);
-            return;
-        }
-        
+        ApiContext ctx = new ApiContext(req);
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -482,7 +475,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -509,6 +502,7 @@ public class ApiUser extends ApiGeneric {
     void facebookAuthUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
@@ -519,7 +513,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -528,8 +522,8 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        String fbUserId = req.getParameter("userId");
-        String accessToken = req.getParameter("accessToken");
+        String fbUserId = ctx.getParam("userId");
+        String accessToken = ctx.getParam("accessToken");
         if (fbUserId == null || accessToken == null) {
             
             badRequest(resp, MISSING_PARAMETER);
@@ -596,6 +590,7 @@ public class ApiUser extends ApiGeneric {
     void facebookAuthDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
@@ -606,7 +601,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -641,6 +636,7 @@ public class ApiUser extends ApiGeneric {
     Map<String, Object> facebookAuth(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
@@ -651,7 +647,7 @@ public class ApiUser extends ApiGeneric {
             return null;
         }
         
-        NnUser verifiedUserId = ApiContext.getAuthenticatedUser(req);
+        NnUser verifiedUserId = ctx.getAuthenticatedUser();
         if (verifiedUserId == null) {
             unauthorized(resp);
             return null;

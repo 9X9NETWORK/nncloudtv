@@ -94,8 +94,9 @@ public class ApiMisc extends ApiGeneric {
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
     public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         Mso mso = null;
-        String msoIdStr = req.getParameter("mso");
+        String msoIdStr = ctx.getParam("mso");
         if (msoIdStr != null) {
             
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -104,7 +105,7 @@ public class ApiMisc extends ApiGeneric {
                 return null;
             }
             
-            NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+            NnUser user = ctx.getAuthenticatedUser(mso.getId());
             if (user == null) {
                 
                 unauthorized(resp);
@@ -117,17 +118,12 @@ public class ApiMisc extends ApiGeneric {
             }
         }
         
-        String prefix = req.getParameter("prefix");
-        String type = req.getParameter("type");
-        String acl = req.getParameter("acl");
-        long size = 0;
-        
-        try {
-            String sizeStr = req.getParameter("size");
-            Long sizeL = Long.valueOf(sizeStr);
-            size = sizeL.longValue();
-        } catch (NumberFormatException e) {
-        }
+        String prefix = ctx.getParam("prefix");
+        String type = ctx.getParam("type");
+        String acl = ctx.getParam("acl");
+        Long size = NnStringUtil.evalLong(ctx.getParam("size"));
+        if (size == null)
+            size = 0L;
         
         Map<String, String> result = new TreeMap<String, String>();
         
@@ -179,7 +175,8 @@ public class ApiMisc extends ApiGeneric {
     @RequestMapping(value = "login", method = RequestMethod.GET)
     public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, 0);
+        ApiContext ctx = new ApiContext(req);
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             nullResponse(resp);
             return null;

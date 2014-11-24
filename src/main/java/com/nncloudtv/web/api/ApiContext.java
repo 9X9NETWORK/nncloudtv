@@ -255,9 +255,9 @@ public class ApiContext {
         return httpReq;
     }
     
-    public static NnUser getAuthenticatedUser(HttpServletRequest req, long msoId) {
+    public NnUser getAuthenticatedUser(long msoId) {
         
-        String token = CookieHelper.getCookie(req, CookieHelper.USER);
+        String token = getParam("user", getCookie(CookieHelper.USER));
         if (token == null) {
             log.info("not logged in");
             return null;
@@ -266,19 +266,9 @@ public class ApiContext {
         return NNF.getUserMngr().findByToken(token, msoId);
     }
     
-    public static NnUser getAuthenticatedUser(HttpServletRequest req) {
-        
-        return getAuthenticatedUser(req, MsoManager.getSystemMsoId());
-    }
-    
-    public NnUser getAuthenticatedUser(long msoId) {
-        
-        return getAuthenticatedUser(httpReq, msoId);
-    }
-    
     public NnUser getAuthenticatedUser() {
         
-        return getAuthenticatedUser(httpReq, MsoManager.getSystemMsoId());
+        return getAuthenticatedUser(MsoManager.getSystemMsoId());
     }
     
     /**
