@@ -21,6 +21,8 @@ public class CounterTask extends CounterFactory {
     @Scheduled(fixedDelay = CC_INTERVAL)
     public void cleanDirtyCounter() {
         synchronized (dirtyCounters) {
+            if (dirtyCounters.isEmpty())
+                return;
             long before = NnDateUtil.timestamp();
             HashSet<CounterShard> shardSet = new HashSet<CounterShard>();
             HashSet<Entry<String, Integer>> counterSet = new HashSet<Entry<String,Integer>>(dirtyCounters.entrySet());
