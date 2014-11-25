@@ -16,6 +16,7 @@ import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.PersistentModel;
+import com.nncloudtv.service.CounterFactory;
 
 public class GenericDao<T extends PersistentModel> {
     
@@ -236,7 +237,7 @@ public class GenericDao<T extends PersistentModel> {
         } catch(NumberFormatException e) {
             return null;
         }
-        return findById(id);
+        return findById(id, getPersistenceManager());
     }
     
     public T findById(long id) {
@@ -250,8 +251,11 @@ public class GenericDao<T extends PersistentModel> {
         T dao = null;
         String cacheKey = CacheFactory.getFindByIdKey(daoClassName, id);
         dao = (T) CacheFactory.get(cacheKey);
-        if (dao != null) // hit
+        if (dao != null) { // hit
+            CounterFactory.increment("HIT " + cacheKey);
             return dao;
+        }
+        CounterFactory.increment("MISS " + cacheKey);
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {

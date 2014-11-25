@@ -13,7 +13,6 @@ import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.api.ApiContext;
@@ -148,9 +147,6 @@ public class CacheFactory {
         }
         if (obj == null) {
             System.out.println(String.format("[cache] {%s} --> missed", key));
-            CounterFactory.increment("[cache] MISS " + key); // MISS
-        } else {
-            CounterFactory.increment("[cache] HIT " + key); // HIT
         }
         return obj;
     }
