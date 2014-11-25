@@ -189,7 +189,6 @@ public class CacheFactory {
             System.out.println(String.format("[cache] {%s} --> NOT saved", key));
         } else {
             System.out.println(String.format("[cache] {%s} --> saved", key));
-            CounterFactory.increment(String.format("[cache] SAVE %s", key));
         }
         System.out.println(String.format("[cache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         
@@ -209,7 +208,6 @@ public class CacheFactory {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
                     cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-                    CounterFactory.increment("[cache] DELETE " + key);
                 }
             }
             isDeleted = true;
@@ -253,7 +251,6 @@ public class CacheFactory {
         }
         if (isDeleted) {
             System.out.println(String.format("[cache] {%s} --> deleted", key));
-            CounterFactory.increment("[cache] DELETE " + key);
         } else {
             System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
         }

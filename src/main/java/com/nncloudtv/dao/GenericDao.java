@@ -66,7 +66,6 @@ public class GenericDao<T extends PersistentModel> {
         }
         String msg = String.format("[dao] %s", cacheKey);
         System.out.println(msg);
-        CounterFactory.increment(msg);
         return dao;
     }
     
@@ -75,12 +74,6 @@ public class GenericDao<T extends PersistentModel> {
         if (list == null) return null;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        //List<String> cacheKeys = new ArrayList<String>();
-        //for (T dao : list) {
-        //    if (dao.getId() > 0)
-        //        cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
-        //}
-        //CacheFactory.delete(cacheKeys);
         String msg = String.format("[dao] %s.saveAll()", daoClassName);
         System.out.println(msg);
         Transaction tx = pm.currentTransaction();
@@ -96,7 +89,12 @@ public class GenericDao<T extends PersistentModel> {
             pm.close();
             System.out.println(String.format("[dao] saveAll() costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
-        CounterFactory.increment(msg);
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list) {
+            if (dao.isCachable())
+                cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        }
+        CacheFactory.delete(cacheKeys);
         return list;
     }
     
@@ -114,7 +112,6 @@ public class GenericDao<T extends PersistentModel> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
     }
     
     public void deleteAll(Collection<T> list) {
@@ -122,10 +119,12 @@ public class GenericDao<T extends PersistentModel> {
         if (list == null || list.isEmpty()) return;
         
         PersistenceManager pm = getPersistenceManager();
-//        List<String> cacheKeys = new ArrayList<String>();
-//        for (T dao : list)
-//            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
-//        CacheFactory.delete(cacheKeys);
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list) {
+            if (dao.isCachable())
+                cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        }
+        CacheFactory.delete(cacheKeys);
         Transaction tx = pm.currentTransaction();
         String msg = String.format("[dao] %s.deleteAll()", daoClassName);
         System.out.println(msg);
@@ -140,7 +139,6 @@ public class GenericDao<T extends PersistentModel> {
             }
             pm.close();
         }
-        CounterFactory.increment(msg);
     }
     
     /**
@@ -167,7 +165,6 @@ public class GenericDao<T extends PersistentModel> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return result;
     }
     
@@ -195,7 +192,6 @@ public class GenericDao<T extends PersistentModel> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return results;
     }
     
@@ -218,7 +214,6 @@ public class GenericDao<T extends PersistentModel> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return results;
     }
     
@@ -269,7 +264,6 @@ public class GenericDao<T extends PersistentModel> {
         
         T dao = null;
         String cacheKey = CacheFactory.getFindByIdKey(daoClassName, id);
-        CounterFactory.increment(String.format("[dao] %s", cacheKey));
         dao = (T) CacheFactory.get(cacheKey);
         if (dao != null) // hit
             return dao;
@@ -347,7 +341,6 @@ public class GenericDao<T extends PersistentModel> {
             
             pm.close();
         }
-        CounterFactory.increment("[dao] sql_query");
         return detached;
     }
     
