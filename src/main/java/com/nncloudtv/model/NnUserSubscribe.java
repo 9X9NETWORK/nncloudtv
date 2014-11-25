@@ -2,16 +2,28 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 /**
  * User's channel subscriptions. 
  */
 @PersistenceCapable(table = "nnuser_subscribe", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnUserSubscribe extends PersistentModel {
+public class NnUserSubscribe implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long userId;

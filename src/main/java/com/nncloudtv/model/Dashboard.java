@@ -1,9 +1,10 @@
 package com.nncloudtv.model;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
@@ -11,8 +12,19 @@ import com.nncloudtv.lib.NnStringUtil;
  * For android device. Things to display when device boots up 
  */
 @PersistenceCapable(table = "dashboard", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class Dashboard extends PersistentModel {
+public class Dashboard implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long msoId;

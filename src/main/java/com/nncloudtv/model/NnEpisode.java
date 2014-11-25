@@ -3,10 +3,11 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
@@ -15,8 +16,19 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.CounterFactory;
 
 @PersistenceCapable(table = "nnepisode", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnEpisode extends PersistentModel {
+public class NnEpisode implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long channelId;

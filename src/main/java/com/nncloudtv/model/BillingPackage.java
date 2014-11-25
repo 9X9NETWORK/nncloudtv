@@ -3,15 +3,27 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "billing_package", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class BillingPackage extends PersistentModel {
+public class BillingPackage implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private Date createDate;

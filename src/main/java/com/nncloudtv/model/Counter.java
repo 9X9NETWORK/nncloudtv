@@ -16,9 +16,10 @@
 package com.nncloudtv.model;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Unique;
 
 import com.nncloudtv.lib.NnStringUtil;
@@ -27,8 +28,19 @@ import com.nncloudtv.lib.NnStringUtil;
  * Represents a counter in the datastore and stores the number of shards.
  */
 @PersistenceCapable(table = "counter", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class Counter extends PersistentModel {
+public class Counter implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Unique
     @Persistent

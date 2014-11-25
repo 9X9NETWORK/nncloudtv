@@ -2,7 +2,12 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.*;
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.NotPersistent;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
@@ -10,8 +15,19 @@ import com.nncloudtv.lib.NnStringUtil;
  * a Multimedia service operator
  */
 @PersistenceCapable(table = "mso", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class Mso extends PersistentModel {
+public class Mso implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)

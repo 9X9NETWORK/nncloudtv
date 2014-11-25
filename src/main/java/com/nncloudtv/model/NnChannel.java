@@ -4,10 +4,11 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
@@ -16,8 +17,19 @@ import com.nncloudtv.lib.stream.YouTubeLib;
  * a Channel
  */
 @PersistenceCapable(table = "nnchannel", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnChannel extends PersistentModel {
+public class NnChannel implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)

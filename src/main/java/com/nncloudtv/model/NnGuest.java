@@ -2,9 +2,10 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.service.NnUserManager;
 
@@ -13,8 +14,19 @@ import com.nncloudtv.service.NnUserManager;
  * Data can be wiped out.
  */
 @PersistenceCapable(table = "nnguest", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnGuest extends PersistentModel {
+public class NnGuest implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private String token;

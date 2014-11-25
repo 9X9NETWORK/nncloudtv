@@ -3,9 +3,10 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
@@ -13,8 +14,19 @@ import com.nncloudtv.lib.NnStringUtil;
  * Store Pushed notifications. 
  */
 @PersistenceCapable(table = "nndevice_notification", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnDeviceNotification extends PersistentModel {
+public class NnDeviceNotification implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long deviceId;

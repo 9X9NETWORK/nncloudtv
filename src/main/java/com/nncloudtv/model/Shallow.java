@@ -8,6 +8,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnStringUtil;
+
 /**
  * Used for shallow recommendation.
  * Data is from recommendation engine
@@ -21,11 +23,11 @@ public class Shallow {
     
     //channel ids, separated by comma    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=1024)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.LONG_STRING_LENGTH)
     private String recommendIds;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=10)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_SHORT_STRING_LENGTH)
     private String lang;
     
     @Persistent

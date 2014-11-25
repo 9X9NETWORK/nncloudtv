@@ -2,17 +2,29 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.Inheritance;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 /**
  * Store user's sorting preference for individual channel. 
  * Example would be newest to oldest, or oldest to newest.
  */
 @PersistenceCapable(table = "nnuser_channel_sorting", detachable = "true")
-@Inheritance(customStrategy = "complete-table")
-public class NnUserChannelSorting extends PersistentModel {
+public class NnUserChannelSorting implements PersistentModel {
+    
+    @PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long userId;
