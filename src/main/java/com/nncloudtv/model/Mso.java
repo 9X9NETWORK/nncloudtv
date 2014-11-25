@@ -18,6 +18,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Mso implements PersistentModel {
     
     private static final long serialVersionUID = -5551919200556908289L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

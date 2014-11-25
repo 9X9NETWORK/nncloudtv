@@ -15,6 +15,11 @@ import javax.jdo.annotations.PrimaryKey;
 public class NnUserChannelSorting implements PersistentModel {
     
     private static final long serialVersionUID = 1282142339904331933L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

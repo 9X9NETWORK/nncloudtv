@@ -11,6 +11,11 @@ import javax.jdo.annotations.PrimaryKey;
 public class Poi implements PersistentModel {
     
     private static final long serialVersionUID = -6330960416877922240L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

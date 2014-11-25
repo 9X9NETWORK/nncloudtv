@@ -14,6 +14,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class BillingOrder implements PersistentModel {
     
     private static final long serialVersionUID = -4942286079520027493L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

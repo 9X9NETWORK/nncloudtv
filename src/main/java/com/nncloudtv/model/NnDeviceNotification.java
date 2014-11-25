@@ -17,6 +17,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class NnDeviceNotification implements PersistentModel {
     
     private static final long serialVersionUID = -9076243987905050923L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

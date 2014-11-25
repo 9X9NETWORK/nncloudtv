@@ -18,6 +18,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Captcha implements PersistentModel {
     
     private static final long serialVersionUID = 8631029787591344239L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

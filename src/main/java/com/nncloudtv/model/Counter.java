@@ -31,6 +31,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Counter implements PersistentModel {
     
     private static final long serialVersionUID = -3785260187645061818L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

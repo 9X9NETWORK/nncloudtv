@@ -14,6 +14,11 @@ import javax.jdo.annotations.PrimaryKey;
 public class StoreListing implements PersistentModel {
     
     private static final long serialVersionUID = 104167058683011863L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

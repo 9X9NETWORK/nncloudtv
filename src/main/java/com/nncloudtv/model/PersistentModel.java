@@ -8,4 +8,6 @@ public interface PersistentModel extends Serializable {
     
     public void setId(long id);
     
+    public boolean isCachable();
+    
 }

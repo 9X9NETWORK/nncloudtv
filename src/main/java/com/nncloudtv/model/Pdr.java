@@ -14,6 +14,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Pdr implements PersistentModel {
     
     private static final long serialVersionUID = 4323042153929017674L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

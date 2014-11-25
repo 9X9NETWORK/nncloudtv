@@ -23,6 +23,11 @@ public class NnEpisode implements PersistentModel {
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     public long getId() {
         return id;

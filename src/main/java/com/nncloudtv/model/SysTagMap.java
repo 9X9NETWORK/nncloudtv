@@ -14,6 +14,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class SysTagMap implements PersistentModel {
     
     private static final long serialVersionUID = 6967129426270985959L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

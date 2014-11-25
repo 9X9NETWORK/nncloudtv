@@ -14,6 +14,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class AdPlacement implements PersistentModel {
     
     private static final long serialVersionUID = -4383401775754927693L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

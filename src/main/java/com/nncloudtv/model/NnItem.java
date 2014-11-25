@@ -14,6 +14,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class NnItem implements PersistentModel {
     
     private static final long serialVersionUID = 2251574957539851160L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

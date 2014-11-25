@@ -20,6 +20,11 @@ import com.nncloudtv.lib.stream.YouTubeLib;
 public class NnChannel implements PersistentModel {
     
     private static final long serialVersionUID = -110451972264224377L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

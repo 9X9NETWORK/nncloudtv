@@ -34,6 +34,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class CounterShard implements PersistentModel {
     
     private static final long serialVersionUID = 7031802928943024767L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

@@ -18,6 +18,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Deep implements PersistentModel {
     
     private static final long serialVersionUID = -3242796605443779044L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

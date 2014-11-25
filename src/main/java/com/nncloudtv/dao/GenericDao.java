@@ -55,14 +55,15 @@ public class GenericDao<T extends PersistentModel> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
+        if (dao.isCachable())
+            CacheFactory.delete(cacheKey);
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
         } finally {
             pm.close();
         }
-        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
-        CacheFactory.delete(cacheKey);
         String msg = String.format("[dao] %s", cacheKey);
         System.out.println(msg);
         CounterFactory.increment(msg);
@@ -104,7 +105,8 @@ public class GenericDao<T extends PersistentModel> {
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
         String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
-        CacheFactory.delete(cacheKey);
+        if (dao.isCachable())
+            CacheFactory.delete(cacheKey);
         String msg = String.format("[dao] %s", cacheKey);
         System.out.println(msg);
         try {
@@ -271,13 +273,15 @@ public class GenericDao<T extends PersistentModel> {
         dao = (T) CacheFactory.get(cacheKey);
         if (dao != null) // hit
             return dao;
+        
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
-        CacheFactory.set(cacheKey, dao);
+        if (dao.isCachable())
+            CacheFactory.set(cacheKey, dao);
         return dao;
     }
     

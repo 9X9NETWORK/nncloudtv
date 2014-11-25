@@ -18,6 +18,11 @@ import com.nncloudtv.lib.NnStringUtil;
 public class YtProgram implements PersistentModel {
     
     private static final long serialVersionUID = -8000687567807163404L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
