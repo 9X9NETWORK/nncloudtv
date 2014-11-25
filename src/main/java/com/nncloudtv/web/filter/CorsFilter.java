@@ -42,7 +42,7 @@ public class CorsFilter extends OncePerRequestFilter {
             return ;
         }
         
-        CounterFactory.increment("[api] " + req.getMethod() + " " + req.getRequestURI()); // count api usage
+        CounterFactory.increment(req.getMethod() + " " + req.getRequestURI()); // count api usage
         
         filterChain.doFilter(req, resp);
     }
