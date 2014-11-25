@@ -6,12 +6,15 @@ import javax.jdo.PersistenceManagerFactory;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
+import com.nncloudtv.model.Deep;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.NnUserSubscribeGroup;
 import com.nncloudtv.model.Pdr;
+import com.nncloudtv.model.Shallow;
+import com.nncloudtv.model.YtChannel;
 
 public final class PMF {
 
@@ -41,6 +44,10 @@ public final class PMF {
         } else if (cls.equals(NnUser.class) || cls.equals(NnUserSubscribe.class) || cls.equals(NnUserSubscribeGroup.class)) {
             
             throw new IllegalArgumentException("user related db are sharded.");
+            
+        } else if (cls.equals(Deep.class) || cls.equals(Shallow.class) || cls.equals(YtChannel.class)) {
+            
+            return PMF.getRecommend();
         }
         
         return PMF.getContent();

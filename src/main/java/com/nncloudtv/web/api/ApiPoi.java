@@ -731,9 +731,9 @@ public class ApiPoi extends ApiGeneric {
         }
         point.setActive(active);
         
-        PoiPoint result = NNF.getPoiPointMngr().create(point);
-        
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.GET)
@@ -748,13 +748,14 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        PoiPoint result = NNF.getPoiPointMngr().findById(poiPointId);
-        if (result == null) {
+        PoiPoint point = NNF.getPoiPointMngr().findById(poiPointId);
+        if (point == null) {
             notFound(resp, "PoiPoint Not Found");
             return null;
         }
         
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{pointId}", method = RequestMethod.PUT)
@@ -857,8 +858,9 @@ public class ApiPoi extends ApiGeneric {
             point.setActive(active);
         }
         
-        PoiPoint result = NNF.getPoiPointMngr().save(point);
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.DELETE)
@@ -1269,8 +1271,8 @@ public class ApiPoi extends ApiGeneric {
         }
         point.setActive(active);
         
-        PoiPoint result = NNF.getPoiPointMngr().create(point);
-        
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
 }

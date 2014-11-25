@@ -1,15 +1,11 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.NnStringUtil;
 
@@ -17,13 +13,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * 9x9 User accounts
  */
 @PersistenceCapable(table = "nnuser", detachable = "true")
-public class NnUser implements Serializable {
-        
-    private static final long serialVersionUID = -708171304411630395L;
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class NnUser extends PersistentModel {
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
@@ -120,14 +110,6 @@ public class NnUser implements Serializable {
         this.type = type;
         this.msoId = msoId;
         this.profile = new NnUserProfile();
-    }        
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public String getIdStr() {

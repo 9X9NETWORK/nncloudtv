@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.Poi;
@@ -22,19 +23,12 @@ import com.nncloudtv.model.PoiPoint;
 public class PoiPointManager {
     protected static final Logger log = Logger.getLogger(PoiPointManager.class.getName());
     
-    public PoiPoint create(PoiPoint point) {
-        Date now = new Date();
-        point.setCreateDate(now);
-        point.setUpdateDate(now);
-        point = NNF.getPoiPointDao().save(point);
-        return point;
-    }
-    
     public PoiPoint save(PoiPoint point) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
+        if (point.getCreateDate() == null)
+            point.setCreateDate(now);
         point.setUpdateDate(now);
-        point = NNF.getPoiPointDao().save(point);
-        return point;
+        return NNF.getPoiPointDao().save(point);
     }
     
     public void delete(PoiPoint point) {

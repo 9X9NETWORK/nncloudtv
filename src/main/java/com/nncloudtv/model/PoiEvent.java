@@ -3,19 +3,12 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "poi_event", detachable = "true")
-public class PoiEvent {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class PoiEvent extends PersistentModel {
     
     @Persistent
     private long userId; // will be replaced by profileId
@@ -43,7 +36,6 @@ public class PoiEvent {
     public static final short TYPE_SCHEDULEDNOTIFICATION = 3;
     public static final short TYPE_POLL = 4;
     
-    
     /**
      * json format, example
      * 
@@ -67,14 +59,6 @@ public class PoiEvent {
         
     @Persistent
     private Date updateDate;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public short getType() {
         return type;

@@ -3,19 +3,12 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag_display", detachable = "true")
-public class SysTagDisplay {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+public class SysTagDisplay extends PersistentModel {
     
     @Persistent
     long systagId;
@@ -72,14 +65,6 @@ public class SysTagDisplay {
     
     public void setBannerImageUrl2(String bannerImageUrl2) {
         this.bannerImageUrl2 = bannerImageUrl2;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getSystagId() {

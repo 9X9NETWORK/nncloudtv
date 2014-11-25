@@ -95,7 +95,7 @@ public class NnTestUtil {
     
     public static Mso getNnMso() {
         
-        String name = Mso.NAME_9X9;
+        String name = Mso.NAME_SYS;
         String title = "title";
         String logoUrl = "logoUrl";
         String jingleUrl = "jingleUrl";

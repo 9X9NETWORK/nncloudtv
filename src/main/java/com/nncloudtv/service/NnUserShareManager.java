@@ -12,7 +12,7 @@ public class NnUserShareManager {
 
     protected static final Logger log = Logger.getLogger(NnUserShareManager.class.getName());
     
-    private NnUserShareDao shareDao = new NnUserShareDao();    
+    private NnUserShareDao shareDao = new NnUserShareDao();
     
     public void create(NnUserShare share) {
         Date now = new Date();

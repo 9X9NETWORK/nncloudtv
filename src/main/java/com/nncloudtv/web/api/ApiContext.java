@@ -127,7 +127,8 @@ public class ApiContext {
     public String getParam(String name, String defaultValue) {
         
         String value = httpReq.getParameter(name);
-        
+        if (defaultValue != null)
+            System.out.println(String.format("[ApiContext] %s = %s (%s)", name, value, defaultValue));
         return value == null ? defaultValue : value;
     }
     
@@ -186,7 +187,7 @@ public class ApiContext {
                 mso = NNF.getMsoMngr().findByName(split[0]);
             }
             if (mso == null) {
-                mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_9X9);
+                mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_SYS);
             }
         }
         

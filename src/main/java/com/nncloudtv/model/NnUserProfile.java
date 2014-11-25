@@ -1,65 +1,56 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
-@PersistenceCapable(table="nnuser_profile", detachable="true")
-public class NnUserProfile implements Serializable {
-    private static final long serialVersionUID = -3477922988272107801L;
-
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
-        
+@PersistenceCapable(table = "nnuser_profile", detachable = "true")
+public class NnUserProfile extends PersistentModel {
+    
     @Persistent
     private long userId;
-
+    
     @Persistent
     private long msoId; //which mso a user belongs to
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
-    private String name;    
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
+    private String name;
     
     @Persistent
     private String dob; //for now it's year
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String intro;
             
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String imageUrl;
     public static String IMAGE_URL_DEFAULT = "https://s3.amazonaws.com/9x9ui/war/v2/images/profile_default101.png";
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_SHORT_STRING_LENGTH)
     private String sphere; //content region, used with LangTable
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_SHORT_STRING_LENGTH)
     private String lang; //ui language, used with LangTable
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String profileUrl; //curator url
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=15)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String phoneNumber;
     
     @Persistent
     private short gender; //0 (f) or 1(m) or 2(not specified)
-
+    
     @Persistent
     private boolean featured; 
     
@@ -105,7 +96,7 @@ public class NnUserProfile implements Serializable {
         this.imageUrl = imageUrl;
     }
     
-    public NnUserProfile() {       
+    public NnUserProfile() {
     }
     
     public NnUserProfile(long userId, long msoId) {
@@ -130,78 +121,70 @@ public class NnUserProfile implements Serializable {
         this.updateDate = now;
     }
     
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public long getUserId() {
         return userId;
     }
-
+    
     public void setUserId(long userId) {
         this.userId = userId;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getDob() {
         return dob;
     }
-
+    
     public void setDob(String dob) {
         this.dob = dob;
     }
-
+    
     public String getIntro() {
         return intro;
     }
-
+    
     public void setIntro(String intro) {
         this.intro = intro;
     }
-
+    
     public String getSphere() {
         return sphere;
     }
-
+    
     public void setSphere(String sphere) {
         if (sphere != null && sphere.contains("_"))
             sphere = sphere.substring(0, 2);
         this.sphere = sphere;
     }
-
+    
     public String getLang() {
         return lang;
     }
-
+    
     public void setLang(String lang) {
         if (lang != null & lang.length() > 2)
             lang = lang.substring(0, 2);
         this.lang = lang;
     }
-
+    
     public String getProfileUrl() {
         return profileUrl;
     }
-
+    
     public void setProfileUrl(String profileUrl) {
         this.profileUrl = profileUrl;
     }
-
+    
     public short getGender() {
         return gender;
     }
-
+    
     public void setGender(short gender) {
         this.gender = gender;
     }
@@ -213,75 +196,75 @@ public class NnUserProfile implements Serializable {
             this.gender = 0;
         else
             this.gender = 1;
-    }    
-
+    }
+    
     public boolean isFeatured() {
         return featured;
     }
-
+    
     public void setFeatured(boolean featured) {
         this.featured = featured;
     }
-
+    
     public int getCntSubscribe() {
         return cntSubscribe;
     }
-
+    
     public void setCntSubscribe(int cntSubscribe) {
         this.cntSubscribe = cntSubscribe;
     }
-
+    
     public int getCntChannel() {
         return cntChannel;
     }
-
+    
     public void setCntChannel(int cntChannel) {
         this.cntChannel = cntChannel;
     }
-
+    
     public int getCntFollower() {
         return cntFollower;
     }
-
+    
     public void setCntFollower(int cntFollower) {
         this.cntFollower = cntFollower;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public String getBrandUrl() {
         if (profileUrl != null && profileUrl.matches("[a-zA-Z].+")) {
             return "~" + profileUrl;
         }
         return profileUrl;
     }
-
+    
     public String getPriv() {
         return priv;
     }
-
+    
     public void setPriv(String priv) {
         this.priv = priv;
     }
-
+    
     public String getPhoneNumber() {
         return phoneNumber;
     }
-
+    
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }

@@ -16,12 +16,9 @@
 package com.nncloudtv.model;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -32,11 +29,7 @@ import com.nncloudtv.lib.NnStringUtil;
  *
  */
 @PersistenceCapable(table = "counter_shard", detachable = "true", identityType = IdentityType.APPLICATION)
-public class CounterShard {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class CounterShard extends PersistentModel {
     
     @Persistent
     private int shardNumber;
@@ -53,10 +46,6 @@ public class CounterShard {
         this.counterName = counterName;
         this.shardNumber = shardNumber;
         this.count = 0;
-    }
-    
-    public long getId() {
-        return id;
     }
     
     public String getCounterName() {

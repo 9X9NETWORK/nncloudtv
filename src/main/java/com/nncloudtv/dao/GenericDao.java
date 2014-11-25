@@ -10,13 +10,15 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
+import com.nncloudtv.model.PersistentModel;
 import com.nncloudtv.service.CounterFactory;
 
-public class GenericDao<T> {
+public class GenericDao<T extends PersistentModel> {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
@@ -53,7 +55,9 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        String msg = String.format("[dao] %s.save()", daoClassName);
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
+        CacheFactory.delete(cacheKey);
+        String msg = String.format("[dao] %s", cacheKey);
         System.out.println(msg);
         try {
             pm.makePersistent(dao);
@@ -70,6 +74,10 @@ public class GenericDao<T> {
         if (list == null) return null;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list)
+            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        CacheFactory.delete(cacheKeys);
         String msg = String.format("[dao] %s.saveAll()", daoClassName);
         System.out.println(msg);
         Transaction tx = pm.currentTransaction();
@@ -83,7 +91,7 @@ public class GenericDao<T> {
                 tx.rollback();
             }
             pm.close();
-            System.out.println(String.format("[dao] costs %d miliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[dao] saveAll() costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
         CounterFactory.increment(msg);
         return list;
@@ -93,7 +101,9 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.delete()", daoClassName);
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
+        CacheFactory.delete(cacheKey);
+        String msg = String.format("[dao] %s", cacheKey);
         System.out.println(msg);
         try {
             pm.deletePersistent(dao);
@@ -108,6 +118,10 @@ public class GenericDao<T> {
         if (list == null || list.isEmpty()) return;
         
         PersistenceManager pm = getPersistenceManager();
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list)
+            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        CacheFactory.delete(cacheKeys);
         Transaction tx = pm.currentTransaction();
         String msg = String.format("[dao] %s.deleteAll()", daoClassName);
         System.out.println(msg);
@@ -238,21 +252,30 @@ public class GenericDao<T> {
             
             return null;
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClassName, id));
         return findById(id);
     }
     
     public T findById(long id) {
         
-        PersistenceManager pm = getPersistenceManager();
+        return findById(id, getPersistenceManager());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public T findById(long id, PersistenceManager pm) {
+        
         T dao = null;
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, id);
+        CounterFactory.increment(String.format("[dao] %s", cacheKey));
+        dao = (T) CacheFactory.get(cacheKey);
+        if (dao != null) // hit
+            return dao;
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClassName, id));
+        CacheFactory.set(cacheKey, dao);
         return dao;
     }
     

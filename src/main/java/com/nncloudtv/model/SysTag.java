@@ -3,19 +3,12 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag", detachable = "true")
-public class SysTag {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+public class SysTag extends PersistentModel {
     
     @Persistent
     protected long msoId;
@@ -65,14 +58,6 @@ public class SysTag {
         
     @Persistent
     Date updateDate;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public long getMsoId() {
         return msoId;

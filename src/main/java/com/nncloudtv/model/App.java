@@ -1,23 +1,12 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
-
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "app", detachable = "true")
-public class App  implements Serializable {
-    
-    private static final long serialVersionUID = -1574784862238151019L;
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class App extends PersistentModel {
     
     @Persistent
     private long msoId; //maybe different mso wants different
@@ -32,7 +21,7 @@ public class App  implements Serializable {
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String name;
-   
+    
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String intro;
@@ -54,7 +43,7 @@ public class App  implements Serializable {
     private String androidPackageName;
     
     @Persistent
-    @Column(jdbcType = NnStringUtil.VARCHAR, length = 5)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_SHORT_STRING_LENGTH)
     private String sphere;
     
     @Persistent
@@ -67,105 +56,97 @@ public class App  implements Serializable {
     private int position2; //general list position
     
     public long getMsoId() {
-      return msoId;
+        return msoId;
     }
     
     public void setMsoId(long msoId) {
-       this.msoId = msoId;
-    }
-    
-    public long getId() {
-       return id;
-    }
-    
-    public void setId(long id) {
-       this.id = id;
+        this.msoId = msoId;
     }
     
     public String getImageUrl() {
-       return imageUrl;
+        return imageUrl;
     }
     
     public void setImageUrl(String imageUrl) {
-       this.imageUrl = imageUrl;
+        this.imageUrl = imageUrl;
     }
     
     public String getIosStoreUrl() {
-       return iosStoreUrl;
+        return iosStoreUrl;
     }
     
     public void setIosStoreUrl(String iosStoreUrl) {
-       this.iosStoreUrl = iosStoreUrl;
+        this.iosStoreUrl = iosStoreUrl;
     }
     
     public String getAndroidStoreUrl() {
-       return androidStoreUrl;
+        return androidStoreUrl;
     }
     
     public void setAndroidStoreUrl(String androidStoreUrl) {
-       this.androidStoreUrl = androidStoreUrl;
+        this.androidStoreUrl = androidStoreUrl;
     }
     
     public String getSphere() {
-       return sphere;
+        return sphere;
     }
     
     public void setSphere(String sphere) {
-       this.sphere = sphere;
+        this.sphere = sphere;
     }
     
     public String getName() {
-       return name;
+        return name;
     }
     
     public void setName(String name) {
-       this.name = name;
+        this.name = name;
     }
     
     public String getIntro() {
-       return intro;
+        return intro;
     }
     
     public void setIntro(String intro) {
-       this.intro = intro;
+        this.intro = intro;
     }
     
     public boolean isFeatured() {
-       return featured;
+        return featured;
     }
     
     public void setFeatured(boolean featured) {
-       this.featured = featured;
+        this.featured = featured;
     }
     
     public int getPosition1() {
-       return position1;
+        return position1;
     }
     
     public void setPosition1(int position1) {
-       this.position1 = position1;
+        this.position1 = position1;
     }
     
     public int getPosition2() {
-       return position2;
+        return position2;
     }
     
     public void setPosition2(int position2) {
-       this.position2 = position2;
+        this.position2 = position2;
     }
-
+    
     public String getMsoName() {
         return msoName;
     }
-
+    
     public void setMsoName(String msoName) {
         this.msoName = msoName;
     }
-
+    
     public String getAndroidPackageName() {
         return androidPackageName;
     }
-
+    
     public void setAndroidPackageName(String androidPackageName) {
         this.androidPackageName = androidPackageName;
     }

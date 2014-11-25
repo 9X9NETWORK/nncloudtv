@@ -13,11 +13,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Episode: aka NnEpisode. Only 9x9 programs has "episode". It is "super-program", store each sub-episode's metadata.    
  */
 @PersistenceCapable(table = "nnprogram", detachable = "true")
-public class NnProgram {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class NnProgram extends PersistentModel {
     
     @Persistent
     private long channelId;
@@ -131,7 +127,7 @@ public class NnProgram {
     @NotPersistent
     private int cntPoi;
     
-    public NnProgram(long channelId, String name, String intro, String imageUrl) {    
+    public NnProgram(long channelId, String name, String intro, String imageUrl) {
         this.channelId = channelId;
         this.name = name;
         this.intro = intro;
@@ -157,15 +153,6 @@ public class NnProgram {
         this.updateDate = now;
     }
     
-    public long getId() {
-    
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
-    
     public long getChannelId() {
         return channelId;
     }
@@ -182,11 +169,11 @@ public class NnProgram {
     
     public String getPlayerName() {
     	String name = this.getName(); 
-        if (name != null) {        	
+        if (name != null) {
            name = name.replace("|", "\\|");
        	   name = name.replaceAll("\\s", " ");
         }
-        return name;    	
+        return name;
     }
     
     public void setName(String name) {
@@ -199,7 +186,7 @@ public class NnProgram {
     
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }    
+    }
     
     public String getImageLargeUrl() {
         return imageLargeUrl;

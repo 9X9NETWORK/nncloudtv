@@ -3,19 +3,12 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "billing_order", detachable = "true")
-public class BillingOrder {
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class BillingOrder extends PersistentModel {
     
     @Persistent
     private Date createDate;
@@ -69,18 +62,10 @@ public class BillingOrder {
         this.cntPayment = 0;
         this.status = status;
     }
-
+    
     @Persistent
     @Column(jdbcType="VARCHAR", length=NnStringUtil.LONG_STRING_LENGTH)
     private String note;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public Date getCreateDate() {
         return createDate;

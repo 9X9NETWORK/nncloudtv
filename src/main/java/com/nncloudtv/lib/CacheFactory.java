@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
+
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
@@ -448,4 +449,8 @@ public class CacheFactory {
         return keys;
     }
     
+    public static String getFindByIdKey(String className, long id) {
+        
+        return String.format("%s.findById(%d)", className, id);
+    }
 }

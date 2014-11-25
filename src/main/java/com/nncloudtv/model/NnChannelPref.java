@@ -1,27 +1,17 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * 9x9 user preference, stored in key/value pair
  */
 @PersistenceCapable(table = "nnchannel_pref", detachable = "true")
-public class NnChannelPref implements Serializable {
-    
-    private static final long serialVersionUID = -1556581263719714732L;
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class NnChannelPref extends PersistentModel {
     
     @Persistent
     private long channelId;
@@ -64,14 +54,6 @@ public class NnChannelPref implements Serializable {
     
     @Persistent
     private Date updateDate;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public long getChannelId() {
         return channelId;

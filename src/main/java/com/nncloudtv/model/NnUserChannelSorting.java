@@ -2,24 +2,19 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
 
 /**
  * Store user's sorting preference for individual channel. 
  * Example would be newest to oldest, or oldest to newest.
  */
-@PersistenceCapable(table="nnuser_channel_sorting", detachable="true")
-public class NnUserChannelSorting {
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+@PersistenceCapable(table = "nnuser_channel_sorting", detachable = "true")
+public class NnUserChannelSorting extends PersistentModel {
     
     @Persistent
     private long userId;
-
+    
     @Persistent
     private long channelId;
     
@@ -40,40 +35,43 @@ public class NnUserChannelSorting {
         this.channelId = channelId;
         this.sort = sorting;
     }
-        
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
+    
     public long getUserId() {
         return userId;
     }
+    
     public void setUserId(long userId) {
         this.userId = userId;
     }
+    
     public long getChannelId() {
         return channelId;
     }
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
+    
     public short getSort() {
         return sort;
     }
+    
     public void setSort(short sort) {
         this.sort = sort;
     }
+    
     public Date getCreateDate() {
         return createDate;
     }
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
+    
     public Date getUpdateDate() {
         return updateDate;
     }
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }

@@ -1,16 +1,12 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
 
@@ -18,13 +14,7 @@ import com.nncloudtv.lib.stream.YouTubeLib;
  * a Channel
  */
 @PersistenceCapable(table = "nnchannel", detachable = "true")
-public class NnChannel implements Serializable {
-    
-    private static final long serialVersionUID = 6138621615980949044L;
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class NnChannel extends PersistentModel {
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
@@ -237,14 +227,6 @@ public class NnChannel implements Serializable {
     
     public NnChannel(String sourceUrl) {
         this.sourceUrl = sourceUrl;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public String getFakeId(String userProfileUrl) {

@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.*;
@@ -11,20 +10,12 @@ import com.nncloudtv.lib.NnStringUtil;
  * a Multimedia service operator
  */
 @PersistenceCapable(table = "mso", detachable = "true")
-public class Mso implements Serializable {
-
-    private static final long serialVersionUID = 352047930355952392L;
-    
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+public class Mso extends PersistentModel {
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String name; //name is unique, used as unique nameId, be careful of the case
-    public static String NAME_9X9 = "9x9";
-    public static String NAME_CTS = "cts";
-    public static String NAME_5F  = "5f";
+    public static final String NAME_SYS = "9x9";
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
@@ -126,74 +117,66 @@ public class Mso implements Serializable {
         this.maxChPerSet = maxChPerSet;
     }
     
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public String getIntro() {
         return intro;
     }
-
+    
     public void setIntro(String intro) {
         this.intro = intro;
     }
-
+    
     public String getContactEmail() {
         return contactEmail;
     }
-
+    
     public void setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
     }
-
+    
     public short getType() {
         return type;
     }
-
+    
     public void setType(short type) {
         this.type = type;
     }
-
+    
     public String getLogoUrl() {
         return logoUrl;
     }
-
+    
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
     }
-
+    
     public String getJingleUrl() {
         return jingleUrl;
     }
-
+    
     public void setJingleUrl(String jingleUrl) {
         this.jingleUrl = jingleUrl;
     }
@@ -201,55 +184,55 @@ public class Mso implements Serializable {
     public String getTitle() {
         return title;
     }
-
+    
     public void setTitle(String title) {
         this.title = title;
     }
-
+    
     public String getLang() {
         return lang;
     }
-
+    
     public void setLang(String lang) {
         this.lang = lang;
     }
-
+    
     public boolean isApnsEnabled() {
         return apnsEnabled;
     }
-
+    
     public void setApnsEnabled(boolean pushApnsEnabled) {
         this.apnsEnabled = pushApnsEnabled;
     }
-
+    
     public boolean isGcmEnabled() {
         return gcmEnabled;
     }
-
+    
     public void setGcmEnabled(boolean gcmEnabled) {
         this.gcmEnabled = gcmEnabled;
     }
-
+    
     public String getShortIntro() {
         return shortIntro;
     }
-
+    
     public void setShortIntro(String shortIntro) {
         this.shortIntro = shortIntro;
     }
-
+    
     public String getSlogan() {
         return slogan;
     }
-
+    
     public void setSlogan(String slogan) {
         this.slogan = slogan;
     }
-
+    
     public String getCmsLogo() {
         return cmsLogo;
     }
-
+    
     public void setCmsLogo(String cmsLogo) {
         this.cmsLogo = cmsLogo;
     }

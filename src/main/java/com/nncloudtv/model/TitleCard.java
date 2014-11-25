@@ -1,84 +1,74 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * sub-episode's title card. 
  * each program can have a "before" and "after" card.
  */
-@PersistenceCapable(table="title_card", detachable = "true")
-public class TitleCard implements Serializable {    
-    
-    private static final long serialVersionUID = 1276804191557423541L;
-
-    @PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private long id;
+@PersistenceCapable(table = "title_card", detachable = "true")
+public class TitleCard extends PersistentModel {
     
     @Persistent
     private long channelId;
-
+    
     @Persistent
     private long programId;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String duration;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=2000)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.VERY_LONG_STRING_LENGTH)
     private String message;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String size; // font size
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String color; // font color
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String effect;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String align;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String bgColor;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String style;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=20)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.SHORT_STRING_LENGTH)
     private String weight; // font weight
-
+    
     @Persistent
     private short type; //0 begin, 1 end    
     public static short TYPE_BEGIN = 0;
     public static short TYPE_END = 1;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String bgImage;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=500)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
     private String playerSyntax;
-
+    
     @Persistent
     private Date updateDate;
     
@@ -99,39 +89,31 @@ public class TitleCard implements Serializable {
         this.programId = programId;
         this.type = type;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public String getBgColor() {
         return bgColor;
     }
-
+    
     public void setBgColor(String bgColor) {
         this.bgColor = bgColor;
     }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
+    
     public long getChannelId() {
         return channelId;
     }
-
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
-
+    
     public String getDuration() {
         return duration;
     }
@@ -150,43 +132,43 @@ public class TitleCard implements Serializable {
         
         return duration;
     }
-
+    
     public void setDuration(String duration) {
         this.duration = duration;
     }
-
+    
     public String getMessage() {
         return message;
     }
-
+    
     public void setMessage(String message) {
         this.message = message;
     }
-
+    
     public String getColor() {
         return color;
     }
-
+    
     public void setColor(String color) {
         this.color = color;
     }
-
+    
     public String getStyle() {
         return style;
     }
-
+    
     public void setStyle(String style) {
         this.style = style;
     }
-
+    
     public short getType() {
         return type;
     }
-
+    
     public void setType(short type) {
         this.type = type;
     }
-
+    
     public String getPlayerSyntax() {
         if (getMessage() == null) 
             return null;
@@ -225,47 +207,47 @@ public class TitleCard implements Serializable {
         return syntax;        
         //return playerSyntax;
     }
-
+    
     public void setPlayerSyntax(String playerSyntax) {
         this.playerSyntax = playerSyntax;
     }
-
+    
     public String getSize() {
         return size;
     }
-
+    
     public void setSize(String size) {
         this.size = size;
     }
-
+    
     public String getBgImage() {
         return bgImage;
     }
-
+    
     public void setBgImage(String bgImage) {
         this.bgImage = bgImage;
     }
-
+    
     public String getEffect() {
         return effect;
     }
-
+    
     public void setEffect(String effect) {
         this.effect = effect;
     }
-
+    
     public String getAlign() {
         return align;
     }
-
+    
     public void setAlign(String align) {
         this.align = align;
     }
-
+    
     public long getProgramId() {
         return programId;
     }
-
+    
     public void setProgramId(long programId) {
         this.programId = programId;
     }
@@ -273,7 +255,7 @@ public class TitleCard implements Serializable {
     public String getWeight() {
         return weight;
     }
-
+    
     public void setWeight(String weight) {
         this.weight = weight;
     }

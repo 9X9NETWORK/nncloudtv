@@ -122,7 +122,7 @@ public class ApiContent extends ApiGeneric {
         Mso mso = NNF.getMsoMngr().findByName(pref.getValue());
         String brand = pref.getValue();
         if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
-            brand = Mso.NAME_9X9;
+            brand = Mso.NAME_SYS;
         }
         
         Map<String, Object> result = new TreeMap<String, Object>();

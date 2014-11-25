@@ -63,7 +63,7 @@ public class PlayerServiceTest {
         
         // input arguments
         Model mockModel = new ExtendedModelMap();
-        final String msoName = Mso.NAME_9X9;
+        final String msoName = Mso.NAME_SYS;
         
         // mock data
         final Long msoId = (long) 1;

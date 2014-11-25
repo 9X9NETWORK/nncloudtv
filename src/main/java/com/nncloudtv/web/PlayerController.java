@@ -158,7 +158,7 @@ public class PlayerController {
         
         Mso mso = NNF.getMsoMngr().getByNameFromCache(msoName);
         if (mso == null) {
-            mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_9X9);;
+            mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_SYS);;
         }
         String cid = channel != null ? channel : ch;
         String pid = episode != null ? episode : ep;
