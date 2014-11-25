@@ -19,6 +19,8 @@ import com.nncloudtv.lib.stream.YouTubeLib;
 @PersistenceCapable(table = "nnchannel", detachable = "true")
 public class NnChannel implements PersistentModel {
     
+    private static final long serialVersionUID = -110451972264224377L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

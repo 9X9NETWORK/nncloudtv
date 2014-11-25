@@ -33,6 +33,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "counter_shard", detachable = "true")
 public class CounterShard implements PersistentModel {
     
+    private static final long serialVersionUID = 7031802928943024767L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

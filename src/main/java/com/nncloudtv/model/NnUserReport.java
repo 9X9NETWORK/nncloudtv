@@ -16,6 +16,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "nnuser_report", detachable = "true")
 public class NnUserReport implements PersistentModel {
     
+    private static final long serialVersionUID = 6423984464587227432L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

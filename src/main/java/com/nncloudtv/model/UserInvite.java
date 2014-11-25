@@ -18,6 +18,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "user_invite", detachable = "true")
 public class UserInvite implements PersistentModel {
     
+    private static final long serialVersionUID = -5653796270013540382L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

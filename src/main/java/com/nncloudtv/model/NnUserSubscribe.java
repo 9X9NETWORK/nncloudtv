@@ -13,6 +13,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "nnuser_subscribe", detachable = "true")
 public class NnUserSubscribe implements PersistentModel {
     
+    private static final long serialVersionUID = -3651742380252992364L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

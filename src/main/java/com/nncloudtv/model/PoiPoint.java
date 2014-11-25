@@ -14,6 +14,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "poi_point", detachable = "true")
 public class PoiPoint implements PersistentModel {
     
+    private static final long serialVersionUID = 794851333506902817L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

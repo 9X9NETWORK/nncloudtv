@@ -13,6 +13,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "ytchannel", detachable = "true")
 public class YtChannel implements PersistentModel {
     
+    private static final long serialVersionUID = -4731817164964671332L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

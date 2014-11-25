@@ -13,6 +13,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "store_listing", detachable = "true")
 public class StoreListing implements PersistentModel {
     
+    private static final long serialVersionUID = 104167058683011863L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

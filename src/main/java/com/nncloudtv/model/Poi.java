@@ -10,6 +10,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "poi", detachable = "true")
 public class Poi implements PersistentModel {
     
+    private static final long serialVersionUID = -6330960416877922240L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

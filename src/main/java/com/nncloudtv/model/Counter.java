@@ -30,6 +30,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "counter", detachable = "true")
 public class Counter implements PersistentModel {
     
+    private static final long serialVersionUID = -3785260187645061818L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

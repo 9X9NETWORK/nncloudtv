@@ -11,6 +11,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "cnt_view", detachable = "true")
 public class CntView implements PersistentModel {
     
+    private static final long serialVersionUID = -4453915666072588744L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

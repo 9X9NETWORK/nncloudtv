@@ -17,6 +17,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "mso", detachable = "true")
 public class Mso implements PersistentModel {
     
+    private static final long serialVersionUID = -5551919200556908289L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

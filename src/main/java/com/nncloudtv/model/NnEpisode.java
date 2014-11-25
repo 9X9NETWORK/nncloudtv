@@ -18,6 +18,8 @@ import com.nncloudtv.service.CounterFactory;
 @PersistenceCapable(table = "nnepisode", detachable = "true")
 public class NnEpisode implements PersistentModel {
     
+    private static final long serialVersionUID = 3687908909550384068L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

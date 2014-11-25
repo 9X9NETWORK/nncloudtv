@@ -13,6 +13,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "mso_ipg", detachable = "true")
 public class MsoIpg implements PersistentModel {
     
+    private static final long serialVersionUID = -3779766133873993236L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

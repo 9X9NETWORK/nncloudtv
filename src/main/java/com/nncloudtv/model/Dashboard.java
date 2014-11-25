@@ -14,6 +14,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "dashboard", detachable = "true")
 public class Dashboard implements PersistentModel {
     
+    private static final long serialVersionUID = -4730435228418723296L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

@@ -17,6 +17,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "deep", detachable = "true")
 public class Deep implements PersistentModel {
     
+    private static final long serialVersionUID = -3242796605443779044L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

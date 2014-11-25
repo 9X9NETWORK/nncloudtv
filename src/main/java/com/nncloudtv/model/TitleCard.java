@@ -17,6 +17,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "title_card", detachable = "true")
 public class TitleCard implements PersistentModel {
     
+    private static final long serialVersionUID = -9147138183447630963L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

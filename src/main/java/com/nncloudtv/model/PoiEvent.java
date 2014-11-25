@@ -13,6 +13,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "poi_event", detachable = "true")
 public class PoiEvent implements PersistentModel {
     
+    private static final long serialVersionUID = -788382253003241649L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

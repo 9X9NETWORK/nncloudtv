@@ -13,6 +13,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "tag_map", detachable = "true")
 public class TagMap implements PersistentModel {
     
+    private static final long serialVersionUID = -2469181924008224613L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

@@ -13,6 +13,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "pdr", detachable = "true")
 public class Pdr implements PersistentModel {
     
+    private static final long serialVersionUID = 4323042153929017674L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

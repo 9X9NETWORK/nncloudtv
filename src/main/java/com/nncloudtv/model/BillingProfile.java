@@ -13,6 +13,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "billing_profile", detachable = "true")
 public class BillingProfile implements PersistentModel {
     
+    private static final long serialVersionUID = 9061021529229005402L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

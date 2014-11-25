@@ -11,11 +11,13 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 /**  
- * To realize captcha.     
+ * To realize captcha.
  * Captcha is created by a different service and store corresponding information here.
  */
 @PersistenceCapable(table = "captcha", detachable = "true")
 public class Captcha implements PersistentModel {
+    
+    private static final long serialVersionUID = 8631029787591344239L;
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

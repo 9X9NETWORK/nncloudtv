@@ -14,6 +14,8 @@ import javax.jdo.annotations.PrimaryKey;
 @PersistenceCapable(table = "nnuser_channel_sorting", detachable = "true")
 public class NnUserChannelSorting implements PersistentModel {
     
+    private static final long serialVersionUID = 1282142339904331933L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

@@ -13,6 +13,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "endpoint", detachable = "true")
 public class EndPoint implements PersistentModel {
     
+    private static final long serialVersionUID = -576691202837529107L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;

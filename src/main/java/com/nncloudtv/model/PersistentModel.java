@@ -1,6 +1,8 @@
 package com.nncloudtv.model;
 
-public interface PersistentModel {
+import java.io.Serializable;
+
+public interface PersistentModel extends Serializable {
     
     public long getId();
     

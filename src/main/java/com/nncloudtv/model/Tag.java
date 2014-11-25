@@ -16,6 +16,8 @@ import com.nncloudtv.lib.NnStringUtil;
 @PersistenceCapable(table = "tag", detachable = "true")
 public class Tag implements PersistentModel {
     
+    private static final long serialVersionUID = -8803012032455804100L;
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
