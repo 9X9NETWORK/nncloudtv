@@ -74,10 +74,12 @@ public class GenericDao<T extends PersistentModel> {
         if (list == null) return null;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        List<String> cacheKeys = new ArrayList<String>();
-        for (T dao : list)
-            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
-        CacheFactory.delete(cacheKeys);
+        //List<String> cacheKeys = new ArrayList<String>();
+        //for (T dao : list) {
+        //    if (dao.getId() > 0)
+        //        cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        //}
+        //CacheFactory.delete(cacheKeys);
         String msg = String.format("[dao] %s.saveAll()", daoClassName);
         System.out.println(msg);
         Transaction tx = pm.currentTransaction();
@@ -118,10 +120,10 @@ public class GenericDao<T extends PersistentModel> {
         if (list == null || list.isEmpty()) return;
         
         PersistenceManager pm = getPersistenceManager();
-        List<String> cacheKeys = new ArrayList<String>();
-        for (T dao : list)
-            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
-        CacheFactory.delete(cacheKeys);
+//        List<String> cacheKeys = new ArrayList<String>();
+//        for (T dao : list)
+//            cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+//        CacheFactory.delete(cacheKeys);
         Transaction tx = pm.currentTransaction();
         String msg = String.format("[dao] %s.deleteAll()", daoClassName);
         System.out.println(msg);
