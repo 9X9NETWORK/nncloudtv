@@ -55,16 +55,16 @@ public class GenericDao<T extends PersistentModel> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
-        CacheFactory.delete(cacheKey);
-        String msg = String.format("[dao] %s", cacheKey);
-        System.out.println(msg);
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
         } finally {
             pm.close();
         }
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, dao.getId());
+        CacheFactory.delete(cacheKey);
+        String msg = String.format("[dao] %s", cacheKey);
+        System.out.println(msg);
         CounterFactory.increment(msg);
         return dao;
     }
