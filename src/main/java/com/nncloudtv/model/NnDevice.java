@@ -3,14 +3,17 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * 9x9 Device account. It's not necessarily associated with 9x9 User account.
  */
 @PersistenceCapable(table = "nndevice", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class NnDevice extends PersistentModel {
     
     @Persistent

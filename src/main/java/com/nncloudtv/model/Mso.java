@@ -10,6 +10,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * a Multimedia service operator
  */
 @PersistenceCapable(table = "mso", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class Mso extends PersistentModel {
     
     @Persistent

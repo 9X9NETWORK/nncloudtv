@@ -16,9 +16,10 @@
 package com.nncloudtv.model;
 
 import javax.jdo.annotations.Column;
-import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -29,6 +30,7 @@ import com.nncloudtv.lib.NnStringUtil;
  *
  */
 @PersistenceCapable(table = "counter_shard", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class CounterShard extends PersistentModel {
     
     @Persistent

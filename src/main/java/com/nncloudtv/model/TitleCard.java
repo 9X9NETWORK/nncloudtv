@@ -3,8 +3,10 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -12,6 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * each program can have a "before" and "after" card.
  */
 @PersistenceCapable(table = "title_card", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class TitleCard extends PersistentModel {
     
     @Persistent

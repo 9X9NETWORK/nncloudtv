@@ -2,6 +2,7 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 
@@ -9,6 +10,7 @@ import javax.jdo.annotations.Persistent;
  * Mso's default IPG, defining what channel is shown on the ipg
  */
 @PersistenceCapable(table = "mso_ipg", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class MsoIpg extends PersistentModel {
     
     @Persistent

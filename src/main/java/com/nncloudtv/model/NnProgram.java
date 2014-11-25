@@ -1,6 +1,7 @@
 package com.nncloudtv.model;
 
 import java.util.Date;
+
 import javax.jdo.annotations.*;
 
 import com.nncloudtv.lib.NnStringUtil;
@@ -13,6 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Episode: aka NnEpisode. Only 9x9 programs has "episode". It is "super-program", store each sub-episode's metadata.    
  */
 @PersistenceCapable(table = "nnprogram", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class NnProgram extends PersistentModel {
     
     @Persistent

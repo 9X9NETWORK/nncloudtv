@@ -3,14 +3,17 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * For user's IPG. User's channels are grouped into 9 groups  
  */
 @PersistenceCapable(table = "nnuser_subscribe_group", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class NnUserSubscribeGroup extends PersistentModel {
     
     @Persistent

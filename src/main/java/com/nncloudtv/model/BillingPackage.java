@@ -3,11 +3,14 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "billing_package", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class BillingPackage extends PersistentModel {
     
     @Persistent

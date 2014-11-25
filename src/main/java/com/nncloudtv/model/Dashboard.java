@@ -1,14 +1,17 @@
 package com.nncloudtv.model;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * For android device. Things to display when device boots up 
  */
 @PersistenceCapable(table = "dashboard", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class Dashboard extends PersistentModel {
     
     @Persistent

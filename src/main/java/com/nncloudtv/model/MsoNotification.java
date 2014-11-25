@@ -3,14 +3,17 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * PCS Push Notification
  */
 @PersistenceCapable(table = "mso_notification", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class MsoNotification extends PersistentModel {
     
     @Persistent

@@ -2,10 +2,12 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 
 @PersistenceCapable(table = "poi", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class Poi extends PersistentModel {
     
     @Persistent

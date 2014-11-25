@@ -2,6 +2,7 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 
@@ -9,6 +10,7 @@ import javax.jdo.annotations.Persistent;
  * User's channel subscriptions. 
  */
 @PersistenceCapable(table = "nnuser_subscribe", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class NnUserSubscribe extends PersistentModel {
     
     @Persistent

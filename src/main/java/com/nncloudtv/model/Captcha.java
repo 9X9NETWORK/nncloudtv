@@ -3,8 +3,10 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**  
@@ -12,6 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Captcha is created by a different service and store corresponding information here.
  */
 @PersistenceCapable(table = "captcha", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class Captcha extends PersistentModel {
     
     @Persistent

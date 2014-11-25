@@ -3,14 +3,17 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * 9x9 user preference, stored in key/value pair
  */
 @PersistenceCapable(table = "nnchannel_pref", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class NnChannelPref extends PersistentModel {
     
     @Persistent

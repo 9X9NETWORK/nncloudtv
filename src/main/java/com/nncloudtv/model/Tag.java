@@ -10,6 +10,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * tag
  */
 @PersistenceCapable(table = "tag", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class Tag extends PersistentModel {
     
     @Persistent 

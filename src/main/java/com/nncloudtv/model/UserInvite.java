@@ -3,6 +3,7 @@ package com.nncloudtv.model;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "user_invite", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class UserInvite extends PersistentModel {
     
     @Persistent

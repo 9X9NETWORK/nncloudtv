@@ -1,5 +1,6 @@
 package com.nncloudtv.model;
 
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 
@@ -7,6 +8,7 @@ import javax.jdo.annotations.Persistent;
  * Subscription count
  */
 @PersistenceCapable(table = "cnt_view", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class CntView extends PersistentModel {
     
     @Persistent

@@ -2,6 +2,7 @@ package com.nncloudtv.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Inheritance;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 
@@ -9,6 +10,7 @@ import javax.jdo.annotations.Persistent;
  * To relate Category and Channel
  */
 @PersistenceCapable(table = "tag_map", detachable = "true")
+@Inheritance(customStrategy = "complete-table")
 public class TagMap extends PersistentModel {
     
     @Persistent
