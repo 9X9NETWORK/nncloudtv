@@ -28,7 +28,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * aggregate to be incremented rapidly.
  *
  */
-@PersistenceCapable(table = "counter_shard", detachable = "true", identityType = IdentityType.APPLICATION)
+@PersistenceCapable(table = "counter_shard", detachable = "true")
 public class CounterShard extends PersistentModel {
     
     @Persistent
