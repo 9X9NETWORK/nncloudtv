@@ -38,11 +38,8 @@ public class CounterFactory {
         
         Counter counter = NNF.getCounterDao().findByCounterName(counterName);
         if (counter == null) {
-            // Create a counter with 0 shards.
             counter = NNF.getCounterDao().save(new Counter(counterName));
             System.out.println(String.format("[counter] created {%s}, id = %d", counter.getCounterName(), counter.getId()));
-            
-            return counter;
         }
         
         return counter;

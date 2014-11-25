@@ -773,7 +773,7 @@ public class NnChannelManager {
             
             keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
         }
-        CacheFactory.delete(keys);
+        CacheFactory.deleteAll(keys);
     }
     
     public void resetCache(long channelId) {
@@ -781,7 +781,7 @@ public class NnChannelManager {
         log.info("reset channel info cache = " + channelId);
         
         List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
-        CacheFactory.delete(keys);
+        CacheFactory.deleteAll(keys);
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {

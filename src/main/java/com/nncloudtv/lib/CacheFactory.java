@@ -164,7 +164,6 @@ public class CacheFactory {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
-        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return null;
         
@@ -190,12 +189,11 @@ public class CacheFactory {
         } else {
             System.out.println(String.format("[cache] {%s} --> saved", key));
         }
-        System.out.println(String.format("[cache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         
         return retObj;
     }    
     
-    public static void delete(List<String> keys) {
+    public static void deleteAll(List<String> keys) {
         
         if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
         
@@ -225,7 +223,7 @@ public class CacheFactory {
         } else {
             System.out.println(String.format("[cache] mass: %d --> NOT deleted", keys.size()));
         }
-        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] deleteAll() operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void delete(String key) {
@@ -233,7 +231,6 @@ public class CacheFactory {
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
         
         boolean isDeleted = false;
-        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return;
         
@@ -254,7 +251,6 @@ public class CacheFactory {
         } else {
             System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
         }
-        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void flush() {
