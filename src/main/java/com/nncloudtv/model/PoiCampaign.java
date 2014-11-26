@@ -18,7 +18,7 @@ import com.nncloudtv.lib.NnStringUtil;
 public class PoiCampaign implements PersistentModel {
     
     private static final long serialVersionUID = 4013434858012796559L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

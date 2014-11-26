@@ -8,8 +8,11 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagDao;
+import com.nncloudtv.dao.SysTagDisplayDao;
+import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagMap;
@@ -28,19 +31,15 @@ public class SysTagManager {
     
     public SysTag save(SysTag sysTag) {
         
-        if (sysTag == null) {
-            return null;
-        }
+        if (sysTag == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         sysTag.setUpdateDate(now);
         if (sysTag.getCreateDate() == null) {
             sysTag.setCreateDate(now);
         }
         
-        sysTag = dao.save(sysTag);
-        
-        return sysTag;
+        return  dao.save(sysTag);
     }
     
     public void delete(SysTag sysTag) {
@@ -48,24 +47,17 @@ public class SysTagManager {
         if (sysTag == null) { return ; }
         
         //SysTagMap(s)
-        NNF.getSysTagMapDao().deleteAll(NNF.getSysTagMapDao().findBySysTagId(sysTag.getId()));;
+        SysTagMapDao mapDao = NNF.getSysTagMapDao();
+        mapDao.deleteAll(mapDao.findBySysTagId(sysTag.getId()));;
         
         //SysTagDisplay(s)
-        NNF.getDisplayDao().deleteAll(NNF.getDisplayDao().findAllBySysTagId(sysTag.getId()));;
+        SysTagDisplayDao displayDao = NNF.getDisplayDao();
+        displayDao.deleteAll(displayDao.findAllBySysTagId(sysTag.getId()));;
         
         dao.delete(sysTag);
     }
     
-    /** call when Mso is going to delete **/
-    public void deleteByMsoId(Long msoId) {
-        // delete sysTags, sysTagDisplays, sysTagMaps
-    }
-    
-    public List<SysTag> findByMsoIdAndType(Long msoId, short type) {
-        
-        if (msoId == null) {
-            return new ArrayList<SysTag>();
-        }
+    public List<SysTag> findByMsoIdAndType(long msoId, short type) {
         
         return dao.findByMsoIdAndType(msoId, type);
     }

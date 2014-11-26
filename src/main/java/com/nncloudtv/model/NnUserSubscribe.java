@@ -14,7 +14,7 @@ import javax.jdo.annotations.PrimaryKey;
 public class NnUserSubscribe implements PersistentModel {
     
     private static final long serialVersionUID = -3651742380252992364L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

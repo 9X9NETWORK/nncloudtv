@@ -14,7 +14,7 @@ import javax.jdo.annotations.PrimaryKey;
 public class MsoIpg implements PersistentModel {
     
     private static final long serialVersionUID = -3779766133873993236L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

@@ -14,7 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
 public class PoiPdr implements PersistentModel {
     
     private static final long serialVersionUID = -7038238631337505136L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

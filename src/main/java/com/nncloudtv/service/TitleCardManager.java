@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.NnProgram;
 import com.nncloudtv.model.TitleCard;
@@ -22,46 +23,17 @@ public class TitleCardManager {
     private TitleCardDao dao = new TitleCardDao();
     
     public TitleCard save(TitleCard card) {
-        if (card==null) {
-            return null;
-        }
-        Date now = new Date();
-        card.setUpdateDate(now);
-        //card.setPlayerSyntax(this.generatePlayerSyntax(card));
-        card = dao.save(card);
-        NNF.getProgramMngr().resetCache(card.getChannelId());        
-        return card;
+        if (card==null) return null;
+        card.setUpdateDate(NnDateUtil.now());
+        return dao.save(card);
     }
     
     public void delete(TitleCard card) {
-        if (card == null) {
-            return;
-        }
         dao.delete(card);
-        NNF.getProgramMngr().resetCache(card.getChannelId());
     }
     
-    public void delete(List<TitleCard> titlecards) {
-        
-        if (titlecards == null || titlecards.size() == 0) {
-            return;
-        }
-        
-        List<Long> channelIds = new ArrayList<Long>();
-        
-        for (TitleCard titlecard : titlecards) {
-            
-            if (channelIds.indexOf(titlecard.getChannelId()) < 0) {
-                channelIds.add(titlecard.getChannelId());
-            }
-        }
-        
+    public void deleteAll(List<TitleCard> titlecards) {
         dao.deleteAll(titlecards);
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            NNF.getProgramMngr().resetCache(channelId);
-        }
     }
     
     public List<TitleCard> findByProgramId(long programId) {

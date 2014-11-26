@@ -473,7 +473,7 @@ public class ApiContent extends ApiGeneric {
         
         log.info("program delete count = " + programs.size());
         
-        NNF.getProgramMngr().delete(programs);
+        NNF.getProgramMngr().deleteAll(programs);
         
         msgResponse(resp, OK);
     }
@@ -1272,7 +1272,7 @@ public class ApiContent extends ApiGeneric {
             episode.setSeq(index + 1);
         }
         
-        NNF.getEpisodeMngr().save(episodes);
+        NNF.getEpisodeMngr().saveAll(episodes);
         NNF.getChannelMngr().renewUpdateDateOnly(channel);
         
         msgResponse(resp, OK);

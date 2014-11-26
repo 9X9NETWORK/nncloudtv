@@ -94,14 +94,9 @@ public class PoiPointManager {
         NNF.getPoiPointDao().deleteAll(points);
     }
     
-    public List<PoiPoint> findByProgram(long programId) {
+    public List<PoiPoint> findByProgramId(long programId) {
         
-        List<PoiPoint> points = NNF.getPoiPointDao().findByProgramId(programId);
-        if (points != null) {
-            Collections.sort(points, getPointStartTimeComparator());
-        }
-        
-        return points;
+        return NNF.getPoiPointDao().findByProgramId(programId);
     }
     
     public boolean isPointCollision(PoiPoint originPoint, NnProgram program, int startTime, int endTime) {
@@ -142,7 +137,7 @@ public class PoiPointManager {
     }
     
     // order by StartTime asc
-    public Comparator<PoiPoint> getPointStartTimeComparator() {
+    public static Comparator<PoiPoint> getStartTimeComparator() {
         
         class PointStartTimeComparator implements Comparator<PoiPoint> {
             public int compare(PoiPoint point1, PoiPoint point2) {
@@ -185,6 +180,7 @@ public class PoiPointManager {
         }
     }
     
+    // TODO move
     public Poi findPoiById(long id) {
         
         return NNF.getPoiDao().findById(id);

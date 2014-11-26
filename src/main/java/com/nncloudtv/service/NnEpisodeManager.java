@@ -66,7 +66,7 @@ public class NnEpisodeManager {
         
     }
     
-    public Collection<NnEpisode> save(Collection<NnEpisode> episodes) {
+    public Collection<NnEpisode> saveAll(Collection<NnEpisode> episodes) {
         
         Date now = NnDateUtil.now();
         List<Long> channelIds = new ArrayList<Long>();
@@ -77,7 +77,7 @@ public class NnEpisodeManager {
                 channelIds.add(episode.getChannelId());
         }
         
-        log.info("channel count = " + channelIds.size());
+        log.info("uniq channel count = " + channelIds.size());
         for (Long channelId : channelIds)
             NNF.getProgramMngr().resetCache(channelId);
         
@@ -215,13 +215,13 @@ public class NnEpisodeManager {
     
     public void delete(NnEpisode episode) {
     
+        if (episode == null) return;
+        
         NNF.getProgramMngr().resetCache(episode.getChannelId());
         
         // delete programs
-        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episode.getId());
-        NNF.getProgramMngr().delete(programs);
-        
-        // TODO delete poiPoints at episode level
+        NnProgramManager programMngr = NNF.getProgramMngr();
+        programMngr.deleteAll(programMngr.findByEpisodeId(episode.getId()));
         
         dao.delete(episode);
     }

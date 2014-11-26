@@ -19,7 +19,7 @@ import com.nncloudtv.lib.NnStringUtil;
 public class UserInvite implements PersistentModel {
     
     private static final long serialVersionUID = -5653796270013540382L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
+import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.TagManager;
 
 @Controller
@@ -628,11 +630,8 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
-        if (points == null) {
-            return new ArrayList<PoiPoint>();
-        }
-        
+        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgramId(program.getId());
+        Collections.sort(points, PoiPointManager.getStartTimeComparator());
         for (PoiPoint point : points) {
             point.setName(NnStringUtil.revertHtml(point.getName()));
         }

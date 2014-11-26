@@ -14,7 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
 public class NnUserProfile implements PersistentModel {
     
     private static final long serialVersionUID = -3131184931361563067L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

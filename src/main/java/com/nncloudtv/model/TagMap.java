@@ -14,7 +14,7 @@ import javax.jdo.annotations.PrimaryKey;
 public class TagMap implements PersistentModel {
     
     private static final long serialVersionUID = -2469181924008224613L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

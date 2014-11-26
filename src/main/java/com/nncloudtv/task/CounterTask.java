@@ -25,8 +25,12 @@ public class CounterTask extends CounterFactory {
             HashSet<CounterShard> shardSet = new HashSet<CounterShard>();
             HashSet<Entry<String, Integer>> counterSet = new HashSet<Entry<String,Integer>>(dirtyCounters.entrySet());
             dirtyCounters.clear();
-            for (Entry<String, Integer> entry : counterSet)
-                shardSet.add(increment(entry.getKey(), entry.getValue()));
+            for (Entry<String, Integer> entry : counterSet) {
+                String counterName = entry.getKey();
+                Integer increment = entry.getValue();
+                System.out.println(String.format("[counter] {%s} += %d", counterName, increment));
+                shardSet.add(increment(counterName, increment));
+            }
             if (shardSet.size() > 0)
                 NNF.getShardDao().saveAll(shardSet);
             System.out.println(String.format("[counter] cleaning dirty counters costs %d milliseconds", NnDateUtil.timestamp() - before));

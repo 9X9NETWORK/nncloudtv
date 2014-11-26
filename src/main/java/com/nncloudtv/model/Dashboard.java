@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
 public class Dashboard implements PersistentModel {
     
     private static final long serialVersionUID = -4730435228418723296L;
-    private static final boolean cachable = true;
+    private static final boolean cachable = false;
     
     public boolean isCachable() {
         return cachable;

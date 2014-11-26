@@ -445,7 +445,7 @@ public class NnChannelManager {
      * No deletion so we can keep track of blacklist urls 
      */
     public void delete(NnChannel channel) {
-    }        
+    }
     
     //the url has to be verified(verifyUrl) first
     public short getContentTypeByUrl(String url) {
