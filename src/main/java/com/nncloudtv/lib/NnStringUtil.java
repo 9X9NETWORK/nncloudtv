@@ -161,7 +161,7 @@ public class NnStringUtil {
     }
     
     public static String escapedQuote(String str) {
-        
+        if (str == null) return "''";
         return "'" + str.replaceAll("'",    "''")
                         .replaceAll("\"",   "\\\"")
                         .replaceAll("\\?",  "")
