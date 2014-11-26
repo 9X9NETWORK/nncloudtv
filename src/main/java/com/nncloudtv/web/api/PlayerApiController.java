@@ -2831,7 +2831,7 @@ public class PlayerApiController {
         }
         return ctx.playerResponse(resp, output);
     }    
- 
+
     /**
      * Get list of signed urls.
      * @param url. not final. for now it's object name not complete path. example: "_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
