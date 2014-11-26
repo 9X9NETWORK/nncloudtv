@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
-import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -446,6 +445,6 @@ public class CacheFactory {
     
     public static String getCounterShardKey(String counterName) {
         
-        return String.format("%s.findByCounterName(%s)", CounterShard.class.getName(), counterName);
+        return String.format("CounterShard.findByCounterName(%s)", counterName);
     }
 }
