@@ -208,7 +208,6 @@ public class CacheFactory {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
                     cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-                    CounterFactory.increment("[cache] DELETE " + key);
                 }
             }
             isDeleted = true;
