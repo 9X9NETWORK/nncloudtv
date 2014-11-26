@@ -797,9 +797,10 @@ public class ApiContent extends ApiGeneric {
         channelMngr.populateCategoryId(channel);
         if (channel.isReadonly() == false) {
             channelMngr.populateMoreImageUrl(channel);
+            channelMngr.populateCntItem(channel);
+            channelMngr.populateSocialFeeds(channel);
+            channelMngr.populateBannerImageUrl(channel);
         }
-        channelMngr.populateSocialFeeds(channel);
-        channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
         

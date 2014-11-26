@@ -969,7 +969,7 @@ public class PlayerApiService {
             NNF.getUserMngr().save(user, false); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
             if (ctx.isPlainFmt()) {
-                String[] raw = {(String)result};
+                String[] raw = {(String) result};
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, raw);
             }
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);

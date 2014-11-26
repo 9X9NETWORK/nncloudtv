@@ -177,6 +177,9 @@ public class NnChannel implements PersistentModel {
     @NotPersistent
     private String recentlyWatchedProgram;
     
+    @NotPersistent
+    private short cntItem;     // IAP item count
+    
     @Persistent
     private int cntEpisode;   // episode count
     
@@ -190,7 +193,7 @@ public class NnChannel implements PersistentModel {
     private long cntView;     // viewing count, in shard table
     
     @NotPersistent
-    private long cntVisit;    // cnt visit count
+    private long cntVisit;    // visit count
     
     @Persistent 
     private Date createDate;
@@ -607,6 +610,14 @@ public class NnChannel implements PersistentModel {
     public void setMoreImageUrl(String moreImageUrl) {
     
         this.moreImageUrl = moreImageUrl;
+    }
+    
+    public short getCntItem() {
+        return cntItem;
+    }
+    
+    public void setCntItem(short cntItem) {
+        this.cntItem = cntItem;
     }
     
     public long getCntVisit() {

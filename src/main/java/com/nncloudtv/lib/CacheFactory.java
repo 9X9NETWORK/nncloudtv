@@ -442,4 +442,9 @@ public class CacheFactory {
         
         return String.format("%s.findById(%d)", className, id);
     }
+    
+    public static String getChannelCntItemKey(long channelId) {
+        
+        return String.format("NnChannel.getCntItem(%d)", channelId);
+    }
 }

@@ -215,6 +215,7 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
+            channelMngr.populateCntItem(channel);
             channelMngr.populateAutoSync(channel);
             
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));

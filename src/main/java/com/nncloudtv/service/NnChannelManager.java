@@ -772,6 +772,7 @@ public class NnChannelManager {
         for (NnChannel channel : channels) {
             
             keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
+            keys.add(CacheFactory.getChannelCntItemKey(channel.getId()));
         }
         CacheFactory.deleteAll(keys);
     }
@@ -781,6 +782,7 @@ public class NnChannelManager {
         log.info("reset channel info cache = " + channelId);
         
         List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
+        keys.add(CacheFactory.getChannelCntItemKey(channelId));
         CacheFactory.deleteAll(keys);
     }
     
@@ -1228,6 +1230,22 @@ public class NnChannelManager {
             CacheFactory.set(cacheKey, lineup);
             return lineup;
         }
+    }
+    
+    public void populateCntItem(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        String cacheKey = CacheFactory.getChannelCntItemKey(channel.getId());
+        Short cntItem = (Short) CacheFactory.get(cacheKey);
+        if (cntItem != null) {
+            
+            channel.setCntItem(cntItem);
+            return;
+        }
+        cntItem = (short) NNF.getItemMngr().findByChannelId(channel.getId()).size();
+        channel.setCntItem(cntItem);
+        CacheFactory.set(cacheKey, cntItem);
     }
     
     public NnChannel populateCntView(NnChannel channel) {
