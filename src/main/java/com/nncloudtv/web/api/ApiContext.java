@@ -56,7 +56,7 @@ public class ApiContext {
     public final static String PARAM_OS          = "os";
     public final static String PARAM_MSO         = "mso";
     public final static String PARAM_LANG        = "lang";
-    public final static String PARAM_SPHERE      = "shpere";
+    public final static String PARAM_SPHERE      = "sphere";
     public final static String PARAM_REGION      = "region";
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
