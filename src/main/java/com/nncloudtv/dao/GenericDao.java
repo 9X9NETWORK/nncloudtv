@@ -262,7 +262,7 @@ public class GenericDao<T extends PersistentModel> {
         } finally {
             pm.close();
         }
-        if (dao.isCachable())
+        if (dao != null && dao.isCachable())
             CacheFactory.set(cacheKey, dao);
         return dao;
     }
