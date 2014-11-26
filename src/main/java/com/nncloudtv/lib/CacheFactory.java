@@ -337,7 +337,7 @@ public class CacheFactory {
         
         log.fine("get all programInfo keys from ch" + channelId + " in format " + format);
         
-        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
+        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i += PlayerApiService.PAGING_ROWS) {
             
             String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == ApiContext.FORMAT_JSON) ? "json" : "text"); 
             
