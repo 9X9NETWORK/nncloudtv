@@ -4,15 +4,11 @@ import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.spy.memcached.MemcachedClient;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.exception.NotPurchasedException;
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -136,7 +130,11 @@ import com.nncloudtv.web.json.player.ChannelLineup;
 @Controller
 @RequestMapping("playerAPI")
 public class PlayerApiController {
+    
     protected static final Logger log = Logger.getLogger(PlayerApiController.class.getName());
+    
+    protected static final PlayerApiService playerApiService = NNF.getPlayerApiService(); // reusable, save memory
+    protected static final String PLAYER_ERR_MSG = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
     
     /**
      * To be ignored  
@@ -160,22 +158,21 @@ public class PlayerApiController {
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, 
             HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.guestRegister(req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.guestRegister(ctx, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     } 
-
+    
     /**
      * <p> Get suggested apps
      *  
@@ -185,30 +182,27 @@ public class PlayerApiController {
      * @return <p>Returns data in two sections. First is the short list, second is the complete list. </p>
      *         <p>Each app has the following information: app name, app description, app thumbnail, app store url
      */
-    @RequestMapping(value="relatedApps", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="relatedApps", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody Object relatedApps(
-            @RequestParam(value="mso", required = false) String mso,
-            @RequestParam(value="stack", required = false) String stack,
-            @RequestParam(value="sphere", required = false) String sphere,
-            @RequestParam(value="os", required = false) String os,
-            HttpServletRequest req, 
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value = "stack",  required = false) String stack,
+            @RequestParam(value = "sphere", required = false) String sphere,
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.relatedApps(mso, os, stack, sphere, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.relatedApps(ctx, stack, sphere);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
         return output;
     } 
-
+    
     /**
      *  User signup.
      *  
@@ -237,30 +231,28 @@ public class PlayerApiController {
         String text = req.getParameter("text");
         String sphere = req.getParameter("sphere");
         String year = req.getParameter("year");
-        String lang = req.getParameter("ui-lang");
+        String uiLang = req.getParameter("ui-lang");
         String rx = req.getParameter("rx");
         boolean isTemp = Boolean.parseBoolean(req.getParameter("temp"));
                 
         log.info("signup: email=" + email + ";name=" + name + ";mso:" + mso + 
                  ";userToken=" + userToken + ";sphere=" + sphere + 
-                 ";year=" + year + ";ui-lang=" + lang + 
+                 ";year=" + year + ";ui-lang=" + uiLang + 
                  ";rx=" + rx);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.signup(email, password, name, userToken, captcha, text, sphere, lang, year, gender, isTemp, req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.signup(ctx, email, password, name, userToken, captcha, text, sphere, uiLang, year, gender, isTemp, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
-    
     
     /**
      * Pass every param passing from Facebook in its original format
@@ -281,7 +273,7 @@ public class PlayerApiController {
         if (msoString == null) {
             msoString = "9x9"; 
         }
-        FacebookMe me = new FacebookMe();        
+        FacebookMe me = new FacebookMe();
         me.setId(req.getParameter("id"));
         me.setName(req.getParameter("name"));
         me.setUsername(req.getParameter("username"));
@@ -291,20 +283,19 @@ public class PlayerApiController {
         me.setAccessToken(req.getParameter("token"));
         String expire = req.getParameter("expire");
         
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.fbDeviceSignup(me, expire, msoString, req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.fbDeviceSignup(ctx, me, expire, msoString, resp);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
         
      }
     
@@ -319,24 +310,23 @@ public class PlayerApiController {
     @RequestMapping(value="userTokenVerify")
     public @ResponseBody Object userTokenVerify(
             @RequestParam(value="token") String token,
-            @RequestParam(value="rx", required = false) String rx,            
+            @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, 
             HttpServletResponse resp) {
-        log.info("userTokenVerify() : userToken=" + token);        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        log.info("userTokenVerify() : userToken=" + token);
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                                        
-            output = playerApiService.userTokenVerify(token, req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.userTokenVerify(ctx, token, resp);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -349,22 +339,21 @@ public class PlayerApiController {
             @RequestParam(value="user", required=false) String userKey,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             CookieHelper.deleteCookie(resp, CookieHelper.USER);
             CookieHelper.deleteCookie(resp, CookieHelper.GUEST);
             output = NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -395,28 +384,21 @@ public class PlayerApiController {
      *          2   1   vastAd hello world!!   http://rec.scupio.com/recweb/vast.aspx?creativeid=9x9test&d=15&video=VAD20140507123513649.mp4&adid=133872&rid=7241<br/>
      *         </p>
      */    
-    @RequestMapping(value="brandInfo")
-    public @ResponseBody Object brandInfo(
-            @RequestParam(value="mso", required=false)String brandName,
-            @RequestParam(value="os", required=false)String os,
-            @RequestParam(value="version", required=false)String version,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req, HttpServletResponse resp) {
-        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+    @RequestMapping(value = "brandInfo")
+    public @ResponseBody Object brandInfo(HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.brandInfo(os, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.brandInfo(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     //http://stackoverflow.com/questions/4403643/supporting-multiple-content-types-in-a-spring-mvc-controller/4404881#4404881
@@ -469,31 +451,27 @@ public class PlayerApiController {
      */
     @RequestMapping(value="category")
     public @ResponseBody Object category(
-            @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="category", required=false) String category,
-            @RequestParam(value="mso", required=false) String mso,            
             @RequestParam(value="flatten", required=false) String isFlatten,
-            @RequestParam(value="v", required=false) String v,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean flatten = Boolean.parseBoolean(isFlatten);
-            output = playerApiService.category(category, lang, flatten);
+            output = playerApiService.category(ctx, category, flatten);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Collecting PDR
      * 
@@ -513,16 +491,14 @@ public class PlayerApiController {
             @RequestParam(value="device", required=false) String deviceToken,
             @RequestParam(value="session", required=false) String session,
             @RequestParam(value="pdr", required=false) String pdr,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            @RequestParam(value="rx", required=false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
         
-        String pdrServer = NnNetUtil.getUrlRoot(req);
+        ApiContext ctx = new ApiContext(req);
+        String pdrServer = ctx.getRoot();
         String path = "/playerAPI/pdrServer";
-        PlayerApiService playerApiService = new PlayerApiService();
-        playerApiService.prepService(req, resp, false);
         
-        if (playerApiService.isProductionSite()) {
+        if (ctx.isProductionSite()) {
             pdrServer = "http://v32d.9x9.tv";
         } else {
             log.info("at pdr devel server");
@@ -535,7 +511,7 @@ public class PlayerApiController {
              "&session=" + session +
              "&pdr=" + NnStringUtil.urlencode("" + pdr) +
              "&rx=" + rx +
-             "&mso=" + playerApiService.getMso().getName();
+             "&mso=" + ctx.getMsoName();
             //log.info(urlStr + "?" + params);
             
             URL url = new URL(urlStr);
@@ -553,9 +529,9 @@ public class PlayerApiController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return playerApiService.assembleMsgs(NnStatusCode.SUCCESS, null); 
+        return NnStatusMsg.getPlayerMsg(NnStatusCode.SUCCESS);
     }
-
+    
     /**
      * To be ignored 
      */
@@ -570,20 +546,19 @@ public class PlayerApiController {
             HttpServletResponse resp) {
         log.info("user=" + userToken + ";device=" + deviceToken + ";session=" + session);
         //log.info("pdr = " + pdr);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, false);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);                        
-            }
-            output = playerApiService.pdr(userToken, deviceToken, session, pdr, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.assemblePlayerMsgs(NnStatusCode.DATABASE_READONLY);
+            output = playerApiService.pdr(ctx, userToken, deviceToken, session, pdr);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -617,10 +592,9 @@ public class PlayerApiController {
     @RequestMapping(value="setInfo")
     public @ResponseBody Object setInfo(
             @RequestParam(value="set", required=false) String id,
-            @RequestParam(value="v", required=false) String v,
             @RequestParam(value="landing", required=false) String name,
             @RequestParam(value="time", required = false) String time,
-            @RequestParam(value="programInfo", required=false) String programInfo,                  
+            @RequestParam(value="programInfo", required=false) String programInfo,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
@@ -628,22 +602,21 @@ public class PlayerApiController {
         if (programInfo == null)
             programInfo = "true";
         boolean isProgramInfo = Boolean.parseBoolean(programInfo);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);            
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.setInfo(id, name, time, isProgramInfo);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.setInfo(ctx, id, name, time, isProgramInfo);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);      
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /** 
      * Get channel list based on tag. 
      * 
@@ -665,24 +638,23 @@ public class PlayerApiController {
             @RequestParam(value="name", required=false) String name,
             @RequestParam(value="mso", required=false) String mso,
             @RequestParam(value="start", required=false) String start,
-            @RequestParam(value="count", required=false) String count,            
+            @RequestParam(value="count", required=false) String count,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.tagInfo(name, start, count);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.tagInfo(ctx, name, start, count);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);            
+            NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                
+        return ctx.playerResponse(resp, output);
     }
     
     /** 
@@ -704,7 +676,7 @@ public class PlayerApiController {
      *         tech<br/>
      *         gaming<br/>
      *         --<br/>
-     *         (channelLineup version > 32)         
+     *         (channelLineup version > 32)
      */
     @RequestMapping(value="categoryInfo")
     public @ResponseBody Object categoryInfo(
@@ -718,22 +690,21 @@ public class PlayerApiController {
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
-        log.info("categoryInfo: id =" + id);        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        log.info("categoryInfo: id =" + id);
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
-            output = playerApiService.categoryInfo(id, tag, start, count, sort, isProgramInfo);
+            output = playerApiService.categoryInfo(ctx, id, tag, start, count, sort, isProgramInfo);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);            
+            NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                
+        return ctx.playerResponse(resp, output);
     }
         
     /**
@@ -760,20 +731,19 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("subscribe: userToken=" + userToken+ "; channel=" + channelId + "; grid=" + gridId + "; set=" + setId + ";pos=" + pos);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                
-            output = playerApiService.subscribe(userToken, channelId, gridId);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.subscribe(ctx, userToken, channelId, gridId);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);            
+            NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -802,22 +772,21 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {            
         log.info("userToken=" + userToken + "; channel=" + channelId + "; pos=" + pos + "; seq=" + grid);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.unsubscribe(userToken, channelId, grid, pos);    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.unsubscribe(ctx, userToken, channelId, grid, pos);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * Get list of channel based on special stack
      *  
@@ -830,30 +799,28 @@ public class PlayerApiController {
     @RequestMapping(value="channelStack")
     public @ResponseBody Object channelStack(
             @RequestParam(value="stack", required=false) String stack,
-            @RequestParam(value="mso", required=false) String mso,            
-            @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="user", required=false) String userToken,
+            @RequestParam(value="sphere", required=false) String sphere,
             @RequestParam(value="channel", required=false) String channel,
-            @RequestParam(value="reduced", required=false) String reduced,            
+            @RequestParam(value="reduced", required=false) String reduced,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
         
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            boolean isReduced= Boolean.parseBoolean(reduced);            
-            output = playerApiService.channelStack(stack, lang, userToken, channel, isReduced);    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            boolean isReduced= Boolean.parseBoolean(reduced);
+            output = playerApiService.channelStack(ctx, stack, sphere, userToken, channel, isReduced);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -873,26 +840,23 @@ public class PlayerApiController {
             @RequestParam(value="channel", required=false) String channelIdStr,
             HttpServletRequest req,
             HttpServletResponse resp) {
-        log.info("userToken=" + userToken + ";channel=" + channelIdStr);                
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        log.info("userToken=" + userToken + ";channel=" + channelIdStr);
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                                        
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             if (channelIdStr == null)
-                playerApiService.assembleMsgs(NnStatusCode.INPUT_MISSING, null);
-            
+                ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
             Long channelId = Long.parseLong(channelIdStr);
-            
-            output = playerApiService.shareInChannelList(channelId, req);
+            output = playerApiService.shareInChannelList(ctx, channelId);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -992,50 +956,51 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("userToken=" + userToken + ";isUserInfo=" + userInfo + ";channel=" + channelIds + ";setInfo=" + setInfo);                
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            boolean isSetInfo = Boolean.parseBoolean(setInfo);
+            boolean isSetInfo  = Boolean.parseBoolean(setInfo);
             boolean isRequired = Boolean.parseBoolean(required);
-            boolean isReduced= Boolean.parseBoolean(reduced);
+            boolean isReduced  = Boolean.parseBoolean(reduced);
             boolean isProgramInfo = Boolean.parseBoolean(programInfo);
-            output = playerApiService.channelLineup(userToken, curatorIdStr, subscriptions, isUserInfo, channelIds, isSetInfo, isRequired, isReduced, isProgramInfo, sort, req);
+            output = playerApiService.channelLineup(ctx, userToken, curatorIdStr, subscriptions, isUserInfo, channelIds, isSetInfo, isRequired, isReduced, isProgramInfo, sort);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * To be ignored 
      */
     @RequestMapping(value="subscriberLineup")
     public @ResponseBody Object subscriberLineup(
             @RequestParam(value="v", required=false) String v,
-            @RequestParam(value="user", required=false) String userToken,            
+            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="curator", required=false) String curatorIdStr,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
             HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            playerApiService.prepService(req, resp, true);
-            output = playerApiService.subscriberLineup(userToken, curatorIdStr);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.subscriberLineup(ctx, userToken, curatorIdStr);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
+        return ctx.playerResponse(resp, output);
+    }
     
     /**
      * Get program information based on query criteria.
@@ -1106,23 +1071,22 @@ public class PlayerApiController {
             HttpServletResponse resp) {
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
+            output = playerApiService.programInfo(ctx, channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
         } catch (NotPurchasedException e){
-            output = playerApiService.assembleMsgs(NnStatusCode.IAP_NOT_PURCHASED, null);
+            output = ctx.assemblePlayerMsgs(NnStatusCode.IAP_NOT_PURCHASED);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1150,28 +1114,26 @@ public class PlayerApiController {
         String grid = req.getParameter("grid");
         String categoryIds = req.getParameter("category");
         String tags = req.getParameter("tag");
-        String lang = req.getParameter("lang");
         String rx = req.getParameter("rx");
         
+        ApiContext ctx = new ApiContext(req);
         log.info("player input - userToken=" + userToken+ "; url=" + url + 
                  ";grid=" + grid + ";categoryId=" + categoryIds +
-                 ";rx=" + rx + ";tags" + tags + ";lang=" + lang);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+                 ";rx=" + rx + ";tags" + tags + ";lang=" + ctx.getLang());
+        Object output = PLAYER_ERR_MSG;
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.channelSubmit(categoryIds, userToken, url, grid, name, image, tags, lang, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.channelSubmit(ctx, categoryIds, userToken, url, grid, name, image, tags);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * User login. A "user" cookie will be set.
      * 
@@ -1180,8 +1142,8 @@ public class PlayerApiController {
      * @param email email
      * @param password password
      * 
-     * @return If signup succeeds, the return message will be         
-     *         <p>preference1 key name (tab) preference1 value (\n)<br/>            
+     * @return If signup succeeds, the return message will be
+     *         <p>preference1 key name (tab) preference1 value (\n)<br/>
      *            preference2 key name (tab) preference2 value (\n)<br/>
      *            preferences.....
      *         </p> 
@@ -1191,7 +1153,7 @@ public class PlayerApiController {
      *         token    QQl0l208W2C4F008980F<br/>
      *         name    c<br/>
      *         lastLogin    1300822489194<br/>
-     */    
+     */
     @RequestMapping(value="login")
     public @ResponseBody Object login(HttpServletRequest req, HttpServletResponse resp) {
         String email = req.getParameter("email");
@@ -1199,23 +1161,22 @@ public class PlayerApiController {
         @SuppressWarnings("unused")
         String mso = req.getParameter("mso");
         String rx = req.getParameter("rx");
-        log.info("login: email=" + email + ";rx=" + rx);        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+        log.info("login: email=" + email + ";rx=" + rx);
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.login(email, password, req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.login(ctx, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-        
+    
     /**
      * Set user preference. Preferences can be retrieved from login, or APIs with isUserInfo option.
      * Things are not provided in userProfile API should be stored in user preference.  
@@ -1234,22 +1195,21 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("userPref: key(" + key + ");value(" + value + ")");
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.setUserPref(user, key, value);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.setUserPref(ctx, user, key, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Change subscription's set(group) name.
      * 
@@ -1267,22 +1227,21 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("setInfo: user=" + userToken + ";pos =" + pos);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.setSetInfo(userToken, name, pos);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.setSetInfo(ctx, userToken, name, pos);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * Static content for help or general section
      * 
@@ -1293,26 +1252,23 @@ public class PlayerApiController {
     @RequestMapping(value="staticContent")
     public @ResponseBody Object staticContent(
             @RequestParam(value="key", required=false) String key,
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {                                                
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.staticContent(key, lang);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.staticContent(ctx, key);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Register a device. Will set a "device" cookie if registration is successful.
      * 
@@ -1327,20 +1283,19 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("user:" + userToken);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.deviceRegister(userToken, type, req, resp);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.deviceRegister(ctx, userToken, type, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1350,28 +1305,25 @@ public class PlayerApiController {
      * @return <p>lines of set info.
      *         <p>Set info includes set id, set name, set description, set image, set channel count. Fields are separated by tab.          
      */        
-    @RequestMapping(value="listRecommended")
+    @RequestMapping(value = "listRecommended")
     public @ResponseBody Object listRecommended(
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {                                                
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.listRecommended(lang);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.listrecommended(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);      
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Verify device token
      *  
@@ -1385,22 +1337,21 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("user:" + token);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.deviceTokenVerify(token, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.deviceTokenVerify(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Bind a user to device
      * 
@@ -1416,20 +1367,19 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("user:" + userToken + ";device=" + deviceToken);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            }
-            output = playerApiService.deviceAddUser(deviceToken, userToken, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.deviceAddUser(ctx, deviceToken, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1447,21 +1397,21 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("user:" + userToken + ";device=" + deviceToken);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));           
-            output = playerApiService.deviceRemoveUser(deviceToken, userToken, req);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.deviceRemoveUser(ctx, deviceToken, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * For users to report anything. Either user or device needs to be provided.
      * User report content can either use "comment" (version before 3.2), or "key" and "value" pair.
@@ -1488,13 +1438,12 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp) {
         log.info("user:" + user + ";session=" + session);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             String query = req.getQueryString();
             String[] params = query.split("&");
             for (String param : params) {
@@ -1504,18 +1453,17 @@ public class PlayerApiController {
                 if (pairs.length > 1 && pairs[0].equals("value"))
                     value = pairs[1];
             }
-            
             if (value != null)
                 comment = value;
-            output = playerApiService.userReport(user, device, session, type, item, comment, req);
+            output = playerApiService.userReport(ctx, user, device, session, type, item, comment);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Set user profile information. Facebook users will be turned down for most of the options.
      * 
@@ -1540,14 +1488,13 @@ public class PlayerApiController {
             @RequestParam(value="value", required=false)String value,
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req,
-            HttpServletResponse resp) {       
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             String query = req.getQueryString();
             String[] params = query.split("&");
             for (String param : params) {
@@ -1556,15 +1503,15 @@ public class PlayerApiController {
                     value = pairs[1];
             }
             log.info("set user profile: key(" + key + ");value(" + value + ")");
-            output = playerApiService.setUserProfile(user, key, value, req);
+            output = playerApiService.setUserProfile(ctx, user, key, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
-
+    
     /**
      * Request to reset the password. System will send out an email to designated email address. 
      *  
@@ -1574,25 +1521,23 @@ public class PlayerApiController {
     @RequestMapping(value="forgotpwd")
     public @ResponseBody Object forgotpwd(
             @RequestParam(value="email", required=false)String email,
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("forgot password email:" + email);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }
-            output = playerApiService.forgotpwd(email, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.forgotpwd(ctx, email);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }    
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * Reset password
      * 
@@ -1607,22 +1552,21 @@ public class PlayerApiController {
             @RequestParam(value="token", required=false)String token,
             @RequestParam(value="password", required=false)String password,
             HttpServletRequest req,
-            HttpServletResponse resp) {        
+            HttpServletResponse resp) {
         log.info("reset password email:" + token);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }
-            output = playerApiService.resetpwd(email, token, password, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.resetpwd(ctx, email, token, password);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
     
     /**
@@ -1637,24 +1581,22 @@ public class PlayerApiController {
     public @ResponseBody Object getUserProfile(
             @RequestParam(value="user", required=false)String user,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.getUserProfile(user);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getUserProfile(ctx, user);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * For user's sharing via email function. Captcha and text is used for captcah verification. It is not required for ios device.
      * 
@@ -1669,7 +1611,7 @@ public class PlayerApiController {
      */
     @RequestMapping(value="shareByEmail")
     public @ResponseBody Object shareByEmail(
-            @RequestParam(value="user", required=false) String userToken,                                        
+            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="toEmail", required=false) String toEmail,
             @RequestParam(value="toName", required=false) String toName,
             @RequestParam(value="subject", required=false) String subject,
@@ -1677,25 +1619,23 @@ public class PlayerApiController {
             @RequestParam(value="captcha", required=false) String captcha,
             @RequestParam(value="text", required=false) String text,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("user:" + userToken + ";to whom:" + toEmail + ";content:" + content);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.shareByEmail(userToken, toEmail, toName, subject, content, captcha, text);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.shareByEmail(ctx, userToken, toEmail, toName, subject, content, captcha, text);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Request captcha for later verification
      * 
@@ -1708,25 +1648,23 @@ public class PlayerApiController {
             @RequestParam(value="user", required=false) String token,
             @RequestParam(value="action", required=false) String action,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("user:" + token);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
-            output = playerApiService.requestCaptcha(token, action, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.requestCaptcha(ctx, token, action);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Save user's channel sorting sequence
      * 
@@ -1741,25 +1679,23 @@ public class PlayerApiController {
             @RequestParam(value="channel", required=false) String channelId,
             @RequestParam(value="sorting", required=false) String sorting,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("user:" + userToken + ";channel:" + channelId + ";sorting:" + sorting);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            output = playerApiService.saveSorting(userToken, channelId, sorting);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.saveSorting(ctx, userToken, channelId, sorting);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * @deprecated
      * Save User Sharing
@@ -1777,28 +1713,11 @@ public class PlayerApiController {
             @RequestParam(value="set", required=false) String setId,
             @RequestParam(value="program", required=false) String programId,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("saveShare(" + userToken + ")");
-        return new PlayerApiService().assembleMsgs(NnStatusCode.API_DEPRECATED, null);
-        /*
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
-        PlayerApiService playerApiService = new PlayerApiService();
-        try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS)
-                return playerApiService.assembleMsgs(NnStatusCode.DATABASE_READONLY, null);    
-            output = playerApiService.saveShare(userToken, channelId, programId, setId);
-        } catch (Exception e) {
-            output = playerApiService.handleException(e);
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return playerApiService.response(output);
-        */        
-    }    
-
+        return (new ApiContext(req)).assemblePlayerMsgs(NnStatusCode.API_DEPRECATED);
+    }
+    
     /**
      * @deprecated
      * Load User Sharing
@@ -1812,24 +1731,11 @@ public class PlayerApiController {
     public @ResponseBody Object loadShare(
             @RequestParam(value="id") Long id, 
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req) {        
-        log.info("ipgShare:" + id);        
-        return new PlayerApiService().assembleMsgs(NnStatusCode.API_DEPRECATED, null);
-        /*
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);        
-        PlayerApiService playerApiService = new PlayerApiService();
-        try {
-            playerApiService.prepService(req, resp, true);
-            output = playerApiService.loadShare(id);
-        } catch (Exception e) {
-            output = playerApiService.handleException(e);
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return playerApiService.response(output);
-        */                        
+            HttpServletRequest req) {
+        log.info("ipgShare:" + id);
+        return (new ApiContext(req)).assemblePlayerMsgs(NnStatusCode.API_DEPRECATED);
     }
-
+    
     /**
      *  Return personal history, for streaming portal version
      * 
@@ -1840,23 +1746,21 @@ public class PlayerApiController {
     @RequestMapping(value="personalHistory")
     public @ResponseBody Object personalHistory(
             @RequestParam(value="user", required=false) String userToken,
-            @RequestParam(value="mso", required=false) String mso,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req, HttpServletResponse resp) {            
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.personalHistory(userToken);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.personalHistory(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -1878,25 +1782,24 @@ public class PlayerApiController {
             @RequestParam(value="channelInfo", required=false) String channelInfo,
             @RequestParam(value="episodeIndex", required=false) String episodeIndex,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req, HttpServletResponse resp) {                                                
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isChannelInfo = Boolean.parseBoolean(channelInfo);
             boolean isEpisodeIndex = Boolean.parseBoolean(episodeIndex);
-            output = playerApiService.userWatched(userToken, count, isChannelInfo, isEpisodeIndex, channel);
+            output = playerApiService.userWatched(ctx, userToken, count, isChannelInfo, isEpisodeIndex, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Copy a channel to grid location
      * 
@@ -1914,22 +1817,21 @@ public class PlayerApiController {
             @RequestParam(value="rx", required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp){
         log.info("userToken=" + userToken + ";grid=" + grid);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.copyChannel(userToken, channelId, grid);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.copyChannel(ctx, userToken, channelId, grid);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }    
-        return playerApiService.response(output);        
-    }                        
-
+        return ctx.playerResponse(resp, output);
+    }
+    
     /**
      * Move a channel from grid 1 to grid2
      * 
@@ -1948,21 +1850,20 @@ public class PlayerApiController {
             HttpServletRequest req,
             HttpServletResponse resp){
         log.info("userToken=" + userToken + ";grid1=" + grid1 + ";grid2=" + grid2);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.moveChannel(userToken, grid1, grid2);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.moveChannel(ctx, userToken, grid1, grid2);
         } catch (Exception e){
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }    
-        return playerApiService.response(output);        
-    }                    
+        return ctx.playerResponse(resp, output);
+    }
     
     /**
      * Search channel name and description, curator name and description
@@ -1986,32 +1887,29 @@ public class PlayerApiController {
      *         curator    4    4 <br/> 
      *         channel    2    2 <br/>
      *         suggestion    0  0 <br/> 
- 
      */
     @RequestMapping(value="search")
     public @ResponseBody Object search(
             @RequestParam(value="text", required=false) String text,
             @RequestParam(value="type", required=false) String type,
             @RequestParam(value="start", required=false) String start,
-            @RequestParam(value="count", required=false) String count,            
+            @RequestParam(value="count", required=false) String count,
             @RequestParam(value="stack", required=false) String stack,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.search(text, stack, type, start, count, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.search(ctx, text, stack, type, start, count);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2028,24 +1926,23 @@ public class PlayerApiController {
             @RequestParam(value="bird", required=false) String secret,
             @RequestParam(value="status", required=false) String status,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         log.info("bad program:" + programId + ";reported by user:" + userToken);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int systemStatus = playerApiService.prepService(req, resp, true);
+            int systemStatus = playerApiService.prepService(ctx);
             if (systemStatus != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(systemStatus, null));            
-            output = playerApiService.programRemove(programId, ytVideoId, userToken, secret, status);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(systemStatus));
+            output = playerApiService.programRemove(ctx, programId, ytVideoId, userToken, secret, status);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Create a 9x9 channel. To be ignored.
      * 
@@ -2062,26 +1959,25 @@ public class PlayerApiController {
             @RequestParam(value="image", required=false) String image,
             @RequestParam(value="rx", required = false) String rx,
             @RequestParam(value="temp", required=false) String temp,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("user:" + user + ";name:" + name + ";description:" + description + ";temp:" + temp);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;        
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));   
-            boolean isTemp= Boolean.parseBoolean(temp);        
-            output = playerApiService.channelCreate(user, name, description, image, isTemp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            boolean isTemp= Boolean.parseBoolean(temp);
+            output = playerApiService.channelCreate(ctx, user, name, description, image, isTemp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Create a 9x9 program. To be ignored.
      * 
@@ -2103,24 +1999,23 @@ public class PlayerApiController {
             @RequestParam(value="video", required=false) String video,
             @RequestParam(value="temp", required=false) String temp,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("name:" + name + ";description:" + description + ";audio:" + audio+ ";video:" + video);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));   
-            boolean isTemp= Boolean.parseBoolean(temp);        
-            output = playerApiService.programCreate(channel, name, description, image, audio, video, isTemp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            boolean isTemp= Boolean.parseBoolean(temp);
+            output = playerApiService.programCreate(ctx, channel, name, description, image, audio, video, isTemp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2136,25 +2031,24 @@ public class PlayerApiController {
             @RequestParam(value="property", required=false) String property,
             @RequestParam(value="value", required=false) String value,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
                         
         log.info("program:" + program + ";property:" + property + ";value:" + value);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            output = playerApiService.setProgramProperty(program, property, value);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.setProgramProperty(ctx, program, property, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Set channel property. To be ignored.
      * 
@@ -2168,25 +2062,24 @@ public class PlayerApiController {
             @RequestParam(value="property", required=false) String property,
             @RequestParam(value="value", required=false) String value,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
                         
         log.info("channel:" + channel + ";property:" + property + ";value:" + value);
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            output = playerApiService.setChannelProperty(channel, property, value);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.setChannelProperty(ctx, channel, property, value);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Mix of account authentication and directory listing  
      * 
@@ -2203,25 +2096,24 @@ public class PlayerApiController {
     public @ResponseBody Object quickLogin(
             @RequestParam(value="token", required=false) String token,
             @RequestParam(value="email", required=false) String email,
-            @RequestParam(value="password", required=false) String password,            
-            @RequestParam(value="rx", required = false) String rx,            
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="password", required=false) String password,
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            output = playerApiService.quickLogin(token, email, password, req, resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.quickLogin(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                 
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Mix of account authentication and directory listing  
      * 
@@ -2238,23 +2130,22 @@ public class PlayerApiController {
     public @ResponseBody Object auxLogin(
             @RequestParam(value="token", required=false) String token,
             @RequestParam(value="email", required=false) String email,
-            @RequestParam(value="password", required=false) String password,            
-            @RequestParam(value="rx", required = false) String rx,            
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="password", required=false) String password,
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            output = playerApiService.auxLogin(token, email, password, req, resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.auxLogin(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                 
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2270,23 +2161,22 @@ public class PlayerApiController {
     public @ResponseBody Object sphereData(
             @RequestParam(value="token", required=false) String token,
             @RequestParam(value="email", required=false) String email,
-            @RequestParam(value="password", required=false) String password,            
-            @RequestParam(value="rx", required = false) String rx,            
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="password", required=false) String password,
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status == NnStatusCode.API_FORCE_UPGRADE)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            output = playerApiService.sphereData(token, email, password, req, resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.sphereData(ctx, token, email, password, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);                 
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2297,27 +2187,25 @@ public class PlayerApiController {
      */
     @RequestMapping(value="graphSearch")
     public @ResponseBody Object graphSearch(
-            @RequestParam(value="email", required=false) String email,            
+            @RequestParam(value="email", required=false) String email,
             @RequestParam(value="name", required=false) String name,
-            @RequestParam(value="rx", required = false) String rx,            
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="rx", required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
-            output = playerApiService.graphSearch(email, name);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.graphSearch(ctx, email, name);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }            
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * iOS flipr demo feature. Invite users
      * 
@@ -2329,28 +2217,26 @@ public class PlayerApiController {
      */
     @RequestMapping(value="userInvite")
     public @ResponseBody Object userInvite(
-            @RequestParam(value="user", required=false) String userToken,                                        
+            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="toEmail", required=false) String toEmail,
             @RequestParam(value="toName", required=false) String toName,
             @RequestParam(value="channel", required=false) String channel,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            }            
-            output = playerApiService.userInvite(userToken, toEmail, toName, channel, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.userInvite(ctx, userToken, toEmail, toName, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * iOS flipr demo feature, search users. Check user invitation status.
      * 
@@ -2359,25 +2245,23 @@ public class PlayerApiController {
      */
     @RequestMapping(value="inviteStatus")
     public @ResponseBody Object inviteStatus(
-            @RequestParam(value="token", required=false) String token,                                        
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="token", required=false) String token,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                
-            }            
-            output = playerApiService.inviteStatus(token);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.inviteStatus(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * iOS flipr demo feature, search users. Check invite status
      * 
@@ -2388,27 +2272,25 @@ public class PlayerApiController {
      */
     @RequestMapping(value="disconnect")
     public @ResponseBody Object disconnect(
-            @RequestParam(value="user", required=false) String userToken,                                        
+            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="toEmail", required=false) String toEmail,
             @RequestParam(value="channel", required=false) String channel,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);        
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.disconnect(userToken, toEmail, channel, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.disconnect(ctx, userToken, toEmail, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * iOS flipr demo feature, search users. Notify subscribers with channel status.
      * 
@@ -2420,24 +2302,22 @@ public class PlayerApiController {
     public @ResponseBody Object notifySubscriber(
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="channel", required=false) String channel,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.notifySubscriber(userToken, channel, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.notifySubscriber(ctx, userToken, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Curator info. Use "curator" to get specific curator information.
      * Or specify stack = featured to get list of featured curators. 
@@ -2461,25 +2341,23 @@ public class PlayerApiController {
      */
     @RequestMapping(value="curator")
     public @ResponseBody Object curator(
-            @RequestParam(value="curator", required=false) String profile,             
+            @RequestParam(value="curator", required=false) String profile,
             @RequestParam(value="user", required=false) String user,
             @RequestParam(value="stack", required=false) String stack,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                                        
-            output = playerApiService.curator(profile, user, stack, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.curator(ctx, profile, user, stack);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     /**
      * <p> Record user's favorite channel and episode.</p>
@@ -2507,26 +2385,24 @@ public class PlayerApiController {
             @RequestParam(value="program", required=false) String program,
             @RequestParam(value="video", required=false) String fileUrl,
             @RequestParam(value="name", required=false) String name,
-            @RequestParam(value="image", required=false) String imageUrl,            
+            @RequestParam(value="image", required=false) String imageUrl,
             @RequestParam(value="duration", required=false) String duration,
             @RequestParam(value="delete", required=false) String delete,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
             boolean del = Boolean.parseBoolean(delete);
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                    
-            output = playerApiService.favorite(user, channel, program, fileUrl, name, imageUrl, duration, del);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.favorite(ctx, user, channel, program, fileUrl, name, imageUrl, duration, del);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -2535,46 +2411,23 @@ public class PlayerApiController {
     @RequestMapping(value="fbLogin")
     public String fbLogin(HttpServletRequest req) {
         
-        ApiContext context = new ApiContext(req);
-        String appDomain = (req.isSecure() ? "https://" : "http://") + context.getAppDomain();
+        ApiContext ctx = new ApiContext(req);
+        String appDomain = (req.isSecure() ? "https://" : "http://") + ctx.getAppDomain();
         String referrer = req.getHeader(ApiContext.HEADER_REFERRER);
         log.info("referer = " + referrer);
-        
         if (referrer == null || referrer.isEmpty()) {
-            
             referrer = appDomain + "/tv";
             log.info("rewrite referer = " + referrer);
         }
-        
         String fbLoginUri = appDomain + "/fb/login";
         String msoName = req.getParameter("mso");
         Mso mso = NNF.getMsoMngr().findOneByName(msoName);
         String url = FacebookLib.getDialogOAuthPath(referrer, fbLoginUri, mso);
         String userCookie = CookieHelper.getCookie(req, CookieHelper.USER);
         log.info("FACEBOOK: user:" + userCookie + " redirect to fbLogin:" + url);
-        
         return "redirect:" + url;
     }
     
-    /**
-     * @deprecated 
-     */
-    @RequestMapping("flush")
-    public ResponseEntity<String> flush() {
-        MemcachedClient cache = CacheFactory.getClient();
-        if (cache != null) {
-            try {
-                cache.flush().get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-            cache.shutdown();
-        }
-        return NnNetUtil.textReturn("flush");
-    }
- 
     /**
      * @deprecated 
      */
@@ -2589,9 +2442,9 @@ public class PlayerApiController {
             e.setDuration(duration);
             NNF.getEpisodeMngr().save(e);
         }
-        return "OK";                
+        return "OK";
     }
- 
+    
     /**
      * Get list of episodes based on channel stack. Used by Android device.
      *  
@@ -2604,48 +2457,43 @@ public class PlayerApiController {
     @RequestMapping(value="virtualChannel")
     public @ResponseBody Object virtualChannel(
             @RequestParam(value="stack", required=false) String stack,
-            @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.virtualChannel(stack, lang, userToken, channel, true);    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.virtualChannel(ctx, stack, userToken, channel, true);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     @RequestMapping(value="latestEpisode")
     public @ResponseBody Object latestEpisode(
             @RequestParam(value="channel", required=false) String channel,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.latestEpisode(channel);    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.latestEpisode(ctx, channel);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
    
     /**
@@ -2660,30 +2508,26 @@ public class PlayerApiController {
      *         <p>*1: 0 stack, 1 subscription, 2 account, 3 channel, 4 directory, 5 search  
      */
     @RequestMapping(value="whatson")
-    public @ResponseBody Object whatson(                      
+    public @ResponseBody Object whatson(
             @RequestParam(value="time", required=false) String time,
-            @RequestParam(value="lang", required=false) String lang,
-            @RequestParam(value="minimal", required=false) String minimal,            
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="minimal", required=false) String minimal,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.whatson(lang, time, isMinimal);    
+            output = playerApiService.whatson(ctx, time, isMinimal);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return ctx.playerResponse(resp, output);
     }
- 
+    
     /**
      * Used by Android device. Things to list on the front page
      * 
@@ -2696,29 +2540,27 @@ public class PlayerApiController {
      *         <p>*1: 0 stack, 1 subscription, 2 account, 3 channel, 4 directory, 5 search  
      */
     @RequestMapping(value="frontpage")
-    public @ResponseBody Object frontpage(                      
+    public @ResponseBody Object frontpage(
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="stack", required=false) String stack,
             @RequestParam(value="user", required=false) String user,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
-            output = playerApiService.frontpage(time, stack, user);    
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.frontpage(ctx, time, stack, user);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Streaming portal API. It returns list of sets; channel list of the first set; first episode of every channel in the first set.
      * 
@@ -2735,95 +2577,85 @@ public class PlayerApiController {
      */    
     @RequestMapping(value="portal")
     public @ResponseBody Object portal(
-            @RequestParam(value="lang", required=false) String lang,
             @RequestParam(value="time", required=false) String time,
             @RequestParam(value="type", required=false) String type,
             @RequestParam(value="minimal", required=false) String minimal,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isMinimal = Boolean.parseBoolean(minimal);
-            output = playerApiService.portal(lang, time, isMinimal, type);
+            output = playerApiService.portal(ctx, time, isMinimal, type);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="bulkIdentifier")
     public @ResponseBody Object bulkIdentifier(
             @RequestParam(value="channelNames", required=false) String ytUsers,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             ytUsers = req.getParameter("channelNames");
-            output = playerApiService.bulkIdentifier(ytUsers);    
+            output = playerApiService.bulkIdentifier(ctx, ytUsers);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="bulkSubscribe")
-    public @ResponseBody Object bulkSubscribe(                      
+    public @ResponseBody Object bulkSubscribe(
             @RequestParam(value="channelNames", required=false) String ytUsers,
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="mso", required=false) String mso,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             ytUsers = req.getParameter("channelNames");
             userToken = req.getParameter("user");
-            output = playerApiService.bulkSubscribe(userToken, ytUsers);    
+            output = playerApiService.bulkSubscribe(ctx, userToken, ytUsers);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return ctx.playerResponse(resp, output);
     }
     
     @RequestMapping(value="virtualChannelAdd")
-    public @ResponseBody Object virtualChannelAdd(                      
-            @RequestParam(value="user", required=false) String user,            
+    public @ResponseBody Object virtualChannelAdd(
+            @RequestParam(value="user", required=false) String user,
             @RequestParam(value="channel", required=false) String channel,
-            @RequestParam(value="payload", required=false) String payload,            
+            @RequestParam(value="payload", required=false) String payload,
             @RequestParam(value="queued", required = false) String queued,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }                                                            
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
             log.info("in queue?" + isQueued);  
@@ -2832,15 +2664,15 @@ public class PlayerApiController {
             channel = req.getParameter("channel");
             payload = req.getParameter("payload");
             
-            output = playerApiService.virtualChannelAdd(user, channel, payload, isQueued, req);    
+            output = playerApiService.virtualChannelAdd(ctx, user, channel, payload, isQueued);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);        
+        return ctx.playerResponse(resp, output);
     }
- 
+    
     //used by android only, no cookie is set
     @RequestMapping(value="obtainAccount")
     public @ResponseBody Object obtainAccount(HttpServletRequest req, HttpServletResponse resp) {
@@ -2851,21 +2683,21 @@ public class PlayerApiController {
         String mso = req.getParameter("mso");
                 
         log.info("signup: email=" + email + ";name=" + name); 
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));       
-            output = playerApiService.obtainAccount(email, password, name, req, resp);
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.obtainAccount(ctx, email, password, name, req, resp);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }    
- 
+    
     /**
      * Create a 9x9 channel. To be ignored.
      * 
@@ -2877,32 +2709,30 @@ public class PlayerApiController {
     @RequestMapping(value="channelUpdate")
     public @ResponseBody Object channelUpdate(
             @RequestParam(value="user", required=false) String user,
-            @RequestParam(value="queued", required = false) String queued,            
+            @RequestParam(value="queued", required = false) String queued,
             @RequestParam(value="payload", required=false) String payload,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);        
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
+            int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));   
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isQueued = Boolean.parseBoolean(queued);
             if (queued == null) isQueued = true;
             log.info("in queue?" + isQueued);
             user = req.getParameter("user");
             payload = req.getParameter("payload");
-            output = playerApiService.channelUpdate(user, payload, isQueued, req);
+            output = playerApiService.channelUpdate(ctx, user, payload, isQueued);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
- 
+    
     @RequestMapping(value="endpointRegister")
     public @ResponseBody Object endpointRegister(
             @RequestParam(value="action", required=false) String action,
@@ -2911,24 +2741,22 @@ public class PlayerApiController {
             @RequestParam(value="device", required=false) String device,
             @RequestParam(value="vendor", required=false) String vendor,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                       
-            }
-            output = playerApiService.endpointRegister(userToken, device, vendor, action);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.endpointRegister(ctx, userToken, device, vendor, action);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     //http://www.9x9.tv/poiaction?poiId={}&userId={}&select={}
     //{msg:"", duration:0} 
     @RequestMapping(value="poiAction")
@@ -2939,49 +2767,26 @@ public class PlayerApiController {
             @RequestParam(value="vendor", required=false) String vendor,
             @RequestParam(value="select", required=false) String select,
             @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));                        
-            }
-            output = playerApiService.poiAction(userToken, deviceToken, vendor, poiId, select);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.poiAction(ctx, userToken, deviceToken, vendor, poiId, select);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
-    /*
-    @RequestMapping(value="solr")
-    public @ResponseBody Object solr(
-            @RequestParam(value="text", required=false) String text,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR, locale);
-        PlayerApiService playerApiService = new PlayerApiService();
-        try {
-            playerApiService.prepService(req, resp, true);
-            output = playerApiService.solr(text);
-        } catch (Exception e) {
-            output = playerApiService.handleException(e);
-        } catch (Throwable t) {
-            NnLogUtil.logThrowable(t);
-        }
-        return playerApiService.response(output);
-    }        
-    */
-    
     /**
-     *  Get vimeo video url. Server backup solution.
+     *  Get (vimeo) video url. Server backup solution.
      *  
-     *  @param url vimeo video url
+     *  @param url (vimeo) video url
      *  @return list of video files. current there are two entries: hd and all. <br/>
      *          example: <br/>
      *          hd    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
@@ -2990,46 +2795,43 @@ public class PlayerApiController {
      */
     @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
     public @ResponseBody Object getDirectUrl (
-            @RequestParam(value="url", required=true) String url,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            @RequestParam(value="originalUrl", required=false) String url,
+            @RequestParam(value="programId", required=false) String programIdStr,
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.getDirectUrl(url.trim());
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getDirectUrl(ctx, url, programIdStr);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
    
     @RequestMapping(value={"getUserNames"})
     public @ResponseBody Object getUserNames (
             @RequestParam(value="id", required=true) String ids,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.getUserNames(ids);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getUserNames(ctx, ids);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
-    }
- 
+        return ctx.playerResponse(resp, output);
+    }    
+
     /**
      * Get list of signed urls.
      * @param url. not final. for now it's object name not complete path. example: "_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
@@ -3038,22 +2840,20 @@ public class PlayerApiController {
     @RequestMapping(value="generateSignedUrls")
     public @ResponseBody Object generateSignedUrls (
             @RequestParam(value="url", required=false) String url,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {                
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.generateSignedUrls(url);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.generateSignedUrls(ctx, url);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3068,23 +2868,20 @@ public class PlayerApiController {
     @RequestMapping(value="notificationList")
     public @ResponseBody Object notificationList (
             @RequestParam(value="device", required=true) String token,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.notificationList(token, req);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.notificationList(ctx, token);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     /**
      * Add a purchase
@@ -3095,23 +2892,20 @@ public class PlayerApiController {
             @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="productId", required=false) String productIdRef,
             @RequestParam(value="purchaseToken", required=false) String purchaseToken,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
-        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.addPurchase(userToken, productIdRef, purchaseToken);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.addPurchase(ctx, userToken, productIdRef, purchaseToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3120,23 +2914,21 @@ public class PlayerApiController {
     @RequestMapping(value="getPurchases")
     public @ResponseBody Object getPurchases(
             @RequestParam(value="user", required=false) String userToken,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            HttpServletRequest req, HttpServletResponse resp) {
         
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.getPurchases(userToken);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getPurchases(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
     
     /**
@@ -3144,47 +2936,41 @@ public class PlayerApiController {
      */
     @RequestMapping(value="getItems")
     public @ResponseBody Object getItems(HttpServletRequest req, HttpServletResponse resp) {
-        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.getItems();
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.getItems(ctx);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
+    
     /**
      * Get all available items
      */
     @RequestMapping(value="chat")
     public @ResponseBody Object chat(
             @RequestParam(value="user", required=false) String userToken,
-    		HttpServletRequest req, 
-    		HttpServletResponse resp) {
-        
-        Object output = NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR);
-        PlayerApiService playerApiService = new PlayerApiService();
+            HttpServletRequest req, HttpServletResponse resp) {
+        Object output = PLAYER_ERR_MSG;
+        ApiContext ctx = new ApiContext(req);
         try {
-            int status = playerApiService.prepService(req, resp, true);
-            if (status != NnStatusCode.SUCCESS) {
-                return playerApiService.response(playerApiService.assembleMsgs(status, null));
-            }
-            output = playerApiService.chat(userToken);
+            int status = playerApiService.prepService(ctx);
+            if (status != NnStatusCode.SUCCESS)
+                return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
+            output = playerApiService.chat(ctx, userToken);
         } catch (Exception e) {
-            output = playerApiService.handleException(e);
+            output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return playerApiService.response(output);
+        return ctx.playerResponse(resp, output);
     }
-
 }
 

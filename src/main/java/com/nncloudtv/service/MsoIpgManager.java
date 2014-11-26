@@ -58,12 +58,12 @@ public class MsoIpgManager {
         return msoIpgDao.findByMsoIdAndSeq(msoId, seq);
     }    
     
-    public List<MsoIpg> list(int page, int limit, String sidx, String sord) {
-        return msoIpgDao.list(page, limit, sidx, sord);
+    public List<MsoIpg> list(int page, int limit, String sort) {
+        return msoIpgDao.list(page, limit, sort);
     }
     
-    public List<MsoIpg> list(int page, int limit, String sidx, String sord, String filter) {
-        return msoIpgDao.list(page, limit, sidx, sord, filter);
+    public List<MsoIpg> list(int page, int limit, String sort, String filter) {
+        return msoIpgDao.list(page, limit, sort, filter);
     }
     
     public int total() {

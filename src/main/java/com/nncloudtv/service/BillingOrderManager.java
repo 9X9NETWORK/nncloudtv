@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,7 +33,7 @@ public class BillingOrderManager {
         return dao.save(order);
     }
     
-    public List<BillingOrder> save(List<BillingOrder> orders) {
+    public Collection<BillingOrder> save(Collection<BillingOrder> orders) {
         
         if (orders == null) return null;
         

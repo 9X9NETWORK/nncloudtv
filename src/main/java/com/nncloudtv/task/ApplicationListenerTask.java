@@ -1,29 +1,29 @@
 package com.nncloudtv.task;
 
-import java.util.logging.Logger;
-
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
-
 import com.nncloudtv.lib.CacheFactory;
 
-@Component
 public class ApplicationListenerTask implements ApplicationListener<ContextRefreshedEvent> {
     
-    protected static Logger log = Logger.getLogger(ApplicationListenerTask.class.getName());
+    static boolean startup = false;
     
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    synchronized public void onApplicationEvent(ContextRefreshedEvent event) {
         
-        log.info("on ContextRefreshedEvent");
+        System.out.println("[onContextRefreshedEvent]");
         
-        // to initialize memcache
-        if (CacheFactory.isEnabled && !CacheFactory.isRunning) {
-            try {
-                CacheFactory.isEnabled = false;
-                CacheFactory.reconfigClient();
-            } finally {
-                CacheFactory.isEnabled = true;
+        if (startup == false) {
+            
+            startup = true;
+            System.out.println("[onContextRefreshedEvent] startup");
+            // to initialize memcache
+            if (CacheFactory.isEnabled && !CacheFactory.isRunning) {
+                try {
+                    CacheFactory.isEnabled = false;
+                    CacheFactory.reconfigClient();
+                } finally {
+                    CacheFactory.isEnabled = true;
+                }
             }
         }
     }

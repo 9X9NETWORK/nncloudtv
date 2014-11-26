@@ -5,12 +5,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
-import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
@@ -43,16 +40,6 @@ public class MsoManager {
         }
         
         return getSystemMso();
-    }
-    
-    public long addMsoVisitCounter(boolean readOnly) {
-        String counterName = "9x9" + "BrandInfo";
-        CounterFactory factory = new CounterFactory();
-        ShardedCounter counter = factory.getOrCreateCounter(counterName);
-        if (!readOnly) {
-            counter.increment();
-        }
-        return counter.getCount();
     }
     
     // only 9x9 mso will be stored in cache
@@ -92,8 +79,8 @@ public class MsoManager {
         String keyWebJson      = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_JSON);
         String keyWebPlain     = CacheFactory.getBrandInfoKey(mso, ApiContext.OS_WEB, ApiContext.FORMAT_PLAIN);
         
-        String appConfig        = CacheFactory.getMaoConfigKey(mso.getId(), MsoConfig.APP_EXPIRE);
-        String appVersionConfig = CacheFactory.getMaoConfigKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
+        String appConfig        = CacheFactory.getMsoConfigKey(mso.getId(), MsoConfig.APP_EXPIRE);
+        String appVersionConfig = CacheFactory.getMsoConfigKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         
         CacheFactory.delete(keyMsoObjectName);
         CacheFactory.delete(keyMsoObjectId);
@@ -344,27 +331,11 @@ public class MsoManager {
         return info;
     }    
     
-    private String checkOs(String os, HttpServletRequest req) {
-        if (os != null) {
-            if (!os.equals(ApiContext.OS_ANDROID) && !os.equals(ApiContext.OS_IOS)) {
-                return ApiContext.OS_WEB;
-            }
-            return os;
-        }
-        ApiContext service = new ApiContext(req);
-        os = ApiContext.OS_WEB;
-        if (service.isIos()) {
-            os = ApiContext.OS_IOS;
-        } else if (service.isAndroid()) { 
-            os = ApiContext.OS_ANDROID;
-        }
-        return os;
-    }
-    
     @SuppressWarnings("unchecked")
-    public Object getBrandInfo(HttpServletRequest req, Mso mso, String os, short format, String locale, long counter, String piwik, String acceptLang) {
-        if (mso == null) {return null; }
-        os = checkOs(os, req);
+    public Object getBrandInfo(ApiContext ctx, String locale, long counter, String acceptLang) {
+        Mso mso = ctx.getMso();
+        String os = ctx.getOs();
+        short format = ctx.getFmt();
         String cacheKey = CacheFactory.getBrandInfoKey(mso, os, format);
         Object cached = null;
         try {
@@ -372,7 +343,7 @@ public class MsoManager {
         } catch (Exception e) {
             log.info("memcache error");
         }
-        if (format == ApiContext.FORMAT_JSON) {
+        if (ctx.isJsonFmt()) {
             
             BrandInfo json = (BrandInfo) cached;
             if (cached == null) {
@@ -381,7 +352,6 @@ public class MsoManager {
             }
             json.setLocale(locale);
             json.setBrandInfoCounter(counter);
-            json.setPiwik(piwik);
             json.setAcceptLang(acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
@@ -415,7 +385,6 @@ public class MsoManager {
             }
             brandInfo += PlayerApiService.assembleKeyValue("locale", locale);
             brandInfo += PlayerApiService.assembleKeyValue("brandInfoCounter", String.valueOf(counter));
-            brandInfo += PlayerApiService.assembleKeyValue("piwik", piwik);
             brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
@@ -497,7 +466,7 @@ public class MsoManager {
         try {
             Mso cached = (Mso) CacheFactory.get(cacheKey);
             if (cached != null) {
-                log.info("get mso object from cache: " + name);
+                log.fine("get mso object from cache: " + name);
                 return cached;
             }
         } catch (Exception e) {
@@ -517,12 +486,12 @@ public class MsoManager {
         return dao.findAll();
     }
     
-    public List<Mso> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<Mso> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<Mso> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<Mso> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public int total() {
@@ -612,64 +581,6 @@ public class MsoManager {
             }
             return false; // Mso's region not support channel's sphere
         }
-    }
-    
-    // TODO: remove
-    public List<Long> getPlayableChannels(List<NnChannel> channels, Long msoId) {
-        
-        if (channels == null || channels.size() < 1 || msoId == null) {
-            return new ArrayList<Long>();
-        }
-        
-        Mso mso = findById(msoId);
-        if (mso == null) {
-            return new ArrayList<Long>();
-        }
-        List<String> supportedRegion = MsoConfigManager.getSuppoertedRegion(mso, true);
-        
-        List<Long> results = new ArrayList<Long>();
-        for (NnChannel channel : channels) {
-            
-            // official store check
-            if (channel.getStatus() == NnChannel.STATUS_SUCCESS &&
-                    channel.getContentType() != NnChannel.CONTENTTYPE_FAVORITE &&
-                    channel.isPublic() == true) {
-                // the channel is in official store
-            } else {
-                continue; // the channel is not in official store
-            }
-            
-            // MSO support region check
-            if (supportedRegion == null) { // Mso's region support all sphere
-                results.add(channel.getId());
-            } else {
-                for (String sphere : supportedRegion) {
-                    if (sphere.equals(channel.getSphere())) { // Mso's region support channel's sphere
-                        results.add(channel.getId());
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return results;
-    }
-    
-    // TODO remove
-    public boolean isPlayableChannel(NnChannel channel, Long msoId) {
-        
-        if (channel == null || msoId==null) {
-            return false;
-        }
-        
-        List<NnChannel> unverifiedChannels = new ArrayList<NnChannel>();
-        unverifiedChannels.add(channel);
-        
-        List<Long> verifiedChannels = getPlayableChannels(unverifiedChannels, msoId);
-        if (verifiedChannels != null && verifiedChannels.isEmpty() == false) {
-            return true;
-        }
-        return false;
     }
     
     public static void normalize(Mso mso) {

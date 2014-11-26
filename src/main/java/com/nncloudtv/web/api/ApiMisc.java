@@ -55,6 +55,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.task.FeedingAvconvTask;
 import com.nncloudtv.task.PipingTask;
@@ -93,17 +94,18 @@ public class ApiMisc extends ApiGeneric {
     @RequestMapping(value = "s3/attributes", method = RequestMethod.GET)
     public @ResponseBody Map<String, String> s3Attributes(HttpServletRequest req, HttpServletResponse resp) {
         
+        ApiContext ctx = new ApiContext(req);
         Mso mso = null;
-        String msoIdStr = req.getParameter("mso");
+        String msoIdStr = ctx.getParam("mso");
         if (msoIdStr != null) {
             
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
             if (mso == null) {
-                notFound(resp, INVALID_PATH_PARAMETER);
+                notFound(resp, INVALID_PATH_PARAM);
                 return null;
             }
             
-            NnUser user = ApiContext.getAuthenticatedUser(req, mso.getId());
+            NnUser user = ctx.getAuthenticatedUser(mso.getId());
             if (user == null) {
                 
                 unauthorized(resp);
@@ -116,17 +118,12 @@ public class ApiMisc extends ApiGeneric {
             }
         }
         
-        String prefix = req.getParameter("prefix");
-        String type = req.getParameter("type");
-        String acl = req.getParameter("acl");
-        long size = 0;
-        
-        try {
-            String sizeStr = req.getParameter("size");
-            Long sizeL = Long.valueOf(sizeStr);
-            size = sizeL.longValue();
-        } catch (NumberFormatException e) {
-        }
+        String prefix = ctx.getParam("prefix");
+        String type = ctx.getParam("type");
+        String acl = ctx.getParam("acl");
+        Long size = NnStringUtil.evalLong(ctx.getParam("size"));
+        if (size == null)
+            size = 0L;
         
         Map<String, String> result = new TreeMap<String, String>();
         
@@ -178,7 +175,8 @@ public class ApiMisc extends ApiGeneric {
     @RequestMapping(value = "login", method = RequestMethod.GET)
     public @ResponseBody User loginCheck(HttpServletRequest req, HttpServletResponse resp) {
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, 0);
+        ApiContext ctx = new ApiContext(req);
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             nullResponse(resp);
             return null;
@@ -190,7 +188,7 @@ public class ApiMisc extends ApiGeneric {
             user.setProfile(profile);
         }
         
-        return response(user);
+        return NnUserManager.composeUser(user);
     }
     
     /** super profile's msoId priv will replace the result one if super profile exist */
@@ -231,17 +229,20 @@ public class ApiMisc extends ApiGeneric {
             user.setProfile(profile);
         }
         
-        return response(user);
+        return NnUserManager.composeUser(user);
     }
     
     @RequestMapping("sysinfo")
     public @ResponseBody Map<String, Object> sysinfo(HttpServletRequest req, HttpServletResponse resp) {
         
-        HashMap<String, Object> result = new HashMap<String, Object>();
         ApiContext ctx = new ApiContext(req);
+        HashMap<String, Object> result = new HashMap<String, Object>();
         
         result.put("flipr.isProduction", ctx.isProductionSite());
         result.put("flipr.mso",          ctx.getMsoName());
+        result.put("flipr.lang",         ctx.getLang());
+        result.put("flipr.os",           ctx.getOs());
+        result.put("flipr.version",      ctx.getVer());
         
         result.put("java.version",       System.getProperty("java.version"));
         result.put("java.vendor",        System.getProperty("java.vendor"));
@@ -255,13 +256,11 @@ public class ApiMisc extends ApiGeneric {
     
     @RequestMapping("echo")
     public @ResponseBody Map<String, String> echo(HttpServletRequest req, HttpServletResponse resp) {
-        
+        ApiContext ctx = new ApiContext(req);
         Map<String, String[]> names = req.getParameterMap();
         Map<String, String> result = new TreeMap<String, String>();
         
-        ApiContext context = new ApiContext(req);
-        
-        log.info("isProductionSite = " + context.isProductionSite());
+        log.info("isProductionSite = " + ctx.isProductionSite());
         
         for (String name : names.keySet()) {
             
@@ -602,7 +601,7 @@ public class ApiMisc extends ApiGeneric {
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
                 
-                resp.setContentType(ApiGeneric.VND_APPLE_MPEGURL);
+                resp.setContentType(VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
                 IOUtils.copy(bais, System.out);

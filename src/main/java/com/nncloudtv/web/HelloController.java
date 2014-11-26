@@ -34,6 +34,7 @@ import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.PdrManager;
 import com.nncloudtv.service.PlayerApiService;
+import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.facebook.FBPost;
 import com.nncloudtv.web.json.facebook.FacebookError;
 import com.nncloudtv.web.json.facebook.FacebookMe;
@@ -137,12 +138,13 @@ public class HelloController {
             @RequestParam(value="mso", required=false) String msoName,
             @RequestParam(value="program", required=false) String program) { 
         PlayerApiService apiservice = new PlayerApiService();
-        apiservice.prepService(req, resp, true);
+        ApiContext ctx = new ApiContext(req);
+        apiservice.prepService(ctx);
         String detail = " w\t" + channel + "\t" + program;
         System.out.println("detail:" + detail);
-        String result = (String) apiservice.pdr(userToken, null, "1", detail, req);       
+        String result = (String) apiservice.pdr(ctx, userToken, null, "1", detail);
         return result;
-    }                
+    }
     
     //cache test
     @RequestMapping("cache")

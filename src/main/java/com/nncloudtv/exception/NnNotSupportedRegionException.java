@@ -1,7 +1,7 @@
 package com.nncloudtv.exception;
 
-public class NnNotSupportedRegionException extends NnException {
-
+public class NnNotSupportedRegionException extends NnNotSupportedException {
+    
     /**
      * NnNotSupportedRegionException
      */

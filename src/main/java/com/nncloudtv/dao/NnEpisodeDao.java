@@ -10,12 +10,11 @@ import javax.jdo.Query;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
-import com.nncloudtv.service.PlayerApiService;
 
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
-    public static final String LINEAR_ORDERING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
+    public static final String V2_LINEAR_SORTING = "isPublic asc, case when isPublic = true then publishDate else scheduleDate end desc";
     
     public NnEpisodeDao() {
         super(NnEpisode.class);
@@ -42,6 +41,15 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         }
         return detached;
     }
+    public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
+        
+        String query = "SELECT * FROM nnepisode "
+                     + "        WHERE " + filter
+                     + "     ORDER BY " + sorting
+                     + "        LIMIT " + start + ", " + limit;
+        
+        return sql(query, true);
+    }
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, int start, int end) {
         
@@ -56,7 +64,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         } else if (sort == NnChannel.SORT_TIMED_LINEAR) {
             
             filtering = "(isPublic || scheduleDate is not null) && channelId = " + channelId;
-            ordering = LINEAR_ORDERING;
+            ordering = V2_LINEAR_SORTING;
         }
         
         String query = "select * from nnepisode where " + filtering
@@ -65,15 +73,6 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         
         return sql(query);
     }    
-    
-    public List<NnEpisode> listV2(long start, long limit, String sorting, String filter) {
-        
-        String query = "select * from nnepisode where " + filter
-                     + "     order by " + sorting
-                     + "        limit " + start + ", " + limit;
-        
-        return sql(query);
-    }
     
     public List<NnEpisode> findPlayerLatestEpisode(long channelId, short sort) {
         List<NnEpisode> detached = new ArrayList<NnEpisode>();
@@ -87,7 +86,6 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             	query.setOrdering("seq desc");
             else 
                 query.setOrdering("seq asc");
-            query.setRange(0, PlayerApiService.PAGING_ROWS);
             @SuppressWarnings("unchecked")
             List<NnEpisode> episodes = (List<NnEpisode>)query.execute(channelId, true);
             if (episodes.size() > 0) {

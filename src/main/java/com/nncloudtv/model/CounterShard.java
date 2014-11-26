@@ -22,6 +22,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnStringUtil;
+
 /**
  * One shard belonging to the named counter.
  *
@@ -29,53 +31,51 @@ import javax.jdo.annotations.PrimaryKey;
  * aggregate to be incremented rapidly.
  *
  */
-@PersistenceCapable(table="counter_shard", identityType = IdentityType.APPLICATION)
+@PersistenceCapable(table = "counter_shard", detachable = "true", identityType = IdentityType.APPLICATION)
 public class CounterShard {
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    private Long id;
-  
+    private long id;
+    
     @Persistent
-    private Integer shardNumber;
-  
+    private int shardNumber;
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String counterName;
-  
+    
     @Persistent
-    private Long count;
-  
+    private long count;
+    
     public CounterShard(String counterName, int shardNumber) {
-      this(counterName, shardNumber, 0);
+        
+        this.counterName = counterName;
+        this.shardNumber = shardNumber;
+        this.count = 0;
     }
-  
-    public CounterShard(String counterName, int shardNumber, int count) {
-      this.counterName = counterName;
-      this.shardNumber = new Integer(shardNumber);
-      this.count = new Long(count);
+    
+    public long getId() {
+        return id;
     }
-  
-    public Long getId() {
-      return id;
-    }
-  
+    
     public String getCounterName() {
-      return counterName;
+        return counterName;
     }
-  
+    
     public Integer getShardNumber() {
-      return shardNumber;
+        return shardNumber;
     }
-  
+    
     public Long getCount() {
-      return count;
+        return count;
     }
-  
+    
     public void setCount(Long count) {
-      this.count = count;
+        this.count = count;
     }
-  
+    
     public void increment(int amount) {
-      count = new Long(count.intValue() + amount);
+        this.count += amount;
     }
 }

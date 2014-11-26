@@ -41,6 +41,12 @@ public class NnChannel implements Serializable {
     @NotPersistent
     private String moreImageUrl;
     
+    @NotPersistent
+    private String socialFeeds;
+    
+    @NotPersistent
+    private String bannerImageUrl;
+    
     //be warned: for youtube channels, imageUrl actually include 3 imageUrls, separated by "|"
     //related functions are: getMoreImageUrl(three episode), 
     //                       getPlayerPrefImageUrl(reflect the status), 
@@ -260,10 +266,10 @@ public class NnChannel implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-        
+    
     public String getPlayerPrefSource() {
         if (getSourceUrl() != null && getSourceUrl().contains("http://www.youtube.com"))
-            return YouTubeLib.getYouTubeChannelName(getSourceUrl());        
+            return YouTubeLib.getYouTubeChannelName(getSourceUrl());
         if (getContentType() == NnChannel.CONTENTTYPE_FACEBOOK)
             return getSourceUrl();
         return "";
@@ -279,17 +285,17 @@ public class NnChannel implements Serializable {
            name = name.replaceAll("\\s", " ");
            name = NnStringUtil.revertHtml(name);
         }
-        return name;        
+        return name;
     }
     
     public String getPlayerIntro() {
         String pintro = this.getIntro(); 
         if (pintro != null) {
             int len = (pintro.length() > 256 ? 256 : pintro.length()); 
-            pintro = pintro.replaceAll("\\s", " ");                
-            pintro = pintro.substring(0, len);           
+            pintro = pintro.replaceAll("\\s", " ");
+            pintro = pintro.substring(0, len);
         }
-        return pintro;      
+        return pintro;
     }
     
     public void setIntro(String intro) {
@@ -323,15 +329,15 @@ public class NnChannel implements Serializable {
             imageUrl = IMAGE_ERROR_URL;
         } else if (getImageUrl() == null) {
             imageUrl = ""; 
-        }        
-            
+        }
+        
         return imageUrl;
     }
     
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
+    
     public boolean isPublic() {
         return isPublic;
     }
@@ -339,15 +345,15 @@ public class NnChannel implements Serializable {
     public boolean getIsPublic() {
         return isPublic;
     }
-
+    
     public void setPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
@@ -355,11 +361,11 @@ public class NnChannel implements Serializable {
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public short getType() {
         return type;
     }
-
+    
     public void setType(short type) {
         this.type = type;
     }
@@ -367,43 +373,43 @@ public class NnChannel implements Serializable {
     public int getStatus() {
         return status;
     }
-
+    
     public void setStatus(short status) {
         this.status = status;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public String getSourceUrl() {
         return sourceUrl;
     }
-
+    
     public void setSourceUrl(String sourceUrl) {
         this.sourceUrl = sourceUrl;
     }
-
+    
     public short getSeq() {
         return seq;
     }
-
+    
     public void setSeq(short seq) {
         this.seq = seq;
     }
-
+    
     public short getContentType() {
         return contentType;
     }
-
+    
     public void setContentType(short contentType) {
         this.contentType = contentType;
     }
-
+    
     public void setTranscodingUpdateDate(String transcodingUpdateDate) {
         this.transcodingUpdateDate = transcodingUpdateDate;
     }
-
+    
     public String getTranscodingUpdateDate() {
         return transcodingUpdateDate;
     }
@@ -424,71 +430,71 @@ public class NnChannel implements Serializable {
         
         return new Date (syncDate*1000);
     }
-
+    
     public String getOriName() {
         return oriName;
     }
-
+    
     public void setOriName(String oriName) {
         this.oriName = oriName;
     }
-
+    
     public short getSorting() {
         return sorting;
     }
-
+    
     public void setSorting(short sorting) {
         this.sorting = sorting;
     }
-
+    
     public String getRecentlyWatchedProgram() {
         return recentlyWatchedProgram;
     }
-
+    
     public void setRecentlyWatchedProgram(String recentlyWatchedProgram) {
         this.recentlyWatchedProgram = recentlyWatchedProgram;
     }
-
+    
     public String getTag() {
         return tag;
     }
-
+    
     public void setTag(String tag) {
         this.tag = tag;
     }
-
+    
     public String getLang() {
         return lang;
     }
-
+    
     public void setLang(String lang) {
         this.lang = lang;
     }
-
+    
     public boolean isTemp() {
         return isTemp;
     }
-
+    
     public void setTemp(boolean isTemp) {
         this.isTemp = isTemp;
     }
-
+    
     public short getPoolType() {
         return poolType;
     }
-
+    
     public void setPoolType(short poolType) {
         this.poolType = poolType;
     }
-
+    
     public int getCntSubscribe() {
         return cntSubscribe;
     }
-
+    
     public void setCntSubscribe(int cntSubscribe) {
         this.cntSubscribe = cntSubscribe;
     }
-
+    
     public long getCntView() {
         return cntView;
     }
@@ -496,7 +502,7 @@ public class NnChannel implements Serializable {
     public void setCntView(long cntView) {
         this.cntView = cntView;
     }
-
+    
     public short getShard(String userId) {
         if (userId == null)
             return 0;
@@ -538,15 +544,15 @@ public class NnChannel implements Serializable {
             userIdStr = shard + "-" + userId;
         }
     }
-
+    
     public String getSphere() {
         return sphere;
     }
-
+    
     public void setSphere(String sphere) {
         this.sphere = sphere;
     }
-
+    
     public String getNote() {
         return note;
     }
@@ -561,15 +567,15 @@ public class NnChannel implements Serializable {
     public int getCntFollower() {
         return cntFollower;
     }
-
+    
     public void setCntFollower(int cntFollower) {
         this.cntFollower = cntFollower;
     }
-
+    
     public String getSubscribersIdStr() {
         return subscribersIdStr;
     }
-
+    
     public void setSubscribersIdStr(String subscribersIdStr) {
         this.subscribersIdStr = subscribersIdStr;
     }
@@ -577,7 +583,7 @@ public class NnChannel implements Serializable {
     public long getCategoryId() {
         return categoryId;
     }
-
+    
     public void setCategoryId(long categoryId) {
         this.categoryId = categoryId;
     }
@@ -674,5 +680,21 @@ public class NnChannel implements Serializable {
     
     public void setPaidChannel(boolean paidChannel) {
         this.paidChannel = paidChannel;
+    }
+    
+    public String getBannerImageUrl() {
+        return bannerImageUrl;
+    }
+    
+    public void setBannerImageUrl(String bannerImageUrl) {
+        this.bannerImageUrl = bannerImageUrl;
+    }
+    
+    public String getSocialFeeds() {
+        return socialFeeds;
+    }
+    
+    public void setSocialFeeds(String socialFeeds) {
+        this.socialFeeds = socialFeeds;
     }
 }

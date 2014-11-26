@@ -290,7 +290,7 @@ public class ApiBilling extends ApiGeneric {
             return null; 
         }
         
-        orders = NNF.getOrderMngr().save(orders);
+        NNF.getOrderMngr().save(orders);
         
         if (req.getParameter(NO_MAIL) == null) {
             try {
@@ -309,20 +309,21 @@ public class ApiBilling extends ApiGeneric {
         }
         
         resp.setStatus(HTTP_201);
-        return NNF.getOrderMngr().save(orders);
+        return orders;
     }
     
     @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.POST)
     public @ResponseBody IapInfo iapInfoUpdate(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
             notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -337,7 +338,7 @@ public class ApiBilling extends ApiGeneric {
         IapInfo iapInfo = NNF.getChPrefMngr().getIapInfo(channel.getId());
         
         // title
-        String title = req.getParameter("title");
+        String title = ctx.getParam("title");
         NnChannelPref titlePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_TITLE);
         if (title != null) {
             if (titlePref != null) {
@@ -350,7 +351,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         // description
-        String description = req.getParameter("description");
+        String description = ctx.getParam("description");
         NnChannelPref descPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_DESC);
         if (description != null) {
             if (descPref != null) {
@@ -363,7 +364,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         // price
-        String price = req.getParameter("price");
+        String price = ctx.getParam("price");
         NnChannelPref pricePref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_PRICE);
         if (price != null) {
             if (pricePref != null) {
@@ -376,7 +377,7 @@ public class ApiBilling extends ApiGeneric {
         }
         
         // thumbnail
-        String thumbnail = req.getParameter("thumbnail");
+        String thumbnail = ctx.getParam("thumbnail");
         NnChannelPref thumbPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.IAP_THUMB);
         if (thumbnail != null) {
             if (thumbPref != null) {
@@ -395,13 +396,14 @@ public class ApiBilling extends ApiGeneric {
     public @ResponseBody void itemsCreate(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
             notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -413,7 +415,7 @@ public class ApiBilling extends ApiGeneric {
             return;
         }
         
-        String msoIdStr = req.getParameter("msoId");
+        String msoIdStr = ctx.getParam("msoId");
         if (msoIdStr == null) {
             
             badRequest(resp, MISSING_PARAMETER);

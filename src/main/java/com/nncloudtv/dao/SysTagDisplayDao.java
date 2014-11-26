@@ -69,19 +69,20 @@ public class SysTagDisplayDao extends GenericDao<SysTagDisplay> {
     
     public List<SysTagDisplay> findPlayerCategories(String lang, long msoId) {
         
-        String query = " select * from systag_display a1 "
-                     + " inner join "
-                     + "(select d.id, s.seq " 
-                     + "  from systag s, systag_display d "
-                     + " where s.msoId = " + msoId + ""
-                     + "   and s.type = " + SysTag.TYPE_CATEGORY
-                     + "   and s.id = d.systagId "
-                     + "   and d.lang=" + NnStringUtil.escapedQuote(lang) + ") a2"
-                     + "   on a1.id=a2.id "
-                     + "   order by a2.seq asc";
+        String query = " SELECT * FROM systag_display a1 "
+                     + "    INNER JOIN ( "
+                     + "                SELECT d.id, s.seq " 
+                     + "                  FROM systag s, systag_display d "
+                     + "                 WHERE s.msoId = " + msoId
+                     + "                   AND s.type = " + SysTag.TYPE_CATEGORY
+                     + "                   AND s.id = d.systagId "
+                     + "                   AND d.lang = " + NnStringUtil.escapedQuote(lang)
+                     + "               ) a2"
+                     + "            ON a1.id = a2.id "
+                     + "      ORDER BY a2.seq ASC";
         
         return sql(query);
-    }    
+    }
     
     //will need mso in the future to avoid name conflicts
     public SysTagDisplay findByName(String name) {

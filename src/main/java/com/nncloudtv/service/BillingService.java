@@ -52,7 +52,7 @@ public class BillingService {
         final String CARD_TYPE        = "cardType";
         final String CARD_VERIFICATION_CODE = "cardVerificationCode";
         
-        HttpServletRequest req = context.getHttpRequest();
+        HttpServletRequest req = context.getReq();
         
         String cardHolderName       = req.getParameter(CARD_HOLDER_NAME);
         String cardNumber           = req.getParameter(CARD_NUMBER);

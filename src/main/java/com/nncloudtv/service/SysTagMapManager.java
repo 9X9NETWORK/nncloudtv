@@ -1,6 +1,7 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagMapDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.SysTagMap;
 
 @Service
@@ -33,16 +35,13 @@ public class SysTagMapManager {
         return NNF.getSysTagMapDao().save(sysTagMap);
     }
     
-    public List<SysTagMap> save(List<SysTagMap> sysTagMaps) {
-        
-        Date now = new Date();
+    public Collection<SysTagMap> save(Collection<SysTagMap> sysTagMaps) {
+        Date now = NnDateUtil.now();
         for (SysTagMap sysTagMap : sysTagMaps) {
-            if (sysTagMap.getCreateDate() == null) {
+            if (sysTagMap.getCreateDate() == null)
                 sysTagMap.setCreateDate(now);
-            }
             sysTagMap.setUpdateDate(now);
         }
-        
         return dao.saveAll(sysTagMaps);
     }
     

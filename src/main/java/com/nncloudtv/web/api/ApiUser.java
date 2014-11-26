@@ -1,7 +1,6 @@
 package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnChannelPref;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
@@ -32,6 +30,7 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
+import com.nncloudtv.service.NnUserManager;
 import com.nncloudtv.service.NnUserPrefManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -44,22 +43,23 @@ import com.nncloudtv.web.json.facebook.FacebookResponse;
 @Controller
 @RequestMapping("api")
 public class ApiUser extends ApiGeneric {
-
+    
     protected static Logger log = Logger.getLogger(ApiUser.class.getName());
     
     @RequestMapping(value = "users/{userId}", method = RequestMethod.PUT)
     public @ResponseBody
     User userInfoUpdate(HttpServletRequest req, HttpServletResponse resp,
-            @RequestParam(value = "mso", required = false) String msoIdStr,
+            @RequestParam(value = "mso", required = false) String msoIdStr, // FIXME msoId
             @PathVariable("userId") String userIdStr, @RequestParam(required = false) Short shard) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         if (shard == null) {
@@ -71,7 +71,7 @@ public class ApiUser extends ApiGeneric {
             mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req, mso == null ? MsoManager.getSystemMsoId() : mso.getId());
+        NnUser user = ctx.getAuthenticatedUser(mso == null ? MsoManager.getSystemMsoId() : mso.getId());
         if (user == null) {
             unauthorized(resp);
             return null;
@@ -81,8 +81,8 @@ public class ApiUser extends ApiGeneric {
         }
         
         // password
-        String oldPassword = req.getParameter("oldPassword");
-        String newPassword = req.getParameter("newPassword");
+        String oldPassword = ctx.getParam("oldPassword");
+        String newPassword = ctx.getParam("newPassword");
         if (oldPassword != null && newPassword != null) {
             
             if (user.isFbUser()) {
@@ -109,31 +109,31 @@ public class ApiUser extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name != null && name.length() > 0){
             user.getProfile().setName(NnStringUtil.htmlSafeAndTruncated(name));
         }
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             user.getProfile().setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
         }
         
         // imageUrl
-        String imageUrl = req.getParameter("imageUrl");
+        String imageUrl = ctx.getParam("imageUrl");
         if (imageUrl != null) {            
             user.getProfile().setImageUrl(imageUrl);
         }
         
         // lang
-        String lang = req.getParameter("lang");
+        String lang = ctx.getParam("lang");
         if (lang != null) {
             
             user.getProfile().setLang(lang);
         }
         
-        return response(NNF.getUserMngr().save(user));
+        return NnUserManager.composeUser(NNF.getUserMngr().save(user, false));
     }
     
     @RequestMapping(value = "users/{userId}/channels", method = RequestMethod.GET)
@@ -146,7 +146,7 @@ public class ApiUser extends ApiGeneric {
         
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         NnUser user = NNF.getUserMngr().findById(userId, MsoManager.getSystemMsoId());
@@ -223,72 +223,20 @@ public class ApiUser extends ApiGeneric {
         return results;
     }
     
-    // TODO remove
-    @RequestMapping(value = "users/{userId}/playableChannels", method = RequestMethod.GET)
-    public @ResponseBody
-    List<NnChannel> userPlayableChannels(HttpServletRequest req,
-            HttpServletResponse resp,
-            @RequestParam(required = false) String mso,
-            @PathVariable("userId") String userIdStr) {
-        
-        Long userId = NnStringUtil.evalLong(userIdStr);
-        if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return null;
-        }
-        
-        Mso brand = NNF.getMsoMngr().findOneByName(mso);
-        NnUser user = NNF.getUserMngr().findById(userId, brand.getId());
-        if (user == null) {
-            notFound(resp, USER_NOT_FOUND);
-            return null;
-        }
-        
-        NnChannelManager channelMngr = NNF.getChannelMngr();
-        List<NnChannel> results = channelMngr.findByUser(user, 0, true);
-        results = channelMngr.findByUser(user, 0, true);
-        Iterator<NnChannel> it = results.iterator();
-        while (it.hasNext()) {
-            
-            NnChannel channel = it.next();
-            if (channel.getContentType() == NnChannel.CONTENTTYPE_FAVORITE) {
-                it.remove();
-                continue;
-            }
-        }
-        
-        List<Long> channelIds = NNF.getMsoMngr().getPlayableChannels(results, brand.getId());
-        if (channelIds != null && channelIds.size() > 0) {
-            results = channelMngr.findByIds(channelIds);
-        } else {
-            results = new ArrayList<NnChannel>();
-        }
-        
-        for (NnChannel channel : results) {
-            
-            channelMngr.normalize(channel);
-            channelMngr.populateMoreImageUrl(channel);
-            channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, brand.getName(), channel.getId(), null));
-        }
-        
-        Collections.sort(results, NnChannelManager.getComparator("seq"));
-        
-        return results;
-    }
-    
     @RequestMapping(value = "users/{userId}/channels/sorting", method = RequestMethod.PUT)
     public @ResponseBody
     void userChannelsSorting(HttpServletRequest req,
             HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -300,7 +248,7 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        String channelsParam = req.getParameter("channels");
+        String channelsParam = ctx.getParam("channels");
         if (channelsParam == null) {
             badRequest(resp, MISSING_PARAMETER);
             return;
@@ -352,13 +300,15 @@ public class ApiUser extends ApiGeneric {
     public @ResponseBody NnChannel userChannelCreate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         Long userId = NnStringUtil.evalLong(userIdStr);
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             
             unauthorized(resp);
@@ -371,7 +321,7 @@ public class ApiUser extends ApiGeneric {
         }
         
         // name
-        String name = req.getParameter("name");
+        String name = ctx.getParam("name");
         if (name == null || name.isEmpty()) {
             badRequest(resp, MISSING_PARAMETER);
             return null;
@@ -379,40 +329,40 @@ public class ApiUser extends ApiGeneric {
         name = NnStringUtil.htmlSafeAndTruncated(name);
         
         // intro
-        String intro = req.getParameter("intro");
+        String intro = ctx.getParam("intro");
         
         // imageUrl
-        String imageUrl = getParameter(req, "imageUrl", NnChannel.IMAGE_WATERMARK_URL);
+        String imageUrl = ctx.getParam("imageUrl", NnChannel.IMAGE_WATERMARK_URL);
         
         // lang
-        String lang = getParameter(req, "lang", LocaleTable.LANG_EN);
+        String lang = ctx.getParam(ApiContext.PARAM_LANG, LocaleTable.LANG_EN);
         
         // isPublic
-        Boolean isPublic = NnStringUtil.evalBool(req.getParameter("isPublic"), true);
+        Boolean isPublic = NnStringUtil.evalBool(ctx.getParam("isPublic"), true);
         
         // paidChannel
-        Boolean paidChannel = NnStringUtil.evalBool(req.getParameter("paidChannel"), false);
+        Boolean paidChannel = NnStringUtil.evalBool(ctx.getParam("paidChannel"), false);
         
         // tag
-        String tag = req.getParameter("tag");
+        String tag = ctx.getParam("tag");
         
         // sphere
-        String sphere = getParameter(req, "sphere", LocaleTable.LANG_EN);
+        String sphere = ctx.getParam(ApiContext.PARAM_SPHERE, LocaleTable.LANG_EN);
         
         // categoryId
-        Long categoryId = NnStringUtil.evalLong(req.getParameter("categoryId"));
+        Long categoryId = NnStringUtil.evalLong(ctx.getParam("categoryId"));
         
         // sourceUrl
-        String sourceUrl = req.getParameter("sourceUrl");
+        String sourceUrl = ctx.getParam("sourceUrl");
         
         // sorting
-        Short sorting = NnStringUtil.evalShort(req.getParameter("sorting"));
+        Short sorting = NnStringUtil.evalShort(ctx.getParam("sorting"));
         
         // status
-        Short status = NnStringUtil.evalShort(req.getParameter("status"));
+        Short status = NnStringUtil.evalShort(ctx.getParam("status"));
         
         // contentType
-        Short contentType = NnStringUtil.evalShort(req.getParameter("contentType"));
+        Short contentType = NnStringUtil.evalShort(ctx.getParam("contentType"));
         
         NnChannel channel = new NnChannel(name, null, NnChannel.IMAGE_WATERMARK_URL);
         channel.setContentType(NnChannel.CONTENTTYPE_MIXED);
@@ -460,10 +410,10 @@ public class ApiUser extends ApiGeneric {
             channel.setContentType(contentType);
         }
         
-        channel = NNF.getChannelMngr().save(channel);
+        channel = channelMngr.save(channel);
         
         // syncNow
-        if (NnStringUtil.evalBool(req.getParameter("syncNow"), false)) {
+        if (NnStringUtil.evalBool(ctx.getParam("syncNow"), false)) {
             
             channel = NnChannelManager.syncNow(channel);
         }
@@ -474,21 +424,29 @@ public class ApiUser extends ApiGeneric {
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
         }
         
-        String autoSync = req.getParameter("autoSync");
+        // autoSync
+        String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
-            NnChannelPref autosyncPref = NNF.getChPrefMngr().findByChannelIdAndItem(channel.getId(), NnChannelPref.AUTO_SYNC);
-            if (autosyncPref == null) {
-                
-                autosyncPref = new NnChannelPref(channel.getId(), NnChannelPref.AUTO_SYNC, NnChannelPref.OFF);
-            }
-            autosyncPref.setValue(autoSync);
-            NNF.getChPrefMngr().save(autosyncPref);
+            channelMngr.populateAutoSync(channel.getId(), autoSync);
         }
+        // bannerImageUrl
+        String bannerImage = ctx.getParam("bannerImageUrl");
+        if (bannerImage != null) {
+            channelMngr.populateBannerImageUrl(channel.getId(), bannerImage);
+        }
+        // socialFeeds
+        String socialFeeds = ctx.getParam("socialFeeds");
+        if (socialFeeds != null) {
+            channelMngr.populateSocialFeeds(channel.getId(), socialFeeds);
+        }
+        channel = channelMngr.save(channel);
         
-        NNF.getChannelMngr().reorderUserChannels(user);
-        NNF.getChannelMngr().populateCategoryId(channel);
-        NNF.getChannelMngr().populateAutoSync(channel);
-        NNF.getChannelMngr().normalize(channel);
+        channelMngr.reorderUserChannels(user);
+        channelMngr.populateCategoryId(channel);
+        channelMngr.populateSocialFeeds(channel);
+        channelMngr.populateBannerImageUrl(channel);
+        channelMngr.populateAutoSync(channel);
+        channelMngr.normalize(channel);
         
         return channel;
     }
@@ -499,20 +457,11 @@ public class ApiUser extends ApiGeneric {
             @PathVariable("userId") String userIdStr,
             @PathVariable("channelId") String channelIdStr) {
         
-        Long channelId = null;
-        try {
-            channelId = Long.valueOf(channelIdStr);
-        } catch (NumberFormatException e) {
-        }
-        if (channelId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
-            return;
-        }
-        
+        ApiContext ctx = new ApiContext(req);
         NnChannelManager channelMngr = NNF.getChannelMngr();
-        NnChannel channel = channelMngr.findById(channelId);
+        NnChannel channel = channelMngr.findById(channelIdStr);
         if (channel == null) {
-            notFound(resp, "Channel Not Found");
+            notFound(resp, CHANNEL_NOT_FOUND);
             return;
         }
         
@@ -522,11 +471,11 @@ public class ApiUser extends ApiGeneric {
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -553,17 +502,18 @@ public class ApiUser extends ApiGeneric {
     void facebookAuthUpdate(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -572,8 +522,8 @@ public class ApiUser extends ApiGeneric {
             return;
         }
         
-        String fbUserId = req.getParameter("userId");
-        String accessToken = req.getParameter("accessToken");
+        String fbUserId = ctx.getParam("userId");
+        String accessToken = ctx.getParam("accessToken");
         if (fbUserId == null || accessToken == null) {
             
             badRequest(resp, MISSING_PARAMETER);
@@ -640,17 +590,18 @@ public class ApiUser extends ApiGeneric {
     void facebookAuthDelete(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return;
         }
         
-        NnUser user = ApiContext.getAuthenticatedUser(req);
+        NnUser user = ctx.getAuthenticatedUser();
         if (user == null) {
             unauthorized(resp);
             return;
@@ -685,17 +636,18 @@ public class ApiUser extends ApiGeneric {
     Map<String, Object> facebookAuth(HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("userId") String userIdStr) {
         
+        ApiContext ctx = new ApiContext(req);
         Long userId = null;
         try {
             userId = Long.valueOf(userIdStr);
         } catch (NumberFormatException e) {
         }
         if (userId == null) {
-            notFound(resp, INVALID_PATH_PARAMETER);
+            notFound(resp, INVALID_PATH_PARAM);
             return null;
         }
         
-        NnUser verifiedUserId = ApiContext.getAuthenticatedUser(req);
+        NnUser verifiedUserId = ctx.getAuthenticatedUser();
         if (verifiedUserId == null) {
             unauthorized(resp);
             return null;

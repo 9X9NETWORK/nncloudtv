@@ -38,9 +38,17 @@ public class LocaleTable {
         return Arrays.asList(ALL_SUPPORTED_LANGUAGES).contains(lang);
     }
     
-    public static Locale getLocale(String lang) {
+    public static Locale getLocaleFromRegion(String region) {
         
-        if (lang.equals(LANG_ZH))
+        if (region != null && region.equalsIgnoreCase(REGION_TW))
+            return Locale.TAIWAN;
+        
+        return Locale.US;
+    }
+    
+    public static Locale getLocaleFromLang(String lang) {
+        
+        if (lang != null && lang.equalsIgnoreCase(LANG_ZH))
             return Locale.TRADITIONAL_CHINESE;
         
         return Locale.ENGLISH;

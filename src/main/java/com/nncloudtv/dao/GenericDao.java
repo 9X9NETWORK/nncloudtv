@@ -3,7 +3,6 @@ package com.nncloudtv.dao;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -12,16 +11,19 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
+import com.nncloudtv.service.CounterFactory;
 
 public class GenericDao<T> {
     
-    protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
-    protected Class<T> daoClass;
+    protected final Class<T> daoClass;
+    protected final String daoClassName;
         
     public GenericDao(Class<T> daoClass) {
         this.daoClass = daoClass;
+        this.daoClassName = daoClass.getSimpleName();
     }
     
     public void evictAll() {
@@ -51,35 +53,39 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        log.info(String.format("save %s", daoClass.getSimpleName()));
+        String msg = String.format("[dao] %s.save()", daoClassName);
+        System.out.println(msg);
         try {
             pm.makePersistent(dao);
             dao = pm.detachCopy(dao);
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return dao;
     }
     
-    public List<T> saveAll(List<T> list) {
+    public Collection<T> saveAll(Collection<T> list) {
         
-        if (list == null) return list;
+        if (list == null) return null;
         long before = NnDateUtil.timestamp();
         PersistenceManager pm = getPersistenceManager();
-        log.info(String.format("saveAll %s, count = %d", daoClass.getSimpleName(), list.size()));
+        String msg = String.format("[dao] %s.saveAll()", daoClassName);
+        System.out.println(msg);
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
-            pm.makePersistentAll(list);
-            list = (List<T>) pm.detachCopyAll(list);
+            list = pm.makePersistentAll(list);
+            list = (Collection<T>) pm.detachCopyAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {
                 tx.rollback();
             }
             pm.close();
-            log.info(String.format("costs %d miliseconds", NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[dao] costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
+        CounterFactory.increment(msg);
         return list;
     }
     
@@ -87,12 +93,14 @@ public class GenericDao<T> {
         
         if (dao == null) { return; }
         PersistenceManager pm = getPersistenceManager();
-        log.info(String.format("delete %s", daoClass.getSimpleName()));
+        String msg = String.format("[dao] %s.delete()", daoClassName);
+        System.out.println(msg);
         try {
             pm.deletePersistent(dao);
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
     }
     
     public void deleteAll(Collection<T> list) {
@@ -101,18 +109,20 @@ public class GenericDao<T> {
         
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
-        log.info(String.format("deletes %s, count = %d", daoClass.getSimpleName(), list.size()));
+        String msg = String.format("[dao] %s.deleteAll()", daoClassName);
+        System.out.println(msg);
         try {
             tx.begin();
             pm.deletePersistentAll(list);
             tx.commit();
         } finally {
             if (tx.isActive()) {
-                log.warning("rolling back");
+                System.out.println("[dao] rolling back");
                 tx.rollback();
             }
             pm.close();
         }
+        CounterFactory.increment(msg);
     }
     
     /**
@@ -126,17 +136,20 @@ public class GenericDao<T> {
     
     @SuppressWarnings("unchecked")
     public int total(String filter) {
-        
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.total(\"%s\")", daoClassName, filter);
+        System.out.println(msg);
         int result = 0;
         try {
             Query query = pm.newQuery(daoClass);
             if (filter != null && !filter.isEmpty())
                 query.setFilter(filter);
             result = ((List<T>) query.execute()).size();
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return result;
     }
     
@@ -145,44 +158,49 @@ public class GenericDao<T> {
      *
      * @param page   the page number (start from 1)
      * @param limit  number of items per page
-     * @param sidx   sorting field
-     * @param sord   sorting direction (asc, desc)
+     * @param sort   sorting field
      */
-    public List<T> list(int page, int limit, String sidx, String sord) {
-        
+    public List<T> list(int page, int limit, String sort) {
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.list(%d, %d, \"%s\")", daoClassName, page, limit, sort);
+        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
-            if (sidx != null && sidx != "" && sord != null && sord != "")
-                query.setOrdering(sidx + " " + sord);
+            if (sort != null)
+                query.setOrdering(sort);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
             List<T> tmp = (List<T>) query.execute();
             results = (List<T>) pm.detachCopyAll(tmp);
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return results;
     }
     
-    public List<T> list(long page, long limit, String sidx, String sord, String filter) {
-        
+    public List<T> list(long page, long limit, String sort, String filter) {
         PersistenceManager pm = getPersistenceManager();
+        String msg = String.format("[dao] %s.list(%d, %d, \"%s\", \"%s\")", daoClassName, page, limit, sort, filter);
+        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
-            if (filter != null && !filter.isEmpty())
+            if (filter != null)
                 query.setFilter(filter);
-            if (sidx != null || sord != null)
-                query.setOrdering(sidx + " " + sord);
+            if (sort != null)
+                query.setOrdering(sort);
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
             List<T> tmp = (List<T>) query.execute();
             results = (List<T>) pm.detachCopyAll(tmp);
+            query.closeAll();
         } finally {
             pm.close();
         }
+        CounterFactory.increment(msg);
         return results;
     }
     
@@ -220,7 +238,7 @@ public class GenericDao<T> {
             
             return null;
         }
-        
+        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClassName, id));
         return findById(id);
     }
     
@@ -234,6 +252,7 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
+        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClassName, id));
         return dao;
     }
     
@@ -253,12 +272,22 @@ public class GenericDao<T> {
         return results;
     }
     
+    public List<T> sql(String queryStr, boolean fine) {
+        
+        return sql(queryStr, getPersistenceManager(), fine);
+    }
+    
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getPersistenceManager());
+        return sql(queryStr, getPersistenceManager(), false);
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
+        
+        return sql(queryStr, pm, false);
+    }
+    
+    public List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
         List<T> detached = new ArrayList<T>();
         
@@ -271,7 +300,8 @@ public class GenericDao<T> {
             
             return detached;
         }
-        System.out.println(String.format("[sql] %s;", queryStr));
+        if (!fine)
+            System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
         try {
             
@@ -281,19 +311,20 @@ public class GenericDao<T> {
             List<T> results = (List<T>) query.execute();
             detached = (List<T>) pm.detachCopyAll(results);
             query.closeAll();
-            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
+            if (!fine)
+                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
             
         } finally {
             
             pm.close();
         }
-        
+        CounterFactory.increment("[dao] sql_query");
         return detached;
     }
     
     @Override
     protected void finalize() throws Throwable {
         
-        System.out.println("[finalize] " + getClass().getName());
+        NnLogUtil.logFinalize(getClass().getName());
     }
 }

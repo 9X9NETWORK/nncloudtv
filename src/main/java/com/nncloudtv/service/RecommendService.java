@@ -25,14 +25,14 @@ public class RecommendService {
      * for GUESTs and FRESHMAN USERs, SHALLOW RECOMMENDATION,
      * but for USERs, DEEP RECOMMENDATIONS
      */
-    public List<NnChannel> findMayLike(String userToken, long msoId, String channel, String lang) {      
+    public List<NnChannel> findMayLike(String userToken, long msoId, String channel, String sphere) {
         List<NnChannel> channels = new ArrayList<NnChannel>();
         long cid = 0;
         if (channel != null)
             cid = Long.parseLong(channel);
         if (userToken == null && channel == null) {
             log.info("maylike: nothing provided. get channel from billboard");
-            channels = this.findBillboardPool(9, lang);
+            channels = this.findBillboardPool(9, sphere);
         } else if (NnUserManager.isGuestByToken(userToken)) {
             log.info("maylike: guest user find from shallow");
             channels = this.findShallowChannels(cid);
@@ -54,7 +54,7 @@ public class RecommendService {
         }
         if (channels.size() == 0) {
             log.info("maylike: final frontier: nothing hits, try billboard");
-            channels = this.findBillboardPool(9, lang);
+            channels = this.findBillboardPool(9, sphere);
         }
        
         return channels;
@@ -90,8 +90,8 @@ public class RecommendService {
     }
     
     //randomly pick from billboard, based on language
-    public List<NnChannel> findBillboardPool(int limit, String lang) {
-        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_BILLBOARD, lang, limit);
+    public List<NnChannel> findBillboardPool(int limit, String sphere) {
+        List<NnChannel> channels = NNF.getChannelDao().findSpecial(NnChannel.POOL_BILLBOARD, sphere, limit);
         List<NnChannel> recommended = new ArrayList<NnChannel>();
         int i=0;
         for (NnChannel c : channels) {

@@ -13,9 +13,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.OperationTimeoutException;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,23 +27,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.nncloudtv.dao.ShardedCounter;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.model.CounterShard;
+import com.nncloudtv.model.Counter;
 import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnStatusMsg;
 import com.nncloudtv.service.PlayerService;
+import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.transcodingservice.Channel;
 import com.nncloudtv.web.json.transcodingservice.ChannelInfo;
@@ -540,7 +538,7 @@ public class DepotController {
         }
         return resp;
     }
-
+    
     @RequestMapping("getDepotServer")
     public ResponseEntity<String> getDepotServer(HttpServletRequest req) {
         DepotService depot = new DepotService();
@@ -548,28 +546,21 @@ public class DepotController {
         String transcodingServer = transcodingEnv[0];
         String callbackUrl = transcodingEnv[1];
         String output = "transcodingServer:" + transcodingServer + "\n" + ";callbackUrl:" + callbackUrl;
-        return NnNetUtil.textReturn(output);        
+        return NnNetUtil.textReturn(output);
     }
     
     //format 
-    @RequestMapping(value="resetViewCntCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="resetViewCntCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String resetViewCntCache() {
-        MemcachedClient cache = null;
-        try {
-            cache = CacheFactory.getClient();
-        } catch (OperationTimeoutException e) {
-            log.info("memcache down");
-            return "memcache error";
+        
+        List<Counter> counters = NNF.getCounterDao().getViewCounters();
+        log.info("reset counters size = " + counters.size());
+        for (Counter counter : counters) {
+            String counterName = counter.getCounterName();
+            long count = CounterFactory.getCount(counterName);
+            log.info(String.format("cache name = %s, value = %d", counterName, count));
+            CacheFactory.set(counterName, String.valueOf(count));
         }
-        List<CounterShard> counters = ShardedCounter.getViewCounters();
-        log.info("reset counters:" + counters.size());
-        for (CounterShard c : counters) {
-            if (cache != null) { 
-                log.info("cache name:" + c.getCounterName() + "; value:" + c.getCount());
-                cache.set(c.getCounterName(), CacheFactory.EXP_DEFAULT, String.valueOf(c.getCount()));
-            }            
-        }
-        cache.shutdown();        
         return "OK";
     }
     

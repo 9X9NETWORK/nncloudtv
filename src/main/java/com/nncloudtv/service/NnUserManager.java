@@ -33,6 +33,7 @@ import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
+import com.nncloudtv.web.json.cms.User;
 import com.nncloudtv.web.json.facebook.FacebookMe;
 import com.nncloudtv.web.json.player.UserInfo;
 
@@ -42,14 +43,15 @@ public class NnUserManager {
     protected static final Logger log = Logger.getLogger(NnUserManager.class.getName());
     
     private NnUserDao dao = NNF.getUserDao();
-    public static short MSO_DEFAULT = 1;
+    
+    public static final short MSO_DEFAULT = 1;
     
     //@@@IMPORTANT email duplication is your responsibility
     public int create(NnUser user, HttpServletRequest req, short shard) {
         if (this.findByEmail(user.getEmail(), user.getMsoId(), req) != null) //!!!!! shard or req flexible
             return NnStatusCode.USER_EMAIL_TAKEN;
         NnUserProfile profile = user.getProfile();
-        if (profile.getName() != null)            
+        if (profile.getName() != null)
             profile.setName(profile.getName().replaceAll("\\s", " "));
         user.setEmail(user.getEmail().toLowerCase());
         if (shard == 0)
@@ -61,24 +63,24 @@ public class NnUserManager {
         user.setCreateDate(now);
         user.setUpdateDate(now);
         if (profile.getProfileUrl() == null) {
-            profile.setProfileUrl(this.generateProfile(user.getProfile().getName()));            
-        }                        
+            profile.setProfileUrl(this.generateProfile(user.getProfile().getName()));
+        }
         dao.save(user);
         profile.setUserId(user.getId());
         NNF.getProfileMngr().save(user, profile);
-        resetChannelCache(user);        
+        resetChannelCache(user);
         return NnStatusCode.SUCCESS;
     }
-
+    
     public NnUser createFakeYoutube(Map<String, String> info, HttpServletRequest req) {
         String name = info.get("author");
         if (name == null)
             return null;
         String imageUrl = info.get("thumbnail");
-
+        
         /*
         if (info.get("type").equals("playlist")) {
-            log.info("author:" + name);            
+            log.info("author:" + name);
             Map<String, String> authorData = YouTubeLib.getYouTubeEntry(name, true);
             imageUrl = authorData.get("thumbnail");
         }
@@ -94,7 +96,7 @@ public class NnUserManager {
         user.setShard((short)1);
         user.setMsoId(1);
         NnUserProfile profile = user.getProfile();
-        user = this.save(user);
+        user = this.save(user, true);
         profile.setProfileUrl(name);
         profile.setImageUrl(imageUrl);
         profile.setUserId(user.getId());
@@ -123,9 +125,9 @@ public class NnUserManager {
     
     //TODO replace name with none-digit/characters
     public String generateProfile(String name) {
-    	String profile = RandomStringUtils.randomNumeric(10);
-    	return profile;
-    	/*
+        String profile = RandomStringUtils.randomNumeric(10);
+        return profile;
+        /*
         String profile = "";
         if (name != null) {
             String random = RandomStringUtils.randomNumeric(5);
@@ -137,23 +139,23 @@ public class NnUserManager {
         return profile;
         */
     }
-
+    
     public String forgotPwdToken(NnUser user) {
-		byte[] pwd = user.getCryptedPassword();
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] thedigest = md.digest(pwd);
-			StringBuffer sb = new StringBuffer();
-	        for (int i = 0; i < thedigest.length; i++) {
-	          sb.append(Integer.toString((thedigest[i] & 0xff) + 0x100, 16).substring(1));
-	        }
-	        String token = sb.toString();
-	        log.info("Digest(in hex format):: " + token);
-	        return token;
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		return null;
+        byte[] pwd = user.getCryptedPassword();
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] thedigest = md.digest(pwd);
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < thedigest.length; i++) {
+              sb.append(Integer.toString((thedigest[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            String token = sb.toString();
+            log.info("Digest(in hex format):: " + token);
+            return token;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     //Default is 1; Asia (tw, cn, hk) is 2
@@ -162,7 +164,7 @@ public class NnUserManager {
         short shard = NnUser.SHARD_DEFAULT;
         if (locale.equals("tw") || locale.equals("cn") || locale.equals("hk")) {
             shard = NnUser.SHARD_CHINESE;
-        }          
+        }
         return shard;
     }
     
@@ -180,23 +182,23 @@ public class NnUserManager {
             connection.setReadTimeout(3000);
             connection.setDoOutput(true);
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                log.info("findLocaleByHttpRequest() IP service returns error:" + connection.getResponseCode());                
+                log.info("findLocaleByHttpRequest() IP service returns error:" + connection.getResponseCode());
             }
             BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line = rd.readLine(); 
+            String line = rd.readLine();
             if (line != null) {
                 log.info("country from locale service:" + line);
                 country = line.toLowerCase();
             } //assuming one line
-            rd.close();            
+            rd.close();
         } catch (java.net.SocketTimeoutException e) {
-           log.info("socket timeout");   
+           log.info("socket timeout");
         } catch (java.net.SocketException e) {
            log.info("socket connect exception");
         } catch (Exception e) {
             log.info("exception");
             NnLogUtil.logException(e);
-        } finally {            
+        } finally {
         }
         log.info("country from query:" + country + ";with ip:" + ip);
         String locale = "en";
@@ -219,7 +221,7 @@ public class NnUserManager {
         return guest;
     }
     
-    public NnUser save(NnUser user) {
+    public NnUser save(NnUser user, boolean resetCache) {
         if (user == null) {
             return null;
         }
@@ -231,7 +233,8 @@ public class NnUserManager {
         user.setUpdateDate(NnDateUtil.now());
         NnUserProfile profile = user.getProfile();
         profile = NNF.getProfileMngr().save(user, profile);
-        resetChannelCache(user);
+        if (resetCache)
+            resetChannelCache(user);
         long msoId = user.getMsoId();
         user = dao.save(user);
         user.setMsoId(msoId);
@@ -258,7 +261,7 @@ public class NnUserManager {
         result = RandomStringUtils.random(20, 0, 20, true, true, result.toCharArray());
         result = shard + "-" + result;
         return result;
-    }    
+    }
     
     private NnUser populateUserProfile(NnUser user) {
         if (user == null) return null;
@@ -280,8 +283,9 @@ public class NnUserManager {
             user = populateUserProfile(user);
         }
         return user;
-    }        
+    }
     
+    // TODO rewrite
     public NnUser findAuthenticatedUser(String email, String password, long msoId, HttpServletRequest req) {
         short shard = getShardByLocale(req);
         NnUser user = dao.findAuthenticatedUser(email.toLowerCase(), password, shard);
@@ -296,13 +300,12 @@ public class NnUserManager {
         user.setPassword(user.getPassword());
         user.setSalt(AuthLib.generateSalt());
         user.setCryptedPassword(AuthLib.encryptPassword(user.getPassword(), user.getSalt()));
-        this.save(user);
-        return user;
+        return save(user, true);
     }
      
     public void subscibeDefaultChannels(NnUser user) {
         
-        List<NnChannel> channels = NNF.getChannelMngr().findMsoDefaultChannels(user.getMsoId(), false);    
+        List<NnChannel> channels = NNF.getChannelMngr().findMsoDefaultChannels(user.getMsoId(), false);
         NnUserSubscribeManager subManager = new NnUserSubscribeManager();
         for (NnChannel c : channels) {
             subManager.subscribeChannel(user, c);
@@ -321,7 +324,7 @@ public class NnUserManager {
     }
     
     //expect format shard-userId. example 1-1
-    //if "-" is not present, assuming it's shard 1    
+    //if "-" is not present, assuming it's shard 1
     public NnUser findByIdStr(String idStr, long msoId) {
         if (idStr == null)
             return null;
@@ -362,12 +365,12 @@ public class NnUserManager {
         return user;
     }
     
-    public List<NnUser> list(int page, int limit, String sidx, String sord) {
-        return dao.list(page, limit, sidx, sord);
+    public List<NnUser> list(int page, int limit, String sort) {
+        return dao.list(page, limit, sort);
     }
     
-    public List<NnUser> list(int page, int limit, String sidx, String sord, String filter) {
-        return dao.list(page, limit, sidx, sord, filter);
+    public List<NnUser> list(int page, int limit, String sort, String filter) {
+        return dao.list(page, limit, sort, filter);
     }
     
     public int total() {
@@ -407,7 +410,7 @@ public class NnUserManager {
         return user;
     }
     
-    public String composeCuratorInfo(List<NnUser> users, boolean chCntLimit, boolean isAllChannel, HttpServletRequest req, int version) {
+    public String composeCuratorInfo(ApiContext ctx, List<NnUser> users, boolean chCntLimit, boolean isAllChannel) {
         log.info("looking for all channels of a curator?" + isAllChannel);
         String result = "";
         NnChannelManager chMngr = NNF.getChannelMngr();
@@ -419,44 +422,44 @@ public class NnUserManager {
             } else {
                 channels = chMngr.findByUserAndHisFavorite(u, 0, isAllChannel);
             }
-            curatorChannels.addAll(channels);            
+            curatorChannels.addAll(channels);
             String ch = "";
-            if (channels.size() > 0) {                
+            if (channels.size() > 0) {
                 ch = channels.get(0).getIdStr();
             }
-            result += this.composeCuratorInfoStr(u, ch, req) + "\n";
+            result += this.composeCuratorInfoStr(u, ch, ctx) + "\n";
         }
         result += "--\n";
         System.out.println("curator channel:" + curatorChannels.size());
-        result += chMngr.composeChannelLineup(curatorChannels, new ApiContext(req));
+        result += chMngr.composeChannelLineup(curatorChannels, ctx);
         return result;
     }
     
     public String composeSubscriberInfoStr(List<NnChannel> channels) {
         for (NnChannel c : channels) {
-            if (c.getContentType() != NnChannel.CONTENTTYPE_FAKE_FAVORITE) {                
+            if (c.getContentType() != NnChannel.CONTENTTYPE_FAKE_FAVORITE) {
             }
         }
         return "";
     }
     
-    public String composeCuratorInfoStr(NnUser user, String channelId, HttpServletRequest req) {
+    public String composeCuratorInfoStr(NnUser user, String channelId, ApiContext ctx) {
         //#!curator=xxxxxxxx
         String profileUrl = "";
         NnUserProfile profile = user.getProfile();
         if (profile.getProfileUrl() != null) {
-            profileUrl = NnNetUtil.getUrlRoot(req) + "/#!curator=" + profile.getProfileUrl();
+            profileUrl = ctx.getRoot() + "/#!curator=" + profile.getProfileUrl();
         }
         
         String[] info = {
-                profile.getBrandUrl(),                
+                profile.getBrandUrl(),
                 profile.getName(),
                 profile.getIntro(),
                 profile.getImageUrl(),
                 profileUrl,
                 String.valueOf(profile.getCntChannel()),
                 String.valueOf(profile.getCntSubscribe()),
-                String.valueOf(profile.getCntFollower()),              
+                String.valueOf(profile.getCntFollower()),
                 channelId,
                };
         String output = NnStringUtil.getDelimitedStr(info);
@@ -496,16 +499,16 @@ public class NnUserManager {
     
     //UserInfo or String
     public Object getPlayerUserInfo(NnUser user, NnGuest guest, HttpServletRequest req, boolean login, short format) {
-    	if (user != null) {
-    		//prepare all the values
-    		String token = user.getToken();
-    		String userIdStr = user.getIdStr();
+        if (user != null) {
+            //prepare all the values
+            String token = user.getToken();
+            String userIdStr = user.getIdStr();
             NnUserProfile profile = user.getProfile();
             String name = profile.getName();
-            if (name == null) 
+            if (name == null)
                 name = user.getEmail();
             String lastLogin = String.valueOf(profile.getUpdateDate().getTime());
-            String sphere = profile.getSphere(); 
+            String sphere = profile.getSphere();
             if (profile.getSphere() == null)
                 sphere = findLocaleByHttpRequest(req);
             String lang = profile.getLang();
@@ -514,13 +517,13 @@ public class NnUserManager {
             String curator = String.valueOf(profile.getProfileUrl());
             String created = "0";
             if (login)
-            	created = "1";
+                created = "1";
             String fbUser = "0";
             if (user.isFbUser())
                 fbUser = "1";
             //format
             if (format == ApiContext.FORMAT_JSON) {
-        		UserInfo json = new UserInfo();
+                UserInfo json = new UserInfo();
                 json.setToken(token);
                 json.setUserIdStr(userIdStr);
                 json.setName(name);
@@ -530,31 +533,65 @@ public class NnUserManager {
                 json.setCurator(curator);
                 json.setCreated(Boolean.parseBoolean(created));
                 json.setFbUser(Boolean.parseBoolean(fbUser));
-	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
-	            for (NnUserPref pref : list) {
-	                json.getPrefs().add(pref.getItem() + pref.getValue());
-	            }
-	            return json;
+                List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
+                for (NnUserPref pref : list) {
+                    json.getPrefs().add(pref.getItem() + pref.getValue());
+                }
+                return json;
             } else {
-	            String output = PlayerApiService.assembleKeyValue("token", token);
-	            output += PlayerApiService.assembleKeyValue("userid", userIdStr);
-	            output += PlayerApiService.assembleKeyValue("name", name);
-	            output += PlayerApiService.assembleKeyValue("lastLogin", lastLogin);
-	            output += PlayerApiService.assembleKeyValue("sphere", sphere);
-	            output += PlayerApiService.assembleKeyValue("ui-lang", lang);
-	            output += PlayerApiService.assembleKeyValue("curator", curator);
-                output += PlayerApiService.assembleKeyValue("created",created);
-	            output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
-	            List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
-	            for (NnUserPref pref : list) {
-	                output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
-	            }
-	            return output;
+                String output = PlayerApiService.assembleKeyValue("token", token);
+                output += PlayerApiService.assembleKeyValue("userid", userIdStr);
+                output += PlayerApiService.assembleKeyValue("name", name);
+                output += PlayerApiService.assembleKeyValue("lastLogin", lastLogin);
+                output += PlayerApiService.assembleKeyValue("sphere", sphere);
+                output += PlayerApiService.assembleKeyValue("ui-lang", lang);
+                output += PlayerApiService.assembleKeyValue("curator", curator);
+                output += PlayerApiService.assembleKeyValue("created", created);
+                output += PlayerApiService.assembleKeyValue("fbUser", fbUser);
+                List<NnUserPref> list = NNF.getPrefMngr().findByUser(user);
+                for (NnUserPref pref : list) {
+                    output += PlayerApiService.assembleKeyValue(pref.getItem(), pref.getValue());
+                }
+                return output;
             }
-    	} else {
-    		return new NnGuestManager().getPlayerGuestRegister(guest, format, req);
-    	}    	
+        } else {
+            return new NnGuestManager().getPlayerGuestRegister(guest, format, req);
+        }
     }
     
-    
+    public static User composeUser(NnUser nnuser) {
+        
+        User user = new User();
+        
+        user.setId(nnuser.getId());
+        user.setType(nnuser.getType());
+        user.setShard(nnuser.getShard());
+        user.setIdStr(nnuser.getIdStr());
+        user.setCreateDate(nnuser.getCreateDate());
+        user.setUpdateDate(nnuser.getUpdateDate());
+        user.setUserEmail(nnuser.getUserEmail());
+        user.setFbUser(nnuser.isFbUser());
+        user.setPriv(NnUserProfile.PRIV_CMS);
+        
+        NnUserProfile profile = nnuser.getProfile();
+        if (profile != null) {
+            user.setName(NnStringUtil.revertHtml(profile.getName()));
+            user.setIntro(NnStringUtil.revertHtml(profile.getIntro()));
+            user.setImageUrl(profile.getImageUrl());
+            user.setLang(profile.getLang());
+            user.setProfileUrl(profile.getProfileUrl());
+            user.setSphere(profile.getSphere());
+            user.setCntSubscribe(profile.getCntSubscribe());
+            user.setCntChannel(profile.getCntChannel());
+            user.setCntFollower(profile.getCntFollower());
+            user.setMsoId(profile.getMsoId());
+            if (profile.getPriv() != null)
+                user.setPriv(profile.getPriv());
+            Mso mso = NNF.getMsoMngr().findById(profile.getMsoId());
+            if (mso != null)
+                user.setMsoName(mso.getName());
+        }
+        
+        return user;
+    }
 }
