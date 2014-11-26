@@ -38,8 +38,8 @@ public class CounterFactory {
         
         Counter counter = NNF.getCounterDao().findByCounterName(counterName);
         if (counter == null) {
-            counter = NNF.getCounterDao().save(new Counter(counterName));
-            System.out.println(String.format("[counter] created {%s}, id = %d", counter.getCounterName(), counter.getId()));
+            counter = new Counter(counterName);
+            System.out.println(String.format("[counter] created {%s}", counter.getCounterName()));
         }
         
         return counter;
@@ -74,7 +74,7 @@ public class CounterFactory {
         
         List<CounterShard> shards = NNF.getShardDao().findByCounterName(counterName);
         if (shards.isEmpty())
-            shards.add(addShard(getOrCreateCounter(counterName)));
+            shards.add(addShard(counterName));
         int index = 0;
         int shardSize = shards.size();
         Random random = new Random(NnDateUtil.timestamp());
@@ -103,22 +103,20 @@ public class CounterFactory {
              * @author Louis Jeng <louis.jeng@flipr.tv>
              */
             int numShards = (int) Math.sqrt(sum) / 100 + 1; // Sharding Formula
-            Counter counter = getOrCreateCounter(counterName);
             System.out.println(String.format("[counter] {%s} shard number = %d (%d expected), count = %d",
-                                   counter.getCounterName(), counter.getNumShards(), numShards, sum));
-            if (numShards > shardSize) {
-                counter.setNumShards(shardSize);
-                addShard(counter); // auto sharding
-            }
+                                             counterName, shardSize, numShards, sum));
+            if (numShards > shardSize)
+                addShard(counterName); // auto sharding
         }
         
         return randShard;
     }
     
-    synchronized private static CounterShard addShard(Counter counter) {
+    synchronized private static CounterShard addShard(String counterName) {
         
-        if (counter == null) return null;
+        if (counterName == null) return null;
         
+        Counter counter = getOrCreateCounter(counterName);
         int shardNum = counter.getNumShards() + 1;
         counter.setNumShards(shardNum);
         CounterShard shard = NNF.getShardDao().save(new CounterShard(counter.getCounterName(), shardNum));
