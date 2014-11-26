@@ -69,20 +69,23 @@ public class CounterShardDao extends GenericDao<CounterShard> {
         super(CounterShard.class);
     }
     
-    @SuppressWarnings("unchecked")
     public List<CounterShard> findByCounterName(String counterName) {
         
         List<CounterShard> results = new ArrayList<CounterShard>();
         // cache get
         String cacheKey = CacheFactory.getCounterShardKey(counterName);
-        results = (List<CounterShard>) CacheFactory.get(cacheKey);
-        if (results != null)
-            return results;
+        @SuppressWarnings("unchecked")
+        List<CounterShard> cached = (List<CounterShard>) CacheFactory.get(cacheKey);
+        if (cached != null) {
+            
+            return cached;
+        }
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(CounterShard.class);
             query.setFilter("counterName == counterNameParam");
             query.declareParameters("String counterNameParam");
+            @SuppressWarnings("unchecked")
             List<CounterShard> counterShards = (List<CounterShard>) query.execute(counterName);
             if (counterShards.size() > 0) {
                 results = (List<CounterShard>) pm.detachCopyAll(counterShards);
