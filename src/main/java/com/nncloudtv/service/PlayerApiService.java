@@ -3099,10 +3099,21 @@ public class PlayerApiService {
             NnUser user = NNF.getUserMngr().findByIdStr(id, ctx.getMsoId());
             if (user != null) {
                 NnUserProfile profile = profileMngr.findByUser(user);
-                if (profile != null)
-                  returnStr += id + "\t" + profile.getName() + "\n";
-                else
-                  returnStr += id + "\t" + "anonymous" + "\n";
+                if (profile != null) {
+                  String name = profile.getName();
+                  if (name == null) {
+                      List<NnUserProfile> profiles = profileMngr.findAllByUser(user);
+                      for (NnUserProfile p : profiles) {
+                    	  if (p.getName() != null) {
+                    		  name = p.getName();
+                    		  break;
+                    	  }                    	  
+                      }                    	  
+                  }                  
+                  returnStr += id + "\t" + name + "\n";
+                } else {
+                  returnStr += id + "\t" + "anonymous" + "\n"; 
+                }
             } else {
                 returnStr += id + "\t" + "anonymous" + "\n";
             }

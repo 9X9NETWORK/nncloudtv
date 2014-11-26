@@ -448,28 +448,43 @@ public class YouTubeLib  implements StreamLib {
         JSONObject json = new JSONObject(jsonStr);
         String title, description, thumbnail, author, total;
         title = description = thumbnail = author = total = "";
-        try {
-           if (channel) {
+        if (channel) {
+            try {
                title = json.getJSONObject("entry").getJSONObject("title").get("$t").toString();
+            } catch (JSONException e) {}
+            try {
                description = json.getJSONObject("entry").getJSONObject("summary").get("$t").toString();
+            } catch (JSONException e) {}
+            try {
                thumbnail = json.getJSONObject("entry").getJSONObject("media$thumbnail").get("url").toString();
+            } catch (JSONException e) {}
+            try {
                author = json.getJSONObject("entry").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-           } else {
+            } catch (JSONException e) {}
+        } else {
+            try {
                title = json.getJSONObject("feed").getJSONObject("title").get("$t").toString();
-               description = json.getJSONObject("feed").getJSONObject("media$group").getJSONObject("media$description").get("$t").toString();
-               thumbnail = json.getJSONObject("feed").getJSONObject("media$group").getJSONArray("media$thumbnail").getJSONObject(0).get("url").toString();
-               author = json.getJSONObject("feed").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-               total = json.getJSONObject("feed").getJSONObject("openSearch$totalResults").get("$t").toString();
-               results.put("totalItems", total);
-           }
-           results.put("title", title);
-           results.put("description", description);
-           results.put("thumbnail", thumbnail);
-           results.put("author", author);
-           results.put("total", total);
-        } catch (JSONException e){
-           e.printStackTrace();
+            } catch (JSONException e) {}
+            try {
+                description = json.getJSONObject("feed").getJSONObject("media$group").getJSONObject("media$description").get("$t").toString();
+            } catch (JSONException e) {}
+            try {
+                thumbnail = json.getJSONObject("feed").getJSONObject("media$group").getJSONArray("media$thumbnail").getJSONObject(0).get("url").toString();
+            } catch (JSONException e) {}
+            try {
+                author = json.getJSONObject("feed").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
+            } catch (JSONException e) {}
+            try {
+                total = json.getJSONObject("feed").getJSONObject("openSearch$totalResults").get("$t").toString();
+            } catch (JSONException e) {}
+            results.put("totalItems", total);
         }
+        results.put("title", title);
+        results.put("description", description);
+        results.put("thumbnail", thumbnail);
+        results.put("author", author);
+        results.put("total", total);
+
         return results;
     }
     
