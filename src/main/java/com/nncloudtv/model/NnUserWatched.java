@@ -14,7 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Store user's last watched program of each channel
  */
 @PersistenceCapable(table = "nnuser_watched", detachable = "true")
-public class NnUserWatched implements PersistentModel {
+public class NnUserWatched implements PersistentBaseModel {
     
     private static final long serialVersionUID = 5097962538423536374L;
     private static final boolean cachable = false;

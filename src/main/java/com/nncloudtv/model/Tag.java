@@ -14,7 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * tag
  */
 @PersistenceCapable(table = "tag", detachable = "true")
-public class Tag implements PersistentModel {
+public class Tag implements PersistentBaseModel {
     
     private static final long serialVersionUID = -8803012032455804100L;
     private static final boolean cachable = false;

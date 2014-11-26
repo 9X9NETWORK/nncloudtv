@@ -14,7 +14,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * User's problem reporting. 
  */
 @PersistenceCapable(table = "nnuser_report", detachable = "true")
-public class NnUserReport implements PersistentModel {
+public class NnUserReport implements PersistentBaseModel {
     
     private static final long serialVersionUID = 6423984464587227432L;
     private static final boolean cachable = false;

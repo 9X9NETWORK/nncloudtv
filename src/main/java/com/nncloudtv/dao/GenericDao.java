@@ -15,10 +15,10 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
-import com.nncloudtv.model.PersistentModel;
+import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
 
-public class GenericDao<T extends PersistentModel> {
+public class GenericDao<T extends PersistentBaseModel> {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;

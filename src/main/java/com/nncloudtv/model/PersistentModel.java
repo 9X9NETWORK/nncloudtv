@@ -1,13 +1,16 @@
 package com.nncloudtv.model;
 
 import java.io.Serializable;
+import java.util.Date;
 
-public interface PersistentModel extends Serializable {
+public interface PersistentModel extends PersistentBaseModel, Serializable {
     
-    public long getId();
+    public void setUpdateDate(Date date);
     
-    public void setId(long id);
+    public Date getUpdateDate();
     
-    public boolean isCachable();
+    public void setCreateDate(Date date);
+    
+    public Date getCreateDate();
     
 }

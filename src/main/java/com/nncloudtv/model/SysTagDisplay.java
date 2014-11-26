@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag_display", detachable = "true")
-public class SysTagDisplay implements PersistentModel {
+public class SysTagDisplay implements PersistentBaseModel {
     
     private static final long serialVersionUID = 7258016865351679922L;
     private static final boolean cachable = false;

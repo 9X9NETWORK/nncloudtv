@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * each program can have a "before" and "after" card.
  */
 @PersistenceCapable(table = "title_card", detachable = "true")
-public class TitleCard implements PersistentModel {
+public class TitleCard implements PersistentBaseModel {
     
     private static final long serialVersionUID = -9147138183447630963L;
     private static final boolean cachable = false;

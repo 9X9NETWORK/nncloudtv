@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "poi_pdr", detachable = "true")
-public class PoiPdr implements PersistentModel {
+public class PoiPdr implements PersistentBaseModel {
     
     private static final long serialVersionUID = -7038238631337505136L;
     private static final boolean cachable = false;

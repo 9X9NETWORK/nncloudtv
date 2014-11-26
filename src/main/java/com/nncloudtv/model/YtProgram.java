@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * They are data crawled from YouTube.
  */
 @PersistenceCapable(table = "ytprogram", detachable = "true")
-public class YtProgram implements PersistentModel {
+public class YtProgram implements PersistentBaseModel {
     
     private static final long serialVersionUID = -8000687567807163404L;
     private static final boolean cachable = false;

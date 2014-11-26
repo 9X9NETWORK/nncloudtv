@@ -12,7 +12,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * For android device. Things to display when device boots up 
  */
 @PersistenceCapable(table = "dashboard", detachable = "true")
-public class Dashboard implements PersistentModel {
+public class Dashboard implements PersistentBaseModel {
     
     private static final long serialVersionUID = -4730435228418723296L;
     private static final boolean cachable = false;

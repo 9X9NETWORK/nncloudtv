@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Captcha is created by a different service and store corresponding information here.
  */
 @PersistenceCapable(table = "captcha", detachable = "true")
-public class Captcha implements PersistentModel {
+public class Captcha implements PersistentBaseModel {
     
     private static final long serialVersionUID = 8631029787591344239L;
     private static final boolean cachable = false;

@@ -9,7 +9,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "app", detachable = "true")
-public class App implements PersistentModel {
+public class App implements PersistentBaseModel {
     
     private static final long serialVersionUID = -847510760110426923L;
     private static final boolean cachable = false;

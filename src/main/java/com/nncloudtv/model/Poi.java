@@ -8,7 +8,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(table = "poi", detachable = "true")
-public class Poi implements PersistentModel {
+public class Poi implements PersistentBaseModel {
     
     private static final long serialVersionUID = -6330960416877922240L;
     private static final boolean cachable = false;

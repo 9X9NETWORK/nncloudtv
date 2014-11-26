@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
  * Data is from recommendation engine
  */
 @PersistenceCapable(table = "deep", detachable = "true")
-public class Deep implements PersistentModel {
+public class Deep implements PersistentBaseModel {
     
     private static final long serialVersionUID = -3242796605443779044L;
     private static final boolean cachable = false;

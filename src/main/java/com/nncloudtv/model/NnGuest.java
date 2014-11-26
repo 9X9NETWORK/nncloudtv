@@ -14,7 +14,7 @@ import com.nncloudtv.service.NnUserManager;
  * Data can be wiped out.
  */
 @PersistenceCapable(table = "nnguest", detachable = "true")
-public class NnGuest implements PersistentModel {
+public class NnGuest implements PersistentBaseModel {
     
     private static final long serialVersionUID = 1447389893077062832L;
     private static final boolean cachable = false;

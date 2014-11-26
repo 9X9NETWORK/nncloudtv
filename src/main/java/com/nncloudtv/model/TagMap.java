@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
  * To relate Category and Channel
  */
 @PersistenceCapable(table = "tag_map", detachable = "true")
-public class TagMap implements PersistentModel {
+public class TagMap implements PersistentBaseModel {
     
     private static final long serialVersionUID = -2469181924008224613L;
     private static final boolean cachable = false;

@@ -9,7 +9,7 @@ import javax.jdo.annotations.PrimaryKey;
  * Subscription count
  */
 @PersistenceCapable(table = "cnt_view", detachable = "true")
-public class CntView implements PersistentModel {
+public class CntView implements PersistentBaseModel {
     
     private static final long serialVersionUID = -4453915666072588744L;
     private static final boolean cachable = false;

@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "ytchannel", detachable = "true")
-public class YtChannel implements PersistentModel {
+public class YtChannel implements PersistentBaseModel {
     
     private static final long serialVersionUID = -4731817164964671332L;
     private static final boolean cachable = false;

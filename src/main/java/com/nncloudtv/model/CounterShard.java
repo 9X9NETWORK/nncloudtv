@@ -15,6 +15,8 @@
 
 package com.nncloudtv.model;
 
+import java.util.Date;
+
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
@@ -87,5 +89,25 @@ public class CounterShard implements PersistentModel {
     
     public void increment(int amount) {
         this.count += amount;
+    }
+    
+    public void setUpdateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getUpdateDate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void setCreateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getCreateDate() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

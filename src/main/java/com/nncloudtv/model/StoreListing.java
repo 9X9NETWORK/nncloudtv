@@ -11,7 +11,7 @@ import javax.jdo.annotations.PrimaryKey;
  * blacklist
  * */
 @PersistenceCapable(table = "store_listing", detachable = "true")
-public class StoreListing implements PersistentModel {
+public class StoreListing implements PersistentBaseModel {
     
     private static final long serialVersionUID = 104167058683011863L;
     private static final boolean cachable = false;
