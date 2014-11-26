@@ -40,31 +40,6 @@ public class CounterShardDao extends GenericDao<CounterShard> {
     
     protected static final Logger log = Logger.getLogger(CounterShardDao.class.getName());
     
-    @Override
-    public CounterShard save(CounterShard dao) {
-        
-        if (dao == null) return null;
-        
-        // cache delete
-        String cacheKey = CacheFactory.getCounterShardKey(dao.getCounterName());
-        CacheFactory.delete(cacheKey);
-        
-        return super.save(dao);
-    }
-    
-    @Override
-    public Collection<CounterShard> saveAll(Collection<CounterShard> list) {
-        
-        List<String> cacheKeyList = new ArrayList<String>();
-        
-        // cache delete
-        for (CounterShard shard : list)
-            cacheKeyList.add(shard.getCounterName());
-        CacheFactory.deleteAll(cacheKeyList);
-        
-        return super.saveAll(list);
-    }
-    
     public CounterShardDao() {
         super(CounterShard.class);
     }
@@ -72,14 +47,6 @@ public class CounterShardDao extends GenericDao<CounterShard> {
     public List<CounterShard> findByCounterName(String counterName) {
         
         List<CounterShard> results = new ArrayList<CounterShard>();
-        // cache get
-        String cacheKey = CacheFactory.getCounterShardKey(counterName);
-        @SuppressWarnings("unchecked")
-        List<CounterShard> cached = (List<CounterShard>) CacheFactory.get(cacheKey);
-        if (cached != null) {
-            
-            return cached;
-        }
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(CounterShard.class);
@@ -94,8 +61,6 @@ public class CounterShardDao extends GenericDao<CounterShard> {
         } finally {
             pm.close();
         }
-        // cache set
-        CacheFactory.set(cacheKey, results);
         return results;
     }
 }

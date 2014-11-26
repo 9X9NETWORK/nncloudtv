@@ -442,9 +442,4 @@ public class CacheFactory {
         
         return String.format("%s.findById(%d)", className, id);
     }
-    
-    public static String getCounterShardKey(String counterName) {
-        
-        return String.format("CounterShard.findByCounterName(%s)", counterName);
-    }
 }
