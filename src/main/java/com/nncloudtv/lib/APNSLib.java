@@ -22,7 +22,6 @@ import com.notnoop.apns.DeliveryError;
 import com.notnoop.apns.EnhancedApnsNotification;
 import com.notnoop.apns.PayloadBuilder;
 
-@Service
 public class APNSLib {
     
     protected static final Logger log = Logger.getLogger(APNSLib.class.getName());
