@@ -8,6 +8,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "nnuser_profile", detachable = "true")
@@ -124,7 +125,7 @@ public class NnUserProfile implements PersistentModel {
     public NnUserProfile(long userId, long msoId) {
         this.userId = userId;
         this.msoId = msoId;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }
@@ -138,7 +139,7 @@ public class NnUserProfile implements PersistentModel {
             this.lang = lang;
         if (dob != null && dob.length() > 0)
             this.dob = dob;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }

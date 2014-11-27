@@ -61,7 +61,7 @@ public class NnProgramManager {
     }
     
     public void create(NnChannel channel, NnProgram program) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         program.setCreateDate(now);
         program.setUpdateDate(now);
         program.setChannelId(channel.getId());
@@ -1114,7 +1114,7 @@ public class NnProgramManager {
             imageUrl = imageUrl.replaceAll(regexPod, pod);
         }
         if (program.getPublishDate() == null) {
-            program.setPublishDate(new Date()); //should not happen, just in case
+            program.setPublishDate(NnDateUtil.now()); //should not happen, just in case
         }
         
         long   channelId    = program.getChannelId();

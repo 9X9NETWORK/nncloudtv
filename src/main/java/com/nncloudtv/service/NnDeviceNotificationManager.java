@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnDeviceNotificationDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnDeviceNotification;
 
@@ -30,12 +31,10 @@ public class NnDeviceNotificationManager {
         
         if (notification == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
-        if (notification.getCreateDate() == null) {
+        if (notification.getCreateDate() == null)
             notification.setCreateDate(now);
-        }
-        
         notification.setUpdateDate(now);
         notification = dao.save(notification);
         
@@ -46,13 +45,11 @@ public class NnDeviceNotificationManager {
         
         if (notifications == null) return new ArrayList<NnDeviceNotification>();
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         for (NnDeviceNotification notification : notifications) {
-            
-            if (notification.getCreateDate() == null) {
+            if (notification.getCreateDate() == null)
                 notification.setCreateDate(now);
-            }
             notification.setUpdateDate(now);
         }
         

@@ -9,6 +9,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -157,7 +158,7 @@ public class NnProgram implements PersistentModel {
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
         this.publishDate = now;
@@ -173,7 +174,7 @@ public class NnProgram implements PersistentModel {
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }

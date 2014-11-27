@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.MyLibrary;
@@ -23,7 +24,7 @@ public class MyLibraryManager {
         
         if (library == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (library.getCreateDate() == null) {
             

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnDeviceDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnUser;
@@ -29,13 +30,13 @@ public class NnDeviceManager {
     
     public void save(NnDevice device) {
         
-        device.setUpdateDate(new Date());
+        device.setUpdateDate(NnDateUtil.now());
         dao.save(device);
     }
     
     public void save(List<NnDevice> devices) {
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         for (NnDevice device : devices) {
             device.setCreateDate(now);
         }
@@ -65,7 +66,7 @@ public class NnDeviceManager {
             device.setMsoId(1);
         }
         device.setType(type);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (device.getCreateDate() == null)
             device.setCreateDate(now);
         device.setUpdateDate(now);       

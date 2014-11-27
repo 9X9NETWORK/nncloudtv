@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.MsoDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.LocaleTable;
@@ -51,16 +52,12 @@ public class MsoManager {
             return null;
         }
         
-        Date now = new Date();
-        if (mso.getCreateDate() == null) {
-            
+        Date now = NnDateUtil.now();
+        if (mso.getCreateDate() == null)
             mso.setCreateDate(now);
-        }
         mso.setUpdateDate(now);
-        dao.save(mso);
         resetCache(mso);
-        
-        return mso;
+        return dao.save(mso);
     }
     
     public void resetCache(Mso mso) {

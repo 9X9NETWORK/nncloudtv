@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.BillingOrder;
 
 @Service
@@ -22,7 +23,7 @@ public class BillingOrderManager {
         
         if (order == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (order.getCreateDate() == null) {
             
@@ -37,7 +38,7 @@ public class BillingOrderManager {
         
         if (orders == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         for (BillingOrder order : orders) {
             

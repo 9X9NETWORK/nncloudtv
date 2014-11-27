@@ -10,6 +10,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
 
@@ -245,7 +246,7 @@ public class NnChannel implements PersistentModel {
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }

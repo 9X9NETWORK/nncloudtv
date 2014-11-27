@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Hex;
-import org.springframework.stereotype.Service;
 
 import com.nncloudtv.model.MsoNotification;
 import com.nncloudtv.model.NnDevice;
@@ -174,13 +173,12 @@ public class APNSLib {
             deviceNotification.setDeviceId(device.getId());
             deviceNotifications.add(deviceNotification);
             try {
-                Date now = new Date();
                 PayloadBuilder payloadBuilder = APNS.newPayload()
                         .alertBody(msoNotification.getMessage())
                         .badge(device.getBadge() + 1)
                         .sound("default")
                         .customField("content", msoNotification.getContent())
-                        .customField("ts", now);
+                        .customField("ts", NnDateUtil.now());
                 // check size 256 bytes
                 if (payloadBuilder.isTooLong()) {
                     log.info("Payload is too long, shrinking it");

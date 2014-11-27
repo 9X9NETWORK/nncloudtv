@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.PoiEvent;
 
 @Service
@@ -17,14 +18,11 @@ public class PoiEventManager {
     protected static final Logger log = Logger.getLogger(PoiEventManager.class.getName());
     
     public PoiEvent save(PoiEvent event) {
-        
-        event.setUpdateDate(new Date());
-        if (event.getCreateDate() == null) {
-            
-            event.setCreateDate(new Date());
-        }
+        Date now = NnDateUtil.now();
+        event.setUpdateDate(now);
+        if (event.getCreateDate() == null)
+            event.setCreateDate(now);
         event = NNF.getPoiEventDao().save(event);
-        
         return event;
     }
     

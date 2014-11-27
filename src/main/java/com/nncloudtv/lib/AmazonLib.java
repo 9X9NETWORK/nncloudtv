@@ -161,8 +161,7 @@ public class AmazonLib {
     }
     
     public static String getFormattedExpirationDate() {
-        Date now = new Date();
-        Date oneHourFromNow = new Date(now.getTime() + 3600 * 1000);
+        Date oneHourFromNow = new Date(NnDateUtil.timestamp() + 3600 * 1000);
         TimeZone tz = TimeZone.getTimeZone( "UTC" );
         SimpleDateFormat dfm = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         dfm.setTimeZone(tz);

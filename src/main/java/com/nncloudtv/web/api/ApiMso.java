@@ -1540,8 +1540,7 @@ public class ApiMso extends ApiGeneric {
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            Date now = new Date();
-            notification.setPublishDate(now);
+            notification.setPublishDate(NnDateUtil.now());
             notification = NNF.getMsoNotiMngr().save(notification);
         }
         
@@ -1605,7 +1604,7 @@ public class ApiMso extends ApiGeneric {
             QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             
             notification.setScheduleDate(null);
-            notification.setPublishDate(new Date());
+            notification.setPublishDate(NnDateUtil.now());
         }
         
         NNF.getMsoNotiMngr().saveAll(notifications);
@@ -1705,7 +1704,7 @@ public class ApiMso extends ApiGeneric {
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            notification.setPublishDate(new Date());
+            notification.setPublishDate(NnDateUtil.now());
             notification.setScheduleDate(null);
             notification = NNF.getMsoNotiMngr().save(notification);
         }

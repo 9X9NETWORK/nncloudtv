@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.MsoConfigDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
@@ -183,17 +184,16 @@ public class MsoConfigManager {
     }
     
     public MsoConfig create(MsoConfig config) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         config.setCreateDate(now);
         config.setUpdateDate(now);
         return configDao.save(config);
     }
     
     public MsoConfig save(Mso mso, MsoConfig config) {
-        config.setUpdateDate(new Date());
-        if (mso.getType() == Mso.TYPE_NN) {
-            this.processCache(config);
-        }
+        config.setUpdateDate(NnDateUtil.now());
+        if (mso.getType() == Mso.TYPE_NN)
+            processCache(config);
         return configDao.save(config);
     }
     

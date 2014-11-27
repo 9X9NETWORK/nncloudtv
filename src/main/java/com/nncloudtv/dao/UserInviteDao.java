@@ -1,13 +1,13 @@
 package com.nncloudtv.dao;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.UserInvite;
 
@@ -15,7 +15,7 @@ public class UserInviteDao {
     protected static final Logger log = Logger.getLogger(UserInviteDao.class.getName());
     
     public UserInvite save(UserInvite invite) {
-        invite.setUpdateDate(new Date());
+        invite.setUpdateDate(NnDateUtil.now());
         PersistenceManager pm = PMF.getAnalytics().getPersistenceManager();
         if (pm == null) return null;
         try {
@@ -26,7 +26,7 @@ public class UserInviteDao {
         }
         return invite;
     }
-
+    
     public List<UserInvite> findSubscribers(long userId, short shard, long channelId) {
         PersistenceManager pm = PMF.getAnalytics().getPersistenceManager();
         List<UserInvite> detached = new ArrayList<UserInvite>();

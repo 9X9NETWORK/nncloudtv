@@ -1,12 +1,12 @@
 package com.nncloudtv.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnContentDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnContent;
 
 @Service
@@ -23,15 +23,13 @@ public class NnContentManager {
             this.save(existed);
             return existed;
         }
-        content.setCreateDate(new Date());
-        this.save(content);
-        return content;
+        content.setCreateDate(NnDateUtil.now());
+        return save(content);
     }
     
-    public NnContent save(NnContent content) {        
-        content.setUpdateDate(new Date());
-        content = nnContentDao.save(content);
-        return content;
+    public NnContent save(NnContent content) {
+        content.setUpdateDate(NnDateUtil.now());
+        return nnContentDao.save(content);
     }
 
     public NnContent findByItemAndLang(String item, String lang, long msoId) {        

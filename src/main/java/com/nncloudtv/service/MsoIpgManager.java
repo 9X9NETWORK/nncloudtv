@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoIpgDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoIpg;
 
 @Service
@@ -14,21 +15,21 @@ public class MsoIpgManager {
     protected static final Logger log = Logger.getLogger(MsoIpgManager.class.getName());
     
     private MsoIpgDao msoIpgDao = new MsoIpgDao();
- 
+    
     /**
      * @@@ IMPORTANT: 
      * Check channel status is your responsibility (for now, for quick initialization work).
      * Please use MsoChannelManager, isCounterQualified(MsoChannel channel) 
      */
     public void create(MsoIpg msoIpg) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         msoIpg.setCreateDate(now);
         msoIpg.setUpdateDate(now);
         this.save(msoIpg);
     }
     
     public void save(MsoIpg msoIpg) {
-        msoIpg.setUpdateDate(new Date());
+        msoIpg.setUpdateDate(NnDateUtil.now());
         msoIpgDao.save(msoIpg);
     }
     

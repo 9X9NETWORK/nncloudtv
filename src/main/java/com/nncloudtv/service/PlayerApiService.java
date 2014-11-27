@@ -1509,7 +1509,7 @@ public class PlayerApiService {
             String subject = "[" + ctx.getMsoName() + "]";
             subject += (type != null) ? (" - [" + type + "]") : "" ;
             SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-        	String date = sdf.format(new Date()); 
+        	String date = sdf.format(NnDateUtil.now()); 
             subject += " (" + date + ")";
             log.info("subject:" + subject);
             log.info("content:" + body);

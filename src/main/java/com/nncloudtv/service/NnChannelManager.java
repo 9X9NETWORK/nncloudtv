@@ -140,7 +140,7 @@ public class NnChannelManager {
         }
         channel.setPublic(false);
         channel.setLang(lang);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);
         channel = this.save(channel);
@@ -161,7 +161,7 @@ public class NnChannelManager {
         if (url == null) 
             return null;
         
-        NnChannel channel = this.findBySourceUrl(url);        
+        NnChannel channel = this.findBySourceUrl(url);
         if (channel != null) {
             log.info("submit a duplicate channel:" + channel.getId());
             return channel; 
@@ -174,11 +174,11 @@ public class NnChannelManager {
         channel.setPublic(true);
         channel.setLang(lang);
         channel.setSphere(lang);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);
-        channel = this.save(channel);
-        return channel;
+        
+        return save(channel);
     }
     
     //check existence is your responsibility (for now)
@@ -188,12 +188,12 @@ public class NnChannelManager {
         channel.setStatus(NnChannel.STATUS_PROCESSING);
         channel.setContentType(NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL);
         channel.setPublic(false);
-        channel.setLang(LocaleTable.LANG_EN);        
-        Date now = new Date();
+        channel.setLang(LocaleTable.LANG_EN);
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
-        channel.setUpdateDate(now);  
-        this.save(channel);
-        return channel;
+        channel.setUpdateDate(now);
+        
+        return save(channel);
     }
     
     //process tag text enter by users

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoNotificationDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoNotification;
 
 @Service
@@ -17,16 +18,15 @@ public class MsoNotificationManager {
     protected static final Logger log = Logger.getLogger(MsoNotificationManager.class.getName());
     
     public MsoNotification save(MsoNotification notification) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         notification.setUpdateDate(now);
-        if (notification.getCreateDate() == null) {
+        if (notification.getCreateDate() == null)
             notification.setCreateDate(now);
-        }
         return dao.save(notification);
     }
     
     public Collection<MsoNotification> saveAll(Collection<MsoNotification> notifications) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         for (MsoNotification notification : notifications) {
             notification.setUpdateDate(now);
             if (notification.getCreateDate() == null) {

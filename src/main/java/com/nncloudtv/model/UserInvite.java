@@ -83,7 +83,7 @@ public class UserInvite implements PersistentModel {
         this.inviteeEmail = inviteeEmail;
         this.inviteeName = inviteeName;
         this.status = UserInvite.STATUS_PENDING;
-        Date now = new Date();        
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }

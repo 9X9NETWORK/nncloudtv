@@ -2,7 +2,6 @@ package com.nncloudtv.web;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -24,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.lib.QueueFactory;
@@ -237,7 +237,7 @@ public class HelloController {
     //fb test    
     @RequestMapping("FB")
     public ResponseEntity<String> FB(HttpServletRequest req) {        
-        String now = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(new Date()).toString();
+        String now = (new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).format(NnDateUtil.now()).toString();
         
         FBPost fbPost = new FBPost(now, "FB/MQ loopback test", "http://www.iteye.com/upload/logo/user/76967/bf3e420a-8e22-36b8-84e2-1b31c23407f1.jpg");
         fbPost.setLink("http://eternal1025.iteye.com/blog/344360");

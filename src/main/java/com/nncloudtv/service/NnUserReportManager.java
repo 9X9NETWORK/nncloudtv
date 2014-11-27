@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnUserReportDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserReport;
@@ -16,7 +17,7 @@ public class NnUserReportManager {
     
     public NnUserReport save(NnUser user, NnDevice device, String session, String type, String item, String comment) {
         NnUserReport report = new NnUserReport(user, device, session, type, comment);
-        report.setCreateDate(new Date());
+        report.setCreateDate(NnDateUtil.now());
         reportDao.save(report);
         return report;
     }
@@ -32,7 +33,7 @@ public class NnUserReportManager {
     public List<NnUserReport> findByUser(String token) {
         return reportDao.findByUser(token);
     }
-
+    
     public List<NnUserReport> findByUserSince(String token, Date since) {
         return reportDao.findByUserSince(token, since);
     }

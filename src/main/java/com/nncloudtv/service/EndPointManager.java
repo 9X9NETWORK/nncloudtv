@@ -4,25 +4,22 @@ import java.util.Date;
 import java.util.regex.Pattern;
 
 import com.nncloudtv.dao.EndPointDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.EndPoint;
 
 public class EndPointManager {
-
+    
     EndPointDao dao = new EndPointDao();
     
-    public EndPoint save(EndPoint endpoint) {        
-        if (endpoint == null) {
-            return null;
-        }
-        Date now = new Date();
+    public EndPoint save(EndPoint endpoint) {
+        if (endpoint == null) return null;
+        Date now = NnDateUtil.now();
         endpoint.setUpdateDate(now);
-        if (endpoint.getCreateDate() == null) {
+        if (endpoint.getCreateDate() == null)
             endpoint.setCreateDate(now);
-        }
-        endpoint = dao.save(endpoint);        
-        return endpoint;
+        return dao.save(endpoint);
     }
-
+    
     public short getVendorType(String vendor) {
         if (vendor == null) 
             return EndPoint.VENDOR_UNDEFINED;

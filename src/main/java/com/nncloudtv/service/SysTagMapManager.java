@@ -26,7 +26,7 @@ public class SysTagMapManager {
         
         if (sysTagMap == null) { return null; }
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (sysTagMap.getCreateDate() == null) {
             sysTagMap.setCreateDate(now);
         }

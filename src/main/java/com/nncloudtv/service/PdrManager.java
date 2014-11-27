@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.nncloudtv.dao.PdrDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserWatched;
@@ -16,28 +17,27 @@ import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPdr;
 
 public class PdrManager {
-
+    
     protected static final Logger log = Logger.getLogger(PdrManager.class.getName());
     
     private PdrDao dao = new PdrDao();
-            
+    
     public void create(Pdr pdr) {
-        Date now = new Date();
-        pdr.setUpdateDate(now);
+        pdr.setUpdateDate(NnDateUtil.now());
         dao.save(pdr);
     }
     
     public Pdr save(Pdr pdr) {
-        pdr.setUpdateDate(new Date());
+        pdr.setUpdateDate(NnDateUtil.now());
         return dao.save(pdr);
-    }        
-
+    }
+    
     public List<Pdr> findDebugging(
             NnUser user, NnDevice device, String session,
             String ip, Date since) {
         return dao.findDebugging(user, device, session, ip, since);
     }
-
+    
     public PoiPdr findPoiPdr(NnUser user, long poiId) {
         return dao.findPoiPdr(user, poiId);
     }
@@ -53,14 +53,14 @@ public class PdrManager {
         String list = event.getNotifyScheduler();
         if (list != null) {
             String[] time = list.split(",");
-        	log.info("process poi scheduler (quantity): " + time.length);        
+        	log.info("process poi scheduler (quantity): " + time.length);
             if (time.length > 0) {
                 long epoch = Long.parseLong(time[0]);
                 Date myDate = new Date (epoch*1000);
                 pdr.setScheduledDate(myDate);
                 dao.savePoiPdr(pdr);
             }
-        }        
+        }
     }
     
     //for statistics

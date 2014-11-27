@@ -8,6 +8,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 /**  
@@ -68,8 +69,7 @@ public class Captcha implements PersistentBaseModel {
         this.name = name;
         this.fileName = fileName;
         this.random = Math.random();
-        Date now = new Date();
-        this.createDate = now;
+        this.createDate = NnDateUtil.now();
         this.toBeExpired = false;
     }
     

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnUserShareDao;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserShare;
 
@@ -15,7 +16,7 @@ public class NnUserShareManager {
     private NnUserShareDao shareDao = new NnUserShareDao();
     
     public void create(NnUserShare share) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         share.setUpdateDate(now);
         share.setCreateDate(now);
         shareDao.save(share);

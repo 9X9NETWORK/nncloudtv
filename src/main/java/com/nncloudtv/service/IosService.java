@@ -1,6 +1,5 @@
 package com.nncloudtv.service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -8,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
 import com.nncloudtv.model.NnChannel;
@@ -152,7 +152,7 @@ public class IosService {
                 imageLargeUrl = imageLargeUrl.replaceAll(regexPod, pod);
             }
             if (p.getUpdateDate() == null)
-            	p.setUpdateDate(new Date());
+                p.setUpdateDate(NnDateUtil.now());
             
             //the rest
             String[] ori = {String.valueOf(p.getChannelId()), 

@@ -7,6 +7,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
+
 /**
  * To relate Category and Channel
  */
@@ -44,7 +46,7 @@ public class TagMap implements PersistentBaseModel {
     public TagMap(long tagId, long channelId) {
         this.tagId = tagId;
         this.channelId = channelId;
-        this.updateDate = new Date();
+        this.updateDate = NnDateUtil.now();
     }
     
     public Date getUpdateDate() {

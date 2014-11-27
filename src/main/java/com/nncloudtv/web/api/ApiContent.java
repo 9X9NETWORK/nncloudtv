@@ -599,7 +599,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // publish
-        program.setPublishDate(new Date());
+        program.setPublishDate(NnDateUtil.now());
         program.setPublic(true);
         
         program = NNF.getProgramMngr().create(episode, program);
@@ -1561,7 +1561,7 @@ public class ApiContent extends ApiGeneric {
                 
             } else if (publishDateStr.equalsIgnoreCase("NOW")) {
                 
-                episode.setPublishDate(new Date());
+                episode.setPublishDate(NnDateUtil.now());
                 
             } else {
                 
@@ -1751,7 +1751,7 @@ public class ApiContent extends ApiGeneric {
                 
             } else if (publishDateStr.equalsIgnoreCase("NOW")) {
                 
-                episode.setPublishDate(new Date());
+                episode.setPublishDate(NnDateUtil.now());
                 
             } else {
                 

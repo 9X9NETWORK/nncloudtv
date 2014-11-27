@@ -8,6 +8,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -56,7 +57,7 @@ public class Tag implements PersistentBaseModel {
     
     public Tag(String name) {
         this.name = name;
-        this.updateDate = new Date();
+        this.updateDate = NnDateUtil.now();
     }
     
     public String getName() {
