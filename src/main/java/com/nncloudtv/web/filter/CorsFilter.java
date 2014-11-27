@@ -41,8 +41,8 @@ public class CorsFilter extends OncePerRequestFilter {
             resp.addHeader("Access-Control-Max-Age", "1728000");
             return ;
         }
-        
-        CounterFactory.increment(req.getMethod() + " " + req.getRequestURI()); // count api usage
+        if (req.getRequestURI().contains("playerAPI"))
+            CounterFactory.increment(req.getMethod() + " " + req.getRequestURI()); // count playerAPI usage
         
         filterChain.doFilter(req, resp);
     }
