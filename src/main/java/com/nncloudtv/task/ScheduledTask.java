@@ -16,8 +16,8 @@ public class ScheduledTask {
     
     protected static Logger log = Logger.getLogger(ScheduledTask.class.getName());
     
-    public static final int MC_INTERVAL = 604171; // memcache check interval (milliseconds)
-    public static final int GC_INTERVAL = 971767; // garbage collection interval (milliseconds)
+    public static final int MC_INTERVAL = 294001; // memcache check interval (milliseconds)
+    public static final int GC_INTERVAL = 505447; // garbage collection interval (milliseconds)
     
     @Scheduled(fixedRate = GC_INTERVAL)
     synchronized public void triggerGC() {

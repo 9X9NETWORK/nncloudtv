@@ -35,12 +35,10 @@ public class CacheFactory {
     private static boolean checkServer(InetSocketAddress addr) {
         
         String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
-        System.out.println("[cache] key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
         Future<Object> future = null;
-        long before = NnDateUtil.timestamp();
         try {
             cache = new MemcachedClient(addr) {
                 @Override
@@ -57,8 +55,6 @@ public class CacheFactory {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
         } finally {
-            long delta = NnDateUtil.timestamp() - before;
-            System.out.println("[cache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
