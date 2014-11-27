@@ -796,6 +796,7 @@ public class ApiContent extends ApiGeneric {
         
         channelMngr.populateCategoryId(channel);
         if (channel.isReadonly() == false) {
+            channelMngr.populateMoreImageUrl(channel);
             channelMngr.populateCntItem(channel);
             channelMngr.populateSocialFeeds(channel);
             channelMngr.populateBannerImageUrl(channel);
@@ -888,6 +889,7 @@ public class ApiContent extends ApiGeneric {
             if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
                 
                 NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
+                channel.setCategoryId(categoryId);
             }
         }
         
@@ -938,12 +940,6 @@ public class ApiContent extends ApiGeneric {
             
             channel = NnChannelManager.syncNow(channel);
         }
-        
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateSocialFeeds(channel);
-        channelMngr.populateBannerImageUrl(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
         
         return channel;
     }
