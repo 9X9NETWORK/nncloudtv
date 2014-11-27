@@ -90,7 +90,7 @@ public class GenericDao<T extends PersistentBaseModel> {
                 cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
         }
         CacheFactory.deleteAll(cacheKeys);
-        System.out.println(String.format("[dao] saveAll() costs %d miliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[dao] saving %d objects costs %d miliseconds", list.size(), NnDateUtil.timestamp() - before));
         return list;
     }
     
