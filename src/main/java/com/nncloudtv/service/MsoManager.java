@@ -419,7 +419,7 @@ public class MsoManager {
         
         if (format == ApiContext.FORMAT_JSON) {
             
-            CacheFactory.set(CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_JSON), ads);
+            CacheFactory.set(CacheFactory.getAdInfoKey(mso, ApiContext.FORMAT_JSON), new ArrayList<AdPlacement>(ads));
             
             return ads;
         }

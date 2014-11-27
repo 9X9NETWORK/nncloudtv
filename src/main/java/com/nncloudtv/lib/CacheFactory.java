@@ -1,6 +1,7 @@
 package com.nncloudtv.lib;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,18 +142,15 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
-        if (obj == null) {
-            System.out.println(String.format("[cache] {%s} --> missed", key));
-        }
         return obj;
     }
     
-    public static Object set(String key, Object obj) {
+    public static Object set(String key, Serializable obj) {
         
         return set(key, obj, 0);
     }
     
-    public static Object set(String key, Object obj, int exp) {
+    public static Object set(String key, Serializable obj, int exp) {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
@@ -176,10 +174,11 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
+        
         if (retObj == null) {
-            System.out.println(String.format("[cache] {%s} --> NOT saved", key));
+            System.out.println(String.format("[cache] {%s} NOT cached", key));
         } else {
-            System.out.println(String.format("[cache] {%s} --> saved", key));
+            System.out.println(String.format("[cache] {%s} cached", key));
         }
         
         return retObj;
@@ -239,9 +238,9 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         if (isDeleted) {
-            System.out.println(String.format("[cache] {%s} --> deleted", key));
+            System.out.println(String.format("[cache] {%s} deleted", key));
         } else {
-            System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
+            System.out.println(String.format("[cache] {%s} NOT deleted", key));
         }
     }
     

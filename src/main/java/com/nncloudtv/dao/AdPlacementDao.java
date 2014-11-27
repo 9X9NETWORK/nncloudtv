@@ -18,7 +18,6 @@ public class AdPlacementDao extends GenericDao<AdPlacement> {
         super(AdPlacement.class);
     }
     
-    @SuppressWarnings("unchecked")
     public List<AdPlacement> findByMso(long msoId) {
         
         List<AdPlacement> detached = new ArrayList<AdPlacement>();
@@ -28,6 +27,7 @@ public class AdPlacementDao extends GenericDao<AdPlacement> {
             query.setFilter("msoId == msoIdParam && status == 0");
             query.declareParameters("long msoIdParam");
             query.setOrdering("seq asc");
+            @SuppressWarnings("unchecked")
             List<AdPlacement> results = (List<AdPlacement>) query.execute(msoId);
             detached = (List<AdPlacement>) pm.detachCopyAll(results);
         } finally {

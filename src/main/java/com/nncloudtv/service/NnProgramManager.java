@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -204,11 +205,11 @@ public class NnProgramManager {
             if (programInfo != null) {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", cacheKey = " + cacheKey);
                 if (format == ApiContext.FORMAT_PLAIN) {
-                    output += (String)programInfo;
-                    CacheFactory.set(cacheKey, programInfo);
+                    output += (String) programInfo;
+                    CacheFactory.set(cacheKey, (String) programInfo);
                 } else {
-                    json.addAll((ArrayList<ProgramInfo>)programInfo);
-                    CacheFactory.set(cacheKey, programInfo);
+                    json.addAll((ArrayList<ProgramInfo>) programInfo);
+                    CacheFactory.set(cacheKey, (ArrayList<ProgramInfo>) programInfo);
                 }
             } else {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", though its empty");
@@ -457,7 +458,7 @@ public class NnProgramManager {
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);
-                CacheFactory.set(cacheKey, output);
+                CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
             }
         }
         return output;

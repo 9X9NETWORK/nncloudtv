@@ -63,7 +63,7 @@ public class CounterFactory {
     synchronized protected static CounterShard increment(String counterName, int amount) {
         
         if (counterName == null) return null;
-        
+        System.out.println(String.format("[counter] {%s} +%d", counterName, amount));
         List<CounterShard> shards = NNF.getShardDao().findByCounterName(counterName);
         if (shards.isEmpty())
             shards.add(addShard(counterName));
