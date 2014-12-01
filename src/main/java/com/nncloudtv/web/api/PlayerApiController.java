@@ -1043,7 +1043,7 @@ public class PlayerApiController {
      *           Example: |http://www.youtube.com/watch?v=TDpqS6GS_OQ;50;345|http://www.youtube.com/watch?v=JcmKq9kmP5U;0;380<br/> 
      *           10. url2(webm), reserved<br/> 
      *           11. url3(flv more likely), reserved<br/>
-     *           12. url4(audio), reserved<br/> 
+     *           12. storageId, referenced episodeId<br/> 
      *           13. publish date timestamp, version before 3.2 stops here<br/>
      *           14. reserved<br/>
      *           15. title card <br/>
