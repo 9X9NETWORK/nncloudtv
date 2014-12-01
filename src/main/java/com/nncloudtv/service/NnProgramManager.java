@@ -1024,7 +1024,7 @@ public class NnProgramManager {
         String eId = "e" + String.valueOf(episode.getId());
         if (episode.getStorageId() > 0) {
             NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
-            cId += reference.getChannelId();
+            cId += ":" + reference.getChannelId();
         }
         
         if (format == ApiContext.FORMAT_PLAIN) {
