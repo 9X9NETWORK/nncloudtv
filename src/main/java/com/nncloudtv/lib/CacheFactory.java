@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import com.nncloudtv.model.Mso;
@@ -71,7 +70,13 @@ public class CacheFactory {
     private static MemcachedClient getClient() {
         try {
             if (isRunning && isEnabled)
-                return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
+                return new MemcachedClient(memcacheServers) {
+                    @Override
+                    protected void finalize() throws Throwable {
+                        NnLogUtil.logFinalize(getClass().getName());
+                    }
+                
+                };
         } catch (IOException e) {
             log.severe(e.getMessage());
         }
@@ -105,7 +110,12 @@ public class CacheFactory {
         // rebuild cache client
         MemcachedClient newCache = null;
         try {
-            newCache = isRunning ? new MemcachedClient(new BinaryConnectionFactory(), memcacheServers) : null;
+            newCache = isRunning ? new MemcachedClient(memcacheServers) {
+                @Override
+                protected void finalize() throws Throwable {
+                    NnLogUtil.logFinalize(getClass().getName());
+                }
+            } : null;
         } catch (IOException e) {
             log.severe("memcache io exception");
             log.severe(e.getMessage());
