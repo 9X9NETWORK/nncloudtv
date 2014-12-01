@@ -289,10 +289,10 @@ public class CacheFactory {
         return String.format("msoconfig(%d)(%s)", msoId, item);
     }
     
-    // example: mso(9x9)
+    // example: Mso.findByName(9x9)
     public static String getMsoObjectKey(String name) {
         
-        return String.format("mso(%s)", name);
+        return String.format("Mso.findByName(%s)", name);
     }
     
     // example: brandInfo(9x9)[json]

@@ -472,7 +472,7 @@ public class MsoManager {
         }        
         CounterFactory.increment("MISS " + cacheKey);
         log.info("NOT get mso object from cache: " + name);
-        Mso mso = findByIdOrName(name);
+        Mso mso = findByName(name);
         if (mso != null)
             CacheFactory.set(cacheKey, mso);
         return mso;
