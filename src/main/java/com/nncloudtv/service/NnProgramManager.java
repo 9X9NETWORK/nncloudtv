@@ -1020,8 +1020,12 @@ public class NnProgramManager {
             publishTime = episode.getScheduleDate().getTime();
         }
         
-        String cId = String.valueOf(channelId == episode.getChannelId() ? channelId : channelId + ":" + episode.getChannelId());
+        String cId = String.valueOf(channelId);
         String eId = "e" + String.valueOf(episode.getId());
+        if (episode.getStorageId() > 0) {
+            NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
+            cId += reference.getChannelId();
+        }
         
         if (format == ApiContext.FORMAT_PLAIN) {
             
