@@ -1043,7 +1043,7 @@ public class PlayerApiController {
      *           Example: |http://www.youtube.com/watch?v=TDpqS6GS_OQ;50;345|http://www.youtube.com/watch?v=JcmKq9kmP5U;0;380<br/> 
      *           10. url2(webm), reserved<br/> 
      *           11. url3(flv more likely), reserved<br/>
-     *           12. url4(audio), reserved<br/> 
+     *           12. storageId, referenced episodeId<br/> 
      *           13. publish date timestamp, version before 3.2 stops here<br/>
      *           14. reserved<br/>
      *           15. title card <br/>
@@ -1055,20 +1055,19 @@ public class PlayerApiController {
      */        
     @RequestMapping(value="programInfo")
     public @ResponseBody Object programInfo(
-            @RequestParam(value="v", required=false) String v,
-            @RequestParam(value="channel", required=false) String channelIds,
-            @RequestParam(value="episode", required=false) String episodeIdStr,
-            @RequestParam(value="user", required = false) String userToken,
-            @RequestParam(value="userInfo", required=false) String userInfo,
-            @RequestParam(value="ipg", required = false) String ipgId,
-            @RequestParam(value="sidx", required = false) String sidx,
-            @RequestParam(value="limit", required = false) String limit,
-            @RequestParam(value="start", required = false) String start,
-            @RequestParam(value="count", required = false) String count,
-            @RequestParam(value="time", required = false) String time,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            @RequestParam(value="v",        required = false) String v,
+            @RequestParam(value="channel",  required = false) String channelIds,
+            @RequestParam(value="episode",  required = false) String episodeIdStr,
+            @RequestParam(value="user",     required = false) String userToken,
+            @RequestParam(value="userInfo", required = false) String userInfo,
+            @RequestParam(value="ipg",      required = false) String ipgId,
+            @RequestParam(value="sidx",     required = false) String sidx,
+            @RequestParam(value="limit",    required = false) String limit,
+            @RequestParam(value="start",    required = false) String start,
+            @RequestParam(value="count",    required = false) String count,
+            @RequestParam(value="time",     required = false) String time,
+            @RequestParam(value="rx",       required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = PLAYER_ERR_MSG;

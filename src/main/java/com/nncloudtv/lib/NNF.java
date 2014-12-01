@@ -37,6 +37,7 @@ import com.nncloudtv.service.BillingPackageManager;
 import com.nncloudtv.service.BillingProfileManager;
 import com.nncloudtv.service.BillingService;
 import com.nncloudtv.service.CategoryService;
+import com.nncloudtv.service.ContentWorkerService;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.MsoConfigManager;
@@ -106,13 +107,14 @@ public class NNF {
     protected static NnItemManager          itemMngr            = null;
     protected static TitleCardManager       titleCardMngr       = null;
     
-    protected static SetService       setService       = null;
-    protected static CategoryService  categoryService  = null;
-    protected static DepotService     depotService     = null;
-    protected static EmailService     emailService     = null;
-    protected static NotificationService notiService   = null;
-    protected static BillingService   billingService   = null;
-    protected static PlayerApiService playerApiService = null;
+    protected static SetService        setService       = null;
+    protected static CategoryService   categoryService  = null;
+    protected static DepotService      depotService     = null;
+    protected static EmailService      emailService     = null;
+    protected static NotificationService notiService    = null;
+    protected static BillingService    billingService   = null;
+    protected static PlayerApiService  playerApiService = null;
+    protected static ContentWorkerService workerService = null;
     
     protected static MsoDao            msoDao            = null;
     protected static MsoPromotionDao   msoPromotionDao   = null;
@@ -538,6 +540,17 @@ public class NNF {
         }
         
         return playerApiService;
+    }
+    
+    public static ContentWorkerService getWorkerService() {
+        
+        if (workerService == null) {
+            
+            log.info("create workerService");
+            workerService = new ContentWorkerService();
+        }
+        
+        return workerService;
     }
     
     public static StoreListingManager getStoreListingMngr() {

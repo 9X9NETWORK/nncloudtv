@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag_map", detachable = "true")
-public class SysTagMap {
+public class SysTagMap implements PersistentModel {
+    
+    private static final long serialVersionUID = 6967129426270985959L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     long sysTagId;
@@ -55,14 +70,6 @@ public class SysTagMap {
         this.seq = 0;
         this.alwaysOnTop = false;
         this.featured = false;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getSysTagId() {

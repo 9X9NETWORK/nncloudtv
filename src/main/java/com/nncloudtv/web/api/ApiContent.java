@@ -122,7 +122,7 @@ public class ApiContent extends ApiGeneric {
         Mso mso = NNF.getMsoMngr().findByName(pref.getValue());
         String brand = pref.getValue();
         if (NNF.getMsoMngr().isValidBrand(channel, mso) == false) {
-            brand = Mso.NAME_9X9;
+            brand = Mso.NAME_SYS;
         }
         
         Map<String, Object> result = new TreeMap<String, Object>();
@@ -473,7 +473,7 @@ public class ApiContent extends ApiGeneric {
         
         log.info("program delete count = " + programs.size());
         
-        NNF.getProgramMngr().delete(programs);
+        NNF.getProgramMngr().deleteAll(programs);
         
         msgResponse(resp, OK);
     }
@@ -599,7 +599,7 @@ public class ApiContent extends ApiGeneric {
         }
         
         // publish
-        program.setPublishDate(new Date());
+        program.setPublishDate(NnDateUtil.now());
         program.setPublic(true);
         
         program = NNF.getProgramMngr().create(episode, program);
@@ -797,9 +797,10 @@ public class ApiContent extends ApiGeneric {
         channelMngr.populateCategoryId(channel);
         if (channel.isReadonly() == false) {
             channelMngr.populateMoreImageUrl(channel);
+            channelMngr.populateCntItem(channel);
+            channelMngr.populateSocialFeeds(channel);
+            channelMngr.populateBannerImageUrl(channel);
         }
-        channelMngr.populateSocialFeeds(channel);
-        channelMngr.populateBannerImageUrl(channel);
         channelMngr.populateAutoSync(channel);
         channelMngr.normalize(channel);
         
@@ -888,6 +889,7 @@ public class ApiContent extends ApiGeneric {
             if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
                 
                 NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
+                channel.setCategoryId(categoryId);
             }
         }
         
@@ -938,12 +940,6 @@ public class ApiContent extends ApiGeneric {
             
             channel = NnChannelManager.syncNow(channel);
         }
-        
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateSocialFeeds(channel);
-        channelMngr.populateBannerImageUrl(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
         
         return channel;
     }
@@ -1272,7 +1268,7 @@ public class ApiContent extends ApiGeneric {
             episode.setSeq(index + 1);
         }
         
-        NNF.getEpisodeMngr().save(episodes);
+        NNF.getEpisodeMngr().saveAll(episodes);
         NNF.getChannelMngr().renewUpdateDateOnly(channel);
         
         msgResponse(resp, OK);
@@ -1561,7 +1557,7 @@ public class ApiContent extends ApiGeneric {
                 
             } else if (publishDateStr.equalsIgnoreCase("NOW")) {
                 
-                episode.setPublishDate(new Date());
+                episode.setPublishDate(NnDateUtil.now());
                 
             } else {
                 
@@ -1751,7 +1747,7 @@ public class ApiContent extends ApiGeneric {
                 
             } else if (publishDateStr.equalsIgnoreCase("NOW")) {
                 
-                episode.setPublishDate(new Date());
+                episode.setPublishDate(NnDateUtil.now());
                 
             } else {
                 

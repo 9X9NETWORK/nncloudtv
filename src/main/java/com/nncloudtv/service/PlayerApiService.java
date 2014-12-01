@@ -969,7 +969,7 @@ public class PlayerApiService {
             NNF.getUserMngr().save(user, false); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
             if (ctx.isPlainFmt()) {
-                String[] raw = {(String)result};
+                String[] raw = {(String) result};
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, raw);
             }
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
@@ -1509,7 +1509,7 @@ public class PlayerApiService {
             String subject = "[" + ctx.getMsoName() + "]";
             subject += (type != null) ? (" - [" + type + "]") : "" ;
             SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-        	String date = sdf.format(new Date()); 
+        	String date = sdf.format(NnDateUtil.now()); 
             subject += " (" + date + ")";
             log.info("subject:" + subject);
             log.info("content:" + body);

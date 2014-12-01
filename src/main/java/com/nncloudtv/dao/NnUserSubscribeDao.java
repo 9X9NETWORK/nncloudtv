@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
@@ -34,12 +35,12 @@ public class NnUserSubscribeDao extends GenericDao<NnUserSubscribe>{
             pm.close();
         }
         return sub;
-    }        
-
+    }
+    
     public void saveAll(NnUser user, List<NnUserSubscribe> subs) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         for (NnUserSubscribe s : subs) {
-            s.setUpdateDate(now);            
+            s.setUpdateDate(now);
         }
         PersistenceManager pm = NnUserDao.getPersistenceManager(user.getShard(), user.getToken());
         try {

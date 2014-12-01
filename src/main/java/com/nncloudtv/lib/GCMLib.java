@@ -2,7 +2,6 @@ package com.nncloudtv.lib;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.stereotype.Service;
 
 import com.google.android.gcm.server.Constants;
 import com.google.android.gcm.server.Message;
@@ -24,7 +22,6 @@ import com.nncloudtv.model.NnDeviceNotification;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.YtProgram;
 
-@Service
 public class GCMLib {
     
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
@@ -191,7 +188,7 @@ public class GCMLib {
         }
         NnDeviceNotification message = new NnDeviceNotification(0, msoNotification.getMessage());
         
-        message.setCreateDate(new Date());
+        message.setCreateDate(NnDateUtil.now());
         message.setContent(msoNotification.getContent());
         
         if (msoNotification.getContent() == null) {

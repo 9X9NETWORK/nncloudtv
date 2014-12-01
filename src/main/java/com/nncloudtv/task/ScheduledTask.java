@@ -16,13 +16,11 @@ public class ScheduledTask {
     
     protected static Logger log = Logger.getLogger(ScheduledTask.class.getName());
     
-    public static final int MC_INTERVAL = 584141; // memcache check interval (milliseconds)
-    public static final int GC_INTERVAL = 604171; // garbage collection interval (milliseconds)
+    public static final int MC_INTERVAL = 505447; // memcache check interval (milliseconds)
+    public static final int GC_INTERVAL = 294001; // garbage collection interval (milliseconds)
     
     @Scheduled(fixedRate = GC_INTERVAL)
     synchronized public void triggerGC() {
-        
-        System.gc(); // trigger garbage collection
         
         long max   = Runtime.getRuntime().maxMemory();
         long total = Runtime.getRuntime().totalMemory();
@@ -31,9 +29,10 @@ public class ScheduledTask {
         System.out.println("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
                              +  ", total = " + FileUtils.byteCountToDisplaySize(total)
                              +   ", free = " + FileUtils.byteCountToDisplaySize(free));
-        if (max == total && free < total / 100) {
+        if (max == total && free < total / 100)
             log.severe("available memory is less than 1%");
-        }
+        if (free < total / 2)
+            System.gc(); // trigger garbage collection
     }
     
     @Scheduled(fixedDelay = MC_INTERVAL)

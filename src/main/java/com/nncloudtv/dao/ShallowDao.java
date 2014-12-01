@@ -21,7 +21,7 @@ public class ShallowDao {
         } finally {
             pm.close();
         }
-        return detached;        
-    }    
-
+        return detached;
+    }
+    
 }

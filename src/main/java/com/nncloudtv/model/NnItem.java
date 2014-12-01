@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "nnitem", detachable = "true")
-public class NnItem {
+public class NnItem implements PersistentModel {
+    
+    private static final long serialVersionUID = 2251574957539851160L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private Date createDate;
@@ -56,14 +71,6 @@ public class NnItem {
         this.status = WAIT_FOR_APPROVAL;
     }
     
-	public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
-    
     public long getMsoId() {
         return msoId;
     }
@@ -102,19 +109,19 @@ public class NnItem {
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public void setStatus(short status) {
         this.status = status;
     }

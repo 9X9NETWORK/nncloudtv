@@ -1,8 +1,15 @@
 package com.nncloudtv.model;
 
 import java.util.Date;
-import javax.jdo.annotations.*;
 
+import javax.jdo.annotations.Column;
+import javax.jdo.annotations.IdGeneratorStrategy;
+import javax.jdo.annotations.NotPersistent;
+import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 
 /**
@@ -13,11 +20,26 @@ import com.nncloudtv.lib.NnStringUtil;
  * Episode: aka NnEpisode. Only 9x9 programs has "episode". It is "super-program", store each sub-episode's metadata.    
  */
 @PersistenceCapable(table = "nnprogram", detachable = "true")
-public class NnProgram {
+public class NnProgram implements PersistentModel {
+    
+    private static final long serialVersionUID = 8805812147501660808L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long channelId;
@@ -131,12 +153,12 @@ public class NnProgram {
     @NotPersistent
     private int cntPoi;
     
-    public NnProgram(long channelId, String name, String intro, String imageUrl) {    
+    public NnProgram(long channelId, String name, String intro, String imageUrl) {
         this.channelId = channelId;
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
         this.publishDate = now;
@@ -152,18 +174,9 @@ public class NnProgram {
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
-    }
-    
-    public long getId() {
-    
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getChannelId() {
@@ -182,11 +195,11 @@ public class NnProgram {
     
     public String getPlayerName() {
     	String name = this.getName(); 
-        if (name != null) {        	
+        if (name != null) {
            name = name.replace("|", "\\|");
        	   name = name.replaceAll("\\s", " ");
         }
-        return name;    	
+        return name;
     }
     
     public void setName(String name) {
@@ -199,7 +212,7 @@ public class NnProgram {
     
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }    
+    }
     
     public String getImageLargeUrl() {
         return imageLargeUrl;

@@ -26,6 +26,7 @@ import com.nncloudtv.exception.NnClearCommerceException;
 import com.nncloudtv.exception.NnDataIntegrityException;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
@@ -73,7 +74,7 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + TOKEN);
             return null;
         }
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (profile.getTokenExpDate() == null || !now.before(profile.getTokenExpDate())) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + TOKEN);
             return null;
@@ -161,15 +162,14 @@ public class ApiBilling extends ApiGeneric {
         
         try {
             
-            Date now = new Date();
             MessageDigest md = MessageDigest.getInstance("MD5");
-            String seed = req.getSession() + " * " + (Math.random() * 1000)+ " * " + (now.getTime() / 1000);
+            String seed = req.getSession() + " * " + (Math.random() * 1000)+ " * " + (NnDateUtil.timestamp() / 1000);
             log.info("seed = " + seed);
             byte[] digest = md.digest(seed.getBytes());
             String token = NnStringUtil.bytesToHex(digest);
             log.info("token = " + token);
             profile.setToken(token);
-            profile.setTokenExpDate(new Date(now.getTime() + (BillingProfile.DEFAULT_TOKEN_EXPIRATION_TIME * 1000)));
+            profile.setTokenExpDate(new Date(NnDateUtil.timestamp() + (BillingProfile.DEFAULT_TOKEN_EXPIRATION_TIME * 1000)));
             
         } catch (NoSuchAlgorithmException e) {
             NnLogUtil.logException(e);
@@ -230,7 +230,7 @@ public class ApiBilling extends ApiGeneric {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
             return null;
         }
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (profile.getTokenExpDate() == null || !now.before(profile.getTokenExpDate())) {
             badRequest(resp, INVALID_PARAMETER + DELIMITER + PROFILE_TOKEN);
             return null;

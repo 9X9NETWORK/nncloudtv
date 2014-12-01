@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserSubscribeDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoIpg;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnUser;
@@ -30,7 +31,7 @@ public class NnUserSubscribeManager {
     //@@@ counter work throw to queue
     public boolean subscribeChannel(NnUser user, NnChannel channel) {
         NnUserSubscribe s = new NnUserSubscribe(user.getId(), channel.getId(), channel.getSeq(), channel.getType(), user.getMsoId());
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         s.setCreateDate(now);
         s.setUpdateDate(now);
         subDao.save(user, s);
@@ -42,23 +43,15 @@ public class NnUserSubscribeManager {
     }
     
     public NnUserSubscribe subscribeChannel(NnUser user, long channelId, short seq, short type) {
-        NnUserSubscribe s = new NnUserSubscribe(user.getId(), channelId, seq, type, user.getMsoId());
-        Date now = new Date();
-        s.setCreateDate(now);
-        s.setUpdateDate(now);
-        subDao.save(user, s);
-        /*
-        CntSubscribeManager cntMngr = new CntSubscribeManager();
-        CntView cnt = cntMngr.findByChannel(channelId);
-        if (cnt == null) {
-            cnt = new CntView(channelId);
-        } else {
-            cnt.setCnt(cnt.getCnt()+1);
-        }
-        cntMngr.save(cnt);
-        */        
-        return s;
-    }        
+        
+        NnUserSubscribe subscribe = new NnUserSubscribe(user.getId(), channelId, seq, type, user.getMsoId());
+        Date now = NnDateUtil.now();
+        subscribe.setCreateDate(now);
+        subscribe.setUpdateDate(now);
+        subDao.save(user, subscribe);
+        
+        return subscribe;
+    }
     
     public boolean subscribeSet(NnUser user, NnUserSubscribeGroup subSet, List<NnChannel> channels) {
         NnUserSubscribeGroupManager subSetMngr = new NnUserSubscribeGroupManager();
@@ -68,7 +61,7 @@ public class NnUserSubscribeManager {
             NnUserSubscribe existed = subDao.findByUserAndChannel(user, c.getId());
             if (existed == null) {
                 NnUserSubscribe sub = new NnUserSubscribe(user.getId(), c.getId(), c.getSeq(), c.getType(), user.getMsoId());
-                Date now = new Date();
+                Date now = NnDateUtil.now();
                 sub.setCreateDate(now);
                 sub.setUpdateDate(now);
                 subDao.save(user, sub);
@@ -76,13 +69,6 @@ public class NnUserSubscribeManager {
         }
         return true;
     }
-
-    /*
-    public NnUserSubscribe findChannelSubscription(NnUser user, long channelId, short seq) {
-        NnUserSubscribe s = subDao.findChannelSubscription(user, channelId, seq);
-        return s;
-    }
-    */
     
     public NnUserSubscribe findByUserAndChannel(NnUser user, String channelId) {
         long cId = 0;
@@ -132,19 +118,18 @@ public class NnUserSubscribeManager {
         subDao.save(user, sub);
         return true;
     }
-
+    
     public boolean copyChannel(NnUser user, long channelId, short seq) {
         NnUserSubscribe occupied = this.findByUserAndSeq(user, seq);
         if (occupied != null)
             return false;
-        NnUserSubscribe s = new NnUserSubscribe(user.getId(), channelId, seq, MsoIpg.TYPE_GENERAL, user.getMsoId());
-        Date now = new Date();
-        s.setCreateDate(now);
-        s.setUpdateDate(now);
-        subDao.save(s);        
-        return true;        
+        NnUserSubscribe subscribe = new NnUserSubscribe(user.getId(), channelId, seq, MsoIpg.TYPE_GENERAL, user.getMsoId());
+        Date now = NnDateUtil.now();
+        subscribe.setCreateDate(now);
+        subscribe.setUpdateDate(now);
+        subDao.save(subscribe);
+        return true;
     }
-    
     
     public List<NnUserSubscribe> list(int page, int limit, String sort) {
         return subDao.list(page, limit, sort);

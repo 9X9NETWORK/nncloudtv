@@ -11,6 +11,7 @@ import com.clearcommerce.ccxclientapi.CcApiRecord;
 import com.nncloudtv.dao.BillingProfileDao;
 import com.nncloudtv.lib.ClearCommerceLib;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.web.json.cms.CreditCard;
 
@@ -25,7 +26,7 @@ public class BillingProfileManager {
         
         if (profile == null) return null;
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (profile.getCreateDate() == null) {
             

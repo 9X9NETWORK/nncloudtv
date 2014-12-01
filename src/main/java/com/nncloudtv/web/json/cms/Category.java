@@ -4,6 +4,8 @@ import com.nncloudtv.model.SysTag;
 
 public class Category extends SysTag {
     
+    private static final long serialVersionUID = -3796096026005107627L;
+    
     String name;
     int cntChannel;
     String lang;

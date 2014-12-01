@@ -17,17 +17,19 @@ import com.nncloudtv.web.api.ApiContext;
 
 public class NnStringUtil {
     
-    public static final String UTF8    = "UTF-8";
-    public static final String ASCII   = "US-ASCII";
-    public static final String VARCHAR = "VARCHAR";
+    public static final String UTF8         = "UTF-8";
+    public static final String ASCII        = "US-ASCII";
+    public static final String VARCHAR      = "VARCHAR";
+    public static final String LONGVARCHAR  = "LONGVARCHAR";
     public static final String DIGITS_REGEX = "^\\d+$";
     
-    public static final int VERY_SHORT_STRING_LENGTH =    5;
-    public static final int SHORT_STRING_LENGTH      =   25;
-    public static final int NORMAL_STRING_LENGTH     =  255;
-    public static final int EXTENDED_STRING_LENGTH   =  500;
-    public static final int LONG_STRING_LENGTH       = 1500;
-    public static final int VERY_LONG_STRING_LENGTH  = 5000;
+    public static final int VERY_SHORT_STRING_LENGTH =      5;
+    public static final int SHORT_STRING_LENGTH      =     25;
+    public static final int NORMAL_STRING_LENGTH     =    255;
+    public static final int EXTENDED_STRING_LENGTH   =    500;
+    public static final int LONG_STRING_LENGTH       =   1500;
+    public static final int VERY_LONG_STRING_LENGTH  =   5000;
+    public static final int LONGVARCHAR_LENGTH       = 100000;
     
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
     
@@ -273,14 +275,14 @@ public class NnStringUtil {
         String schema = "http";
         if (flipr) {
             schema = "flipr";
-            if (mso != null && mso != Mso.NAME_9X9) {
+            if (mso != null && mso != Mso.NAME_SYS) {
                 schema += "-" + mso;
             }
         }
         
         String domain = MsoConfigManager.getServerDomain();
         
-        if (mso != null && !mso.equals(Mso.NAME_9X9)) {
+        if (mso != null && !mso.equals(Mso.NAME_SYS)) {
             
             domain = mso + "." + domain.replaceAll("^www\\.", "");
         }

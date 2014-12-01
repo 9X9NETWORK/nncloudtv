@@ -16,9 +16,7 @@ import com.nncloudtv.service.CounterFactory;
 @EnableScheduling
 public class CounterTask extends CounterFactory {
     
-    public static final int CC_INTERVAL = 294001; // clean counter interval (milliseconds)
-    
-    @Scheduled(fixedDelay = CC_INTERVAL)
+    @Scheduled(fixedDelay = 108301)
     public void cleanDirtyCounter() {
         synchronized (dirtyCounters) {
             if (dirtyCounters.isEmpty())
@@ -27,16 +25,10 @@ public class CounterTask extends CounterFactory {
             HashSet<CounterShard> shardSet = new HashSet<CounterShard>();
             HashSet<Entry<String, Integer>> counterSet = new HashSet<Entry<String,Integer>>(dirtyCounters.entrySet());
             dirtyCounters.clear();
-            for (Entry<String, Integer> entry : counterSet) {
-                if (entry.getValue() > 1) {
-                    shardSet.add(increment(entry.getKey(), entry.getValue()));
-                    System.out.println(String.format("[counter] {%s} increment %d", entry.getKey(), entry.getValue()));
-                } else {
-                    dirtyCounters.put(entry.getKey(), entry.getValue()); // put it back
-                }
-            }
-            if (shardSet.size() > 0)
-                NNF.getShardDao().saveAll(shardSet);
+            for (Entry<String, Integer> entry : counterSet)
+                shardSet.add(increment(entry.getKey(), entry.getValue()));
+            NNF.getShardDao().saveAll(shardSet);
+            System.out.println(String.format("[counter] %d counters updated", shardSet.size()));
             System.out.println(String.format("[counter] cleaning dirty counters costs %d milliseconds", NnDateUtil.timestamp() - before));
         }
     }

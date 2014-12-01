@@ -206,7 +206,7 @@ public class NnChannelPrefManager {
         NnChannelPref channelPref = findByChannelIdAndItem(channelId, NnChannelPref.BRAND_AUTOSHARE);
         if (channelPref == null) {
             
-            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_9X9);
+            return new NnChannelPref(channelId, NnChannelPref.BRAND_AUTOSHARE, Mso.NAME_SYS);
         }
         return channelPref;
     }
