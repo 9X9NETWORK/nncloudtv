@@ -1022,9 +1022,13 @@ public class NnProgramManager {
         
         String cId = String.valueOf(channelId);
         String eId = "e" + String.valueOf(episode.getId());
+        String epRef = "";
         if (episode.getStorageId() > 0) {
             NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
-            cId += ":" + reference.getChannelId();
+            if (reference != null) {
+                cId += ":" + reference.getChannelId();
+                epRef += "e" + reference.getId();
+            }
         }
         
         if (format == ApiContext.FORMAT_PLAIN) {
@@ -1040,10 +1044,10 @@ public class NnProgramManager {
                     imageUrl,
                     imageLargeUrl, //imageLargeUrl
                     videoUrl,
-                    "",     //url2
-                    "",     //url3
-                    String.valueOf(episode.getStorageId()), // episode reference
-                    String.valueOf(publishTime),            // or scheduleTime
+                    "",    //url2
+                    "",    //url3
+                    epRef, // episode reference
+                    String.valueOf(publishTime), // or scheduleTime
                     String.valueOf(episode.isPublic()),
                     card,
                     poiStr
