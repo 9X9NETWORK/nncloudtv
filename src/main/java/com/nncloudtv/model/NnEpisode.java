@@ -45,7 +45,6 @@ public class NnEpisode implements PersistentModel {
      * 
      * 1. orphan episode:     store channelId (at the meanwhile channelId=0)
      * 2. referenced episode: store referenced episodeId
-     * 3. virtual channel:    store real channelId (temporarily used in composeEachEpisodeInfo())
      */
     @Persistent
     private long storageId;

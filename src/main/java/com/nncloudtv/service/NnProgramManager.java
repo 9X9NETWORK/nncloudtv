@@ -975,30 +975,9 @@ public class NnProgramManager {
                 }
                 iCounter++;
             }
-            //////// start of episode magic \\\\\\\\
-            // use referenced episode to rewrite current episode
-            if (episode.getStorageId() > 0) {
-                NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
-                if (reference != null) {
-                    log.info("ep" + episode.getId() + " reference to ep" + reference.getId());
-                    episode.setId(reference.getId());
-                    episode.setChannelId(reference.getChannelId());
-                    episode.setStorageId(0);
-                }
-            }
-            // if episode is come from another channel
-            // temporarily use storageId to store foreign channel
-            long real = episode.getChannelId();
-            if (real != 0 && real != channel.getId()) {
-                episode.setStorageId(real);
-                episode.setChannelId(channel.getId());
-            } else {
-                episode.setStorageId(0);
-            }
-            //////// end of episode magic \\\\\\\\
             if (format == ApiContext.FORMAT_PLAIN) {
                 poiStr = poiStr.replaceAll("\\|$", "");
-                result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
+                result += composeEachEpisodeInfo(channel.getId(), episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
             } else {
                 info.setSubEpisodes(subEpisodes);
             }
@@ -1023,10 +1002,10 @@ public class NnProgramManager {
     }
     
     public Object composeEachEpisodeInfo(
-            NnEpisode episode, String name,          String intro,
-            String imageUrl,   String imageLargeUrl, String videoUrl,
-            String duration,   String card,          String contentType,
-            String poiStr,     short format) {
+            long channelId,     NnEpisode episode, String name,
+            String intro,       String imageUrl,   String imageLargeUrl,
+            String videoUrl,    String duration,   String card,
+            String contentType, String poiStr,     short format) {
         
         //zero file to play
         name = this.removePlayerUnwanted(name);
@@ -1041,15 +1020,7 @@ public class NnProgramManager {
             publishTime = episode.getScheduleDate().getTime();
         }
         
-        String cId = String.valueOf(episode.getChannelId());
-        if (episode.getChannelId() == 0) { // orphan episode
-            
-            cId = String.valueOf(episode.getStorageId());
-            
-        } else if (episode.getStorageId() != 0) { // virtual channel
-            
-            cId += ":" + String.valueOf(episode.getStorageId());
-        }
+        String cId = String.valueOf(channelId == episode.getChannelId() ? channelId : channelId + ":" + episode.getChannelId());
         String eId = "e" + String.valueOf(episode.getId());
         
         if (format == ApiContext.FORMAT_PLAIN) {
@@ -1067,8 +1038,8 @@ public class NnProgramManager {
                     videoUrl,
                     "",     //url2
                     "",     //url3
-                    "",     //audio file
-                    String.valueOf(publishTime), // or scheduleTime
+                    String.valueOf(episode.getStorageId()), // episode reference
+                    String.valueOf(publishTime),            // or scheduleTime
                     String.valueOf(episode.isPublic()),
                     card,
                     poiStr
