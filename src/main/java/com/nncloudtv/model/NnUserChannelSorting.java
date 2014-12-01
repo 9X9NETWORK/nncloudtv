@@ -11,15 +11,31 @@ import javax.jdo.annotations.PrimaryKey;
  * Store user's sorting preference for individual channel. 
  * Example would be newest to oldest, or oldest to newest.
  */
-@PersistenceCapable(table="nnuser_channel_sorting", detachable="true")
-public class NnUserChannelSorting {
+@PersistenceCapable(table = "nnuser_channel_sorting", detachable = "true")
+public class NnUserChannelSorting implements PersistentModel {
+    
+    private static final long serialVersionUID = 1282142339904331933L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
     
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
+    
     @Persistent
     private long userId;
-
+    
     @Persistent
     private long channelId;
     
@@ -40,40 +56,43 @@ public class NnUserChannelSorting {
         this.channelId = channelId;
         this.sort = sorting;
     }
-        
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
+    
     public long getUserId() {
         return userId;
     }
+    
     public void setUserId(long userId) {
         this.userId = userId;
     }
+    
     public long getChannelId() {
         return channelId;
     }
+    
     public void setChannelId(long channelId) {
         this.channelId = channelId;
     }
+    
     public short getSort() {
         return sort;
     }
+    
     public void setSort(short sort) {
         this.sort = sort;
     }
+    
     public Date getCreateDate() {
         return createDate;
     }
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
+    
     public Date getUpdateDate() {
         return updateDate;
     }
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }

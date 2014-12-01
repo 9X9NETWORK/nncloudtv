@@ -1,6 +1,7 @@
 package com.nncloudtv.lib;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.logging.Logger;
 
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
+
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.web.api.ApiContext;
@@ -35,12 +36,10 @@ public class CacheFactory {
     private static boolean checkServer(InetSocketAddress addr) {
         
         String key = String.format("loop_test(%d)", NnDateUtil.timestamp());
-        System.out.println("[cache] key = " + key);
         boolean alive = false;
         
         MemcachedClient cache = null;
         Future<Object> future = null;
-        long before = NnDateUtil.timestamp();
         try {
             cache = new MemcachedClient(addr) {
                 @Override
@@ -57,8 +56,6 @@ public class CacheFactory {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
         } finally {
-            long delta = NnDateUtil.timestamp() - before;
-            System.out.println("[cache] it takes " + delta + " milliseconds");
             if (cache != null)
                 cache.shutdown();
             if (future != null)
@@ -145,25 +142,18 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
-        if (obj == null) {
-            System.out.println(String.format("[cache] {%s} --> missed", key));
-            CounterFactory.increment("[cache] MISS " + key); // MISS
-        } else {
-            CounterFactory.increment("[cache] HIT " + key); // HIT
-        }
         return obj;
     }
     
-    public static Object set(String key, Object obj) {
+    public static Object set(String key, Serializable obj) {
         
         return set(key, obj, 0);
     }
     
-    public static Object set(String key, Object obj, int exp) {
+    public static Object set(String key, Serializable obj, int exp) {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
         
-        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return null;
         
@@ -184,18 +174,17 @@ public class CacheFactory {
             if (future != null)
                 future.cancel(false);
         }
+        
         if (retObj == null) {
-            System.out.println(String.format("[cache] {%s} --> NOT saved", key));
+            System.out.println(String.format("[cache] {%s} NOT cached", key));
         } else {
-            System.out.println(String.format("[cache] {%s} --> saved", key));
-            CounterFactory.increment(String.format("[cache] SAVE %s", key));
+            System.out.println(String.format("[cache] {%s} cached", key));
         }
-        System.out.println(String.format("[cache] save operation costs %d milliseconds", NnDateUtil.timestamp() - before));
         
         return retObj;
     }    
     
-    public static void delete(List<String> keys) {
+    public static void deleteAll(List<String> keys) {
         
         if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
         
@@ -225,7 +214,7 @@ public class CacheFactory {
         } else {
             System.out.println(String.format("[cache] mass: %d --> NOT deleted", keys.size()));
         }
-        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] deleteAll() operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void delete(String key) {
@@ -233,7 +222,6 @@ public class CacheFactory {
         if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
         
         boolean isDeleted = false;
-        long before = NnDateUtil.timestamp();
         MemcachedClient cache = getClient();
         if (cache == null) return;
         
@@ -250,12 +238,10 @@ public class CacheFactory {
             cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         if (isDeleted) {
-            System.out.println(String.format("[cache] {%s} --> deleted", key));
-            CounterFactory.increment("[cache] DELETE " + key);
+            System.out.println(String.format("[cache] {%s} deleted", key));
         } else {
-            System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
+            System.out.println(String.format("[cache] {%s} NOT deleted", key));
         }
-        System.out.println(String.format("[cache] delete operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
     
     public static void flush() {
@@ -346,7 +332,7 @@ public class CacheFactory {
         
         log.fine("get all programInfo keys from ch" + channelId + " in format " + format);
         
-        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i++) {
+        for (int i = 0; i < PlayerApiService.MAX_EPISODES; i += PlayerApiService.PAGING_ROWS) {
             
             String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == ApiContext.FORMAT_JSON) ? "json" : "text"); 
             
@@ -447,4 +433,13 @@ public class CacheFactory {
         return keys;
     }
     
+    public static String getFindByIdKey(String className, long id) {
+        
+        return String.format("%s.findById(%d)", className, id);
+    }
+    
+    public static String getChannelCntItemKey(long channelId) {
+        
+        return String.format("NnChannel.getCntItem(%d)", channelId);
+    }
 }

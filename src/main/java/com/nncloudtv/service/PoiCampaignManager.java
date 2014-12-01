@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 
@@ -27,7 +28,7 @@ public class PoiCampaignManager {
             return null;
         }
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (campaign.getCreateDate() == null) {
             campaign.setCreateDate(now);
         }

@@ -81,7 +81,7 @@ public class FacebookLibTest {
         final String uri = "uri";
         final String fbLoginUri = "fbLoginUri";
         final Long msoId = (long) 1;
-        Mso mso = new Mso(Mso.NAME_9X9, "intro", "contactEmail", Mso.TYPE_NN);
+        Mso mso = new Mso(Mso.NAME_SYS, "intro", "contactEmail", Mso.TYPE_NN);
         mso.setId(msoId);
         
         // mock data
@@ -158,7 +158,7 @@ public class FacebookLibTest {
         // input arguments
         final String shortLivedAccessToken = "shortLivedAccessToken";
         final Long msoId = (long) 1;
-        Mso mso = new Mso(Mso.NAME_9X9, "intro", "contactEmail", Mso.TYPE_NN);
+        Mso mso = new Mso(Mso.NAME_SYS, "intro", "contactEmail", Mso.TYPE_NN);
         mso.setId(msoId);
         
         // mock data
@@ -234,7 +234,7 @@ public class FacebookLibTest {
         final String referrer = "http://www.mock.com/signin";
         final String fbLoginUri = "http://www.localhost/fb/login";
         final Long msoId = (long) 1;
-        Mso mso = new Mso(Mso.NAME_9X9, "intro", "contactEmail", Mso.TYPE_NN);
+        Mso mso = new Mso(Mso.NAME_SYS, "intro", "contactEmail", Mso.TYPE_NN);
         mso.setId(msoId);
         
         // mock data

@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -23,6 +24,7 @@ import com.nncloudtv.model.Poi;
 import com.nncloudtv.model.PoiCampaign;
 import com.nncloudtv.model.PoiEvent;
 import com.nncloudtv.model.PoiPoint;
+import com.nncloudtv.service.PoiPointManager;
 import com.nncloudtv.service.TagManager;
 
 @Controller
@@ -628,11 +630,8 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
-        if (points == null) {
-            return new ArrayList<PoiPoint>();
-        }
-        
+        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgramId(program.getId());
+        Collections.sort(points, PoiPointManager.getStartTimeComparator());
         for (PoiPoint point : points) {
             point.setName(NnStringUtil.revertHtml(point.getName()));
         }
@@ -731,9 +730,9 @@ public class ApiPoi extends ApiGeneric {
         }
         point.setActive(active);
         
-        PoiPoint result = NNF.getPoiPointMngr().create(point);
-        
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.GET)
@@ -748,13 +747,14 @@ public class ApiPoi extends ApiGeneric {
             return null;
         }
         
-        PoiPoint result = NNF.getPoiPointMngr().findById(poiPointId);
-        if (result == null) {
+        PoiPoint point = NNF.getPoiPointMngr().findById(poiPointId);
+        if (point == null) {
             notFound(resp, "PoiPoint Not Found");
             return null;
         }
         
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{pointId}", method = RequestMethod.PUT)
@@ -857,8 +857,9 @@ public class ApiPoi extends ApiGeneric {
             point.setActive(active);
         }
         
-        PoiPoint result = NNF.getPoiPointMngr().save(point);
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
     
     @RequestMapping(value = "poi_points/{poiPointId}", method = RequestMethod.DELETE)
@@ -1269,8 +1270,8 @@ public class ApiPoi extends ApiGeneric {
         }
         point.setActive(active);
         
-        PoiPoint result = NNF.getPoiPointMngr().create(point);
-        
-        return result.setName(NnStringUtil.revertHtml(result.getName()));
+        point = NNF.getPoiPointMngr().save(point);
+        point.setName(NnStringUtil.revertHtml(point.getName()));
+        return point;
     }
 }

@@ -37,6 +37,7 @@ import com.nncloudtv.service.CategoryService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.MsoPromotionManager;
+import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.service.SetService;
 import com.nncloudtv.service.TagManager;
@@ -563,9 +564,11 @@ public class ApiMso extends ApiGeneric {
             forbidden(resp);
             return null;
         }
-        
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> results = NNF.getSetService().getChannels(set.getId());
-        results = NNF.getChannelMngr().normalize(results);
+        for (NnChannel channel : results)
+            channelMngr.populateCntItem(channel);
+        results = channelMngr.normalize(results);
         
         return results;
     }
@@ -1540,8 +1543,7 @@ public class ApiMso extends ApiGeneric {
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            Date now = new Date();
-            notification.setPublishDate(now);
+            notification.setPublishDate(NnDateUtil.now());
             notification = NNF.getMsoNotiMngr().save(notification);
         }
         
@@ -1605,7 +1607,7 @@ public class ApiMso extends ApiGeneric {
             QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             
             notification.setScheduleDate(null);
-            notification.setPublishDate(new Date());
+            notification.setPublishDate(NnDateUtil.now());
         }
         
         NNF.getMsoNotiMngr().saveAll(notifications);
@@ -1705,7 +1707,7 @@ public class ApiMso extends ApiGeneric {
                 QueueFactory.add("/notify/apns?id=" + notification.getId(), null);
             }
             
-            notification.setPublishDate(new Date());
+            notification.setPublishDate(NnDateUtil.now());
             notification.setScheduleDate(null);
             notification = NNF.getMsoNotiMngr().save(notification);
         }

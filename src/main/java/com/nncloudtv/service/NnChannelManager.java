@@ -140,7 +140,7 @@ public class NnChannelManager {
         }
         channel.setPublic(false);
         channel.setLang(lang);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);
         channel = this.save(channel);
@@ -161,7 +161,7 @@ public class NnChannelManager {
         if (url == null) 
             return null;
         
-        NnChannel channel = this.findBySourceUrl(url);        
+        NnChannel channel = this.findBySourceUrl(url);
         if (channel != null) {
             log.info("submit a duplicate channel:" + channel.getId());
             return channel; 
@@ -174,11 +174,11 @@ public class NnChannelManager {
         channel.setPublic(true);
         channel.setLang(lang);
         channel.setSphere(lang);
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
         channel.setUpdateDate(now);
-        channel = this.save(channel);
-        return channel;
+        
+        return save(channel);
     }
     
     //check existence is your responsibility (for now)
@@ -188,12 +188,12 @@ public class NnChannelManager {
         channel.setStatus(NnChannel.STATUS_PROCESSING);
         channel.setContentType(NnChannel.CONTENTTYPE_YOUTUBE_CHANNEL);
         channel.setPublic(false);
-        channel.setLang(LocaleTable.LANG_EN);        
-        Date now = new Date();
+        channel.setLang(LocaleTable.LANG_EN);
+        Date now = NnDateUtil.now();
         channel.setCreateDate(now);
-        channel.setUpdateDate(now);  
-        this.save(channel);
-        return channel;
+        channel.setUpdateDate(now);
+        
+        return save(channel);
     }
     
     //process tag text enter by users
@@ -445,7 +445,7 @@ public class NnChannelManager {
      * No deletion so we can keep track of blacklist urls 
      */
     public void delete(NnChannel channel) {
-    }        
+    }
     
     //the url has to be verified(verifyUrl) first
     public short getContentTypeByUrl(String url) {
@@ -772,8 +772,9 @@ public class NnChannelManager {
         for (NnChannel channel : channels) {
             
             keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
+            keys.add(CacheFactory.getChannelCntItemKey(channel.getId()));
         }
-        CacheFactory.delete(keys);
+        CacheFactory.deleteAll(keys);
     }
     
     public void resetCache(long channelId) {
@@ -781,7 +782,8 @@ public class NnChannelManager {
         log.info("reset channel info cache = " + channelId);
         
         List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
-        CacheFactory.delete(keys);
+        keys.add(CacheFactory.getChannelCntItemKey(channelId));
+        CacheFactory.deleteAll(keys);
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {
@@ -1228,6 +1230,22 @@ public class NnChannelManager {
             CacheFactory.set(cacheKey, lineup);
             return lineup;
         }
+    }
+    
+    public void populateCntItem(NnChannel channel) {
+        
+        if (channel == null) return;
+        
+        String cacheKey = CacheFactory.getChannelCntItemKey(channel.getId());
+        Short cntItem = (Short) CacheFactory.get(cacheKey);
+        if (cntItem != null) {
+            
+            channel.setCntItem(cntItem);
+            return;
+        }
+        cntItem = (short) NNF.getItemMngr().findByChannelId(channel.getId()).size();
+        channel.setCntItem(cntItem);
+        CacheFactory.set(cacheKey, cntItem);
     }
     
     public NnChannel populateCntView(NnChannel channel) {

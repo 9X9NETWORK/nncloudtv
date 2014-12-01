@@ -10,13 +10,15 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
+import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
 
-public class GenericDao<T> {
+public class GenericDao<T extends PersistentBaseModel> {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
@@ -53,15 +55,14 @@ public class GenericDao<T> {
     public T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        String msg = String.format("[dao] %s.save()", daoClassName);
-        System.out.println(msg);
         try {
-            pm.makePersistent(dao);
-            dao = pm.detachCopy(dao);
+            dao = pm.detachCopy(pm.makePersistent(dao));
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
+        System.out.println(String.format("[dao] %s.save(%d)", daoClassName, dao.getId()));
+        if (dao.isCachable())
+            CacheFactory.delete(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
         return dao;
     }
     
@@ -69,9 +70,8 @@ public class GenericDao<T> {
         
         if (list == null) return null;
         long before = NnDateUtil.timestamp();
+        System.out.println(String.format("[dao] %s.saveAll()", daoClassName));
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.saveAll()", daoClassName);
-        System.out.println(msg);
         Transaction tx = pm.currentTransaction();
         try {
             tx.begin();
@@ -83,34 +83,44 @@ public class GenericDao<T> {
                 tx.rollback();
             }
             pm.close();
-            System.out.println(String.format("[dao] costs %d miliseconds", NnDateUtil.timestamp() - before));
         }
-        CounterFactory.increment(msg);
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list) {
+            if (dao.isCachable())
+                cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        }
+        CacheFactory.deleteAll(cacheKeys);
+        System.out.println(String.format("[dao] saving %d objects costs %d miliseconds", list.size(), NnDateUtil.timestamp() - before));
         return list;
     }
     
     public void delete(T dao) {
         
         if (dao == null) { return; }
+        System.out.println(String.format("[dao] %s.delete(%d)", daoClassName, dao.getId()));
+        if (dao.isCachable())
+            CacheFactory.delete(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.delete()", daoClassName);
-        System.out.println(msg);
         try {
             pm.deletePersistent(dao);
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
     }
     
     public void deleteAll(Collection<T> list) {
         
         if (list == null || list.isEmpty()) return;
-        
+        long before = NnDateUtil.timestamp();
+        System.out.println(String.format("[dao] %s.deleteAll()", daoClassName));
+        List<String> cacheKeys = new ArrayList<String>();
+        for (T dao : list) {
+            if (dao.isCachable())
+                cacheKeys.add(CacheFactory.getFindByIdKey(daoClassName, dao.getId()));
+        }
+        CacheFactory.deleteAll(cacheKeys);
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
-        String msg = String.format("[dao] %s.deleteAll()", daoClassName);
-        System.out.println(msg);
         try {
             tx.begin();
             pm.deletePersistentAll(list);
@@ -122,13 +132,12 @@ public class GenericDao<T> {
             }
             pm.close();
         }
-        CounterFactory.increment(msg);
+        System.out.println(String.format("[dao] deleteAll() costs %d miliseconds", NnDateUtil.timestamp() - before));
     }
     
     /**
-     * Get total number of objects
+     * Get total number of objects w/o filter
      */
-    
     public int total() {
         
         return total(null);
@@ -149,7 +158,6 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return result;
     }
     
@@ -161,9 +169,8 @@ public class GenericDao<T> {
      * @param sort   sorting field
      */
     public List<T> list(int page, int limit, String sort) {
+        System.out.println(String.format("[dao] %s.list(%d, %d, \"%s\")", daoClassName, page, limit, sort));
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.list(%d, %d, \"%s\")", daoClassName, page, limit, sort);
-        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
@@ -177,14 +184,12 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return results;
     }
     
     public List<T> list(long page, long limit, String sort, String filter) {
+        System.out.println(String.format("[dao] %s.list(%d, %d, \"%s\", \"%s\")", daoClassName, page, limit, sort, filter));
         PersistenceManager pm = getPersistenceManager();
-        String msg = String.format("[dao] %s.list(%d, %d, \"%s\", \"%s\")", daoClassName, page, limit, sort, filter);
-        System.out.println(msg);
         List<T> results;
         try {
             Query query = pm.newQuery(daoClass);
@@ -200,7 +205,6 @@ public class GenericDao<T> {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(msg);
         return results;
     }
     
@@ -224,35 +228,42 @@ public class GenericDao<T> {
     }
     
     public T findById(String idStr) {
-        
         if (idStr == null || !NnStringUtil.isDigits(idStr)) {
-            
             return null;
         }
-        
         long id = 0;
         try {
             id = Long.valueOf(idStr);
-            
         } catch(NumberFormatException e) {
-            
             return null;
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%s)", daoClassName, id));
-        return findById(id);
+        return findById(id, getPersistenceManager());
     }
     
     public T findById(long id) {
         
-        PersistenceManager pm = getPersistenceManager();
+        return findById(id, getPersistenceManager());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public T findById(long id, PersistenceManager pm) {
+        
         T dao = null;
+        String cacheKey = CacheFactory.getFindByIdKey(daoClassName, id);
+        dao = (T) CacheFactory.get(cacheKey);
+        if (dao != null) { // hit
+            CounterFactory.increment("HIT " + cacheKey);
+            return dao;
+        }
+        CounterFactory.increment("MISS " + cacheKey);
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
-        CounterFactory.increment(String.format("[dao] %s.findById(%d)", daoClassName, id));
+        if (dao != null && dao.isCachable())
+            CacheFactory.set(cacheKey, dao);
         return dao;
     }
     
@@ -318,7 +329,6 @@ public class GenericDao<T> {
             
             pm.close();
         }
-        CounterFactory.increment("[dao] sql_query");
         return detached;
     }
     

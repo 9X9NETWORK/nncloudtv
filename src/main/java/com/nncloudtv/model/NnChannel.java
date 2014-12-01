@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -11,6 +10,7 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.stream.YouTubeLib;
 
@@ -18,13 +18,26 @@ import com.nncloudtv.lib.stream.YouTubeLib;
  * a Channel
  */
 @PersistenceCapable(table = "nnchannel", detachable = "true")
-public class NnChannel implements Serializable {
+public class NnChannel implements PersistentModel {
     
-    private static final long serialVersionUID = 6138621615980949044L;
+    private static final long serialVersionUID = -110451972264224377L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.EXTENDED_STRING_LENGTH)
@@ -165,6 +178,9 @@ public class NnChannel implements Serializable {
     @NotPersistent
     private String recentlyWatchedProgram;
     
+    @NotPersistent
+    private short cntItem;     // IAP item count
+    
     @Persistent
     private int cntEpisode;   // episode count
     
@@ -178,7 +194,7 @@ public class NnChannel implements Serializable {
     private long cntView;     // viewing count, in shard table
     
     @NotPersistent
-    private long cntVisit;    // cnt visit count
+    private long cntVisit;    // visit count
     
     @Persistent 
     private Date createDate;
@@ -230,21 +246,13 @@ public class NnChannel implements Serializable {
         this.name = name;
         this.intro = intro;
         this.imageUrl = imageUrl;
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         this.createDate = now;
         this.updateDate = now;
     }
     
     public NnChannel(String sourceUrl) {
         this.sourceUrl = sourceUrl;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public String getFakeId(String userProfileUrl) {
@@ -603,6 +611,14 @@ public class NnChannel implements Serializable {
     public void setMoreImageUrl(String moreImageUrl) {
     
         this.moreImageUrl = moreImageUrl;
+    }
+    
+    public short getCntItem() {
+        return cntItem;
+    }
+    
+    public void setCntItem(short cntItem) {
+        this.cntItem = cntItem;
     }
     
     public long getCntVisit() {

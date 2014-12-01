@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
@@ -11,17 +10,30 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.nncloudtv.lib.NnStringUtil;
 
-/*
+/**
  * Mso's configurations
  */
 @PersistenceCapable(table = "mso_config", detachable = "true")
-public class MsoConfig implements Serializable  {
+public class MsoConfig implements PersistentModel {
     
-    private static final long serialVersionUID = -5535237161784792007L;
-
-	@PrimaryKey
+    private static final long serialVersionUID = -568214654178531290L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
+    
+    @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long msoId;
@@ -132,18 +144,10 @@ public class MsoConfig implements Serializable  {
         this.value = value;
     }
     
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public long getMsoId() {
         return msoId;
     }
-
+    
     public void setMsoId(long msoId) {
         this.msoId = msoId;
     }
@@ -151,33 +155,33 @@ public class MsoConfig implements Serializable  {
     public String getItem() {
         return item;
     }
-
+    
     public void setItem(String item) {
         this.item = item;
     }
-
+    
     public String getValue() {
         return value;
     }
-
+    
     public void setValue(String value) {
         this.value = value;
     }
-
+    
     public Date getCreateDate() {
         return createDate;
     }
-
+    
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
-    }        
+    }
     
 }

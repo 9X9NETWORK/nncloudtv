@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "ad_placement", detachable = "true")
-public class AdPlacement {
+public class AdPlacement implements PersistentModel {
+    
+    private static final long serialVersionUID = -4383401775754927693L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     long msoId;
@@ -61,14 +76,6 @@ public class AdPlacement {
         this.type = type;
         this.seq = 0;
         this.status = ON;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getMsoId() {

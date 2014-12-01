@@ -1,6 +1,5 @@
 package com.nncloudtv.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.Column;
@@ -9,22 +8,37 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable(table="pdr", detachable="true")
-public class Pdr implements Serializable {    
-    
-    private static final long serialVersionUID = 1064168991300530081L;
+import com.nncloudtv.lib.NnStringUtil;
 
+@PersistenceCapable(table = "pdr", detachable = "true")
+public class Pdr implements PersistentBaseModel {
+    
+    private static final long serialVersionUID = 4323042153929017674L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
+    
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
     
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
+    
     @Persistent
     private long userId;
-
+    
     //when looking up NnUser, token and userId should find the same user 
     //for easier lookup        
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String userToken;
     
     @Persistent
@@ -33,21 +47,21 @@ public class Pdr implements Serializable {
     //when looking up NnDevice, token and deviceId should find the same device 
     //for easier lookup        
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String deviceToken;
     
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String session;
-
+    
     @Persistent
-    @Column(jdbcType="VARCHAR", length=255)
+    @Column(jdbcType = NnStringUtil.VARCHAR, length = NnStringUtil.NORMAL_STRING_LENGTH)
     private String ip;
-        
+    
     @Persistent
-    @Column(jdbcType="LONGVARCHAR", length=100000)
+    @Column(jdbcType = NnStringUtil.LONGVARCHAR, length = NnStringUtil.LONGVARCHAR_LENGTH)
     private String detail;    
-
+    
     @Persistent
     private Date updateDate;
     
@@ -61,7 +75,7 @@ public class Pdr implements Serializable {
         this.session = session;
         if (user != null) {
             this.userId = user.getId();
-            this.userToken = user.getToken();            
+            this.userToken = user.getToken();
         }
         if (device != null) {
             this.deviceId = device.getId();
@@ -73,73 +87,64 @@ public class Pdr implements Serializable {
     public long getUserId() {
         return userId;
     }
-
+    
     public void setUserId(long userId) {
         this.userId = userId;
     }
-
+    
     public String getDetail() {
         return detail;
     }
-
+    
     public void setDetail(String detail) {
         this.detail = detail;
     }
-
+    
     public Date getUpdateDate() {
         return updateDate;
     }
-
+    
     public void setUpdateDate(Date updateDate) {
         this.updateDate = updateDate;
     }
-
+    
     public String getSession() {
         return session;
     }
-
+    
     public void setSession(String session) {
         this.session = session;
     }
-
+    
     public String getUserToken() {
         return userToken;
     }
-
+    
     public void setUserToken(String userToken) {
         this.userToken = userToken;
     }
-
+    
     public long getDeviceId() {
         return deviceId;
     }
-
+    
     public void setDeviceId(long deviceId) {
         this.deviceId = deviceId;
     }
-
+    
     public String getDeviceToken() {
         return deviceToken;
     }
-
+    
     public void setDeviceToken(String deviceToken) {
         this.deviceToken = deviceToken;
     }
-
+    
     public String getIp() {
         return ip;
     }
-
+    
     public void setIp(String ip) {
         this.ip = ip;
     }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoPromotion;
 
 @Service
@@ -29,7 +30,7 @@ public class MsoPromotionManager {
     
     public MsoPromotion save(MsoPromotion promotion) {
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (promotion.getCreateDate() == null) {
             

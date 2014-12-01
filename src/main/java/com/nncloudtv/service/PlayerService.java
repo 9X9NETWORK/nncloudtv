@@ -41,7 +41,7 @@ public class PlayerService {
         if (msoName != null) {
             msoName = msoName.toLowerCase();
         } else {
-            msoName = Mso.NAME_9X9;
+            msoName = Mso.NAME_SYS;
         }
         
         // bind favicon
@@ -77,7 +77,7 @@ public class PlayerService {
     		}
     	} 
     	String msoDomain = "www.9x9.tv";
-    	if (mso != null && !mso.equals(Mso.NAME_9X9))
+    	if (mso != null && !mso.equals(Mso.NAME_SYS))
     		msoDomain = mso + ".9x9.tv"; 
     	reportUrl += "?mso=" + msoDomain;
     	return reportUrl;

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoNotification;
@@ -41,7 +42,6 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<MsoNotification> results;
-        Date now = new Date();
         try {
             Query query = pm.newQuery(MsoNotification.class);
             String dateFilter = "scheduleDate > now";
@@ -56,8 +56,8 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
             query.setOrdering("scheduleDate asc");
             query.setRange((page - 1) * limit, page * limit);
             @SuppressWarnings("unchecked")
-            List<MsoNotification> tmp = (List<MsoNotification>)query.execute(now);
-            results = (List<MsoNotification>)pm.detachCopyAll(tmp);
+            List<MsoNotification> tmp = (List<MsoNotification>) query.execute(NnDateUtil.now());
+            results = (List<MsoNotification>) pm.detachCopyAll(tmp);
         } finally {
             pm.close();
         }
@@ -68,7 +68,6 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
         
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         List<MsoNotification> results;
-        Date now = new Date();
         try {
             Query query = pm.newQuery(MsoNotification.class);
             String filter = "scheduleDate > now && scheduleDate < dueDate";
@@ -77,7 +76,7 @@ public class MsoNotificationDao extends GenericDao<MsoNotification> {
             query.declareParameters("Date now, Date dueDate");
             query.setOrdering("createDate asc");
             @SuppressWarnings("unchecked")
-            List<MsoNotification> tmp = (List<MsoNotification>)query.execute(now, dueDate);
+            List<MsoNotification> tmp = (List<MsoNotification>)query.execute(NnDateUtil.now(), dueDate);
             results = (List<MsoNotification>)pm.detachCopyAll(tmp);
         } finally {
             pm.close();

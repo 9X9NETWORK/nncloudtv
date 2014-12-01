@@ -13,7 +13,15 @@ public class NnDateUtil {
     
     public static Date now() {
         
-        return new Date();
+        return new Date() {
+            
+            private static final long serialVersionUID = -7165289423942509938L;
+            
+            @Override
+            protected void finalize() throws Throwable {
+                NnLogUtil.logFinalize(getClass().getName());
+            }
+        };
     }
     
     public static long timestamp() {

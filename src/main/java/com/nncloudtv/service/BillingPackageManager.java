@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.BillingPackage;
 
 @Service
@@ -55,7 +56,7 @@ public class BillingPackageManager {
     
     public BillingPackage save(BillingPackage billingPackage) {
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         if (billingPackage.getCreateDate() == null) {
             
             billingPackage.setCreateDate(now);

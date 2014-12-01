@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag_display", detachable = "true")
-public class SysTagDisplay {
+public class SysTagDisplay implements PersistentBaseModel {
+    
+    private static final long serialVersionUID = 7258016865351679922L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     long systagId;
@@ -72,14 +87,6 @@ public class SysTagDisplay {
     
     public void setBannerImageUrl2(String bannerImageUrl2) {
         this.bannerImageUrl2 = bannerImageUrl2;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getSystagId() {

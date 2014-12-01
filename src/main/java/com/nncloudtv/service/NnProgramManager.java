@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class NnProgramManager {
     }
     
     public void create(NnChannel channel, NnProgram program) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         program.setCreateDate(now);
         program.setUpdateDate(now);
         program.setChannelId(channel.getId());
@@ -87,9 +88,7 @@ public class NnProgramManager {
      * @param programs
      * @return programs
      */
-    public Collection<NnProgram> save(Collection<NnProgram> programs) {
-        
-        List<Long> channelIds = new ArrayList<Long>();
+    public Collection<NnProgram> saveAll(Collection<NnProgram> programs) {
         
         for (NnProgram program : programs) {
             Date now = NnDateUtil.now();
@@ -98,20 +97,9 @@ public class NnProgramManager {
             if (program.getUpdateDate() == null) {
                 program.setUpdateDate(now);
             }
-            
-            if (channelIds.indexOf(program.getChannelId()) < 0) {
-                channelIds.add(program.getChannelId());
-            }
         }
         
-        programs = dao.saveAll(programs);
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            resetCache(channelId);
-        }
-        
-        return programs;
+        return dao.saveAll(programs);
     }
     
     public NnProgram save(NnProgram program) {
@@ -120,85 +108,51 @@ public class NnProgramManager {
             return program;
         }
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (program.getCreateDate() == null)
             program.setCreateDate(now);
         
         program.setUpdateDate(now);
-        program = dao.save(program);
+        return dao.save(program);
         
-        resetCache(program.getChannelId());
-        
-        return program;
     }
     
     public void delete(NnProgram program) {
         
-        if (program == null) {
-            return;
-        }
+        if (program == null) return;
         
         // delete titleCards
         TitleCardManager titleCardMngr = new TitleCardManager();
-        List<TitleCard> titleCards = titleCardMngr.findByProgramId(program.getId());
-        titleCardMngr.delete(titleCards);
+        titleCardMngr.deleteAll(titleCardMngr.findByProgramId(program.getId()));
         
         // delete poiPoints at program level
-        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
-        if (points != null && points.size() > 0) {
-            NNF.getPoiPointMngr().delete(points);
-        }
+        PoiPointManager pointMngr = NNF.getPoiPointMngr();
+        pointMngr.delete(pointMngr.findByProgramId(program.getId()));
         
-        long cId = program.getChannelId();
         dao.delete(program);
-        resetCache(cId);
     }
     
-    public void delete(List<NnProgram> programs) {
+    public void deleteAll(List<NnProgram> programs) {
         
         if (programs == null || programs.size() == 0) {
             return;
         }
         
         // delete titleCards, delete poiPoints at program level
+        PoiPointManager pointMngr = NNF.getPoiPointMngr();
         TitleCardManager titlecardMngr = new TitleCardManager();
-        List<TitleCard> titlecards = null;
-        List<TitleCard> titlecardDeleteList = new ArrayList<TitleCard>();
-        List<PoiPoint> points = null;
-        List<PoiPoint> pointDeleteList = new ArrayList<PoiPoint>();
-        for (NnProgram program : programs) { // TODO : sql in loop is bad
-            titlecards = null;
-            points = null;
-            
-            titlecards = titlecardMngr.findByProgramId(program.getId());
-            if (titlecards != null && titlecards.size() > 0) {
-                titlecardDeleteList.addAll(titlecards);
-            }
-            
-            points = NNF.getPoiPointMngr().findByProgram(program.getId());
-            if (points != null && points.size() > 0) {
-                pointDeleteList.addAll(points);
-            }
-        }
-        titlecardMngr.delete(titlecardDeleteList);
-        NNF.getPoiPointMngr().delete(pointDeleteList);
-        
-        List<Long> channelIds = new ArrayList<Long>();
-        
+        List<TitleCard> titleCards = new ArrayList<TitleCard>();
+        List<PoiPoint> poiPoints = new ArrayList<PoiPoint>();
         for (NnProgram program : programs) {
             
-            if (channelIds.indexOf(program.getChannelId()) < 0) {
-                channelIds.add(program.getChannelId());
-            }
+            titleCards.addAll(titlecardMngr.findByProgramId(program.getId()));
+            poiPoints.addAll(pointMngr.findByProgramId(program.getId()));
         }
+        titlecardMngr.deleteAll(titleCards);
+        pointMngr.delete(poiPoints);
         
         dao.deleteAll(programs);
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            resetCache(channelId);
-        }
     }
     
     public NnProgram findByChannelAndStorageId(long channelId, String storageId) {
@@ -251,11 +205,11 @@ public class NnProgramManager {
             if (programInfo != null) {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", cacheKey = " + cacheKey);
                 if (format == ApiContext.FORMAT_PLAIN) {
-                    output += (String)programInfo;
-                    CacheFactory.set(cacheKey, programInfo);
+                    output += (String) programInfo;
+                    CacheFactory.set(cacheKey, (String) programInfo);
                 } else {
-                    json.addAll((ArrayList<ProgramInfo>)programInfo);
-                    CacheFactory.set(cacheKey, programInfo);
+                    json.addAll((ArrayList<ProgramInfo>) programInfo);
+                    CacheFactory.set(cacheKey, (ArrayList<ProgramInfo>) programInfo);
                 }
             } else {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", though its empty");
@@ -356,7 +310,7 @@ public class NnProgramManager {
         keys.addAll(CacheFactory.getAllChannelInfoKeys(channelId));
         
         log.info("cache key count = " + keys.size());
-        CacheFactory.delete(keys);
+        CacheFactory.deleteAll(keys);
     }
     
     public int total() {
@@ -396,7 +350,7 @@ public class NnProgramManager {
             programs.get(i).setSubSeq(i + 1);
         }
         
-        save(programs);
+        saveAll(programs);
         
     }
     
@@ -504,7 +458,7 @@ public class NnProgramManager {
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);
-                CacheFactory.set(cacheKey, output);
+                CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
             }
         }
         return output;
@@ -1161,7 +1115,7 @@ public class NnProgramManager {
             imageUrl = imageUrl.replaceAll(regexPod, pod);
         }
         if (program.getPublishDate() == null) {
-            program.setPublishDate(new Date()); //should not happen, just in case
+            program.setPublishDate(NnDateUtil.now()); //should not happen, just in case
         }
         
         long   channelId    = program.getChannelId();
