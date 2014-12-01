@@ -23,7 +23,8 @@ public class CacheFactory {
     protected static final Logger log = Logger.getLogger(CacheFactory.class.getName());
     
     public static final int EXP_DEFAULT = 2592000; // 30 days
-    public static final int EXP_SHORT = 100;  // seconds
+    public static final int EXP_ONE_DAY = 86400;   // one day
+    public static final int EXP_SHORT = 100;       // 100 seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
     
