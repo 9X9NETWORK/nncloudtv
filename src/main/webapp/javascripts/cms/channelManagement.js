@@ -936,7 +936,6 @@ var page$ = {
         });
       }
       $('#program_list_readonly').show();
-      cms.initAddthis();
     },
     displayProgramList: function(programs) {
       for (i in programs) {
@@ -1015,7 +1014,6 @@ var page$ = {
         });
       }
       $('#program_list').show();
-      cms.initAddthis();
     },
     displayProgramListReadonly: function(programs) {
       for (i in programs) {
@@ -1065,7 +1063,6 @@ var page$ = {
         });
       }
       $('#program_list_readonly').show();
-      cms.initAddthis();
     }
   },
   channelDetail: {
@@ -1492,7 +1489,6 @@ var page$ = {
           });
         }
         $('#channel_list').show();
-        cms.initAddthis();
         log('channel count: ' + $('.channel_info_block_cloned').size());
         var pivot = $('.channel_info_block_cloned').get(0);
         $(pivot).click();
