@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnUser;
@@ -39,23 +38,22 @@ public class PlayerController {
         return "error/exception";
     }
     
-    @RequestMapping("gwallet") 
+    @RequestMapping("gwallet")
     public @ResponseBody String gwallet(HttpServletRequest req, HttpServletResponse resp) {
-    	try {
-    		 StringBuilder buffer = new StringBuilder();
-    		 BufferedReader reader = req.getReader();
-    		 String line;
-    		 while ((line = reader.readLine()) != null) {
-    		    buffer.append(line);
-    		 }
-    		 String data = buffer.toString();
-    		 log.info("\n-----gwallet start----\n" + data + "\n-----gwallet end----\n");    		 
+        try {
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader reader = req.getReader();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+            }
+            String data = buffer.toString();
+            log.info("\n-----gwallet start----\n" + data + "\n-----gwallet end----\n");
         } catch (IOException e) {
-	        e.printStackTrace();
+            e.printStackTrace();
         }
         return "OK";
     }
-        
     
     @RequestMapping({"", "tv","10ft"})
     public String tv(@RequestParam(value="mso",required=false) String mso, 
@@ -152,9 +150,9 @@ public class PlayerController {
                        @RequestParam(value="jsp",required=false) String jsp,
                        @RequestParam(value="ch", required=false) String ch,
                        @RequestParam(value="ep", required=false) String ep) {
+        
         //additional params
         PlayerService service = new PlayerService();
-        ApiContext context = new ApiContext(req);
         
         Mso mso = NNF.getMsoMngr().getByNameFromCache(msoName);
         if (mso == null) {
@@ -163,34 +161,34 @@ public class PlayerController {
         String cid = channel != null ? channel : ch;
         String pid = episode != null ? episode : ep;
                 
-        if (mso.getType() == Mso.TYPE_FANAPP) {            
+        if (mso.getType() == Mso.TYPE_FANAPP) {
+            
             log.info("Fan app sharing");
             MsoConfig androidConfig = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.STORE_ANDROID);
             MsoConfig iosConfig = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.STORE_IOS);
-        	String androidStoreUrl = "market://details?id=tv.tv9x9.player";
-        	String iosStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";        	
+            String androidStoreUrl = "market://details?id=tv.tv9x9.player";
+            String iosStoreUrl = "https://itunes.apple.com/app/9x9.tv/id443352510?mt=8";
             if (androidConfig != null) {
             	androidStoreUrl = androidConfig.getValue();
             }
             if (iosConfig != null) {
             	iosStoreUrl = iosConfig.getValue();
             }
-        	String reportUrl = service.getGAReportUrl(ch, ep, mso.getName());
-        	model.addAttribute("reportUrl", reportUrl);
-        	model.addAttribute("androidStoreUrl", androidStoreUrl);
-        	model.addAttribute("iosStoreUrl", iosStoreUrl);
-        	model.addAttribute("brandName", mso.getName());
-        	return "player/fanapp";
-        } else {            
+            String reportUrl = service.getGAReportUrl(ch, ep, mso.getName());
+            model.addAttribute("reportUrl", reportUrl);
+            model.addAttribute("androidStoreUrl", androidStoreUrl);
+            model.addAttribute("iosStoreUrl", iosStoreUrl);
+            model.addAttribute("brandName", mso.getName());
+            return "player/fanapp";
+            
+        } else {
+            
             model = service.prepareBrand(model, mso.getName(), resp);
             model = service.prepareChannel(model, cid, mso.getName(), resp);
             model = service.prepareEpisode(model, pid, mso.getName(), resp);
+            model = service.preparePlayer(model, js, jsp, req);
             
-            String brandSharingUrl = NnStringUtil.getSharingUrl(false, context, cid, pid);
-            log.info("brand sharing url = " + brandSharingUrl);
-            model.addAttribute(PlayerService.META_URL, NnStringUtil.htmlSafeChars(brandSharingUrl));
-            
-            return "player/crawled";
+            return "player/zooatomics";
         }
     }
     
@@ -206,7 +204,7 @@ public class PlayerController {
     }    
     
     @RequestMapping("tanks")
-    public String tanks() {        
+    public String tanks() {
         return "player/tanks";
     }
     
@@ -214,20 +212,8 @@ public class PlayerController {
      * used for dns redirect watch dog 
      */
     @RequestMapping("9x9/wd")
-    public ResponseEntity<String> watchdog() {        
+    public ResponseEntity<String> watchdog() {
         return NnNetUtil.textReturn("OK");
     }
-    
-    /*
-    @RequestMapping("flipr")
-    public String flipr(HttpServletRequest request,) {        
-        Locale locale = request.getLocale();
-        if((locale.getCountry()=="TW")||(locale.getCountry()=="CN")) {
-            return "redirect:flipr/tw/";
-        } else {
-            return "redirect:flipr/en/";
-        }
-    }
-    */
     
 }

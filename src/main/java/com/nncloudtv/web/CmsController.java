@@ -127,7 +127,6 @@ public class CmsController {
                     else
                         return "cms/channelManagement";
                 }
-                
                 return "cms/" + cmsTab;
             } else if (cmsTab.equals("promotionTools") || cmsTab.equals("setup") || cmsTab.equals("statistics")) {
                 return "cms/" + cmsTab;
