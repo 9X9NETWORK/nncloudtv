@@ -104,7 +104,7 @@ public class PlayerController {
         } catch (Throwable t) {
             NnLogUtil.logThrowable(t);
         }
-        return "player/mini";
+        return "player/zooatomics";
     }    
     
     /**
