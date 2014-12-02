@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.nncloudtv.lib.AmazonLib;
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -37,7 +36,6 @@ import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -547,12 +545,12 @@ public class DepotController {
         
         List<Counter> counters = NNF.getCounterDao().getViewCounters();
         log.info("reset counters size = " + counters.size());
-        for (Counter counter : counters) {
-            String counterName = counter.getCounterName();
-            long count = CounterFactory.getCount(counterName);
-            log.info(String.format("cache name = %s, value = %d", counterName, count));
-            CacheFactory.set(counterName, String.valueOf(count));
-        }
+//        for (Counter counter : counters) {
+//            String counterName = counter.getCounterName();
+//            long count = CounterFactory.getCount(counterName);
+//            log.info(String.format("cache name = %s, value = %d", counterName, count));
+//            CacheFactory.set(counterName, String.valueOf(count));
+//        }
         return "OK";
     }
     

@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import com.nncloudtv.model.Mso;
@@ -23,7 +22,8 @@ public class CacheFactory {
     protected static final Logger log = Logger.getLogger(CacheFactory.class.getName());
     
     public static final int EXP_DEFAULT = 2592000; // 30 days
-    public static final int EXP_SHORT = 100;  // seconds
+    public static final int EXP_ONE_DAY = 86400;   // one day
+    public static final int EXP_SHORT = 100;       // 100 seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
     
@@ -70,7 +70,13 @@ public class CacheFactory {
     private static MemcachedClient getClient() {
         try {
             if (isRunning && isEnabled)
-                return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
+                return new MemcachedClient(memcacheServers) {
+                    @Override
+                    protected void finalize() throws Throwable {
+                        NnLogUtil.logFinalize(getClass().getName());
+                    }
+                
+                };
         } catch (IOException e) {
             log.severe(e.getMessage());
         }
@@ -104,7 +110,12 @@ public class CacheFactory {
         // rebuild cache client
         MemcachedClient newCache = null;
         try {
-            newCache = isRunning ? new MemcachedClient(new BinaryConnectionFactory(), memcacheServers) : null;
+            newCache = isRunning ? new MemcachedClient(memcacheServers) {
+                @Override
+                protected void finalize() throws Throwable {
+                    NnLogUtil.logFinalize(getClass().getName());
+                }
+            } : null;
         } catch (IOException e) {
             log.severe("memcache io exception");
             log.severe(e.getMessage());
@@ -288,10 +299,10 @@ public class CacheFactory {
         return String.format("msoconfig(%d)(%s)", msoId, item);
     }
     
-    // example: mso(9x9)
+    // example: Mso.findByName(9x9)
     public static String getMsoObjectKey(String name) {
         
-        return String.format("mso(%s)", name);
+        return String.format("Mso.findByName(%s)", name);
     }
     
     // example: brandInfo(9x9)[json]

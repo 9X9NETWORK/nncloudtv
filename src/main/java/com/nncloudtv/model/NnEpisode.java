@@ -184,7 +184,7 @@ public class NnEpisode implements PersistentModel {
             NnLogUtil.logException(e);
             cntView = 0;
         }
-        CacheFactory.set(cacheName, String.valueOf(cntView));
+        CacheFactory.set(cacheName, String.valueOf(cntView), CacheFactory.EXP_ONE_DAY);
         return cntView;
     }
     

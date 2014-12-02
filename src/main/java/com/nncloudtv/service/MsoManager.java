@@ -464,14 +464,17 @@ public class MsoManager {
             Mso cached = (Mso) CacheFactory.get(cacheKey);
             if (cached != null) {
                 log.fine("get mso object from cache: " + name);
+                CounterFactory.increment("HIT " + cacheKey);
                 return cached;
             }
         } catch (Exception e) {
             log.info("memcache error");
         }        
+        CounterFactory.increment("MISS " + cacheKey);
         log.info("NOT get mso object from cache: " + name);
-        Mso mso = findByIdOrName(name);
-        CacheFactory.set(cacheKey, mso);
+        Mso mso = dao.findByName(name);
+        if (mso != null)
+            CacheFactory.set(cacheKey, mso);
         return mso;
     }
     
