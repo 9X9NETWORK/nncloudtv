@@ -31,8 +31,7 @@ public class ScheduledTask {
                              +   ", free = " + FileUtils.byteCountToDisplaySize(free));
         if (max == total && free < total / 100)
             log.severe("available memory is less than 1%");
-        if (free < total / 2)
-            System.gc(); // trigger garbage collection
+        System.gc(); // trigger garbage collection
     }
     
     @Scheduled(fixedDelay = MC_INTERVAL)
