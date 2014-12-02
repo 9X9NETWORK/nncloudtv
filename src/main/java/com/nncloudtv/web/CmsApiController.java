@@ -35,7 +35,6 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
-import com.nncloudtv.service.CntSubscribeManager;
 import com.nncloudtv.service.ContentWorkerService;
 import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.MsoManager;
@@ -128,10 +127,8 @@ public class CmsApiController {
             return new ArrayList<NnChannel>();
         List<NnChannel> cadidate = NNF.getSetService().getChannels(channelSet.getId());
         List<NnChannel> results = new ArrayList<NnChannel>();
-        CntSubscribeManager cntMngr = new CntSubscribeManager();
         for (NnChannel channel : cadidate) {
             if (isGood == null || !isGood || channel.getStatus() == NnChannel.STATUS_SUCCESS) {
-                channel.setCntSubscribe(cntMngr.findTotalCountByChannel(channel.getId()));
                 results.add(channel);
             }
         }
@@ -277,10 +274,6 @@ public class CmsApiController {
             
         }
         
-        CntSubscribeManager cntMngr = new CntSubscribeManager();
-        for (NnChannel channel : results) {
-            channel.setCntSubscribe(cntMngr.findTotalCountByChannel(channel.getId()));
-        }
         return results;
     }
     
