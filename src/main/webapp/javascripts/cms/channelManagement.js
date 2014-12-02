@@ -965,7 +965,7 @@ var page$ = {
         programInfoBlock.find('.program_info_type span').text(type);
         programInfoBlock.find('.program_info_updatedate span').text(cms.formatDate(programs[i].updateDate));
         // add this
-        var promoteUrl = 'http://' + location.host + '/view/p' + program.channelId + '/' + programId;
+        var promoteUrl = 'http://' + location.host + '/view?channel=' + program.channelId + '&episode=' + programId;
         programInfoBlock.find('.addthis_button_expanded').attr('addthis:url', promoteUrl + '&_=' + program.updateDate);
         var switchObject = programInfoBlock.find('.program_info_publish');
         if (programs[i]['public']) {
@@ -1037,7 +1037,7 @@ var page$ = {
         programInfoBlock.find('.program_info_type span').text(type);
         programInfoBlock.find('.program_info_updatedate span').text(cms.formatDate(programs[i].updateDate));
         // add this
-        var promoteUrl = 'http://' + location.host + '/view/p' + program.channelId + '/' + programId;
+        var promoteUrl = 'http://' + location.host + '/view?channel=' + program.channelId + '&episode=' + programId;
         programInfoBlock.find('.addthis_button_expanded').attr('addthis:url', promoteUrl + '&_=' + program.updateDate);
         var switchObject = programInfoBlock.find('.program_info_publish');
         if (programs[i]['public']) {
@@ -1415,7 +1415,7 @@ var page$ = {
           channelInfoBlock.find('.channel_info_subscribers span').text(channels[i].subscriptionCnt);
           channelInfoBlock.find('.channel_info_updatedate span').text(cms.formatDate(channels[i].updateDate, true));
           // add this
-          var promoteUrl = 'http://' + location.host + '/view/p' + channelId;
+          var promoteUrl = 'http://' + location.host + '/view?channel=' + channelId;
           channelInfoBlock.find('.addthis_button_expanded').attr('addthis:url', promoteUrl + '&_=' + channels[i].updateDate);
           var switchObject = channelInfoBlock.find('.channel_info_publish');
           if (channels[i]['public']) {
