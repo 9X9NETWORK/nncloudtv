@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
@@ -22,6 +23,7 @@ import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
+import com.nncloudtv.service.NnUserProfileManager;
 import com.nncloudtv.web.api.ApiContext;
 
 @Controller
@@ -114,11 +116,18 @@ public class CmsController {
             model = setAttributes(model, mso);
             model.addAttribute("locale", ctx.getLang());
             
-            if (cmsTab.equals("channelManagement") || cmsTab.equals("channelSetManagement")) {
+            if (cmsTab.equals("admin") || cmsTab.equals("channelManagement") || cmsTab.equals("channelSetManagement")) {
                 String policy = AmazonLib.buildS3Policy(MsoConfigManager.getS3UploadBucket(), "public-read", "");
                 model.addAttribute("s3Policy", policy);
                 model.addAttribute("s3Signature", AmazonLib.calculateRFC2104HMAC(policy, MsoConfigManager.getAWSKey()));
                 model.addAttribute("s3Id", MsoConfigManager.getAWSId());
+                if (cmsTab.equals("admin")) {
+                    if (NnUserProfileManager.checkPriv(nnuser, NnUserProfile.PRIV_PCS))
+                        return "cms/channelSetManagement";
+                    else
+                        return "cms/channelManagement";
+                }
+                
                 return "cms/" + cmsTab;
             } else if (cmsTab.equals("promotionTools") || cmsTab.equals("setup") || cmsTab.equals("statistics")) {
                 return "cms/" + cmsTab;
