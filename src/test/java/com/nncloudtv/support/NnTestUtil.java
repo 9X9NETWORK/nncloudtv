@@ -95,7 +95,7 @@ public class NnTestUtil {
         String jingleUrl = "jingleUrl";
         String preferredLangCode = "zh";
         
-        Mso mso = new Mso(name, "intro", "email", Mso.TYPE_NN);
+        Mso mso = new Mso(name, "intro", "email", Mso.TYPE_SYS);
         mso.setTitle(title);
         mso.setLogoUrl(logoUrl);
         mso.setJingleUrl(jingleUrl);

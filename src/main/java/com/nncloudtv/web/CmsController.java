@@ -1,20 +1,11 @@
-package com.nncloudtv.nncms.web;
+package com.nncloudtv.web;
 
-import java.io.IOException;
 import java.security.SignatureException;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import net.spy.memcached.MemcachedClient;
-
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,34 +15,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-import twitter4j.auth.AccessToken;
-import twitter4j.auth.RequestToken;
-
 import com.nncloudtv.lib.AmazonLib;
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.CookieHelper;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
-import com.nncloudtv.lib.NnNetUtil;
-import com.nncloudtv.model.LangTable;
 import com.nncloudtv.model.Mso;
+import com.nncloudtv.model.MsoConfig;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.service.AuthService;
+import com.nncloudtv.model.NnUserProfile;
 import com.nncloudtv.service.MsoConfigManager;
-import com.nncloudtv.service.MsoManager;
-import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.SessionService;
-import com.nncloudtv.web.CmsApiController;
+import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.web.api.ApiContext;
 
 @Controller
+@RequestMapping("cms")
 public class CmsController {
 	
 	protected static final Logger log = Logger.getLogger(CmsController.class.getName());
 	
 	private boolean isReadonlyMode() {
-		boolean readonly = MsoConfigManager.isInReadonlyMode(false);
+        boolean readonly = false;
+        MsoConfig config = NNF.getConfigMngr().findByItem(MsoConfig.RO);
+        if (config != null && config.getValue() != null && config.getValue().equals("1"))
+            readonly = true;
 		log.info("readonly mode: " + readonly);
 		return readonly;
 	}
@@ -66,11 +52,6 @@ public class CmsController {
 		return MsoConfigManager.getExternalRootPath();
 	}
 	
-	@ModelAttribute("piwik")
-	public String getPiwikDomain() {
-		return MsoConfigManager.getPiwikDomain();
-	}
-	
 	private Model setAttributes(Model model, Mso mso) {
 		
 		model.addAttribute("msoLogo", mso.getLogoUrl());
@@ -78,11 +59,7 @@ public class CmsController {
 		model.addAttribute("msoId", mso.getId());
 		model.addAttribute("msoType", mso.getType());
 		model.addAttribute("msoName", mso.getName());
-		if (mso.getType() == Mso.TYPE_TCO) {
-			model.addAttribute("logoutUrl", "/cms/logout");
-		} else {
-			model.addAttribute("logoutUrl", "/cms/" + mso.getName() + "/logout");
-		}
+        model.addAttribute("logoutUrl", "/api/logout");
 		
 		return model;
 	}
@@ -99,130 +76,66 @@ public class CmsController {
 		model.asMap().clear();
 		return "redirect:../";
 	}
-	/*
-	@RequestMapping(value = "channelManagement", method = RequestMethod.GET)
-	public String cmsChannelManagement(HttpServletRequest request, Model model) throws SignatureException {
-		
-		return genericCMSLogin(request, "channelManagement", model);
-	}
 	
-	@RequestMapping(value = "channelSetManagement", method = RequestMethod.GET)
-	public String cmsChannelSetManagement(HttpServletRequest request, Model model) throws SignatureException {
-		
-		return genericCMSLogin(request, "channelSetManagement", model);
-	}
-	
-	@RequestMapping(value = "promotionTools", method = RequestMethod.GET)
-	public String cmsPromotionTools(HttpServletRequest request, Model model) throws SignatureException {
-		
-		return genericCMSLogin(request, "promotionTools", model);
-	}
-	
-	@RequestMapping(value = "statistics", method = RequestMethod.GET)
-	public String cmsStatistics(HttpServletRequest request, Model model) throws SignatureException {
-		
-		return genericCMSLogin(request, "statistics", model);
-	}
-	
-	@RequestMapping(value = "admin", method = RequestMethod.GET)
-	public String cmsAdmin(HttpServletRequest request, Model model) throws SignatureException {
-		
-		return genericCMSLogin(request, "admin", model);
-	}
-	*/
-	@RequestMapping(value = "{cmsTab}", method = RequestMethod.GET)
-	public String genericCMSLogin(HttpServletRequest request, @PathVariable String cmsTab, Model model) throws SignatureException {
-		String userToken = CookieHelper.getCookie(request, CookieHelper.USER);
-		if (userToken == null) {
-			log.warning("user not login");
-			model.asMap().clear();
-			return "redirect:../9x9";
-		} else {
-			NnUserManager userMngr = new NnUserManager();
-			MsoManager msoMngr = new MsoManager();
-			
-			NnUser user = userMngr.findByToken(userToken);
-			if (user == null) {
-				log.warning("user not found");
-				return "error/404";
-			}
-			if (user.getType() == NnUser.TYPE_USER) {
-				// generate TCO account
-				Mso mso = new Mso(user.getEmail(), user.getIntro(), user.getEmail(), Mso.TYPE_TCO);
-				mso.setTitle(user.getName());
-				mso.setLang(LangTable.LANG_ZH);
-				mso.setLogoUrl(MsoConfigManager.getExternalRootPath() + "/images/9x9.tv.png");
-				log.info("msoId should be zero: " + mso.getId());
-				mso = msoMngr.save(mso);
-				if (mso == null || mso.getId() == 0) {
-					log.info("failed to migrate to TCO");
-					return "error/404";
-				}
-				log.info("migrate user to TCO: " + mso.getId());
-				user.setMsoId(mso.getId());
-				user.setType(NnUser.TYPE_TCO);
-				userMngr.save(user);
-			}
-			if (user.getType() == NnUser.TYPE_TCO) {
-				Mso mso = msoMngr.findById(user.getMsoId());
-				if (mso == null) {
-					log.warning("mso not found");
-					return "error/404";
-				} else if (mso.getType() != Mso.TYPE_TCO) {
-					log.warning("invalid mso type");
-					return "error/404";
-				}
-				if (isReadonlyMode()) {
-					model.addAttribute("msoLogo", mso.getLogoUrl());
-					return "cms/readonly";
-				}
-				if (cmsTab.equals("admin")) {
-					model.asMap().clear();
-					return "redirect:/channelManagement";
-				}
-				mso.setLogoUrl(MsoConfigManager.getExternalRootPath() + "/images/9x9.tv.png");
-				model = setAttributes(model, mso);
-				model.addAttribute("locale", request.getLocale().getLanguage());
-				if (cmsTab.equals("channelManagement") || cmsTab.equals("channelSetManagement")) {
-					String policy = AmazonLib.buildS3Policy(MsoConfigManager.getS3UploadBucket(), "public-read", "");
-					model.addAttribute("s3Policy", policy);
-					model.addAttribute("s3Signature", AmazonLib.calculateRFC2104HMAC(policy));
-					model.addAttribute("s3Id", AmazonLib.AWS_ID);
-					return "cms/" + cmsTab;
-				} else if (cmsTab.equals("promotionTools") || cmsTab.equals("setup") || cmsTab.equals("statistics")) {
-					return "cms/" + cmsTab;
-				} else {
-					return "error/404";
-				}
-			} else {
-				log.warning("invalid mso type");
-				return "error/404";
-			}
-		}
-	}
-	
-	@RequestMapping(value = "{msoName}/admin", method = RequestMethod.GET)
-	public String admin(HttpServletRequest request, HttpServletResponse response, @PathVariable("msoName") String msoName, Model model) throws SignatureException {
-		
-		SessionService sessionService = new SessionService(request);
-		HttpSession session = sessionService.getSession();
-		log.info("msoName = " + msoName);
-		MsoManager msoMngr = new MsoManager();
-		Mso mso = msoMngr.findByName(msoName);
+    @RequestMapping(value = "{cmsTab}", method = RequestMethod.GET)
+    public String genericCMSLogin(HttpServletRequest request, @PathVariable String cmsTab, Model model)
+            throws SignatureException {
+        
+        ApiContext ctx = new ApiContext(request);
+        NnUser user = ctx.getAuthenticatedUser();
+        if (user == null) {
+            
+            log.info("user not login");
+            model.asMap().clear();
+            return "redirect:../9x9";
+            
+        } else {
+            Mso mso = ctx.getMso();
+            if (isReadonlyMode()) {
+                model.addAttribute("msoLogo", mso.getLogoUrl());
+                return "cms/readonly";
+            }
+            mso.setLogoUrl(MsoConfigManager.getExternalRootPath() + "/images/9x9.tv.png");
+            model = setAttributes(model, mso);
+            model.addAttribute("locale", ctx.getLang());
+            if (cmsTab.equals("channelManagement") || cmsTab.equals("channelSetManagement")) {
+                String policy = AmazonLib.buildS3Policy(MsoConfigManager.getS3UploadBucket(), "public-read", "");
+                model.addAttribute("s3Policy", policy);
+                model.addAttribute("s3Signature", AmazonLib.calculateRFC2104HMAC(policy, MsoConfigManager.getAWSKey()));
+                model.addAttribute("s3Id", MsoConfigManager.getAWSId());
+                return "cms/" + cmsTab;
+            } else if (cmsTab.equals("promotionTools") || cmsTab.equals("setup") || cmsTab.equals("statistics")) {
+                return "cms/" + cmsTab;
+            } else {
+                return "error/404";
+            }
+        }
+    }
+    
+    @RequestMapping(value = "{msoName}/admin", method = RequestMethod.GET)
+    public String admin(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("msoName") String msoName, Model model) throws SignatureException {
+        
+        ApiContext ctx = new ApiContext(request);
+        
+        log.info("msoName = " + msoName);
+		Mso mso = NNF.getMsoMngr().findByName(msoName);
 		if (mso == null)
 			return "error/404";
 		if (isReadonlyMode()) {
 			model.addAttribute("msoLogo", mso.getLogoUrl());
 			return "cms/readonly";
 		}
+		NnUser user = ctx.getAuthenticatedUser(mso.getId());
 		
-		Mso sessionMso = (Mso)session.getAttribute("mso");
-		if (sessionMso != null && sessionMso.getId() == mso.getId()) {
+		if (user != null) {
 			model.asMap().clear();
-			if (mso.getType() == Mso.TYPE_ENTERPRISE)
-				return "redirect:/" + msoName + "/channelSetManagement";
+			if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS))
+				return "redirect:../channelSetManagement";
 			else
-				return "redirect:/" + msoName + "/channelManagement";
+				return "redirect:../channelManagement";
+			
+			
 		} else {
 			Cookie[] cookies = request.getCookies();
 			if (cookies != null) {
@@ -239,92 +152,84 @@ public class CmsController {
 			}
 			model.addAttribute("msoLogo", mso.getLogoUrl());
 			model.addAttribute("locale", request.getLocale().getLanguage());
-			sessionService.removeSession(response);
+			CookieHelper.deleteCookie(response, CookieHelper.USER);
 			return "cms/login";
 		}
 	}
 	
-	@RequestMapping(value = "{msoName}/admin", method = RequestMethod.POST)
-	public String login(HttpServletRequest request,
-	                    HttpServletResponse response,
-	                    Model model,
-	                    @RequestParam String email,
-	                    @RequestParam String password,
-	                    @RequestParam(required = false) Boolean rememberMe,
-	                    @PathVariable String msoName) {
-		
-		log.info(msoName);
-		log.info("email = " + email);
-		log.info("password = " + password);
-		log.info("rememberMe = " + rememberMe);
-		
-		SessionService sessionService = new SessionService(request);
-		AuthService authService = new AuthService();
-		MsoManager msoMngr = new MsoManager();
-		NnUserManager userMngr = new NnUserManager();
-		Locale locale = request.getLocale();
-		MessageSource messageSource = new ClassPathXmlApplicationContext("locale.xml");
-		
-		Mso mso = msoMngr.findByName(msoName);
-		if (mso == null)
-			return "error/404";
-		String msoLogo = mso.getLogoUrl();
-		if (isReadonlyMode()) {
-			model.addAttribute("msoLogo", msoLogo);
-			return "cms/readonly";
-		}
-		Mso msoAuth = authService.msoAuthenticate(email, password, mso.getId());
-		if (msoAuth == null) {
-			log.info("login failed");
-			NnUser user = userMngr.findMsoUser(mso);
-			String error;
-			if (user != null && user.getEmail().equals(email)) {
-				error = messageSource.getMessage("cms.warning.invalid_password", null, locale);
-			} else {
-				error = messageSource.getMessage("cms.warning.invalid_account", null, locale);
-			}
-			model.addAttribute("email", email);
-			model.addAttribute("password", password);
-			model.addAttribute("msoLogo", msoLogo);
-			model.addAttribute("error", error);
-			sessionService.removeSession(response);
-			return "cms/login";
-		}
-		
-		HttpSession session = sessionService.getSession();
-		session.setAttribute("mso", mso);
-		sessionService.saveSession(session, response);
-		
-		// set cookie
-		if (rememberMe != null && rememberMe) {
-			log.info("set cookie");
-			response.addCookie(new Cookie("cms_login_" + msoName, email + "|" + password));
-		} else {
-			response.addCookie(new Cookie("cms_login_" + msoName, ""));
-		}
-		model.asMap().clear();
-		if (mso.getType() == Mso.TYPE_ENTERPRISE)
-			return "redirect:/" + msoName + "/channelSetManagement";
-		else
-			return "redirect:/" + msoName + "/channelManagement";
-	}
-	
-	@RequestMapping(value = "{msoName}/logout")
-	public String logout(Model model, HttpServletRequest request, HttpServletResponse response, @PathVariable String msoName) {
-		SessionService sessionService = new SessionService(request);
-		sessionService.removeSession(response);
-		model.asMap().clear();
-		return "redirect:/" + msoName + "/admin";
-	}
-	
-	@RequestMapping(value = "{msoName}/{cmsTab}")
-	public String management(HttpServletRequest request, HttpServletResponse response, @PathVariable String msoName, @PathVariable String cmsTab, Model model) throws SignatureException {
-		
-		SessionService sessionService = new SessionService(request);
-		HttpSession session = sessionService.getSession();
-		
-		MsoManager msoMngr = new MsoManager();
-		Mso mso = msoMngr.findByName(msoName);
+    @RequestMapping(value = "{msoName}/admin", method = RequestMethod.POST)
+    public String login(HttpServletRequest request,
+                        HttpServletResponse response,
+                        Model model,
+                        @RequestParam String email,
+                        @RequestParam String password,
+                        @RequestParam(required = false) Boolean rememberMe,
+                        @PathVariable String msoName) {
+        
+        log.info(msoName);
+        log.info("email = " + email);
+        log.info("password = " + password);
+        log.info("rememberMe = " + rememberMe);
+        
+        Mso mso = NNF.getMsoMngr().findByName(msoName);
+        if (mso == null)
+            return "error/404";
+        String msoLogo = mso.getLogoUrl();
+        if (isReadonlyMode()) {
+            model.addAttribute("msoLogo", msoLogo);
+            return "cms/readonly";
+        }
+        NnUser user = NNF.getUserMngr().findAuthenticatedUser(email, password, mso.getId(), request);
+        if (user != null) {
+            CookieHelper.setCookie(response, CookieHelper.USER, user.getToken());
+        }
+        if (user == null) {
+            log.info("login failed");
+            
+            NnUser found = NNF.getUserMngr().findByEmail(email, mso.getId(), request);
+            String error;
+            if (found != null && found.getEmail().equals(email)) {
+                error = "invalid password";
+            } else {
+                error = "invalid account";
+            }
+            model.addAttribute("email", email);
+            model.addAttribute("password", password);
+            model.addAttribute("msoLogo", msoLogo);
+            model.addAttribute("error", error);
+            CookieHelper.deleteCookie(response, CookieHelper.USER);
+            return "cms/login";
+        }
+        
+        // set cookie
+        if (rememberMe != null && rememberMe) {
+            log.info("set cookie");
+            CookieHelper.setCookie(response, "cms_login_" + msoName, email + "|" + password);
+        } else {
+            CookieHelper.setCookie(response, "cms_login_" + msoName, "");
+        }
+        model.asMap().clear();
+        if (NnUserProfileManager.checkPriv(user, NnUserProfile.PRIV_PCS))
+            return "redirect:../channelSetManagement";
+        else
+            return "redirect:../channelManagement";
+    }
+    
+    @RequestMapping(value = "{msoName}/logout")
+    public String logout(Model model, HttpServletRequest request, HttpServletResponse response,
+            @PathVariable String msoName) {
+        CookieHelper.deleteCookie(response, CookieHelper.USER);
+        model.asMap().clear();
+        return "redirect:../admin";
+    }
+    
+    @RequestMapping(value = "{msoName}/{cmsTab}")
+    public String management(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable String msoName, @PathVariable String cmsTab,
+            Model model) throws SignatureException {
+        
+        ApiContext ctx = new ApiContext(request);
+		Mso mso = NNF.getMsoMngr().findByName(msoName);
 		if (mso == null) {
 			return "error/404";
 		}
@@ -333,16 +238,16 @@ public class CmsController {
 			return "cms/readonly";
 		}
 		
-		Mso sessionMso = (Mso)session.getAttribute("mso");
-		if (sessionMso != null && sessionMso.getId() == mso.getId()) {			
+        NnUser user = ctx.getAuthenticatedUser(mso.getId());
+		if (user != null) {
 			model = setAttributes(model, mso);
 			model.addAttribute("locale", request.getLocale().getLanguage());
 			
 			if (cmsTab.equals("channelManagement") || cmsTab.equals("channelSetManagement")) {
 				String policy = AmazonLib.buildS3Policy(MsoConfigManager.getS3UploadBucket(), "public-read", "");
 				model.addAttribute("s3Policy", policy);
-				model.addAttribute("s3Signature", AmazonLib.calculateRFC2104HMAC(policy));
-				model.addAttribute("s3Id", AmazonLib.AWS_ID);
+				model.addAttribute("s3Signature", AmazonLib.calculateRFC2104HMAC(policy, MsoConfigManager.getAWSKey()));
+				model.addAttribute("s3Id", MsoConfigManager.getAWSId());
 				return "cms/" + cmsTab;
 			} else if (cmsTab.equals("promotionTools") || cmsTab.equals("setup") || cmsTab.equals("statistics")) {
 				return "cms/" + cmsTab;
@@ -350,71 +255,9 @@ public class CmsController {
 				return "error/404";
 			}
 		} else {
-			sessionService.removeSession(response);
+            CookieHelper.deleteCookie(response, CookieHelper.USER);
 			model.asMap().clear();
-			return "redirect:/" + msoName + "/admin";
-		}
-	}
-	
-	@RequestMapping("twitter/authorization")
-	public ResponseEntity<String> twitterAuthorization(
-	        @RequestParam(required = false, value = "oauth_token") String oauthToken,
-	        @RequestParam(required = false, value = "oauth_verifier") String oauthVerifier,
-	        @RequestParam(required = false, value = "msoId") String msoId,
-	        HttpServletRequest req) throws IOException, TwitterException {
-		
-		Twitter twitter = new TwitterFactory().getInstance();
-		twitter.setOAuthConsumer("udWzz6YrsaNlbJ18vZ7aCA",
-		        "Pf0TdB2QFXWKyphbIdnPG4vZhLVze0cPCxlLkfBwtQ");
-		MemcachedClient cache = CacheFactory.getClient();
-		if (cache == null) {
-			return NnNetUtil.textReturn("cache error : no cache object");
-		}
-		
-		if (oauthToken == null) {
-			// overwrite the application call_back_url setting
-			String call_back_url = "http://" + req.getServerName()
-			        + "/cms/twitter/authorization";
-			RequestToken requestToken = twitter
-			        .getOAuthRequestToken(call_back_url);
-			if (msoId != null) {
-				CacheFactory.set(requestToken.getToken() + "msoId", msoId);
-				CacheFactory.set(requestToken.getToken(),
-				        requestToken.getTokenSecret());
-			} else {
-				return NnNetUtil.textReturn("you are not permit authorization");
-			}
-			cache.shutdown();
-			String output = "<script language=\"javascript\">location.replace(\""
-			        + requestToken.getAuthorizationURL() + "\");</script>";
-			return NnNetUtil.htmlReturn(output);
-		} else {
-			String requestTokenSecret = cache.get(oauthToken).toString();
-			msoId = cache.get(oauthToken + "msoId").toString();
-			if (requestTokenSecret != null && msoId != null) {
-				long userID = Long.parseLong(msoId.trim());
-				Short type = 2;
-				
-				RequestToken requestToken = new RequestToken(oauthToken,
-				        requestTokenSecret);
-				AccessToken accessToken = twitter.getOAuthAccessToken(
-				        requestToken, oauthVerifier);
-				CacheFactory.delete(oauthToken);
-				CacheFactory.delete(oauthToken + "msoId");
-				
-				CmsApiController cmsApiController = new CmsApiController();
-				cmsApiController.createSnsAuth(userID, type,
-				        accessToken.getToken(), accessToken.getTokenSecret());
-				
-				String output = "<script language=\"javascript\">window.opener.pageSetup.showTwitterDisconnect(true);"
-				        + "window.close();</script>";
-				
-				return NnNetUtil.htmlReturn(output);
-			} else {
-				cache.shutdown();
-				return NnNetUtil
-				        .textReturn("cache error : there are no request token in the cache");
-			}
+			return "redirect:../admin";
 		}
 	}
 }

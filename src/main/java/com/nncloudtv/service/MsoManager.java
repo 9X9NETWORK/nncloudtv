@@ -96,7 +96,7 @@ public class MsoManager {
     
     public static Mso getSystemMso() {
         
-        List<Mso> list = NNF.getMsoMngr().findByType(Mso.TYPE_NN);
+        List<Mso> list = NNF.getMsoMngr().findByType(Mso.TYPE_SYS);
         
         return list.get(0);
     }
@@ -550,7 +550,7 @@ public class MsoManager {
         }
         
         // 9x9 always valid
-        if (mso.getType() == Mso.TYPE_NN) {
+        if (mso.getType() == Mso.TYPE_SYS) {
             return true;
         }
         

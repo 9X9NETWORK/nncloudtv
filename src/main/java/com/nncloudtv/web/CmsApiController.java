@@ -18,49 +18,32 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import twitter4j.TwitterException;
-
 import com.google.common.base.Joiner;
-import com.nncloudtv.dao.CategoryToNnSetDao;
 import com.nncloudtv.lib.CacheFactory;
-import com.nncloudtv.lib.FacebookLib;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
-import com.nncloudtv.lib.PiwikLib;
-import com.nncloudtv.model.Category;
-import com.nncloudtv.model.CategoryToNnSet;
-import com.nncloudtv.model.ContentOwnership;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
-import com.nncloudtv.model.NnChannelAutosharing;
 import com.nncloudtv.model.NnEmail;
 import com.nncloudtv.model.NnProgram;
-import com.nncloudtv.model.NnSet;
-import com.nncloudtv.model.NnSetAutosharing;
-import com.nncloudtv.model.NnSetToNnChannel;
 import com.nncloudtv.model.NnUser;
-import com.nncloudtv.model.SnsAuth;
-import com.nncloudtv.service.AutosharingService;
-import com.nncloudtv.service.CategoryManager;
-import com.nncloudtv.service.CmsApiService;
+import com.nncloudtv.model.SysTag;
+import com.nncloudtv.model.SysTagDisplay;
+import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.service.CntSubscribeManager;
-import com.nncloudtv.service.ContentOwnershipManager;
 import com.nncloudtv.service.ContentWorkerService;
 import com.nncloudtv.service.EmailService;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnProgramManager;
-import com.nncloudtv.service.NnSetManager;
-import com.nncloudtv.service.NnSetToNnChannelManager;
-import com.nncloudtv.service.NnUserManager;
-import com.nncloudtv.service.SnsAuthManager;
 import com.nncloudtv.service.DepotService;
-import com.nncloudtv.web.json.facebook.FBPost;
+import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.json.cms.NnSet;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
@@ -99,7 +82,7 @@ public class CmsApiController {
 			log.warning("no query string");
 			return new ArrayList<NnChannel>();
 		}
-		return NnChannelManager.search(text, true);
+		return NnChannelManager.search(text, null, null, true, 0 , 0);
 	}
 	
 	/**
@@ -108,30 +91,17 @@ public class CmsApiController {
 	 * @param msoId
 	 * @return list of set objects
 	 */
-	
-	@RequestMapping("defaultNnSetInfo")
-	public @ResponseBody NnSet defaultNnSetInfo(@RequestParam Long msoId) {
-		CmsApiService cmsService = new CmsApiService();
-		return cmsService.getDefaultNnSet(msoId);
-	}
-	
-	/**
-	 * Which system category is default channel set in
-	 * 
-	 * @param msoId
-	 * @return Category or null (if more than one categories found, return the first one)
-	 */
-	@RequestMapping("defaultNnSetCategory")
-	public @ResponseBody Category defaultNnSetCategory(@RequestParam Long msoId) {
-		CmsApiService cmsService = new CmsApiService();
-		NnSet set = cmsService.getDefaultNnSet(msoId);
-		if (set == null)
-			return null;
-		Category category = cmsService.whichSystemCategoryContainingTheSet(set.getId());
-		
-		return category;
-	}
-
+    
+    @RequestMapping("defaultNnSetInfo")
+    public @ResponseBody NnSet defaultNnSetInfo(@RequestParam Long msoId) {
+        
+        List<NnSet> nnsets = NNF.getSetService().findByMsoIdAndLang(msoId, null);
+        if (nnsets.size() > 0)
+            return nnsets.get(0);
+        else
+            return null;
+    }
+    
 	/**
 	 * List all channel in mso default channel set
 	 * 
@@ -142,30 +112,31 @@ public class CmsApiController {
 	 */
 	@RequestMapping("defaultNnSetChannels")
 	public @ResponseBody List<NnChannel> defaultNnSetChannels(
-			@RequestParam(required=false) Long msoId,
-	        @RequestParam(required=false) Boolean isGood,
-	        @RequestParam(required=false) Long setId) {
-		CmsApiService cmsService = new CmsApiService();
-		NnSetManager setMngr = new NnSetManager();
-		NnSet channelSet = null;
-		if (msoId != null) {
-			channelSet = cmsService.getDefaultNnSet(msoId);
-		} else if (setId != null) {
-			channelSet = setMngr.findById(setId);
-		}
-		if (channelSet == null)
-			return new ArrayList<NnChannel>();
-		List<NnChannel> cadidate = cmsService.findChannelsBySet(channelSet.getId());
-		List<NnChannel> results = new ArrayList<NnChannel>();
-		CntSubscribeManager cntMngr = new CntSubscribeManager();
-		for (NnChannel channel : cadidate) {
-			if (isGood == null || !isGood || channel.getStatus() == NnChannel.STATUS_SUCCESS) {
-				channel.setSubscriptionCnt(cntMngr.findTotalCountByChannel(channel.getId()));
-				results.add(channel);
-			}
-		}
-		return results;
-	}
+            @RequestParam(required=false) Long msoId,
+            @RequestParam(required=false) Boolean isGood,
+            @RequestParam(required=false) Long setId) {
+        
+        NnSet channelSet = null;
+        if (setId != null) {
+            channelSet = NNF.getSetService().findById(setId);
+        } else if (msoId != null) {
+            List<NnSet> nnsets = NNF.getSetService().findByMsoIdAndLang(msoId, null);
+            if (nnsets.size() > 0)
+                channelSet = nnsets.get(0);
+        }
+        if (channelSet == null)
+            return new ArrayList<NnChannel>();
+        List<NnChannel> cadidate = NNF.getSetService().getChannels(channelSet.getId());
+        List<NnChannel> results = new ArrayList<NnChannel>();
+        CntSubscribeManager cntMngr = new CntSubscribeManager();
+        for (NnChannel channel : cadidate) {
+            if (isGood == null || !isGood || channel.getStatus() == NnChannel.STATUS_SUCCESS) {
+                channel.setCntSubscribe(cntMngr.findTotalCountByChannel(channel.getId()));
+                results.add(channel);
+            }
+        }
+        return results;
+    }
 	
 	/**
 	 * Save set information
@@ -201,69 +172,46 @@ public class CmsApiController {
 		log.info("lang = " + lang);
 		log.info("categoryId = " + categoryId);
 		
-		CmsApiService cmsApiService = new CmsApiService();
-		NnSetManager channelSetMngr = new NnSetManager();
-		NnSet set = channelSetMngr.findById(setId);
-		CategoryToNnSetDao cToSDao = new CategoryToNnSetDao();
-		
-		if (set == null)
-			return "Invalid NnSetId";
-		
-		set.setName(name);
-		set.setTag(tag);
-		set.setLang(lang);
-		if (imageUrl != null) {
-			set.setImageUrl(imageUrl);
-			// TODO: channel set also needs to be processed
-		}
-		set.setIntro(intro);
-		channelSetMngr.save(set);
-		
-		List<CategoryToNnSet> cToSs = cmsApiService.whichCToSContainingTheSet(setId);
-		List<CategoryToNnSet> removable = new ArrayList<CategoryToNnSet>();
-		
-		// NOTE: channel set can only in one system category
-		for (CategoryToNnSet ccs : cToSs) {
-			if (ccs.getCategoryId() != categoryId) {
-				removable.add(ccs);
-			}
-		}
-		for (CategoryToNnSet cToS : removable) {
-			cToSDao.delete(cToS);
-			cToSs.remove(cToS);
-		}
-		
-		log.info("ccss size = " + cToSs.size());		
-		if (cToSs.isEmpty()) {
-			// create a new CategoryNnSet
-			CategoryToNnSet cToS = new CategoryToNnSet(categoryId, setId);
-			cToSDao.save(cToS);
-			// TODO: dealing with channelCount
-			log.info("create new CategoryNnSet setId = " + setId + ", categoryId = " + categoryId);
-		}
-		
-		if (channelIds != null) {
-			NnSetToNnChannelManager cscMngr = new NnSetToNnChannelManager();
-			NnChannelManager channelMngr = new NnChannelManager();
-			List<NnSetToNnChannel> list = cscMngr.findBySet(setId);
-			for (NnSetToNnChannel sToC : list) {
-				cscMngr.delete(sToC);
-			}
-			String[] split = channelIds.split(",");
-			for (int i = 0; i < split.length; i++) {
-				NnChannel channel = channelMngr.findById(Long.valueOf(split[i]));
-				if (channel == null) {
-					log.warning("channel id does not exist: " + split[i]);
-					continue;
-				}
-				cscMngr.create(new NnSetToNnChannel(setId, channel.getId(), (short) (i + 1)));
-			}
-		}
-		// piwik
-		PiwikLib.createPiwikSite(setId, 0);
-		return "OK";
-	}
-
+        SysTag sysTag = NNF.getSysTagMngr().findById(setId);
+        if (sysTag == null)
+            return "Invalid NnSetId";
+        
+        SysTagDisplay display = NNF.getDisplayMngr().findBySysTagId(sysTag.getId());
+        if (display == null)
+            return "iternal error";
+        
+        display.setName(name);
+        display.setPopularTag(tag);
+        display.setLang(lang);
+        if (imageUrl != null) {
+            display.setImageUrl(imageUrl);
+            display.setImageUrl2(imageUrl);
+        }
+        //display.setIntro(intro);
+        NNF.getDisplayMngr().save(display);
+        
+        if (channelIds != null) {
+            
+            List<SysTagMap> maps = NNF.getSysTagMapMngr().findBySysTagId(setId);
+            NNF.getSysTagMapMngr().deleteAll(maps);
+            maps.clear();
+            
+            String[] split = channelIds.split(",");
+            short seq = 1;
+            for (String channelIdStr : split) {
+                NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+                if (channel != null) {
+                    SysTagMap map = new SysTagMap(setId, channel.getId());
+                    map.setSeq(seq++);
+                    maps.add(map);
+                }
+            }
+            NNF.getSysTagMapMngr().saveAll(maps);
+        }
+        
+        return "OK";
+    }
+    
 	//////////////////// Channel/Program Management ////////////////////
 	/**
 	 * Retrieve podcast information
@@ -307,31 +255,35 @@ public class CmsApiController {
 	 * @param msoId mso id
 	 * @return list of channel objects
 	 */
-	@RequestMapping("listOwnedChannels")
-	public @ResponseBody List<NnChannel> listOwnedChannels(@RequestParam Long msoId) {
-		
-		ContentOwnershipManager ownershipMngr = new ContentOwnershipManager();
-		List<NnChannel> results = new ArrayList<NnChannel>();
-		
-		log.info("msoId = " + msoId);
-		
-		class NnChannelComparator implements Comparator<NnChannel> {  // yes, I know, its a little dirty
-			public int compare(NnChannel channel1, NnChannel channel2) {
-				Date date1 = channel1.getUpdateDate();
-				Date date2 = channel2.getUpdateDate();
-				return date2.compareTo(date1);
-			}
-		}
-		
-		results = ownershipMngr.findOwnedChannelsByMsoId(msoId);
-		Collections.sort(results, new NnChannelComparator());
-		CntSubscribeManager cntMngr = new CntSubscribeManager();
-		for (NnChannel channel : results) {
-			channel.setSubscriptionCnt(cntMngr.findTotalCountByChannel(channel.getId()));
-		}
-		return results;
-	}
-
+    @RequestMapping("listOwnedChannels")
+    public @ResponseBody List<NnChannel> listOwnedChannels(HttpServletRequest req, @RequestParam Long msoId) {
+        
+        List<NnChannel> results = new ArrayList<NnChannel>();
+        ApiContext ctx = new ApiContext(req);
+        log.info("msoId = " + msoId);
+        
+        class NnChannelComparator implements Comparator<NnChannel> { // yes, I know, its a little dirty
+            public int compare(NnChannel channel1, NnChannel channel2) {
+                Date date1 = channel1.getUpdateDate();
+                Date date2 = channel2.getUpdateDate();
+                return date2.compareTo(date1);
+            }
+        }
+        NnUser user = ctx.getAuthenticatedUser(msoId);
+        if (user != null) {
+            
+            results = NNF.getChannelMngr().findByUser(user, 0, true);
+            Collections.sort(results, new NnChannelComparator());
+            
+        }
+        
+        CntSubscribeManager cntMngr = new CntSubscribeManager();
+        for (NnChannel channel : results) {
+            channel.setCntSubscribe(cntMngr.findTotalCountByChannel(channel.getId()));
+        }
+        return results;
+    }
+    
 	/**
 	 * List all channel sets owned by mso. If msoId is missing, list system sets instead 
 	 * @param msoId mso id
@@ -349,12 +301,8 @@ public class CmsApiController {
 		response.addHeader("Cache-Control", "private, max-age=" + expires);
 		response.addDateHeader("Expires", System.currentTimeMillis() + (expires * 1000));
 		
-		ContentOwnershipManager ownershipMngr = new ContentOwnershipManager();
 		List<NnSet> results = new ArrayList<NnSet>();
-		MsoManager msoMngr = new MsoManager();
-		CmsApiService cmsService = new CmsApiService();
-		CntSubscribeManager cntMngr = new CntSubscribeManager(); 
-		Mso nn = msoMngr.findNNMso();
+		Mso nn = MsoManager.getSystemMso();
 		String cacheIdString = "System.NnSets(sortby=lang)";
 		
 		if (msoId == null) {
@@ -365,7 +313,7 @@ public class CmsApiController {
 			if (sortby != null) {
 				if (sortby.equalsIgnoreCase("lang")) {
 					// get from cache
-					results = (List<NnSet>)CacheFactory.get(cacheIdString);
+					results = (List<NnSet>) CacheFactory.get(cacheIdString);
 					if (results != null) {
 						log.info("get from cache");
 						return results;
@@ -378,17 +326,7 @@ public class CmsApiController {
 			}
 		}
 		log.info("msoId = " + msoId);
-		results = ownershipMngr.findOwnedSetsByMso(msoId);
-		for (NnSet set : results) {
-			set.setSubscriptionCnt(cntMngr.findTotalCountBySet(set.getId()));
-			Category category = cmsService.whichSystemCategoryContainingTheSet(set.getId());
-			if (category != null) {
-				log.info("found category = " + category.getId());
-				set.setLang(category.getLang());
-			}
-			// remove some unused field to reduce cached size
-			set.setIntro("");
-		}
+		results = NNF.getSetService().findByMsoIdAndLang(msoId, null);
 		class NnSetComparator implements Comparator<NnSet> {  // yes, I know, its a little dirty
 			public int compare(NnSet set1, NnSet set2) {
 				String lang1 = set1.getLang();
@@ -406,11 +344,9 @@ public class CmsApiController {
 			if (msoId == nn.getId()) {
 				// put to cache
 				log.info("put to cache");
-				CacheFactory.set(cacheIdString, results);
+				CacheFactory.set(cacheIdString, new ArrayList<NnSet>(results));
 			}
 		}
-		// size() is not always > 0
-		// log.info("<<<<<<<<<< results size:" + results.size() + ";" + results.get(0).getName());
 		return results;
 	}
 
@@ -474,28 +410,20 @@ public class CmsApiController {
 	 * @param channelId channel id
 	 * @param msoId mso id
 	 */
-	@RequestMapping("removeChannelFromList")
-	public @ResponseBody void removeChannelFromList(@RequestParam Long channelId, @RequestParam Long msoId) {
-		
-		log.info("msoId = " + msoId + ", channelId = " + channelId);
-		ContentOwnershipManager ownershipMngr = new ContentOwnershipManager();
-		ContentOwnership ownership = ownershipMngr.findByMsoIdAndChannelId(msoId, channelId);
-		if (ownership != null) {
-			ownershipMngr.delete(ownership);
-			log.info("remove ownership");
-		}
-		NnSetToNnChannelManager cscMngr = new NnSetToNnChannelManager();
-		// remove channels in set
-		List<NnSet> channelSets = ownershipMngr.findOwnedSetsByMso(msoId);
-		for (NnSet channelSet : channelSets) {
-			List<NnSetToNnChannel> list = cscMngr.findBySet(channelSet.getId());
-			for (NnSetToNnChannel sToC : list) {
-				if (sToC.getChannelId() == channelId) {
-					cscMngr.removeChannel(channelSet.getId(), sToC.getSeq());
-				}
-			}
-		}
-	}
+    @RequestMapping("removeChannelFromList")
+    public @ResponseBody void removeChannelFromList(@RequestParam Long channelId, @RequestParam Long msoId) {
+        
+        log.info("msoId = " + msoId + ", channelId = " + channelId);
+        
+        NnChannel channel = NNF.getChannelMngr().findById(channelId);
+        if (channel != null) {
+            
+            channel.setUserIdStr(null); // unlink
+            channel.setStatus(NnChannel.STATUS_REMOVED);
+            channel.setPublic(false);
+            NNF.getChannelMngr().save(channel);
+        }
+    }
 	
 	/**
 	 * Retrieve program info
@@ -503,15 +431,18 @@ public class CmsApiController {
 	 * @param programId program id
 	 * @return program object
 	 */
-	@RequestMapping("programInfo")
-	public @ResponseBody NnProgram programInfo(@RequestParam Long programId) {
-		NnProgramManager programMngr = new NnProgramManager();
-		NnProgram program = programMngr.findById(programId);
-		program.setName(NnStringUtil.revertHtml(program.getName()));
-		program.setIntro(NnStringUtil.revertHtml(program.getIntro()));
-		program.setComment(NnStringUtil.revertHtml(program.getComment()));
-		return program;
-	}
+    @RequestMapping("programInfo")
+    public @ResponseBody NnProgram programInfo(@RequestParam Long programId) {
+        
+        NnProgram program = NNF.getProgramMngr().findById(programId);
+        if (program != null) {
+            
+            program.setName(NnStringUtil.revertHtml(program.getName()));
+            program.setIntro(NnStringUtil.revertHtml(program.getIntro()));
+            program.setComment(NnStringUtil.revertHtml(program.getComment()));
+        }
+        return program;
+    }
 	
 	/**
 	 * Retrieve channel info
@@ -519,11 +450,11 @@ public class CmsApiController {
 	 * @param channelId channel id
 	 * @return channel object
 	 */
-	@RequestMapping("channelInfo")
-	public @ResponseBody NnChannel channelInfo(@RequestParam Long channelId) {
-		NnChannelManager channelMngr = new NnChannelManager();
-		return channelMngr.findById(channelId);
-	}
+    @RequestMapping("channelInfo")
+    public @ResponseBody NnChannel channelInfo(@RequestParam Long channelId) {
+        
+        return NNF.getChannelMngr().findById(channelId);
+    }
 	
 	/**
 	 * Create a channel by url
@@ -535,7 +466,7 @@ public class CmsApiController {
 	@RequestMapping("importChannelByUrl")
 	public @ResponseBody NnChannel importChannelByUrl(HttpServletRequest req, @RequestParam String sourceUrl) {
 		
-		NnChannelManager channelMngr = new NnChannelManager();
+		NnChannelManager channelMngr = NNF.getChannelMngr();
 		sourceUrl = sourceUrl.trim();
 		log.info("import " + sourceUrl);
 		sourceUrl = channelMngr.verifyUrl(sourceUrl);
@@ -547,7 +478,7 @@ public class CmsApiController {
 		NnChannel channel = channelMngr.findBySourceUrl(sourceUrl);
 		if (channel == null) {
 			log.info("new source url");
-			channel = channelMngr.create(sourceUrl, null, req);
+			channel = channelMngr.create(sourceUrl, null, null, req);
 			if (channel == null) {
 				log.warning("invalid source url");
 				return null;
@@ -556,13 +487,8 @@ public class CmsApiController {
 			if (channel != null && channel.getContentType() != NnChannel.CONTENTTYPE_FACEBOOK) { //!!!
 				DepotService tranService = new DepotService();
 				tranService.submitToTranscodingService(channel.getId(), sourceUrl, req);
-				// piwik
-				PiwikLib.createPiwikSite(0, channel.getId());
 			}
 			channel.setTag("NEW_CHANNEL");
-		} else {
-			// piwik
-			PiwikLib.createPiwikSite(0, channel.getId());
 		}
 		
 		return channel;
@@ -601,7 +527,6 @@ public class CmsApiController {
 		
 		NnChannelManager channelMngr = new NnChannelManager();
 		NnChannel channel = channelMngr.findBySourceUrl(sourceUrl);
-		ContentOwnershipManager ownershipMngr = new ContentOwnershipManager();
 		MsoManager msoMngr = new MsoManager();
 		
 		Mso mso = msoMngr.findById(msoId);
@@ -636,11 +561,6 @@ public class CmsApiController {
 			DepotService tranService = new DepotService();
 			tranService.submitToTranscodingService(channel.getId(), sourceUrl, req);
 		}
-		
-		// create ownership
-		ContentOwnership ownership = ownershipMngr.findByMsoIdAndChannelId(msoId, channel.getId());
-		if (ownership == null)
-			ownershipMngr.create(new ContentOwnership(), mso, channel);
 		
 		return "OK";
 	}
@@ -699,11 +619,7 @@ public class CmsApiController {
 		} else {
 			program.setFileUrl(sourceUrl);
 		}
-		// TODO: ProgramManager.getContentTypeByUrl()
-		if (program.getContentType() == NnProgram.CONTENTTYPE_RADIO) {
-			program.setType(NnProgram.TYPE_AUDIO);
-			log.info("audio link");
-		} else if (sourceUrl.indexOf("youtube.com") == -1) {
+		if (sourceUrl.indexOf("youtube.com") == -1) {
 			// TODO: check source url is valid
 			boolean autoGeneratedLogo = (imageUrl == null) ? true : false;
 			workerService.programVideoProcess(programId, sourceUrl, prefix, autoGeneratedLogo, req);
@@ -720,13 +636,13 @@ public class CmsApiController {
 			workerService.programLogoProcess(program.getId(), imageUrl, prefix, req);
 		}
 		if (name != null) {
-			program.setName(NnStringUtil.htmlSafeAndTrucated(name));
+			program.setName(NnStringUtil.htmlSafeAndTruncated(name));
 		}
 		if (intro != null) {
-			program.setIntro(NnStringUtil.htmlSafeAndTrucated(intro));
+			program.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
 		}
 		if (comment != null) {
-			program.setComment(NnStringUtil.htmlSafeAndTrucated(comment));
+			program.setComment(NnStringUtil.htmlSafeAndTruncated(comment));
 		}
 		program.setPublic(true);
 		programMngr.create(channel, program);
@@ -766,11 +682,11 @@ public class CmsApiController {
 			return "Invalid programId";
 		}
 		if (name != null)
-			program.setName(NnStringUtil.htmlSafeAndTrucated(name));
+			program.setName(NnStringUtil.htmlSafeAndTruncated(name));
 		if (intro != null)
-			program.setIntro(NnStringUtil.htmlSafeAndTrucated(intro));
+			program.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
 		if (comment != null)
-			program.setComment(NnStringUtil.htmlSafeAndTrucated(comment));
+			program.setComment(NnStringUtil.htmlSafeAndTruncated(comment));
 		if (imageUrl != null) {
 			ContentWorkerService workerService = new ContentWorkerService();
 			Long timestamp = System.currentTimeMillis() / 1000L;
@@ -829,8 +745,7 @@ public class CmsApiController {
 		log.info("lang = " + lang);
 		log.info("msoId = " + msoId);
 		
-		NnChannelManager channelMngr = new NnChannelManager();
-		NnChannel channel = channelMngr.findById(channelId);
+		NnChannel channel = NNF.getChannelMngr().findById(channelId);
 		
 		if (channel == null)
 			return "Invalid ChannelId";
@@ -864,34 +779,16 @@ public class CmsApiController {
 		}
 		channel.setUpdateDate(new Date());
 		// channelMngr.calibrateProgramCnt(channel);
-		channelMngr.save(channel);
+		NNF.getChannelMngr().save(channel);
 		
-		//channel1 ownership
-		if (msoId != null) {
-			MsoManager msoMngr = new MsoManager();
-			Mso mso = msoMngr.findById(msoId);
-			if (mso != null) {
-				ContentOwnershipManager ownershipMngr = new ContentOwnershipManager();
-				if (ownershipMngr.findByMsoIdAndChannelId(msoId, channelId) == null) {
-					log.info("create ownership");
-					ownershipMngr.create(new ContentOwnership(), mso, channel);
-				}
-			} else {
-				log.warning("invalid msoId");
-			}
-		}
-		// piwik
-		PiwikLib.createPiwikSite(0, channelId);
 		return "OK";
 	}
 	
 	// this is a wrapper of updateProgramListSeq
 	private void updateAllProgramsSeq(long channelId) {
 		
-		NnProgramManager programMngr = new NnProgramManager();
-		
 		// update all episode sequence
-		List<NnProgram> programList = programMngr.findByChannel(channelId);
+		List<NnProgram> programList = NNF.getProgramMngr().findByChannelId(channelId);
 		Collections.sort(programList, new NnProgramSeqComparator());
 		List<Long> programIdList = new ArrayList<Long>();
 		for (NnProgram program : programList) {
@@ -914,8 +811,6 @@ public class CmsApiController {
 		log.info("channelId: " + channelId);
 		log.info("programIdList" + programIdList);
 		
-		NnProgramManager programMngr = new NnProgramManager();
-		
 		List<Long> programIds = new ArrayList<Long>();
 		String[] splitted = programIdList.split(",");
 		for (int i = 0; i < splitted.length; i++) {
@@ -923,7 +818,7 @@ public class CmsApiController {
 		}
 		
 		List<Long> origProgramIds = new ArrayList<Long>();
-		List<NnProgram> origProgramList = programMngr.findByChannel(channelId);
+		List<NnProgram> origProgramList = NNF.getProgramMngr().findByChannelId(channelId);
 		if (origProgramList.size() != programIds.size()) {
 			return "SIZE_NOT_MATCH";
 		}
@@ -938,7 +833,7 @@ public class CmsApiController {
 			int seq = programIds.indexOf(program.getId());
 			program.setSeq(String.format("%08d", seq + 1));
 		}
-		programMngr.save(origProgramList);
+		NNF.getProgramMngr().saveAll(origProgramList);
 		
 		// clean cache (though, programMngr.save() do it once before)
 		String cacheKey = "nnprogram(" + channelId + ")";
@@ -953,17 +848,11 @@ public class CmsApiController {
 	 * @param channelId channel id
 	 * @return set object
 	 */ 
-	@RequestMapping("channelSystemNnSet")
-	public @ResponseBody NnSet channelSystemNnSet(@RequestParam Long channelId) {
-		CmsApiService cmsService = new CmsApiService();
-		if (channelId == null)
-			return null;
-		List<NnSet> channelSetList = cmsService.whichSystemNnSetsContainingThisChannel(channelId);
-		if (channelSetList.size() > 0)
-			return channelSetList.get(0);
-		else
-			return null;
-	}
+    @RequestMapping("channelSystemNnSet")
+    public @ResponseBody NnSet channelSystemNnSet(@RequestParam Long channelId) {
+        
+        return null;
+    }
 	
 	/**
 	 * Create program with default values
@@ -980,16 +869,14 @@ public class CmsApiController {
 		
 		NnProgram program;		
 		if (contentType != null && contentType == NnProgram.CONTENTTYPE_RADIO) {			
-			program = new NnProgram("New Program", "New Program", NnChannel.IMAGE_RADIO_URL, NnProgram.TYPE_AUDIO);
+			program = new NnProgram(0, "New Program", "New Program", NnChannel.IMAGE_RADIO_URL);
 			program.setPublic(false);
-			program.setType(NnProgram.TYPE_AUDIO);
 			program.setContentType(NnProgram.CONTENTTYPE_RADIO);
 			programMngr.save(program);
 			
 		} else {			
-			program = new NnProgram("New Program", "New Program", NnChannel.IMAGE_WATERMARK_URL, NnProgram.TYPE_VIDEO);
+			program = new NnProgram(0, "New Program", "New Program", NnChannel.IMAGE_WATERMARK_URL);
 			program.setPublic(false);
-			program.setType(NnProgram.TYPE_VIDEO);
 			programMngr.save(program);
 			
 		}
@@ -1004,12 +891,11 @@ public class CmsApiController {
 	@RequestMapping("createChannelSkeleton")
 	public @ResponseBody Long createChannelSkeleton() {
 		
-		NnChannelManager channelMngr = new NnChannelManager();		
 		NnChannel channel = new NnChannel("New Channel", "New Channel", NnChannel.IMAGE_WATERMARK_URL);
 		channel.setPublic(false);
 		channel.setStatus(NnChannel.STATUS_WAIT_FOR_APPROVAL);
 		channel.setContentType(NnChannel.CONTENTTYPE_MIXED); // a channel type in podcast does not allow user to add program in it, so change to mixed type
-		channelMngr.save(channel);
+		NNF.getChannelMngr().save(channel);
 		
 		return channel.getId();
 	}
@@ -1023,354 +909,17 @@ public class CmsApiController {
 	@RequestMapping("programList")
 	public @ResponseBody List<NnProgram> programList(Long channelId) {
 		
-		NnProgramManager programMngr = new NnProgramManager();
-		List<NnProgram> results = programMngr.findByChannel(channelId);
+		List<NnProgram> results = NNF.getProgramMngr().findByChannelId(channelId);
 		Collections.sort(results, new NnProgramSeqComparator());
 		
 		return results;
 	}
-	
-	////////////////////Directory Management ////////////////////	
-	/**
-	 * List all the sets under the category  
-	 * 
-	 * @param categoryId category id
-	 * @param isPublic public sets or not
-	 * @return
-	 */
-	@RequestMapping("listCategoryNnSets")
-	public @ResponseBody List<NnSet> listCategoryNnSets(@RequestParam Long categoryId, @RequestParam(required=false) Boolean isPublic) {
-		CategoryManager catMngr = new CategoryManager();
-		if (isPublic != null && isPublic) {
-			return catMngr.findSetsByCategory(categoryId, true);
-		} else {
-			return catMngr.findSetsByCategory(categoryId, false);
-		}
-	}
-
-	/**
-	 * List all system categories (mso in TYPE_NN)
-	 * 
-	 * @param parentId category parent id, default is 0
-	 * @param lang language, en or zh
-	 * @return list of category objects
-	 */
-	@RequestMapping("systemCategories")
-	public @ResponseBody List<Category> systemCategories(@RequestParam(required=false) Long parentId,
-	                                                      @RequestParam(required=false) String lang,
-	                                                     HttpServletRequest request,
-	                                                     HttpServletResponse response) {
-		response.addDateHeader("Expires", System.currentTimeMillis() + 3600000);
-		CategoryManager catMngr = new CategoryManager();
-		List<Category> categories = catMngr.findPublicCategories(true);
-		List<Category> results = new ArrayList<Category>();
-		long parentIdValue;
-		if (parentId == null) {
-			parentIdValue = 0;
-		} else {
-			parentIdValue = parentId.longValue();
-		}
-		for (Category category : categories) {
-			if (category.getParentId() == parentIdValue) {
-				if (lang == null)
-					results.add(category);
-				else if (lang != null && lang.equalsIgnoreCase(category.getLang())) {
-					results.add(category);
-				}
-			}
-		}
-		class CategoryComparator implements Comparator<Category> {
-			public int compare(Category category1, Category category2) {
-				int seq1 = category1.getSeq();
-				if (category1.getLang() != null && category1.getLang().equalsIgnoreCase("en")) {
-					seq1 -= 100;
-				}
-				int seq2 = category2.getSeq();
-				if (category2.getLang() != null && category2.getLang().equalsIgnoreCase("en")) {
-					seq2 -= 100;
-				}
-				return (seq1 - seq2);
-			}
-		}
-		Collections.sort(results, new CategoryComparator());
-		return results;
-	}
-	
-	////////////////////Promotion Tools ////////////////////
-	/**
-	 * Enable or disable sharing promotion information
-	 * 
-	 * @param msoId mso id
-	 * @param type mso type
-	 * @param enabled enablie sharing features
-	 * @return status in text
-	 */
-	@RequestMapping("setSnsAuth")
-	public @ResponseBody String setSnsAuth(@RequestParam Long msoId,
-	                                        @RequestParam Short type,
-	                                        @RequestParam Boolean enabled) {
-		SnsAuthManager snsMngr = new SnsAuthManager();
-		SnsAuth snsAuth = snsMngr.findMsoIdAndType(msoId, type);
-		if (snsAuth != null) {
-			snsAuth.setEnabled(enabled);
-			snsMngr.save(snsAuth);
-			return "OK";
-		} else {
-			return "NotFound";
-		}
-	}
-	
-	/**
-	 * Remove sharing promotion information
-	 * 
-	 * @param msoId mso id 
-	 * @param type mso type
-	 * @return status in text
-	 */
-	@RequestMapping("removeSnsAuth")
-	public @ResponseBody String removeSnsAuth(@RequestParam Long msoId,
-	                                          @RequestParam Short type) {
-		SnsAuthManager snsMngr = new SnsAuthManager();
-		AutosharingService shareService = new AutosharingService();
-		
-		SnsAuth snsAuth = snsMngr.findMsoIdAndType(msoId, type);
-		if (snsAuth != null) {
-			snsMngr.delete(snsAuth);
-		}
-		List<NnChannelAutosharing> autoshareList = shareService.findChannelsByMsoAndType(msoId, type);
-		for (NnChannelAutosharing autoshare : autoshareList) {
-			shareService.delete(autoshare);
-		}
-		return "OK";
-	}
-	
-	/**
-	 * Create sharing promotion information
-	 * 
-	 * @param msoId mso id
-	 * @param type mso type
-	 * @param token sns token
-	 * @param secrete sns secret 
-	 * @return
-	 */
-	@RequestMapping("createSnsAuth")
-	public @ResponseBody String createSnsAuth(@RequestParam Long msoId,
-	                                          @RequestParam Short type,
-	                                          @RequestParam String token,
-	                                          @RequestParam(required=false) String secrete) {
-		
-		SnsAuthManager snsMngr = new SnsAuthManager();
-		SnsAuth snsAuth = snsMngr.findMsoIdAndType(msoId, type);
-		if (snsAuth == null) {
-			snsAuth = new SnsAuth(msoId, type, token);
-			if (secrete != null)
-				snsAuth.setSecret(secrete);
-			snsAuth.setEnabled(true);
-			snsMngr.create(snsAuth);
-		} else {
-			snsAuth.setToken(token);
-			if (secrete != null)
-				snsAuth.setSecret(secrete);
-			snsAuth.setEnabled(true);
-			snsMngr.save(snsAuth);
-		}
-		return "OK";
-	}
-	
-	/**
-	 * List sharing promotion information
-	 * 
-	 * @param msoId mso id
-	 * @return list of SnsAuth objects
-	 */
-	@RequestMapping("listSnsAuth")
-	public @ResponseBody List<SnsAuth> listSnsAuth(@RequestParam Long msoId) {
-		log.info("msoId = " + msoId);
-		SnsAuthManager snsMngr = new SnsAuthManager();
-		List<SnsAuth> list = snsMngr.findByMso(msoId);
-		for (SnsAuth sns : list) {
-			if (sns.getType() == SnsAuth.TYPE_FACEBOOK) {
-				FacebookLib.populatePageList(sns);
-			}
-		}
-		return list;
-	}
-
-	/**
-	 * List channel auto sharing information
-	 * 
-	 * @param msoId mso id
-	 * @param channelId channel id
-	 * @return list of channel auto sharing objects
-	 */
-	@RequestMapping("listChannelAutosharing")
-	public @ResponseBody List<NnChannelAutosharing> listChannelAutosharing(@RequestParam Long msoId, @RequestParam Long channelId) {
-		log.info("msoId = " + msoId);
-		log.info("channelId = " + channelId);
-		AutosharingService shareService = new AutosharingService();
-		return shareService.findByChannelAndMso(channelId, msoId);
-	}
-	
-	/**
-	 * List set auto sharing information
-	 * 
-	 * @param msoId mso id
-	 * @param setId set id
-	 * @return list of set auto sharing objects
-	 */
-	@RequestMapping("listChannelSetAutosharing")
-	public @ResponseBody List<NnSetAutosharing> listNnSetAutosharing(@RequestParam Long msoId, @RequestParam Long setId) {
-		log.info("msoId = " + msoId);
-		log.info("setId = " + setId);
-		AutosharingService shareService = new AutosharingService();
-		return shareService.findBySetAndMso(setId, msoId);
-	}
-	
-	/**
-	 * Create channel auto sharing
-	 * 
-	 * @param msoId mso id
-	 * @param channelId channel id
-	 * @param parameter parameters
-	 * @param target target
-	 * @param type type
-	 * @return status in text
-	 */
-	@RequestMapping("createChannelAutosharing")
-	public @ResponseBody String createChannelAutosharing(@RequestParam Long msoId,
-	                                                   @RequestParam Long channelId,
-	                                                   @RequestParam(required=false) String parameter,
-	                                                   @RequestParam(required=false) String target,
-	                                                   @RequestParam Short type) {
-		log.info("msoId = " + msoId);
-		log.info("channelId = " + channelId);
-		log.info("type = " + type);
-		log.info("parameter = " + parameter);
-		log.info("target = " + target);
-		
-		AutosharingService shareService = new AutosharingService();
-		NnChannelAutosharing autosharing = shareService.findChannelAutosharing(msoId, channelId, type);
-		if (autosharing == null) {
-			autosharing = new NnChannelAutosharing(msoId, channelId, type);
-			if (parameter != null) {
-				autosharing.setParameter(parameter);
-			}
-			if (target != null) {
-				autosharing.setTarget(target);
-			}
-			shareService.create(autosharing);
-		} else {
-			autosharing.setParameter(parameter);
-			autosharing.setTarget(target);
-			shareService.save(autosharing);
-		}
-		return "OK";
-	}
-	
-	/**
-	 * Create set auto sharing
-	 * @param msoId mso id
-	 * @param setId set id
-	 * @param type type
-	 */
-	@RequestMapping("createChannelSetAutosharing")
-	public @ResponseBody void createNnSetAutosharing(@RequestParam Long msoId,
-	                                                      @RequestParam Long setId,
-	                                                      @RequestParam Short type) {
-		log.info("msoId == " + msoId);
-		log.info("setId = " + setId);
-		log.info("type = " + type);
-		
-		AutosharingService shareService = new AutosharingService();
-		if (shareService.findSetAutosharing(msoId, setId, type) == null) {
-			shareService.create(new NnSetAutosharing(msoId, setId, type));
-		}
-	}
-
-	/**
-	 * Remove a channel's auto sharing feature
-	 * 
-	 * @param msoId mso id
-	 * @param channelId channel id
-	 * @param type type
-	 * @return status in text
-	 */
-	@RequestMapping("removeChannelAutosharing")
-	public @ResponseBody String removeChannelAutosharing(@RequestParam Long msoId,
-	                                                   @RequestParam Long channelId,
-	                                                   @RequestParam Short type) {
-		log.info("msoId = " + msoId);
-		log.info("channelId = " + channelId);
-		log.info("type = " + type);
-		
-		AutosharingService shareService = new AutosharingService();
-		NnChannelAutosharing autosharing = shareService.findChannelAutosharing(msoId, channelId, type);
-		if (autosharing != null) {
-			shareService.delete(autosharing);
-		}
-		return "OK";
-	}
-	
-	/**
-	 * Remove a set's auto sharing feature
-	 * 
-	 * @param msoId mso id
-	 * @param setId set id
-	 * @param type type
-	 */
-	@RequestMapping("removeNnSetAutosharing")
-	public @ResponseBody void removeNnSetAutosharing(@RequestParam Long msoId,
-	                                                 @RequestParam Long setId,
-	                                                 @RequestParam Short type) {
-		log.info("msoId = " + msoId);
-		log.info("setId = " + setId);
-		log.info("type = " + type);
-		
-		AutosharingService shareService = new AutosharingService();
-		NnSetAutosharing autosharing = shareService.findSetAutosharing(msoId, setId, type);
-		if (autosharing != null) {
-			shareService.delete(autosharing);
-		}
-	}
-
-	/**
-	 * Post the FBPost object to facebook
-	 * 
-	 * @param fbPost FBPost object
-	 */
-	@RequestMapping("postToFacebook")
-	public @ResponseBody void postToFacebook(@RequestBody FBPost fbPost, HttpServletRequest req) {
-		try {
-			log.info("server name: " + req.getServerName());
-			fbPost.setLink(fbPost.getLink().replaceFirst("localhost", req.getServerName()));
-			log.info(fbPost.toString());
-			FacebookLib.postToFacebook(fbPost);
-		} catch (IOException e) {
-			exception(e);
-		}
-	}
-	
-	/**
-	 * Post a FBPost object to twitter
-	 * 
-	 * @param fbPost FBPost object
-	 */
-	@RequestMapping("postToTwitter")
-	public @ResponseBody void postToTwitter(@RequestBody FBPost fbPost, HttpServletRequest req) {
-		try {
-			fbPost.setLink(fbPost.getLink().replaceFirst("localhost", req.getServerName()));
-			log.info(fbPost.toString());
-			FacebookLib.postToTwitter(fbPost);
-		} catch (IOException e) {
-			exception(e);
-		} catch (TwitterException e) {
-			log.info("post to twitter operation terminated : "+e.getErrorMessage());
-		}
-	}
-
-	//////////////////// statistics ////////////////////
-	
-	//////////////////// others ////////////////////		
+    
+    ////////////////////Promotion Tools ////////////////////
+    
+    //////////////////// statistics ////////////////////
+    
+    //////////////////// others ////////////////////		
 	/**
 	 * Change password
 	 * 
@@ -1380,28 +929,6 @@ public class CmsApiController {
 	 */
 	@RequestMapping("changePassword")
 	public @ResponseBody String changePassword(@RequestParam Long msoId, @RequestParam String newPassword, HttpServletRequest req) {
-		
-		MsoManager msoMngr = new MsoManager();
-		NnUserManager userMngr = new NnUserManager();
-		Mso mso = msoMngr.findById(msoId);
-		
-		NnUser user = null;
-		switch (mso.getType()) {
-		case Mso.TYPE_NN:
-		case Mso.TYPE_3X3:
-		case Mso.TYPE_ENTERPRISE:
-		case Mso.TYPE_MSO:
-			user = userMngr.findMsoUser(mso);
-			break;
-		case Mso.TYPE_TCO:
-			user = userMngr.findTcoUser(mso, NnUserManager.getShardByLocale(req));
-			break;
-		default:
-		}
-		if (user == null)
-			return "Invalid msoType";
-		user.setPassword(newPassword);
-		userMngr.resetPassword(user);
 		
 		return "OK";
 	}
@@ -1428,11 +955,8 @@ public class CmsApiController {
 		
 		EmailService emailService = new EmailService();
 		msgBody = "from: "+from+" , "+msgBody;
-		NnEmail email = new NnEmail(subject, msgBody);
-		email.setToEmail("flipr@9x9cloud.tv");
-		email.setToName("flipr");
-		email.setReplyToEmail(from);
-		emailService.sendEmail(email);		
+		NnEmail email = new NnEmail("flipr@9x9cloud.tv", "flipr", from, null, from, subject, msgBody);
+		emailService.sendEmail(email, null, null);		
 		return "OK";
 	}
 	

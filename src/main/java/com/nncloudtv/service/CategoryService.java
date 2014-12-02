@@ -249,7 +249,7 @@ public class CategoryService {
             }
         }
         
-        NNF.getSysTagMapMngr().save(newChannels);
+        NNF.getSysTagMapMngr().saveAll(newChannels);
     }
     
     /**
@@ -265,7 +265,7 @@ public class CategoryService {
         
         List<SysTagMap> sysTagMaps = NNF.getSysTagMapMngr().findAll(categoryId, channelIds);
         
-        NNF.getSysTagMapMngr().delete(sysTagMaps);
+        NNF.getSysTagMapMngr().deleteAll(sysTagMaps);
     }
     
     /**

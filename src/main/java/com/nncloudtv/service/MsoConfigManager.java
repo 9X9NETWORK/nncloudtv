@@ -192,7 +192,7 @@ public class MsoConfigManager {
     
     public MsoConfig save(Mso mso, MsoConfig config) {
         config.setUpdateDate(NnDateUtil.now());
-        if (mso.getType() == Mso.TYPE_NN)
+        if (mso.getType() == Mso.TYPE_SYS)
             processCache(config);
         return configDao.save(config);
     }

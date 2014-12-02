@@ -74,7 +74,7 @@ public class Mso implements PersistentModel {
     
     @Persistent
     private short type;
-    public static final short TYPE_NN         = 1; //default mso, must have and must have ONLY one
+    public static final short TYPE_SYS        = 1; //default mso, must have and must have ONLY one
     public static final short TYPE_MSO        = 2;
     public static final short TYPE_3X3        = 3;
     public static final short TYPE_TCO        = 4; // for Generic CMS

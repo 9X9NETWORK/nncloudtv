@@ -35,7 +35,7 @@ public class SysTagMapManager {
         return NNF.getSysTagMapDao().save(sysTagMap);
     }
     
-    public Collection<SysTagMap> save(Collection<SysTagMap> sysTagMaps) {
+    public Collection<SysTagMap> saveAll(Collection<SysTagMap> sysTagMaps) {
         Date now = NnDateUtil.now();
         for (SysTagMap sysTagMap : sysTagMaps) {
             if (sysTagMap.getCreateDate() == null)
@@ -85,7 +85,7 @@ public class SysTagMapManager {
         dao.delete(sysTagMap);
     }
     
-    public void delete(List<SysTagMap> sysTagMaps) {
+    public void deleteAll(List<SysTagMap> sysTagMaps) {
         
         dao.deleteAll(sysTagMaps);
     }

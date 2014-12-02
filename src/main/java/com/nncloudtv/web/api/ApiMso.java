@@ -736,7 +736,7 @@ public class ApiMso extends ApiGeneric {
             }
             map.setSeq((short) (seq + 1));
         }
-        NNF.getSysTagMapMngr().save(origList);
+        NNF.getSysTagMapMngr().saveAll(origList);
         
         msgResponse(resp, OK);
     }
