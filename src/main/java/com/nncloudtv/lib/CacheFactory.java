@@ -116,25 +116,19 @@ public class CacheFactory {
     
     public static Object get(String key) {
         
-        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
-        
-        if (cache == null) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty() || cache == null) return null;
         
         Object obj = null;
-        Future<Object> future = null;
         try {
-            future = cache.asyncGet(key);
-            obj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS); // Asynchronously 
+            obj = cache.asyncGet(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS); // Asynchronously 
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            if (future != null)
-                future.cancel(false);
         }
+        
         return obj;
     }
     
@@ -147,22 +141,16 @@ public class CacheFactory {
         
         if (!isEnabled || !isRunning || key == null || key.isEmpty() || cache == null) return null;
         
-        Future<Object> future = null;
         Object retObj = null;
         try {
             cache.set(key, exp == 0 ? EXP_DEFAULT : exp, obj);
-            future = cache.asyncGet(key);
-            retObj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+            retObj = cache.asyncGet(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-            if (future != null)
-                future.cancel(false);
         }
         
         if (retObj == null) {
@@ -193,9 +181,8 @@ public class CacheFactory {
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
+        
         if (isDeleted) {
             System.out.println(String.format("[cache] mass: %d --> deleted", keys.size()));
         } else {
@@ -218,9 +205,8 @@ public class CacheFactory {
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
+        
         if (isDeleted) {
             System.out.println(String.format("[cache] {%s} deleted", key));
         } else {
@@ -238,8 +224,6 @@ public class CacheFactory {
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         
         System.out.println(String.format("[cache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
