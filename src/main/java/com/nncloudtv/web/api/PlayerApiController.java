@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
@@ -1077,6 +1078,8 @@ public class PlayerApiController {
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
             output = playerApiService.programInfo(ctx, channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
+        } catch (NotPurchasedException e){
+            output = ctx.assemblePlayerMsgs(NnStatusCode.IAP_NOT_PURCHASED);
         } catch (Exception e){
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {

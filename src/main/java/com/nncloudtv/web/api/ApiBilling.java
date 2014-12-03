@@ -455,14 +455,13 @@ public class ApiBilling extends ApiGeneric {
     public @ResponseBody List<NnItem> items(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
-        ApiContext ctx = new ApiContext(req);
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null) {
             notFound(resp, CHANNEL_NOT_FOUND);
             return null;
         }
         
-        return NNF.getItemMngr().findByChannelIdAndMsoId(channel.getId(), ctx.getMsoId());
+        return NNF.getItemMngr().findByChannelId(channel.getId());
     }
     
     @RequestMapping(value = "channels/{channelId}/iap_info", method = RequestMethod.GET)

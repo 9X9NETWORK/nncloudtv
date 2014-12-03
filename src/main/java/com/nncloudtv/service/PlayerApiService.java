@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -1048,7 +1049,7 @@ public class PlayerApiService {
                                   String episodeIdStr, String userToken,
                                   String ipgId, boolean userInfo, String sidx,
                                   String limit, String start,
-                                  String count, String time) {
+                                  String count, String time) throws NotPurchasedException {
         
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
@@ -1126,8 +1127,6 @@ public class PlayerApiService {
         
         log.info("sidx = " + startI + ";" + "end = " + end);
         
-        int status = NnStatusCode.SUCCESS;
-        List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
             user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
             if (user == null) {
@@ -1149,25 +1148,23 @@ public class PlayerApiService {
                 }
             } else {
                 
-                programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt());
-                playerProgramInfo.setProgramInfo(programInfoJson);
+                playerProgramInfo.setProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt()));
             }
         } else {
             for (String chIdStr : chArr) {
                 NnChannel channel = NNF.getChannelMngr().findById(chIdStr);
                 if (channel != null) {
                     if (channel.isPaidChannel() && NNF.getPurchaseMngr().isPurchased(ctx, channel.getId()) == false)
-                        status = NnStatusCode.IAP_NOT_PURCHASED;
+                        throw new NotPurchasedException();
                     if (ctx.getVer() < 32) {
-                        programInfoStr = new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
+                        programInfoStr += new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
                     } else {
                         if (ctx.isPlainFmt()) {
                             programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
                             if (pagination)
                                 paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
                         } else {
-                            programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
-                            playerProgramInfo.setProgramInfo(programInfoJson);
+                            playerProgramInfo.addProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx));
                         }
                     }
                 }
@@ -1191,11 +1188,11 @@ public class PlayerApiService {
             result.add(paginationStr);
             
         if (ctx.isJsonFmt()) {
-            return ctx.assemblePlayerMsgs(status, playerProgramInfo);
+            return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, playerProgramInfo);
         } else {
             result.add(programInfoStr);
             String size[] = new String[result.size()];
-            return ctx.assemblePlayerMsgs(status, result.toArray(size));
+            return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result.toArray(size));
         }
     }
     
