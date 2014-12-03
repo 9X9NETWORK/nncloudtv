@@ -3191,20 +3191,13 @@ public class PlayerApiService {
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    public Object addPurchase(ApiContext ctx, String userToken, String productIdRef, String purchaseToken) {
+    public Object addPurchase(ApiContext ctx, String productIdRef, String purchaseToken) {
         
         if (purchaseToken == null || productIdRef == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
         }
         
-        if (userToken == null) {
-            userToken = ctx.getCookie(CookieHelper.USER);
-            if (userToken == null) {
-                return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
-            }
-        }
-        
-        NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
         }
