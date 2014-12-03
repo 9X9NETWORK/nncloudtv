@@ -1,5 +1,6 @@
 package com.nncloudtv.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,9 +20,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
-import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -61,7 +60,7 @@ public class NnProgramManager {
     }
     
     public void create(NnChannel channel, NnProgram program) {
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         program.setCreateDate(now);
         program.setUpdateDate(now);
         program.setChannelId(channel.getId());
@@ -87,9 +86,7 @@ public class NnProgramManager {
      * @param programs
      * @return programs
      */
-    public Collection<NnProgram> save(Collection<NnProgram> programs) {
-        
-        List<Long> channelIds = new ArrayList<Long>();
+    public Collection<NnProgram> saveAll(Collection<NnProgram> programs) {
         
         for (NnProgram program : programs) {
             Date now = NnDateUtil.now();
@@ -98,20 +95,9 @@ public class NnProgramManager {
             if (program.getUpdateDate() == null) {
                 program.setUpdateDate(now);
             }
-            
-            if (channelIds.indexOf(program.getChannelId()) < 0) {
-                channelIds.add(program.getChannelId());
-            }
         }
         
-        programs = dao.saveAll(programs);
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            resetCache(channelId);
-        }
-        
-        return programs;
+        return dao.saveAll(programs);
     }
     
     public NnProgram save(NnProgram program) {
@@ -120,85 +106,51 @@ public class NnProgramManager {
             return program;
         }
         
-        Date now = new Date();
+        Date now = NnDateUtil.now();
         
         if (program.getCreateDate() == null)
             program.setCreateDate(now);
         
         program.setUpdateDate(now);
-        program = dao.save(program);
+        return dao.save(program);
         
-        resetCache(program.getChannelId());
-        
-        return program;
     }
     
     public void delete(NnProgram program) {
         
-        if (program == null) {
-            return;
-        }
+        if (program == null) return;
         
         // delete titleCards
         TitleCardManager titleCardMngr = new TitleCardManager();
-        List<TitleCard> titleCards = titleCardMngr.findByProgramId(program.getId());
-        titleCardMngr.delete(titleCards);
+        titleCardMngr.deleteAll(titleCardMngr.findByProgramId(program.getId()));
         
         // delete poiPoints at program level
-        List<PoiPoint> points = NNF.getPoiPointMngr().findByProgram(program.getId());
-        if (points != null && points.size() > 0) {
-            NNF.getPoiPointMngr().delete(points);
-        }
+        PoiPointManager pointMngr = NNF.getPoiPointMngr();
+        pointMngr.delete(pointMngr.findByProgramId(program.getId()));
         
-        long cId = program.getChannelId();
         dao.delete(program);
-        resetCache(cId);
     }
     
-    public void delete(List<NnProgram> programs) {
+    public void deleteAll(List<NnProgram> programs) {
         
         if (programs == null || programs.size() == 0) {
             return;
         }
         
         // delete titleCards, delete poiPoints at program level
+        PoiPointManager pointMngr = NNF.getPoiPointMngr();
         TitleCardManager titlecardMngr = new TitleCardManager();
-        List<TitleCard> titlecards = null;
-        List<TitleCard> titlecardDeleteList = new ArrayList<TitleCard>();
-        List<PoiPoint> points = null;
-        List<PoiPoint> pointDeleteList = new ArrayList<PoiPoint>();
-        for (NnProgram program : programs) { // TODO : sql in loop is bad
-            titlecards = null;
-            points = null;
-            
-            titlecards = titlecardMngr.findByProgramId(program.getId());
-            if (titlecards != null && titlecards.size() > 0) {
-                titlecardDeleteList.addAll(titlecards);
-            }
-            
-            points = NNF.getPoiPointMngr().findByProgram(program.getId());
-            if (points != null && points.size() > 0) {
-                pointDeleteList.addAll(points);
-            }
-        }
-        titlecardMngr.delete(titlecardDeleteList);
-        NNF.getPoiPointMngr().delete(pointDeleteList);
-        
-        List<Long> channelIds = new ArrayList<Long>();
-        
+        List<TitleCard> titleCards = new ArrayList<TitleCard>();
+        List<PoiPoint> poiPoints = new ArrayList<PoiPoint>();
         for (NnProgram program : programs) {
             
-            if (channelIds.indexOf(program.getChannelId()) < 0) {
-                channelIds.add(program.getChannelId());
-            }
+            titleCards.addAll(titlecardMngr.findByProgramId(program.getId()));
+            poiPoints.addAll(pointMngr.findByProgramId(program.getId()));
         }
+        titlecardMngr.deleteAll(titleCards);
+        pointMngr.delete(poiPoints);
         
         dao.deleteAll(programs);
-        
-        log.info("channel count = " + channelIds.size());
-        for (Long channelId : channelIds) {
-            resetCache(channelId);
-        }
     }
     
     public NnProgram findByChannelAndStorageId(long channelId, String storageId) {
@@ -251,11 +203,11 @@ public class NnProgramManager {
             if (programInfo != null) {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", cacheKey = " + cacheKey);
                 if (format == ApiContext.FORMAT_PLAIN) {
-                    output += (String)programInfo;
-                    CacheFactory.set(cacheKey, programInfo);
+                    output += (String) programInfo;
+                    CacheFactory.set(cacheKey, (String) programInfo);
                 } else {
-                    json.addAll((ArrayList<ProgramInfo>)programInfo);
-                    CacheFactory.set(cacheKey, programInfo);
+                    json.addAll((ArrayList<ProgramInfo>) programInfo);
+                    CacheFactory.set(cacheKey, (ArrayList<ProgramInfo>) programInfo);
                 }
             } else {
                 log.info("save lastProgramInfo to cache, channelId = " + channel.getId() + ", though its empty");
@@ -356,7 +308,7 @@ public class NnProgramManager {
         keys.addAll(CacheFactory.getAllChannelInfoKeys(channelId));
         
         log.info("cache key count = " + keys.size());
-        CacheFactory.delete(keys);
+        CacheFactory.deleteAll(keys);
     }
     
     public int total() {
@@ -396,7 +348,7 @@ public class NnProgramManager {
             programs.get(i).setSubSeq(i + 1);
         }
         
-        save(programs);
+        saveAll(programs);
         
     }
     
@@ -459,40 +411,19 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, short time, String userToken, ApiContext ctx)
-            throws NotPurchasedException {
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) { return ""; }
-        
-        // paid channel check
-        if (channel.isPaidChannel()) {
-            String errMsg = "paid channel";
-            if (userToken == null) {
-                userToken = ctx.getCookie(CookieHelper.USER);
-                if (userToken == null)
-                    throw new NotPurchasedException(errMsg);
-            }
-            NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
-            if (user == null) {
-                throw new NotPurchasedException(errMsg);
-            }
-            if (NNF.getPurchaseMngr().isPurchased(user, channel) == false) {
-                throw new NotPurchasedException(errMsg);
-            }
-        }
+    public Object findPlayerProgramInfoByChannel(NnChannel channel, int start, int end, short time, ApiContext ctx) {
         
         //don't cache dayparting for now
         log.info("time:" + time);
         String cacheKey = null;
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
-            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVer(), ctx.getFmt());
+            cacheKey = CacheFactory.getProgramInfoKey(channel.getId(), start, ctx.getVer(), ctx.getFmt());
             if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
                     if (result != null) {
-                        log.info("cached programInfo, channelId = " + cacheKey);
+                        log.info("cached programInfo, cacheKey = " + cacheKey);
                         return result;
                     }
                 } catch (Exception e) {
@@ -504,7 +435,7 @@ public class NnProgramManager {
         if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);
-                CacheFactory.set(cacheKey, output);
+                CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
             }
         }
         return output;
@@ -1021,30 +952,9 @@ public class NnProgramManager {
                 }
                 iCounter++;
             }
-            //////// start of episode magic \\\\\\\\
-            // use referenced episode to rewrite current episode
-            if (episode.getStorageId() > 0) {
-                NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
-                if (reference != null) {
-                    log.info("ep" + episode.getId() + " reference to ep" + reference.getId());
-                    episode.setId(reference.getId());
-                    episode.setChannelId(reference.getChannelId());
-                    episode.setStorageId(0);
-                }
-            }
-            // if episode is come from another channel
-            // temporarily use storageId to store foreign channel
-            long real = episode.getChannelId();
-            if (real != 0 && real != channel.getId()) {
-                episode.setStorageId(real);
-                episode.setChannelId(channel.getId());
-            } else {
-                episode.setStorageId(0);
-            }
-            //////// end of episode magic \\\\\\\\
             if (format == ApiContext.FORMAT_PLAIN) {
                 poiStr = poiStr.replaceAll("\\|$", "");
-                result += composeEachEpisodeInfo(episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
+                result += composeEachEpisodeInfo(channel.getId(), episode, name, intro, imageUrl, imageLargeUrl, videoUrl, duration, card, contentType, poiStr, format);
             } else {
                 info.setSubEpisodes(subEpisodes);
             }
@@ -1069,10 +979,10 @@ public class NnProgramManager {
     }
     
     public Object composeEachEpisodeInfo(
-            NnEpisode episode, String name,          String intro,
-            String imageUrl,   String imageLargeUrl, String videoUrl,
-            String duration,   String card,          String contentType,
-            String poiStr,     short format) {
+            long channelId,     NnEpisode episode, String name,
+            String intro,       String imageUrl,   String imageLargeUrl,
+            String videoUrl,    String duration,   String card,
+            String contentType, String poiStr,     short format) {
         
         //zero file to play
         name = this.removePlayerUnwanted(name);
@@ -1087,16 +997,16 @@ public class NnProgramManager {
             publishTime = episode.getScheduleDate().getTime();
         }
         
-        String cId = String.valueOf(episode.getChannelId());
-        if (episode.getChannelId() == 0) { // orphan episode
-            
-            cId = String.valueOf(episode.getStorageId());
-            
-        } else if (episode.getStorageId() != 0) { // virtual channel
-            
-            cId += ":" + String.valueOf(episode.getStorageId());
-        }
+        String cId = String.valueOf(channelId);
         String eId = "e" + String.valueOf(episode.getId());
+        String epRef = "";
+        if (episode.getStorageId() > 0) {
+            NnEpisode reference = NNF.getEpisodeMngr().findById(episode.getStorageId());
+            if (reference != null) {
+                cId += ":" + reference.getChannelId();
+                epRef += "e" + reference.getId();
+            }
+        }
         
         if (format == ApiContext.FORMAT_PLAIN) {
             
@@ -1111,9 +1021,9 @@ public class NnProgramManager {
                     imageUrl,
                     imageLargeUrl, //imageLargeUrl
                     videoUrl,
-                    "",     //url2
-                    "",     //url3
-                    "",     //audio file
+                    "",    //url2
+                    "",    //url3
+                    epRef, // episode reference
                     String.valueOf(publishTime), // or scheduleTime
                     String.valueOf(episode.isPublic()),
                     card,
@@ -1161,7 +1071,7 @@ public class NnProgramManager {
             imageUrl = imageUrl.replaceAll(regexPod, pod);
         }
         if (program.getPublishDate() == null) {
-            program.setPublishDate(new Date()); //should not happen, just in case
+            program.setPublishDate(NnDateUtil.now()); //should not happen, just in case
         }
         
         long   channelId    = program.getChannelId();

@@ -215,6 +215,7 @@ public class ApiUser extends ApiGeneric {
             
             channelMngr.normalize(channel);
             channelMngr.populateMoreImageUrl(channel);
+            channelMngr.populateCntItem(channel);
             channelMngr.populateAutoSync(channel);
             
             channel.setPlaybackUrl(NnStringUtil.getSharingUrl(false, null, channel.getId(), null));
@@ -422,12 +423,14 @@ public class ApiUser extends ApiGeneric {
         if (categoryId != null && CategoryService.isSystemCategory(categoryId)) {
             
             NNF.getCategoryService().setupChannelCategory(categoryId, channel.getId());
+            channel.setCategoryId(categoryId);
         }
         
         // autoSync
         String autoSync = ctx.getParam("autoSync");
         if (autoSync != null) {
             channelMngr.populateAutoSync(channel.getId(), autoSync);
+            channel.setAutoSync(autoSync);
         }
         // bannerImageUrl
         String bannerImage = ctx.getParam("bannerImageUrl");
@@ -442,11 +445,6 @@ public class ApiUser extends ApiGeneric {
         channel = channelMngr.save(channel);
         
         channelMngr.reorderUserChannels(user);
-        channelMngr.populateCategoryId(channel);
-        channelMngr.populateSocialFeeds(channel);
-        channelMngr.populateBannerImageUrl(channel);
-        channelMngr.populateAutoSync(channel);
-        channelMngr.normalize(channel);
         
         return channel;
     }

@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "poi_event", detachable = "true")
-public class PoiEvent {
+public class PoiEvent implements PersistentModel {
+    
+    private static final long serialVersionUID = -788382253003241649L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long userId; // will be replaced by profileId
@@ -43,7 +58,6 @@ public class PoiEvent {
     public static final short TYPE_SCHEDULEDNOTIFICATION = 3;
     public static final short TYPE_POLL = 4;
     
-    
     /**
      * json format, example
      * 
@@ -67,14 +81,6 @@ public class PoiEvent {
         
     @Persistent
     private Date updateDate;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public short getType() {
         return type;

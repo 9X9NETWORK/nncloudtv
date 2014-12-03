@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
+import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.dao.GenericDao;
@@ -25,7 +26,7 @@ public class MsoDao extends GenericDao<Mso> {
         try {
             Query query = pm.newQuery(Mso.class);
             name = name.toLowerCase();
-            query.setFilter("name == '" + name + "'");
+            query.setFilter("name == " + NnStringUtil.escapedQuote(name));
             @SuppressWarnings("unchecked")
             List<Mso> results = (List<Mso>) query.execute(name);
             if (results.size() > 0) {

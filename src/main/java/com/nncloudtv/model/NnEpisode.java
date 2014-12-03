@@ -1,7 +1,6 @@
 package com.nncloudtv.model;
 
 import java.util.Date;
-import java.util.logging.Logger;
 
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -17,13 +16,26 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.CounterFactory;
 
 @PersistenceCapable(table = "nnepisode", detachable = "true")
-public class NnEpisode {
+public class NnEpisode implements PersistentModel {
     
-    protected static final Logger log = Logger.getLogger(NnEpisode.class.getName());
+    private static final long serialVersionUID = 3687908909550384068L;
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private long channelId;
@@ -33,7 +45,6 @@ public class NnEpisode {
      * 
      * 1. orphan episode:     store channelId (at the meanwhile channelId=0)
      * 2. referenced episode: store referenced episodeId
-     * 3. virtual channel:    store real channelId (temporarily used in composeEachEpisodeInfo())
      */
     @Persistent
     private long storageId;
@@ -91,14 +102,6 @@ public class NnEpisode {
         this.updateDate = now;
         this.publishDate = now;
     } 
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public String getName() {
         return name;
@@ -181,7 +184,7 @@ public class NnEpisode {
             NnLogUtil.logException(e);
             cntView = 0;
         }
-        CacheFactory.set(cacheName, String.valueOf(cntView));
+        CacheFactory.set(cacheName, String.valueOf(cntView), CacheFactory.EXP_ONE_DAY);
         return cntView;
     }
     

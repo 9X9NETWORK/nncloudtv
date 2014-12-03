@@ -15,9 +15,10 @@
 
 package com.nncloudtv.model;
 
+import java.util.Date;
+
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -27,14 +28,28 @@ import com.nncloudtv.lib.NnStringUtil;
 
 /**
  * Represents a counter in the datastore and stores the number of shards.
- *
  */
-@PersistenceCapable(table = "counter", detachable = "true", identityType = IdentityType.APPLICATION)
-public class Counter {
+@PersistenceCapable(table = "counter", detachable = "true")
+public class Counter implements PersistentModel {
+    
+    private static final long serialVersionUID = -3785260187645061818L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Unique
     @Persistent
@@ -49,10 +64,6 @@ public class Counter {
       this.numShards = 0;
     }
     
-    public long getId() {
-      return id;
-    }
-    
     public String getCounterName() {
       return counterName;
     }
@@ -63,5 +74,25 @@ public class Counter {
     
     public void setNumShards(int numShards) {
         this.numShards = numShards;
+    }
+    
+    public void setUpdateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getUpdateDate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void setCreateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getCreateDate() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

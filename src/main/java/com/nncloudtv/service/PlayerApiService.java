@@ -969,7 +969,7 @@ public class PlayerApiService {
             NNF.getUserMngr().save(user, false); //change last login time (ie updateTime)
             this.setUserCookie(resp, CookieHelper.USER, user.getToken());
             if (ctx.isPlainFmt()) {
-                String[] raw = {(String)result};
+                String[] raw = {(String) result};
                 return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, raw);
             }
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
@@ -1127,7 +1127,6 @@ public class PlayerApiService {
         
         log.info("sidx = " + startI + ";" + "end = " + end);
         
-        List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
             user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
             if (user == null) {
@@ -1136,26 +1135,6 @@ public class PlayerApiService {
                     return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
                 else
                     return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS);
-            }
-        } else if (chArr.length > 1) {
-            
-            List<Long> list = new ArrayList<Long>();
-            for (int i = 0; i < chArr.length; i++) { list.add(Long.valueOf(chArr[i])); }
-            for (Long l : list) {
-                if (ctx.getVer() < 32) {
-                    programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
-                } else {
-                    if (ctx.isPlainFmt()) {
-                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                        if (pagination) {
-                            NnChannel c = NNF.getChannelMngr().findById(l);
-                            if (c != null)
-                                paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                        }
-                    } else {
-                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                    }
-                }
             }
         } else if (orphanEpisode != null) {
             
@@ -1169,36 +1148,25 @@ public class PlayerApiService {
                 }
             } else {
                 
-                programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt());
-                playerProgramInfo.setProgramInfo(programInfoJson);
+                playerProgramInfo.setProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt()));
             }
         } else {
-            if (ctx.getVer() < 32) {
-                programInfoStr = new IosService().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end);
-                if (programInfoStr != null && ctx.isIos()) {
-                    String[] lines = programInfoStr.split("\n");
-                    String debugStr = "";
-                    if (lines.length > 0) {
-                        for (int i=0; i<lines.length; i++) {
-                            String[] tabs = lines[i].split("\t");
-                            if (tabs.length > 1)
-                                debugStr += tabs[1] + "; ";
+            for (String chIdStr : chArr) {
+                NnChannel channel = NNF.getChannelMngr().findById(chIdStr);
+                if (channel != null) {
+                    if (channel.isPaidChannel() && NNF.getPurchaseMngr().isPurchased(ctx, channel.getId()) == false)
+                        throw new NotPurchasedException();
+                    if (ctx.getVer() < 32) {
+                        programInfoStr += new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
+                    } else {
+                        if (ctx.isPlainFmt()) {
+                            programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
+                            if (pagination)
+                                paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
+                        } else {
+                            playerProgramInfo.addProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx));
                         }
                     }
-                    log.info("ios program info debug string:" + debugStr);
-                }
-            } else {
-                if (ctx.isPlainFmt()) {
-                    long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, userToken, ctx);
-                    if (pagination) {
-                        NnChannel c = NNF.getChannelMngr().findById(cId);
-                        if (c != null)
-                            paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                    }
-                } else {
-                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, userToken, ctx);
-                    playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
         }
@@ -1509,7 +1477,7 @@ public class PlayerApiService {
             String subject = "[" + ctx.getMsoName() + "]";
             subject += (type != null) ? (" - [" + type + "]") : "" ;
             SimpleDateFormat sdf = new SimpleDateFormat("mm/dd/yyyy");
-        	String date = sdf.format(new Date()); 
+        	String date = sdf.format(NnDateUtil.now()); 
             subject += " (" + date + ")";
             log.info("subject:" + subject);
             log.info("content:" + body);
@@ -3223,20 +3191,13 @@ public class PlayerApiService {
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
     }
     
-    public Object addPurchase(ApiContext ctx, String userToken, String productIdRef, String purchaseToken) {
+    public Object addPurchase(ApiContext ctx, String productIdRef, String purchaseToken) {
         
         if (purchaseToken == null || productIdRef == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
         }
         
-        if (userToken == null) {
-            userToken = ctx.getCookie(CookieHelper.USER);
-            if (userToken == null) {
-                return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
-            }
-        }
-        
-        NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
         }
@@ -3260,19 +3221,12 @@ public class PlayerApiService {
         
         NNF.getPurchaseMngr().verifyPurchase(purchase, ctx.isProductionSite());
         
-        return getPurchases(ctx, userToken);
+        return getPurchases(ctx);
     }
     
-    public Object getPurchases(ApiContext ctx, String userToken) {
+    public Object getPurchases(ApiContext ctx) {
         
-        if (userToken == null) {
-            userToken = ctx.getCookie(CookieHelper.USER);
-            if (userToken == null) {
-                return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
-            }
-        }
-        
-        NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
         }
@@ -3286,7 +3240,8 @@ public class PlayerApiService {
                 log.warning("item not found, itemId = " + purchase.getItemId());
                 continue;
             }
-            if (item.getMsoId() == ctx.getMsoId() && purchase.isVerified()) {
+            if (item.getMsoId() == ctx.getMsoId() &&
+                purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE) {
                 
                 purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
             }
@@ -3304,7 +3259,8 @@ public class PlayerApiService {
         String purchasesStr = "";
         for (NnItem item : items) {
             
-            purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
+            if (item.getStatus() == NnItem.ACTIVE)
+                purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
         }
         
         String[] result = { purchasesStr };

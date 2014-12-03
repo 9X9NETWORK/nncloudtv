@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.LocaleTable;
@@ -342,7 +343,8 @@ public class CategoryService {
         if (hit == null) {
             log.info(String.format("create systagmap (%d, %d)", categoryId, channelId));
             mapMngr.save(new SysTagMap(categoryId, channelId));
-            // TODO clean cache
+            // clean cache
+            CacheFactory.delete(CacheFactory.getSystemCategoryKey(channelId));
         } else {
             log.info("categoryId not changed");
         }

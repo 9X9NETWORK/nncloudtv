@@ -1,7 +1,6 @@
 package com.nncloudtv.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
@@ -116,25 +116,18 @@ public class SysTagDisplayManager {
     public SysTagDisplay findByName(String name, long msoId) {
         return dao.findByName(name);
     }
-        
+    
     public SysTagDisplay save(SysTagDisplay sysTagDisplay) {
         
-        if (sysTagDisplay == null) {
-            return null;
-        }
-        
-        Date now = new Date();
-        sysTagDisplay.setUpdateDate(now);
-        
+        if (sysTagDisplay == null) return null;
+        sysTagDisplay.setUpdateDate(NnDateUtil.now());
         sysTagDisplay = dao.save(sysTagDisplay);
         
         return sysTagDisplay;
     }
     
     public void delete(SysTagDisplay sysTagDisplay) {
-        if (sysTagDisplay == null) {
-            return ;
-        }
+        if (sysTagDisplay == null) return ;
         dao.delete(sysTagDisplay);
     }
     

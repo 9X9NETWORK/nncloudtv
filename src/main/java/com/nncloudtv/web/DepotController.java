@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.nncloudtv.lib.AmazonLib;
-import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -38,7 +36,6 @@ import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
 import com.nncloudtv.model.SysTagDisplay;
-import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.DepotService;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.service.NnChannelManager;
@@ -69,15 +66,8 @@ import com.nncloudtv.web.json.transcodingservice.RtnProgram;
 @Controller
 @RequestMapping("podcastAPI")
 public class DepotController {
-
+    
     protected static final Logger log = Logger.getLogger(DepotController.class.getName());
-    
-    private DepotService depotService;
-    
-    @Autowired
-    public DepotController(DepotService depotService) {
-        this.depotService = depotService;
-    }
     
     @ExceptionHandler(Exception.class)
     public @ResponseBody PostResponse exception(Exception e, HttpServletRequest req, HttpServletResponse resp) {
@@ -123,9 +113,9 @@ public class DepotController {
         PostResponse resp = new PostResponse(
                 String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));        
         try {
-            resp = depotService.updateProgram(rtnProgram);
+            resp = NNF.getDepotService().updateProgram(rtnProgram);
         } catch (Exception e) {
-            resp = depotService.handleException(e);
+            resp = NNF.getDepotService().handleException(e);
         }
         log.info(resp.getErrorCode());
         return NnNetUtil.textReturn("OK");
@@ -451,7 +441,7 @@ public class DepotController {
             } else {
                 channels = channelMngr.findMaples();
             }
-            String[] transcodingEnv = depotService.getTranscodingEnv(req);        
+            String[] transcodingEnv = NNF.getDepotService().getTranscodingEnv(req);        
             String callbackUrl = transcodingEnv[1];        
             List<Channel> cs = new ArrayList<Channel>();
             for (NnChannel c : channels) {
@@ -467,7 +457,7 @@ public class DepotController {
             info.setChannels(cs);
             info.setCallBack(callbackUrl);
         } catch (Exception e) {
-            PostResponse resp = depotService.handleException(e);
+            PostResponse resp = NNF.getDepotService().handleException(e);
             info.setErrorCode(resp.getErrorCode());
             info.setErrorReason(resp.getErrorReason());
         }
@@ -495,9 +485,9 @@ public class DepotController {
         PostResponse resp = new PostResponse(
             String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));
         try {
-            resp = depotService.updateChannel(podcast);
+            resp = NNF.getDepotService().updateChannel(podcast);
         } catch (Exception e) {
-            resp = depotService.handleException(e);
+            resp = NNF.getDepotService().handleException(e);
         }
         return resp;
     }
@@ -532,9 +522,9 @@ public class DepotController {
         PostResponse resp = new PostResponse(
                 String.valueOf(NnStatusCode.ERROR), NnStatusMsg.getPlayerMsg(NnStatusCode.ERROR));
         try {
-            resp = depotService.updateChannel(podcast);
+            resp = NNF.getDepotService().updateChannel(podcast);
         } catch (Exception e) {
-            resp = depotService.handleException(e);
+            resp = NNF.getDepotService().handleException(e);
         }
         return resp;
     }
@@ -555,12 +545,12 @@ public class DepotController {
         
         List<Counter> counters = NNF.getCounterDao().getViewCounters();
         log.info("reset counters size = " + counters.size());
-        for (Counter counter : counters) {
-            String counterName = counter.getCounterName();
-            long count = CounterFactory.getCount(counterName);
-            log.info(String.format("cache name = %s, value = %d", counterName, count));
-            CacheFactory.set(counterName, String.valueOf(count));
-        }
+//        for (Counter counter : counters) {
+//            String counterName = counter.getCounterName();
+//            long count = CounterFactory.getCount(counterName);
+//            log.info(String.format("cache name = %s, value = %d", counterName, count));
+//            CacheFactory.set(counterName, String.valueOf(count));
+//        }
         return "OK";
     }
     

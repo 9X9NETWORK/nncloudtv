@@ -18,10 +18,10 @@ import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.Mso;
-import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.web.api.ApiContext;
 
 @Service
 public class NnPurchaseManager {
@@ -32,11 +32,7 @@ public class NnPurchaseManager {
     
     public List<NnPurchase> findByUser(NnUser user) {
         
-        if (user == null) {
-            return null;
-        }
-        
-        return dao.findByUserIdStr(user.getIdStr());
+        return user == null ? null : dao.findByUserIdStr(user.getIdStr());
     }
     
     public void verifyPurchase(NnPurchase purchase, boolean isProduction) {
@@ -172,24 +168,19 @@ public class NnPurchaseManager {
     
     public NnPurchase findByUserAndItem(NnUser user, NnItem item) {
         
-        return dao.findOne(user.getIdStr(), item.getId());
+        return dao.findByUserAndItem(user.getIdStr(), item.getId());
     }
     
-    // TODO: rewrite
-    public boolean isPurchased(NnUser user, NnChannel channel) {
+    public boolean isPurchased(ApiContext ctx, long channelId) {
         
-        if (user == null || channel == null) { return false; }
-        
-        List<NnPurchase> purchases = findByUser(user);
-        
-        for (NnPurchase purchase : purchases) {
-            
-            NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
-            
-            if (item.getChannelId() == channel.getId()) {
-                
+        List<NnItem> items = NNF.getItemMngr().findByChannelIdAndMsoId(channelId, ctx.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(0);
+        if (user == null)
+            return false;
+        for (NnItem item : items) {
+            NnPurchase purchase = dao.findByUserAndItem(user.getIdStr(), item.getId());
+            if (purchase != null && purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE)
                 return true;
-            }
         }
         
         return false;

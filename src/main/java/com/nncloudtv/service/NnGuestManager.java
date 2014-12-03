@@ -1,30 +1,29 @@
 
 package com.nncloudtv.service;
-import java.util.Date;
-
 import javax.servlet.http.HttpServletRequest;
 
 import com.nncloudtv.dao.NnGuestDao;
 import com.nncloudtv.lib.NNF;
+import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.json.player.UserInfo;
 
 public class NnGuestManager {
-
+    
     private NnGuestDao guestDao = new NnGuestDao();
     
     public void save(NnGuest guest, HttpServletRequest req) {
         if (guest.getCreateDate() == null)
-            guest.setCreateDate(new Date());
+            guest.setCreateDate(NnDateUtil.now());
         if (guest.getShard() == 0) {
             short shard = NNF.getUserMngr().getShardByLocale(req);
             guest.setShard(shard);
         }
         guestDao.save(guest);
     }
-
+    
     public void delete(NnGuest guest) {
         guestDao.delete(guest);
     }

@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "nnpurchase", detachable = "true")
-public class NnPurchase {
+public class NnPurchase implements PersistentModel {
+    
+    private static final long serialVersionUID = -7510933079753435419L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private Date createDate;
@@ -53,14 +68,6 @@ public class NnPurchase {
         this.userIdStr = user.getIdStr();
         this.status = ACTIVE;
         this.verified = false;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public Date getCreateDate() {

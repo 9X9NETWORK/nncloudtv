@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "mso_promotion", detachable = "true")
-public class MsoPromotion {
+public class MsoPromotion implements PersistentModel {
+    
+    private static final long serialVersionUID = 4756780851765179762L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     long msoId;
@@ -54,14 +69,6 @@ public class MsoPromotion {
         this.msoId = msoId;
         this.type  = 0;
         this.seq   = 0;
-    }
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
     }
     
     public long getMsoId() {

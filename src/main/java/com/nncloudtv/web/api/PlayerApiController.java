@@ -1043,7 +1043,7 @@ public class PlayerApiController {
      *           Example: |http://www.youtube.com/watch?v=TDpqS6GS_OQ;50;345|http://www.youtube.com/watch?v=JcmKq9kmP5U;0;380<br/> 
      *           10. url2(webm), reserved<br/> 
      *           11. url3(flv more likely), reserved<br/>
-     *           12. url4(audio), reserved<br/> 
+     *           12. storageId, referenced episodeId<br/> 
      *           13. publish date timestamp, version before 3.2 stops here<br/>
      *           14. reserved<br/>
      *           15. title card <br/>
@@ -1055,20 +1055,19 @@ public class PlayerApiController {
      */        
     @RequestMapping(value="programInfo")
     public @ResponseBody Object programInfo(
-            @RequestParam(value="v", required=false) String v,
-            @RequestParam(value="channel", required=false) String channelIds,
-            @RequestParam(value="episode", required=false) String episodeIdStr,
-            @RequestParam(value="user", required = false) String userToken,
-            @RequestParam(value="userInfo", required=false) String userInfo,
-            @RequestParam(value="ipg", required = false) String ipgId,
-            @RequestParam(value="sidx", required = false) String sidx,
-            @RequestParam(value="limit", required = false) String limit,
-            @RequestParam(value="start", required = false) String start,
-            @RequestParam(value="count", required = false) String count,
-            @RequestParam(value="time", required = false) String time,
-            @RequestParam(value="rx", required = false) String rx,
-            HttpServletRequest req,
-            HttpServletResponse resp) {
+            @RequestParam(value="v",        required = false) String v,
+            @RequestParam(value="channel",  required = false) String channelIds,
+            @RequestParam(value="episode",  required = false) String episodeIdStr,
+            @RequestParam(value="user",     required = false) String userToken,
+            @RequestParam(value="userInfo", required = false) String userInfo,
+            @RequestParam(value="ipg",      required = false) String ipgId,
+            @RequestParam(value="sidx",     required = false) String sidx,
+            @RequestParam(value="limit",    required = false) String limit,
+            @RequestParam(value="start",    required = false) String start,
+            @RequestParam(value="count",    required = false) String count,
+            @RequestParam(value="time",     required = false) String time,
+            @RequestParam(value="rx",       required = false) String rx,
+            HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
         Object output = PLAYER_ERR_MSG;
@@ -2786,11 +2785,11 @@ public class PlayerApiController {
     /**
      *  Get (vimeo) video url. Server backup solution.
      *  
-     *  @param url (vimeo) video url
+     *  @param originalUrl (vimeo) video url
+     *  @param programId
      *  @return list of video files. current there are two entries: hd and all. <br/>
      *          example: <br/>
-     *          hd    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
-     *          all    http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
+     *          url    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
      *  
      */
     @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
@@ -2831,7 +2830,7 @@ public class PlayerApiController {
         }
         return ctx.playerResponse(resp, output);
     }    
- 
+
     /**
      * Get list of signed urls.
      * @param url. not final. for now it's object name not complete path. example: "_DSC0006-X3.jpg" or "layer1/_DSC0006-X3.jpg"
@@ -2889,7 +2888,6 @@ public class PlayerApiController {
     
     @RequestMapping(value="addPurchase")
     public @ResponseBody Object addPurchase(
-            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="productId", required=false) String productIdRef,
             @RequestParam(value="purchaseToken", required=false) String purchaseToken,
             HttpServletRequest req, HttpServletResponse resp) {
@@ -2899,7 +2897,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.addPurchase(ctx, userToken, productIdRef, purchaseToken);
+            output = playerApiService.addPurchase(ctx, productIdRef, purchaseToken);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
@@ -2913,7 +2911,6 @@ public class PlayerApiController {
      */
     @RequestMapping(value="getPurchases")
     public @ResponseBody Object getPurchases(
-            @RequestParam(value="user", required=false) String userToken,
             HttpServletRequest req, HttpServletResponse resp) {
         
         Object output = PLAYER_ERR_MSG;
@@ -2922,7 +2919,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.getPurchases(ctx, userToken);
+            output = playerApiService.getPurchases(ctx);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {

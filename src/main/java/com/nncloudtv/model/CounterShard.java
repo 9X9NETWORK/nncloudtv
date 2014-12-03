@@ -15,9 +15,10 @@
 
 package com.nncloudtv.model;
 
+import java.util.Date;
+
 import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -31,12 +32,27 @@ import com.nncloudtv.lib.NnStringUtil;
  * aggregate to be incremented rapidly.
  *
  */
-@PersistenceCapable(table = "counter_shard", detachable = "true", identityType = IdentityType.APPLICATION)
-public class CounterShard {
+@PersistenceCapable(table = "counter_shard", detachable = "true")
+public class CounterShard implements PersistentModel {
+    
+    private static final long serialVersionUID = 7031802928943024767L;
+    private static final boolean cachable = false;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
     private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     private int shardNumber;
@@ -53,10 +69,6 @@ public class CounterShard {
         this.counterName = counterName;
         this.shardNumber = shardNumber;
         this.count = 0;
-    }
-    
-    public long getId() {
-        return id;
     }
     
     public String getCounterName() {
@@ -77,5 +89,25 @@ public class CounterShard {
     
     public void increment(int amount) {
         this.count += amount;
+    }
+    
+    public void setUpdateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getUpdateDate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    public void setCreateDate(Date date) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public Date getCreateDate() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

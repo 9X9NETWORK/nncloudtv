@@ -88,6 +88,11 @@ public class NnItemManager {
         return dao.findByChannelId(channelId);
     }
     
+    public List<NnItem> findByChannelIdAndMsoId(long channelId, long msoId) {
+        
+        return dao.findByChannelIdAndMsoId(channelId, msoId);
+    }
+    
     public NnItem findOne(Mso mso, NnChannel channel, String os) {
         
         if (mso == null || channel == null || os == null) { return null; }

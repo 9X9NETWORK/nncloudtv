@@ -11,11 +11,26 @@ import javax.jdo.annotations.PrimaryKey;
 import com.nncloudtv.lib.NnStringUtil;
 
 @PersistenceCapable(table = "systag", detachable = "true")
-public class SysTag {
+public class SysTag implements PersistentModel {
+    
+    private static final long serialVersionUID = -3437695945384075335L;
+    private static final boolean cachable = true;
+    
+    public boolean isCachable() {
+        return cachable;
+    }
     
     @PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    long id;
+    private long id;
+    
+    public long getId() {
+        return id;
+    }
+    
+    public void setId(long id) {
+        this.id = id;
+    }
     
     @Persistent
     protected long msoId;
@@ -65,14 +80,6 @@ public class SysTag {
         
     @Persistent
     Date updateDate;
-    
-    public long getId() {
-        return id;
-    }
-    
-    public void setId(long id) {
-        this.id = id;
-    }
     
     public long getMsoId() {
         return msoId;

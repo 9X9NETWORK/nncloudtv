@@ -56,7 +56,7 @@ public class ApiContext {
     public final static String PARAM_OS          = "os";
     public final static String PARAM_MSO         = "mso";
     public final static String PARAM_LANG        = "lang";
-    public final static String PARAM_SPHERE      = "shpere";
+    public final static String PARAM_SPHERE      = "sphere";
     public final static String PARAM_REGION      = "region";
     public final static String PARAM_VERSION     = "v";
     public final static String PARAM_FORMAT      = "format";
@@ -127,7 +127,8 @@ public class ApiContext {
     public String getParam(String name, String defaultValue) {
         
         String value = httpReq.getParameter(name);
-        
+        if (defaultValue != null)
+            System.out.println(String.format("[ctx] %s = %s (%s)", name, value, defaultValue));
         return value == null ? defaultValue : value;
     }
     
@@ -138,7 +139,7 @@ public class ApiContext {
         if (userAgent == null)
             userAgent = "";
         else
-            System.out.println("[ApiContext] UA = " + userAgent);
+            System.out.println("[ctx] UA = " + userAgent);
         
         this.format = FORMAT_JSON;
         String returnFormat = getParam(PARAM_FORMAT);
@@ -186,11 +187,11 @@ public class ApiContext {
                 mso = NNF.getMsoMngr().findByName(split[0]);
             }
             if (mso == null) {
-                mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_9X9);
+                mso = NNF.getMsoMngr().getByNameFromCache(Mso.NAME_SYS);
             }
         }
         
-        System.out.println(String.format("[ApiContext] lang = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
+        System.out.println(String.format("[ctx] lang = %s, mso = %s, version = %s, root = %s", language.getLanguage(), mso.getName(), version, root));
         CounterFactory.increment("new ApiContext(req)");
     }
     
