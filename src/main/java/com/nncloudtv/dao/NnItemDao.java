@@ -106,7 +106,7 @@ public class NnItemDao extends GenericDao<NnItem> {
             query.declareParameters("long channelIdParam, long msoIdParam");
             query.setOrdering("billingPlatform desc");
             @SuppressWarnings("unchecked")
-            List<NnItem> results = (List<NnItem>) query.execute(channelId);
+            List<NnItem> results = (List<NnItem>) query.execute(channelId, msoId);
             detached = (List<NnItem>) pm.detachCopyAll(results);
             query.closeAll();
         } finally {
