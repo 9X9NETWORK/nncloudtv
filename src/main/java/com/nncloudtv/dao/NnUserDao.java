@@ -145,7 +145,7 @@ public class NnUserDao extends GenericDao<NnUser> {
         }
         return user;
     }
-    
+    // TODO speed me up with cache
     public NnUser findByToken(String token) {
         
         NnUser user = null;

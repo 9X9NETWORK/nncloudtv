@@ -18,5 +18,7 @@ public class PlayerProgramInfo {
 	public void setProgramInfo(List<ProgramInfo> programInfo) {
 		this.programInfo = programInfo;
 	}
-
+    public void addProgramInfo(List<ProgramInfo> programInfoList) {
+        this.programInfo.addAll(programInfoList);
+    }
 }
