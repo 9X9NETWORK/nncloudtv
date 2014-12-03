@@ -102,7 +102,7 @@ public class NnItemDao extends GenericDao<NnItem> {
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnItem.class);
-            query.setFilter("channelId == channelParam && msoId == msoIdParam");
+            query.setFilter("channelId == channelIdParam && msoId == msoIdParam");
             query.declareParameters("long channelIdParam, long msoIdParam");
             query.setOrdering("billingPlatform desc");
             @SuppressWarnings("unchecked")
