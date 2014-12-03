@@ -37,7 +37,7 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         return detached;
     }
     
-    public NnPurchase findOne(String userIdStr, long itemId) {
+    public NnPurchase findByUserAndItem(String userIdStr, long itemId) {
         
         NnPurchase detached = null;
         PersistenceManager pm = getPersistenceManager();

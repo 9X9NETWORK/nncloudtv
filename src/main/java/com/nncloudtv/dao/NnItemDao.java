@@ -25,7 +25,7 @@ public class NnItemDao extends GenericDao<NnItem> {
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(NnItem.class);
-            query.setFilter("msoId == msoIdParam && billingPlatform == billingPlatformParam && status == " + NnItem.ACTIVE);
+            query.setFilter("msoId == msoIdParam && billingPlatform == billingPlatformParam");
             query.declareParameters("long msoIdParam, short billingPlatformParam");
             detached = (List<NnItem>) query.execute(msoId, platform);
             detached = (List<NnItem>) pm.detachCopyAll(detached);

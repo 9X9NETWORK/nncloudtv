@@ -3258,7 +3258,8 @@ public class PlayerApiService {
         String purchasesStr = "";
         for (NnItem item : items) {
             
-            purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
+            if (item.getStatus() == NnItem.ACTIVE)
+                purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
         }
         
         String[] result = { purchasesStr };
