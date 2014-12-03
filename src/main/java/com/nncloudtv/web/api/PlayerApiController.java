@@ -2912,7 +2912,6 @@ public class PlayerApiController {
      */
     @RequestMapping(value="getPurchases")
     public @ResponseBody Object getPurchases(
-            @RequestParam(value="user", required=false) String userToken,
             HttpServletRequest req, HttpServletResponse resp) {
         
         Object output = PLAYER_ERR_MSG;
@@ -2921,7 +2920,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.getPurchases(ctx, userToken);
+            output = playerApiService.getPurchases(ctx);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
