@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.SysTagMapDao;
-import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
@@ -41,6 +40,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.web.api.ApiContext;
+import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.player.ChannelLineup;
 
@@ -202,20 +202,16 @@ public class WatchDogController {
         return NnNetUtil.textReturn(output);
     }    
     
-    @RequestMapping(value="programInfo", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="programInfo", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String programInfo(
-            @RequestParam(value="channel", required=false) String channel,
+            @RequestParam(value="channel", required=false) String channelIdStr,
             @RequestParam(value="user", required=false) String userToken,
             HttpServletRequest req) {
         
-        String result = null;
-        try {
-            result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channel), 1, 50, (short) 0, userToken, new ApiContext(req));
-            
-        } catch (NotPurchasedException e) {
-            
-            return e.getMessage();
-        }
+        NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
+        if (channel == null)
+            return "channel not found";
+        String result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, 1, 50, (short) 0, new ApiContext(req));
         if (result == null)
             return "null, error";
         String output = "";

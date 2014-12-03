@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
-import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -1049,7 +1048,7 @@ public class PlayerApiService {
                                   String episodeIdStr, String userToken,
                                   String ipgId, boolean userInfo, String sidx,
                                   String limit, String start,
-                                  String count, String time) throws NotPurchasedException {
+                                  String count, String time) {
         
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
@@ -1127,6 +1126,7 @@ public class PlayerApiService {
         
         log.info("sidx = " + startI + ";" + "end = " + end);
         
+        int status = NnStatusCode.SUCCESS;
         List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
             user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
@@ -1136,26 +1136,6 @@ public class PlayerApiService {
                     return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
                 else
                     return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS);
-            }
-        } else if (chArr.length > 1) {
-            
-            List<Long> list = new ArrayList<Long>();
-            for (int i = 0; i < chArr.length; i++) { list.add(Long.valueOf(chArr[i])); }
-            for (Long l : list) {
-                if (ctx.getVer() < 32) {
-                    programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
-                } else {
-                    if (ctx.isPlainFmt()) {
-                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                        if (pagination) {
-                            NnChannel c = NNF.getChannelMngr().findById(l);
-                            if (c != null)
-                                paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                        }
-                    } else {
-                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                    }
-                }
             }
         } else if (orphanEpisode != null) {
             
@@ -1173,32 +1153,23 @@ public class PlayerApiService {
                 playerProgramInfo.setProgramInfo(programInfoJson);
             }
         } else {
-            if (ctx.getVer() < 32) {
-                programInfoStr = new IosService().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end);
-                if (programInfoStr != null && ctx.isIos()) {
-                    String[] lines = programInfoStr.split("\n");
-                    String debugStr = "";
-                    if (lines.length > 0) {
-                        for (int i=0; i<lines.length; i++) {
-                            String[] tabs = lines[i].split("\t");
-                            if (tabs.length > 1)
-                                debugStr += tabs[1] + "; ";
+            for (String chIdStr : chArr) {
+                NnChannel channel = NNF.getChannelMngr().findById(chIdStr);
+                if (channel != null) {
+                    if (channel.isPaidChannel() && NNF.getPurchaseMngr().isPurchased(ctx, channel.getId()) == false)
+                        status = NnStatusCode.IAP_NOT_PURCHASED;
+                    if (ctx.getVer() < 32) {
+                        programInfoStr = new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
+                    } else {
+                        if (ctx.isPlainFmt()) {
+                            programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
+                            if (pagination)
+                                paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
+                        } else {
+                            programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
+                            playerProgramInfo.setProgramInfo(programInfoJson);
                         }
                     }
-                    log.info("ios program info debug string:" + debugStr);
-                }
-            } else {
-                if (ctx.isPlainFmt()) {
-                    long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, userToken, ctx);
-                    if (pagination) {
-                        NnChannel c = NNF.getChannelMngr().findById(cId);
-                        if (c != null)
-                            paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                    }
-                } else {
-                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, userToken, ctx);
-                    playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
         }
@@ -1220,11 +1191,11 @@ public class PlayerApiService {
             result.add(paginationStr);
             
         if (ctx.isJsonFmt()) {
-            return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, playerProgramInfo);
+            return ctx.assemblePlayerMsgs(status, playerProgramInfo);
         } else {
             result.add(programInfoStr);
             String size[] = new String[result.size()];
-            return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result.toArray(size));
+            return ctx.assemblePlayerMsgs(status, result.toArray(size));
         }
     }
     
