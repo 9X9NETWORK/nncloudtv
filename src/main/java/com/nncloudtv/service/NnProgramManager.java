@@ -20,9 +20,7 @@ import org.springframework.stereotype.Service;
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
-import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CacheFactory;
-import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -413,40 +411,19 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(long channelId, int start, int end, short time, String userToken, ApiContext ctx)
-            throws NotPurchasedException {
-        
-        NnChannel channel = NNF.getChannelMngr().findById(channelId);
-        if (channel == null) { return ""; }
-        
-        // paid channel check
-        if (channel.isPaidChannel()) {
-            String errMsg = "paid channel";
-            if (userToken == null) {
-                userToken = ctx.getCookie(CookieHelper.USER);
-                if (userToken == null)
-                    throw new NotPurchasedException(errMsg);
-            }
-            NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
-            if (user == null) {
-                throw new NotPurchasedException(errMsg);
-            }
-            if (NNF.getPurchaseMngr().isPurchased(user, channel) == false) {
-                throw new NotPurchasedException(errMsg);
-            }
-        }
+    public Object findPlayerProgramInfoByChannel(NnChannel channel, int start, int end, short time, ApiContext ctx) {
         
         //don't cache dayparting for now
         log.info("time:" + time);
         String cacheKey = null;
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
-            cacheKey = CacheFactory.getProgramInfoKey(channelId, start, ctx.getVer(), ctx.getFmt());
+            cacheKey = CacheFactory.getProgramInfoKey(channel.getId(), start, ctx.getVer(), ctx.getFmt());
             if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
                     if (result != null) {
-                        log.info("cached programInfo, channelId = " + cacheKey);
+                        log.info("cached programInfo, cacheKey = " + cacheKey);
                         return result;
                     }
                 } catch (Exception e) {

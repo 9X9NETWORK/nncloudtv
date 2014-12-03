@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import com.nncloudtv.model.Mso;
@@ -23,7 +22,9 @@ public class CacheFactory {
     protected static final Logger log = Logger.getLogger(CacheFactory.class.getName());
     
     public static final int EXP_DEFAULT = 2592000; // 30 days
-    public static final int EXP_SHORT = 100;  // seconds
+    public static final int EXP_ONE_DAY = 86400;   // one day
+    public static final int EXP_ONE_HOUR = 3600;   // one hour
+    public static final int EXP_SHORT = 100;       // 100 seconds
     public static final int PORT_DEFAULT = 11211;
     public static final int ASYNC_CACHE_TIMEOUT = 2000; // milliseconds
     
@@ -49,9 +50,8 @@ public class CacheFactory {
             };
             cache.set(key, EXP_SHORT, addr);
             future = cache.asyncGet(key);
-            if (future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS) != null) {
+            if (future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS) != null)
                 alive = true;
-            }
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
@@ -64,17 +64,6 @@ public class CacheFactory {
         if (!alive)
             log.warning("memcache server " + addr + " is dead!");
         return alive;
-    }
-    
-    // needs to shutdown manually (for public use)
-    private static MemcachedClient getClient() {
-        try {
-            if (isRunning && isEnabled)
-                return new MemcachedClient(new BinaryConnectionFactory(), memcacheServers);
-        } catch (IOException e) {
-            log.severe(e.getMessage());
-        }
-        return null;
     }
     
     public static void reconfigClient() {
@@ -104,7 +93,12 @@ public class CacheFactory {
         // rebuild cache client
         MemcachedClient newCache = null;
         try {
-            newCache = isRunning ? new MemcachedClient(new BinaryConnectionFactory(), memcacheServers) : null;
+            newCache = isRunning ? new MemcachedClient(memcacheServers) {
+                @Override
+                protected void finalize() throws Throwable {
+                    NnLogUtil.logFinalize(getClass().getName());
+                }
+            } : null;
         } catch (IOException e) {
             log.severe("memcache io exception");
             log.severe(e.getMessage());
@@ -123,25 +117,19 @@ public class CacheFactory {
     
     public static Object get(String key) {
         
-        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
-        
-        if (cache == null) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty() || cache == null) return null;
         
         Object obj = null;
-        Future<Object> future = null;
         try {
-            future = cache.asyncGet(key);
-            obj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS); // Asynchronously 
+            obj = cache.asyncGet(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS); // Asynchronously 
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            if (future != null)
-                future.cancel(false);
         }
+        
         return obj;
     }
     
@@ -152,27 +140,18 @@ public class CacheFactory {
     
     public static Object set(String key, Serializable obj, int exp) {
         
-        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return null;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty() || cache == null) return null;
         
-        MemcachedClient cache = getClient();
-        if (cache == null) return null;
-        
-        Future<Object> future = null;
         Object retObj = null;
         try {
             cache.set(key, exp == 0 ? EXP_DEFAULT : exp, obj);
-            future = cache.asyncGet(key);
-            retObj = future.get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+            retObj = cache.asyncGet(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
             log.warning("there is no future");
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-            if (future != null)
-                future.cancel(false);
         }
         
         if (retObj == null) {
@@ -186,13 +165,10 @@ public class CacheFactory {
     
     public static void deleteAll(List<String> keys) {
         
-        if (!isEnabled || !isRunning || keys == null || keys.isEmpty()) return;
+        if (!isEnabled || !isRunning || keys == null || keys.isEmpty() || cache == null) return;
         
         boolean isDeleted = false;
         long before = NnDateUtil.timestamp();
-        MemcachedClient cache = getClient();
-        if (cache == null) return;
-        
         try {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
@@ -206,9 +182,8 @@ public class CacheFactory {
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
+        
         if (isDeleted) {
             System.out.println(String.format("[cache] mass: %d --> deleted", keys.size()));
         } else {
@@ -219,12 +194,9 @@ public class CacheFactory {
     
     public static void delete(String key) {
         
-        if (!isEnabled || !isRunning || key == null || key.isEmpty()) return;
+        if (!isEnabled || !isRunning || key == null || key.isEmpty() || cache == null) return;
         
         boolean isDeleted = false;
-        MemcachedClient cache = getClient();
-        if (cache == null) return;
-        
         try {
             cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
             isDeleted = true;
@@ -234,9 +206,8 @@ public class CacheFactory {
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
+        
         if (isDeleted) {
             System.out.println(String.format("[cache] {%s} deleted", key));
         } else {
@@ -246,19 +217,14 @@ public class CacheFactory {
     
     public static void flush() {
         
-        if (!isEnabled || !isRunning) return;
+        if (!isEnabled || !isRunning || cache == null) return;
         
         long before = NnDateUtil.timestamp();
-        MemcachedClient cache = getClient();
-        if (cache == null) return;
-        
         try {
             cache.flush().get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-        } finally {
-            cache.shutdown(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         
         System.out.println(String.format("[cache] flush operation costs %d milliseconds", NnDateUtil.timestamp() - before));
@@ -288,10 +254,10 @@ public class CacheFactory {
         return String.format("msoconfig(%d)(%s)", msoId, item);
     }
     
-    // example: mso(9x9)
+    // example: Mso.findByName(9x9)
     public static String getMsoObjectKey(String name) {
         
-        return String.format("mso(%s)", name);
+        return String.format("Mso.findByName(%s)", name);
     }
     
     // example: brandInfo(9x9)[json]

@@ -1263,7 +1263,7 @@ public class NnChannelManager {
             NnLogUtil.logException(e);
             channel.setCntView(0);
         }
-        CacheFactory.set(cacheName, String.valueOf(channel.getCntView()));
+        CacheFactory.set(cacheName, String.valueOf(channel.getCntView()), CacheFactory.EXP_ONE_DAY);
         return channel;
     }
     
@@ -1388,4 +1388,5 @@ public class NnChannelManager {
         
         return channel;
     }
+    
 }

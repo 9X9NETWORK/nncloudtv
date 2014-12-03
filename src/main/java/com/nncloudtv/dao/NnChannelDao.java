@@ -46,7 +46,7 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         String langStr   = (lang == null) ? "" : String.format(" AND c.sphere IN (%s, %s) ", NnStringUtil.escapedQuote(lang), NnStringUtil.escapedQuote(LocaleTable.LANG_OTHER));
         String blackList =   (msoId == 0) ? "" : String.format(" AND c.id NOT IN (SELECT channelId FROM store_listing WHERE msoId = %d) ", msoId);
         String query = "SELECT * FROM nnchannel a1"
-                     + "   INNER JOIN (SELECT distinct c.id "
+                     + "   INNER JOIN (SELECT DISTINCT c.id "
                      + "                 FROM systag_display d, systag_map m, nnchannel c "
                      + "                WHERE d.systagId = " + systagId 
                      + "                  AND d.systagId = m.systagId "

@@ -1127,7 +1127,6 @@ public class PlayerApiService {
         
         log.info("sidx = " + startI + ";" + "end = " + end);
         
-        List<ProgramInfo> programInfoJson = new ArrayList<ProgramInfo>();
         if (channelIds.equals("*")) {
             user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
             if (user == null) {
@@ -1136,26 +1135,6 @@ public class PlayerApiService {
                     return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
                 else
                     return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS);
-            }
-        } else if (chArr.length > 1) {
-            
-            List<Long> list = new ArrayList<Long>();
-            for (int i = 0; i < chArr.length; i++) { list.add(Long.valueOf(chArr[i])); }
-            for (Long l : list) {
-                if (ctx.getVer() < 32) {
-                    programInfoStr = new IosService().findPlayerProgramInfoByChannel(l, startI, end);
-                } else {
-                    if (ctx.isPlainFmt()) {
-                        programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                        if (pagination) {
-                            NnChannel c = NNF.getChannelMngr().findById(l);
-                            if (c != null)
-                                paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                        }
-                    } else {
-                        programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(l, startI, end, shortTime, userToken, ctx);
-                    }
-                }
             }
         } else if (orphanEpisode != null) {
             
@@ -1169,36 +1148,25 @@ public class PlayerApiService {
                 }
             } else {
                 
-                programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt());
-                playerProgramInfo.setProgramInfo(programInfoJson);
+                playerProgramInfo.setProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByEpisode(orphanEpisode, channel, ctx.getFmt()));
             }
         } else {
-            if (ctx.getVer() < 32) {
-                programInfoStr = new IosService().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end);
-                if (programInfoStr != null && ctx.isIos()) {
-                    String[] lines = programInfoStr.split("\n");
-                    String debugStr = "";
-                    if (lines.length > 0) {
-                        for (int i=0; i<lines.length; i++) {
-                            String[] tabs = lines[i].split("\t");
-                            if (tabs.length > 1)
-                                debugStr += tabs[1] + "; ";
+            for (String chIdStr : chArr) {
+                NnChannel channel = NNF.getChannelMngr().findById(chIdStr);
+                if (channel != null) {
+                    if (channel.isPaidChannel() && NNF.getPurchaseMngr().isPurchased(ctx, channel.getId()) == false)
+                        throw new NotPurchasedException();
+                    if (ctx.getVer() < 32) {
+                        programInfoStr += new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
+                    } else {
+                        if (ctx.isPlainFmt()) {
+                            programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
+                            if (pagination)
+                                paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
+                        } else {
+                            playerProgramInfo.addProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx));
                         }
                     }
-                    log.info("ios program info debug string:" + debugStr);
-                }
-            } else {
-                if (ctx.isPlainFmt()) {
-                    long cId = Long.parseLong(channelIds);
-                    programInfoStr = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(cId, startI, end, shortTime, userToken, ctx);
-                    if (pagination) {
-                        NnChannel c = NNF.getChannelMngr().findById(cId);
-                        if (c != null)
-                            paginationStr += assembleKeyValue(c.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(c.getCntEpisode()));
-                    }
-                } else {
-                    programInfoJson = (List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(Long.parseLong(channelIds), startI, end, shortTime, userToken, ctx);
-                    playerProgramInfo.setProgramInfo(programInfoJson);
                 }
             }
         }

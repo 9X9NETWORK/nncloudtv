@@ -14,9 +14,9 @@ import com.nncloudtv.service.CounterFactory;
 
 @Service
 @EnableScheduling
-public class CounterTask extends CounterFactory {
+public class CounterTask extends CounterFactory implements ScheduledTask {
     
-    @Scheduled(fixedDelay = 108301)
+    @Scheduled(fixedDelay = CC_INTERVAL)
     public void cleanDirtyCounter() {
         synchronized (dirtyCounters) {
             if (dirtyCounters.isEmpty())

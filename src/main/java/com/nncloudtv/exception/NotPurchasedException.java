@@ -7,6 +7,11 @@ public class NotPurchasedException extends NnException {
      */
     private static final long serialVersionUID = 1L;
     
+    public NotPurchasedException() {
+        
+        super();
+    }
+    
     public NotPurchasedException(String msg) {
         
         super(msg);

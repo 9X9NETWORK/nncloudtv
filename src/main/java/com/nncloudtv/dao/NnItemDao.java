@@ -76,7 +76,6 @@ public class NnItemDao extends GenericDao<NnItem> {
         return detached;
     }
     
-    @SuppressWarnings("unchecked")
     public List<NnItem> findByChannelId(long channelId) {
         
         List<NnItem> detached = new ArrayList<NnItem>();
@@ -86,7 +85,28 @@ public class NnItemDao extends GenericDao<NnItem> {
             query.setFilter("channelId == channelIdParam");
             query.declareParameters("long channelIdParam");
             query.setOrdering("billingPlatform desc");
+            @SuppressWarnings("unchecked")
             List<NnItem> results = (List<NnItem>) query.execute(channelId);
+            detached = (List<NnItem>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
+        
+        return detached;
+    }
+    
+    public List<NnItem> findByChannelIdAndMsoId(long channelId, long msoId) {
+        
+        List<NnItem> detached = new ArrayList<NnItem>();
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnItem.class);
+            query.setFilter("channelId == channelIdParam && msoId == msoIdParam");
+            query.declareParameters("long channelIdParam, long msoIdParam");
+            query.setOrdering("billingPlatform desc");
+            @SuppressWarnings("unchecked")
+            List<NnItem> results = (List<NnItem>) query.execute(channelId, msoId);
             detached = (List<NnItem>) pm.detachCopyAll(results);
             query.closeAll();
         } finally {
