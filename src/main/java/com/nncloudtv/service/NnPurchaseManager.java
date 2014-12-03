@@ -175,7 +175,8 @@ public class NnPurchaseManager {
         
         List<NnItem> items = NNF.getItemMngr().findByChannelIdAndMsoId(channelId, ctx.getMsoId());
         NnUser user = ctx.getAuthenticatedUser(0);
-        
+        if (user == null)
+            return false;
         for (NnItem item : items) {
             NnPurchase purchase = NNF.getPurchaseMngr().findByUserAndItem(user, item);
             if (purchase != null)
