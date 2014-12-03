@@ -3240,7 +3240,8 @@ public class PlayerApiService {
                 log.warning("item not found, itemId = " + purchase.getItemId());
                 continue;
             }
-            if (item.getMsoId() == ctx.getMsoId() && purchase.isVerified()) {
+            if (item.getMsoId() == ctx.getMsoId() &&
+                purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE) {
                 
                 purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
             }

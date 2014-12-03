@@ -178,7 +178,7 @@ public class NnPurchaseManager {
         if (user == null)
             return false;
         for (NnItem item : items) {
-            NnPurchase purchase = NNF.getPurchaseMngr().findByUserAndItem(user, item);
+            NnPurchase purchase = dao.findByUserAndItem(user.getIdStr(), item.getId());
             if (purchase != null && purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE)
                 return true;
         }
