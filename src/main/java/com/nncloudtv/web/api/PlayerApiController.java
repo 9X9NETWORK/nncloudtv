@@ -2785,11 +2785,11 @@ public class PlayerApiController {
     /**
      *  Get (vimeo) video url. Server backup solution.
      *  
-     *  @param url (vimeo) video url
+     *  @param originalUrl (vimeo) video url
+     *  @param programId
      *  @return list of video files. current there are two entries: hd and all. <br/>
      *          example: <br/>
-     *          hd    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
-     *          all    http://av11.hls1.vimeocdn.com/i/,50065/094/5816207,49543/202/5816355,05762/763/10879560,.mp4.csmil/master.m3u8?primaryToken=1408660417_eeaf05177a356285eb17110c44e8109f
+     *          url    http://av11.hls1.vimeocdn.com/i/,49543/202/5816355,.mp4.csmil/master.m3u8?primaryToken=1408660417_acd5f72c3440eb079b6f9b5de1839fa3
      *  
      */
     @RequestMapping(value={"getVimeoDirectUrl","getDirectUrl"})
@@ -2888,7 +2888,6 @@ public class PlayerApiController {
     
     @RequestMapping(value="addPurchase")
     public @ResponseBody Object addPurchase(
-            @RequestParam(value="user", required=false) String userToken,
             @RequestParam(value="productId", required=false) String productIdRef,
             @RequestParam(value="purchaseToken", required=false) String purchaseToken,
             HttpServletRequest req, HttpServletResponse resp) {
@@ -2898,7 +2897,7 @@ public class PlayerApiController {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
-            output = playerApiService.addPurchase(ctx, userToken, productIdRef, purchaseToken);
+            output = playerApiService.addPurchase(ctx, productIdRef, purchaseToken);
         } catch (Exception e) {
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {
