@@ -3228,19 +3228,12 @@ public class PlayerApiService {
         
         NNF.getPurchaseMngr().verifyPurchase(purchase, ctx.isProductionSite());
         
-        return getPurchases(ctx, userToken);
+        return getPurchases(ctx);
     }
     
-    public Object getPurchases(ApiContext ctx, String userToken) {
+    public Object getPurchases(ApiContext ctx) {
         
-        if (userToken == null) {
-            userToken = ctx.getCookie(CookieHelper.USER);
-            if (userToken == null) {
-                return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
-            }
-        }
-        
-        NnUser user = NNF.getUserMngr().findByToken(userToken, ctx.getMsoId());
+        NnUser user = ctx.getAuthenticatedUser(0);
         if (user == null) {
             return ctx.assemblePlayerMsgs(NnStatusCode.USER_INVALID);
         }
