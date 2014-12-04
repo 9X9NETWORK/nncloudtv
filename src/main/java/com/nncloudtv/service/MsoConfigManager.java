@@ -192,14 +192,14 @@ public class MsoConfigManager {
     
     public MsoConfig save(Mso mso, MsoConfig config) {
         config.setUpdateDate(NnDateUtil.now());
+        CacheFactory.delete(CacheFactory.getMsoConfigKey(mso.getId(), config.getItem()));
         if (mso.getType() == Mso.TYPE_NN)
             processCache(config);
         return configDao.save(config);
     }
     
     public void processCache(MsoConfig config) {
-        isInReadonlyMode(true);
-        isQueueEnabled(true);
+        CacheFactory.delete(CacheFactory.getMsoConfigKey(config.getItem()));
     }
     
     public String getDefaultValueByOs(String os, String function) {
@@ -269,33 +269,41 @@ public class MsoConfigManager {
         return null;
     }
     
-    public boolean getBooleanValueFromCache(String key, boolean cacheReset) {
-        String cacheKey = "msoconfig(" + key + ")";
-        try {
-            String result = (String)CacheFactory.get(cacheKey);
-            if (result != null){
-                log.info("value from cache: key=" + cacheKey + "value=" + result);
-                return NnStringUtil.stringToBool(result);
-            }
-        } catch (Exception e) {
-            log.info("memcache error");
+    public Boolean getBooleanValueFromCache(String key, boolean reset) {
+        String cacheKey = CacheFactory.getMsoConfigKey(key);
+        if (reset) {
+            log.info("reset");
+            CacheFactory.delete(cacheKey);
+            MsoConfig config = configDao.findByItem(key);
+            if (config != null)
+                return NnStringUtil.evalBool(config.getValue());
+            return false;
         }
-        boolean value = false;
+        String cached = (String) CacheFactory.get(cacheKey);
+        if (cached != null){
+            log.info("boolean config from cache, key = " + cacheKey + ", value = " + cached);
+            return NnStringUtil.evalBool(cached);
+        }
         MsoConfig config = configDao.findByItem(key);
-        if (config != null) {
+        if (config == null) {
+            CacheFactory.set(cacheKey, "0");
+            return false;
+        } else {
             CacheFactory.set(cacheKey, config.getValue());
-            value = NnStringUtil.stringToBool(config.getValue());
+            return NnStringUtil.evalBool(config.getValue());
         }
-        return value;
     }
     
-    public boolean isInReadonlyMode(boolean cacheReset) {
-        return this.getBooleanValueFromCache(MsoConfig.RO, cacheReset);
+    public boolean isInReadonlyMode(boolean reset) {
+        
+        Boolean readonly = getBooleanValueFromCache(MsoConfig.RO, reset);
+        return readonly == null ? false : readonly;
     }
     
-    public boolean isQueueEnabled(boolean cacheReset) {
-        boolean status = this.getBooleanValueFromCache(MsoConfig.QUEUED, cacheReset);     
-        return status;
+    public boolean isQueueEnabled(boolean reset) {
+        
+        Boolean enabled = getBooleanValueFromCache(MsoConfig.QUEUED, reset);
+        return enabled == null ? false : enabled;
     }
     
     public List<MsoConfig> findByMso(Mso mso) {

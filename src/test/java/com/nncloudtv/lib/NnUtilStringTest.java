@@ -35,34 +35,6 @@ public class NnUtilStringTest {
     }
     
     @Test
-    public void testStringToBool() {
-        
-        assertTrue("'1' should evaluate to true.", NnStringUtil.stringToBool("1"));
-        assertFalse("'0' should evaluate to false.", NnStringUtil.stringToBool("0"));
-        
-        try {
-            NnStringUtil.stringToBool("true");
-            fail("'true' is not legal for convention and should throw IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // expected behavior
-        }
-        
-        try {
-            NnStringUtil.stringToBool("false");
-            fail("'false' is not legal for convention and should throw IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-            // expected behavior
-        }
-        
-        try {
-            NnStringUtil.stringToBool(null);
-            fail("null is not legal for convention and should throw NullPointerException.");
-        } catch (NullPointerException e) {
-            // expected behavior
-        }
-    }
-    
-    @Test
     public void testIsDigits() {
         
         assertTrue("'1234' is Digits.", NnStringUtil.isDigits("1234"));

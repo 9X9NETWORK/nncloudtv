@@ -249,6 +249,11 @@ public class CacheFactory {
         return String.format("nnchannelpref(%d)(%s)", channelId, item);
     }
     
+    public static String getMsoConfigKey(String item) {
+        
+        return String.format("msoconfig(%s)", item);
+    }
+    
     public static String getMsoConfigKey(long msoId, String item) {
         
         return String.format("msoconfig(%d)(%s)", msoId, item);
