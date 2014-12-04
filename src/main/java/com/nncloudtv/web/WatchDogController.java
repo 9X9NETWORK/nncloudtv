@@ -475,4 +475,14 @@ public class WatchDogController {
        return json;
     }        
     
+    /**
+     * flush cache server
+     */
+    @RequestMapping("flush")
+    public ResponseEntity<String> flush() {
+        
+        CacheFactory.flush();
+        
+        return NnNetUtil.textReturn(ApiGeneric.OK);
+    }
 }
