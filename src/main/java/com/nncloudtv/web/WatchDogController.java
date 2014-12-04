@@ -41,7 +41,6 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.task.CacheTask;
-import com.nncloudtv.task.GarbageCollectionTask;
 import com.nncloudtv.task.MemoryTask;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
