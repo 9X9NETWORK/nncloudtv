@@ -176,9 +176,9 @@ public class CacheFactory {
                     Boolean deleted = cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (i < 3) {
                         if (deleted != null && deleted)
-                            System.out.println(String.format("[cache] {%d} --> deleted", key));
+                            System.out.println(String.format("[cache] {%s} --> deleted", key));
                         else
-                            System.out.println(String.format("[cache] {%d} --> NOT deleted", key));
+                            System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
                     } else if (i == 3) {
                             System.out.println(String.format("[cache] ....", key));
                     }
@@ -195,9 +195,9 @@ public class CacheFactory {
         }
         
         if (isDeleted) {
-            System.out.println(String.format("[cache] mass: %d --> complete", keys.size()));
+            System.out.println(String.format("[cache] mass: %d --> completed", keys.size()));
         } else {
-            System.out.println(String.format("[cache] mass: %d --> NOT complete", keys.size()));
+            System.out.println(String.format("[cache] mass: %d --> NOT completed", keys.size()));
         }
         System.out.println(String.format("[cache] deleteAll() operation costs %d milliseconds", NnDateUtil.timestamp() - before));
     }
