@@ -92,6 +92,7 @@ public class MsoManager {
         CacheFactory.delete(appConfig);
         CacheFactory.delete(appVersionConfig);
         
+        dao.resetCache(mso);
     }
     
     public static Mso getSystemMso() {
