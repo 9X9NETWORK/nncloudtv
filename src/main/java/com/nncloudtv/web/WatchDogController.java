@@ -369,7 +369,7 @@ public class WatchDogController {
     }
     
     /**
-     * Clean all mso related config cache
+     * Clean all mso related cache
      * 
      * @param msoIdStr msoId
      * @return
