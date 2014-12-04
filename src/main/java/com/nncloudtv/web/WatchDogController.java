@@ -41,6 +41,8 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
 import com.nncloudtv.task.CacheTask;
+import com.nncloudtv.task.GarbageCollectionTask;
+import com.nncloudtv.task.MemoryTask;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -492,10 +494,22 @@ public class WatchDogController {
     /**
      * reconfi cache server
      */
-    @RequestMapping("recofig")
+    @RequestMapping("reconfig")
     public ResponseEntity<String> reconfig() {
         
         CacheTask.checkingMemcacheServer();
+        
+        return NnNetUtil.textReturn(ApiGeneric.OK);
+    }
+    
+    /**
+     * Garbage Collection
+     * @return
+     */
+    @RequestMapping("gc")
+    public ResponseEntity<String> gc() {
+        
+        MemoryTask.triggerGC();
         
         return NnNetUtil.textReturn(ApiGeneric.OK);
     }

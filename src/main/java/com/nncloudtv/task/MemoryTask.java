@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @EnableScheduling
-public class GarbageCollectionTask implements ScheduledTask {
+public class MemoryTask implements ScheduledTask {
     
-    protected static Logger log = Logger.getLogger(GarbageCollectionTask.class.getName());
+    protected static Logger log = Logger.getLogger(MemoryTask.class.getName());
     
     @Scheduled(fixedRate = GC_INTERVAL)
-    synchronized public void triggerGC() {
+    synchronized public static void triggerGC() {
         
         long max   = Runtime.getRuntime().maxMemory();
         long total = Runtime.getRuntime().totalMemory();
