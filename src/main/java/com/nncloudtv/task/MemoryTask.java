@@ -14,18 +14,21 @@ public class MemoryTask implements ScheduledTask {
     protected static Logger log = Logger.getLogger(MemoryTask.class.getName());
     
     @Scheduled(fixedRate = GC_INTERVAL)
-    synchronized public static void triggerGC() {
+    synchronized public static String triggerGC() {
+        
+        System.gc(); // trigger garbage collection
         
         long max   = Runtime.getRuntime().maxMemory();
         long total = Runtime.getRuntime().totalMemory();
         long free  = Runtime.getRuntime().freeMemory();
-        
-        System.out.println("[memory] max = " + FileUtils.byteCountToDisplaySize(max)
-                             +  ", total = " + FileUtils.byteCountToDisplaySize(total)
-                             +   ", free = " + FileUtils.byteCountToDisplaySize(free));
+        String report = String.format("[memory] max = %s, total = %s, free = %s",
+                                      FileUtils.byteCountToDisplaySize(max),
+                                      FileUtils.byteCountToDisplaySize(total),
+                                      FileUtils.byteCountToDisplaySize(free));
+        System.out.println(report);
         if (max == total && free < total / 100)
             log.severe("available memory is less than 1%");
-        System.gc(); // trigger garbage collection
+        return report;
     }
     
 }
