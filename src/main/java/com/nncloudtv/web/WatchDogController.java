@@ -269,7 +269,7 @@ public class WatchDogController {
                     
         return output;        
     }
-
+    
     @RequestMapping(value="channelLineup", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelLineup(HttpServletRequest req,
             @RequestParam(value="channel", required=false) String channel,
@@ -509,6 +509,7 @@ public class WatchDogController {
     @RequestMapping("getCount")
     public ResponseEntity<String> getCount(@RequestParam(value = "counterName") String counterName) {
         
+        log.info("counterName = " + counterName);
         return NnNetUtil.textReturn(String.valueOf(CounterFactory.getCount(counterName)));
     }
 }

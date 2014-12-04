@@ -43,8 +43,8 @@ public class CounterFactory {
         
         List<CounterShard> shards = NNF.getShardDao().findByCounterName(counterName);
         long sum = 0;
-        for (CounterShard shardCounter : shards) {
-            sum += shardCounter.getCount();
+        for (CounterShard shard : shards) {
+            sum += shard.getCount();
         }
         
         return sum;
