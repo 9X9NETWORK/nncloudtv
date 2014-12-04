@@ -175,7 +175,7 @@ public class CacheFactory {
                 if (key != null && !key.isEmpty()) {
                     Boolean deleted = cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
                     if (i < 3) {
-                        if (deleted != null && deleted)
+                        if (deleted != null)
                             System.out.println(String.format("[cache] {%s} --> deleted", key));
                         else
                             System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
