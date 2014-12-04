@@ -430,7 +430,7 @@
         <dependency>
             <groupId>com.clearcommerce</groupId>
             <artifactId>clear-commerce</artifactId>
-            <version>5.10.0.3706</version>
+            <version>5.10.550.5432</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
