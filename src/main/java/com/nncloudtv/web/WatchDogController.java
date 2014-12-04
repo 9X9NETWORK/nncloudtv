@@ -347,7 +347,13 @@ public class WatchDogController {
         }        
         return output;
     }
-    
+    /**
+     * clean msoConfig cache
+     * 
+     * @param config mso_config item
+     * @param msoIdStr msoId
+     * @return
+     */
     @RequestMapping(value = "configCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String configCache(
             @RequestParam(value = "config", required = false) String config,
@@ -362,7 +368,12 @@ public class WatchDogController {
         return ApiGeneric.OK;
     }
     
-    
+    /**
+     * Clean all mso related config cache
+     * 
+     * @param msoIdStr msoId
+     * @return
+     */
     @RequestMapping(value = "msoCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String msoCache(
             @RequestParam(value = "mso", required = true) String msoIdStr) {
@@ -409,7 +420,7 @@ public class WatchDogController {
         return "OK";
     }
     
-    @RequestMapping(value="channelSubmit", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="channelSubmit", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String channelCache(
             HttpServletRequest req,
             @RequestParam(value="url", required=false) String url, 
@@ -421,7 +432,7 @@ public class WatchDogController {
         return "channel submission failed";
     }
     
-    @RequestMapping(value="tag", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="tag", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String tag(
             HttpServletRequest req, 
             @RequestParam(value="name", required=false) String name) {
