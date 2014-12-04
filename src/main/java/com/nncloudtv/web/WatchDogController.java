@@ -508,7 +508,9 @@ public class WatchDogController {
     @RequestMapping("gc")
     public ResponseEntity<String> gc() {
         
-        return NnNetUtil.textReturn(MemoryTask.triggerGC());
+        MemoryTask.triggerGC();
+        
+        return NnNetUtil.textReturn(MemoryTask.memoryUsageReport);
     }
     
     /**
