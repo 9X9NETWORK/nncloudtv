@@ -46,12 +46,6 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     protected PersistenceManager getPersistenceManager() {
         
-//        if (persistenceMngr == null) {
-//            persistenceMngr = PMF.get(daoClass).getPersistenceManager();
-//            System.out.println("[dao] create persistenceMngr");
-//        }
-//        
-//        return persistenceMngr;
         return PMF.get(daoClass).getPersistenceManager();
     }
     
@@ -299,27 +293,28 @@ public class GenericDao<T extends PersistentBaseModel> {
         return results;
     }
     
-    public List<T> sql(String queryStr, boolean fine) {
+    public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getPersistenceManager(), fine);
+        return sql(queryStr, false);
     }
     
-    public List<T> sql(String queryStr) {
+    public List<T> sql(String queryStr, boolean fine) {
         
         if (persistenceMngr == null) {
             persistenceMngr = getPersistenceManager();
             System.out.println("[dao] create persistenceMngr");
         }
-        
-        return sql(queryStr, persistenceMngr, false);
+        return sql(queryStr, persistenceMngr, fine);
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
         
-        return sql(queryStr, pm, false);
+        List<T> results = sql(queryStr, pm, false);
+        pm.close();
+        return results;
     }
     
-    public List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
+    private List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
         List<T> detached = new ArrayList<T>();
         
