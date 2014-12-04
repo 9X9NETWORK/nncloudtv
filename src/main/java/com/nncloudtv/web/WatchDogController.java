@@ -373,21 +373,22 @@ public class WatchDogController {
         return NnNetUtil.textReturn("cache delete:" + mso);
     }   
     
-    @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
+    @RequestMapping(value="channelCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
+    public @ResponseBody String channelCache(@RequestParam(value = "channel") String chId ) {
         
-        NNF.getChannelMngr().resetCache(chId); 
-        return "OK";                
+        NnChannelManager channelMngr = NNF.getChannelMngr();
+        channelMngr.resetCache(channelMngr.findById(chId));
+        return "OK";
     }
     
-    @RequestMapping(value = "daypartCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "daypartCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody
     String daypartCache(@RequestParam(value = "mso", required = false) String mso,
             @RequestParam(value = "lang", required = false) String lang) {
         
         Mso brand = NNF.getMsoMngr().findByName(mso);
         NNF.getSysTagMngr().resetDaypartingCache(brand.getId(), lang);
-        this.channelCache(32777);
+        this.channelCache("32777");
         return "OK";
     }
     

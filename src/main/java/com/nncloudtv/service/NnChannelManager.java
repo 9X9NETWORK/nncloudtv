@@ -381,7 +381,7 @@ public class NnChannelManager {
             this.processChannelRelatedCounter(channels);
         }
         processChannelTag(channel);
-        resetCache(channel.getId());
+        resetCache(channel);
         
         return channel;
     }
@@ -775,15 +775,21 @@ public class NnChannelManager {
             keys.add(CacheFactory.getChannelCntItemKey(channel.getId()));
         }
         CacheFactory.deleteAll(keys);
+        
+        dao.resetCacheAll(channels);
     }
     
-    public void resetCache(long channelId) {
+    public void resetCache(NnChannel channel) {
         
-        log.info("reset channel info cache = " + channelId);
+        if (channel == null) return;
+        log.info("reset channel info cache = " + channel.getId());
         
-        List<String> keys = CacheFactory.getAllChannelInfoKeys(channelId);
-        keys.add(CacheFactory.getChannelCntItemKey(channelId));
+        List<String> keys = new ArrayList<String>();
+        keys.addAll(CacheFactory.getAllChannelInfoKeys(channel.getId()));
+        keys.add(CacheFactory.getChannelCntItemKey(channel.getId()));
         CacheFactory.deleteAll(keys);
+        
+        dao.resetCache(channel);
     }
     
     public Object composeReducedChannelLineup(List<NnChannel> channels, short format) {
@@ -971,7 +977,7 @@ public class NnChannelManager {
         
         if (channel == null) return;
         channel.setUpdateDate(NnDateUtil.now());
-        resetCache(channel.getId());
+        resetCache(channel);
         dao.save(channel);
     }
     

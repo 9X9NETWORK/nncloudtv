@@ -399,7 +399,7 @@ public class CacheFactory {
         return keys;
     }
     
-    public static String getFindByIdKey(String className, long id) {
+    public static String getDaoFindByIdKey(String className, long id) {
         
         return String.format("%s.findById(%d)", className, id);
     }
