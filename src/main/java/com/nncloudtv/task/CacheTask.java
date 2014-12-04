@@ -11,12 +11,12 @@ import com.nncloudtv.lib.NnDateUtil;
 
 @Service
 @EnableScheduling
-public class MemcacheTask implements ScheduledTask {
+public class CacheTask implements ScheduledTask {
     
-    protected static Logger log = Logger.getLogger(MemcacheTask.class.getName());
+    protected static Logger log = Logger.getLogger(CacheTask.class.getName());
     
     @Scheduled(fixedDelay = MC_INTERVAL)
-    synchronized public void checkingMemcacheServer() {
+    synchronized public static void checkingMemcacheServer() {
         
         if (CacheFactory.isEnabled) {
             
@@ -24,8 +24,9 @@ public class MemcacheTask implements ScheduledTask {
             long before = NnDateUtil.timestamp();
             CacheFactory.reconfigClient();
             System.out.println(String.format("[cache] reconfig costs %d milliseconds", NnDateUtil.timestamp() - before));
+        } else {
+            log.info("memcache is not enabled");
         }
-        
     }
     
 }

@@ -46,7 +46,7 @@
 # insert into poi_point (name, type, targetId, active, createDate, updateDate, startTime, endTime) values ('c-14382-1', 5, 202467, true, now(), now(), 5,10);
 # insert into poi (eventId, pointId, startDate, endDate, hoursOfWeek) values (1, 2, now(), DATE_ADD(now(), INTERVAL 31 DAY), null);
 
-# http://dev1.9x9.tv/playerAPI/flush
+# http://dev1.9x9.tv/wd/flush
 # http://dev1.9x9.tv/playerAPI/channelLineup?channel=14381&v=40
 # http://dev1.9x9.tv/playerAPI/programInfo?channel=14382&v=40
 # http://dev1.9x9.tv/playerAPI/portal?time=1&lang=zh

@@ -19,21 +19,19 @@ public class CounterShardDao extends GenericDao<CounterShard> {
     
     public List<CounterShard> findByCounterName(String counterName) {
         
-        List<CounterShard> results = new ArrayList<CounterShard>();
+        List<CounterShard> detached = new ArrayList<CounterShard>();
         PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(CounterShard.class);
             query.setFilter("counterName == counterNameParam");
             query.declareParameters("String counterNameParam");
             @SuppressWarnings("unchecked")
-            List<CounterShard> counterShards = (List<CounterShard>) query.execute(counterName);
-            if (counterShards.size() > 0) {
-                results = (List<CounterShard>) pm.detachCopyAll(counterShards);
-            }
+            List<CounterShard> results = (List<CounterShard>) query.execute(counterName);
+            detached = (List<CounterShard>) pm.detachCopyAll(results);
             query.closeAll();
         } finally {
             pm.close();
         }
-        return results;
+        return detached;
     }
 }

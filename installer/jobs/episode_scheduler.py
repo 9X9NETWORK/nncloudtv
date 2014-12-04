@@ -122,7 +122,7 @@ autoshareCurl.close()
 
 #if i > 1:
 #   print "flush cache" 
-#   url = "http://localhost:8080/playerAPI/flush"
+#   url = "http://localhost:8080/wd/flush"
 #   urllib2.urlopen(url).read()
 
 print "total episode published:" + str(i)

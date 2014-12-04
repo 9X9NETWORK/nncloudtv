@@ -309,6 +309,7 @@ public class NnProgramManager {
         
         log.info("cache key count = " + keys.size());
         CacheFactory.deleteAll(keys);
+        
     }
     
     public int total() {

@@ -167,15 +167,23 @@ public class CacheFactory {
         
         if (!isEnabled || !isRunning || keys == null || keys.isEmpty() || cache == null) return;
         
-        boolean isDeleted = false;
         long before = NnDateUtil.timestamp();
+        int count = 0;
         try {
             for (String key : keys) {
                 if (key != null && !key.isEmpty()) {
-                    cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    Boolean deleted = cache.delete(key).get(ASYNC_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+                    if (count < 3) {
+                        if (deleted != null)
+                            System.out.println(String.format("[cache] {%s} --> deleted", key));
+                        else
+                            System.out.println(String.format("[cache] {%s} --> NOT deleted", key));
+                    } else if (count == 3) {
+                        System.out.println("[cache] ....");
+                    }
+                    count++;
                 }
             }
-            isDeleted = true;
         } catch (NullPointerException e) {
             log.warning(e.getClass().getName());
             log.warning("there is no future");
@@ -184,12 +192,7 @@ public class CacheFactory {
             log.warning(e.getMessage());
         }
         
-        if (isDeleted) {
-            System.out.println(String.format("[cache] mass: %d --> deleted", keys.size()));
-        } else {
-            System.out.println(String.format("[cache] mass: %d --> NOT deleted", keys.size()));
-        }
-        System.out.println(String.format("[cache] deleteAll() operation costs %d milliseconds", NnDateUtil.timestamp() - before));
+        System.out.println(String.format("[cache] %d (total %d) objects deleted, costs %d milliseconds", count, keys.size(), NnDateUtil.timestamp() - before));
     }
     
     public static void delete(String key) {
@@ -247,6 +250,11 @@ public class CacheFactory {
     public static String getNnChannelPrefKey(long channelId, String item) {
         
         return String.format("nnchannelpref(%d)(%s)", channelId, item);
+    }
+    
+    public static String getMsoConfigKey(String item) {
+        
+        return String.format("msoconfig(%s)", item);
     }
     
     public static String getMsoConfigKey(long msoId, String item) {
@@ -399,7 +407,7 @@ public class CacheFactory {
         return keys;
     }
     
-    public static String getFindByIdKey(String className, long id) {
+    public static String getDaoFindByIdKey(String className, long id) {
         
         return String.format("%s.findById(%d)", className, id);
     }

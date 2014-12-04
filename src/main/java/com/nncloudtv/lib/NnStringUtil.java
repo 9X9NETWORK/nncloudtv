@@ -33,14 +33,6 @@ public class NnStringUtil {
     
     protected static final Logger log = Logger.getLogger(NnStringUtil.class.getName());
     
-    public static boolean stringToBool(String s) {
-      if (s.equals("1"))
-        return true;
-      if (s.equals("0"))
-        return false;
-      throw new IllegalArgumentException(s + " is not a bool");
-    }
-    
     public static boolean isDigits(String digits) {
         
         if (digits == null) return false;

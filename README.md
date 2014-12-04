@@ -58,7 +58,7 @@ Detail for each step can be found in the following sections.
 -   Import ClearCommerce jar file
 
         :::bash
-        mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar
+        mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.550.5432 -Dpackaging=jar        
 
 -   datanucleus jdo enhance:  
     Go to project root folder,
@@ -207,7 +207,7 @@ Package
 
             :::bash
             mvn clean:clean
-            mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar
+            mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.550.5432 -Dpackaging=jar
             mvn compile
             mvn datanucleus:enhance
             mvn compile war:war

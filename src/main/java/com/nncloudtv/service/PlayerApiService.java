@@ -106,12 +106,13 @@ public class PlayerApiService {
     public int prepService(ApiContext ctx) {
         
         HttpServletRequest req = ctx.getReq();
+        MsoConfigManager configMngr = NNF.getConfigMngr();
         
         req.getSession().setMaxInactiveInterval(60);
         
         NnLogUtil.logUrl(req);
         
-        MsoConfig brandExpireConfig = NNF.getConfigMngr().getByMsoAndItem(ctx.getMso(), MsoConfig.APP_EXPIRE);
+        MsoConfig brandExpireConfig = configMngr.getByMsoAndItem(ctx.getMso(), MsoConfig.APP_EXPIRE);
         if (brandExpireConfig != null) {
             try {
                 //"January 2, 2019";
@@ -124,7 +125,8 @@ public class PlayerApiService {
                 NnLogUtil.logException(e);
             }
         }
-        MsoConfig appExpireConfig = NNF.getConfigMngr().getByMsoAndItem(ctx.getMso(), MsoConfig.APP_VERSION_EXPIRE);
+        
+        MsoConfig appExpireConfig = configMngr.getByMsoAndItem(ctx.getMso(), MsoConfig.APP_VERSION_EXPIRE);
         if (appExpireConfig != null) {
             String[] str = appExpireConfig.getValue().split(";");
             String appVersion = ctx.getAppVersion();
@@ -135,10 +137,14 @@ public class PlayerApiService {
                }
             }
         }
-        if (ctx.getVer() < checkApiMinimal())
+        
+        if (ctx.getVer() < checkApiMinimal()) {
             return NnStatusCode.API_FORCE_UPGRADE;
-        else
-            return checkRO();
+        } else {
+            if (configMngr.isInReadonlyMode(false))
+                return NnStatusCode.DATABASE_READONLY;
+            return NnStatusCode.SUCCESS;
+        }
     }
     
     //assemble key and value string
@@ -337,14 +343,6 @@ public class PlayerApiService {
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, value);
         }
         return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
-    }
-    
-    public int checkRO() {
-        
-        MsoConfig config = NNF.getConfigMngr().findByItem(MsoConfig.RO);
-        if (config != null && config.getValue().equals("1"))
-            return NnStatusCode.DATABASE_READONLY;
-        return NnStatusCode.SUCCESS;
     }
     
     public int checkApiMinimal() {
@@ -3240,7 +3238,8 @@ public class PlayerApiService {
                 log.warning("item not found, itemId = " + purchase.getItemId());
                 continue;
             }
-            if (item.getMsoId() == ctx.getMsoId() && purchase.isVerified()) {
+            if (item.getMsoId() == ctx.getMsoId() &&
+                purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE) {
                 
                 purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
             }
@@ -3258,7 +3257,8 @@ public class PlayerApiService {
         String purchasesStr = "";
         for (NnItem item : items) {
             
-            purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
+            if (item.getStatus() == NnItem.ACTIVE)
+                purchasesStr += (String) NNF.getItemMngr().composeEachItem(item) + "\n";
         }
         
         String[] result = { purchasesStr };

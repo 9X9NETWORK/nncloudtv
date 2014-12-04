@@ -35,10 +35,13 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
+import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TagManager;
+import com.nncloudtv.task.CacheTask;
+import com.nncloudtv.task.MemoryTask;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.ApiGeneric;
 import com.nncloudtv.web.api.NnStatusCode;
@@ -140,7 +143,7 @@ public class WatchDogController {
            return NnNetUtil.textReturn("error\nurl empty");
         if (lang == null)
            lang = "en";
-        url = url.trim();               
+        url = url.trim();
         NnChannel c = NNF.getChannelMngr().createYouTubeWithMeta(url, name, intro, lang, imageUrl, req);
         return NnNetUtil.textReturn(c.getIdStr());
         
@@ -223,13 +226,13 @@ public class WatchDogController {
                 for (int i=0; i < data.length; i++) {
                     if (i == 0)  output += "channel id:";
                     if (i == 1)  output += "program id:"; 
-                    if (i == 2 ) output += "name:";                        
+                    if (i == 2 ) output += "name:";
                     if (i == 3)  output += "description:";
                     if (i == 4)  output += "content type:";
                     if (i == 5)  output += "duration:";
                     if (i == 6)  output += "image url:";
                     if (i == 7)  output += "image large url:";
-                    if (i == 8)  output += "video url:";                         
+                    if (i == 8)  output += "video url:";
                     if (i == 9)  output += "url2:";
                     if (i == 10) output += "url3:";
                     if (i == 11) output += "audior url:";
@@ -264,10 +267,10 @@ public class WatchDogController {
                 output += "----\n";
             }
         }
-                    
-        return output;        
+        
+        return output;
     }
-
+    
     @RequestMapping(value="channelLineup", produces = "text/plain; charset=utf-8")
     public @ResponseBody String channelLineup(HttpServletRequest req,
             @RequestParam(value="channel", required=false) String channel,
@@ -290,7 +293,7 @@ public class WatchDogController {
         for (int i=0; i < data.length; i++) {
             if (i == 0)  output += "grid:";
             if (i == 1)  output += "channel id:"; 
-            if (i == 2 ) output += "name:";                        
+            if (i == 2 ) output += "name:";
             if (i == 3)  output += "description:";
             if (i == 4)  output += "image:";
             if (i == 5)  output += "episode count:";
@@ -335,7 +338,7 @@ public class WatchDogController {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
- 
+                        
                     }
                 }
             } else {
@@ -344,24 +347,50 @@ public class WatchDogController {
         }        
         return output;
     }
-    
-    @RequestMapping(value = "msoCache", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String msoCache(@RequestParam(value="mso", required = true) String msoId) {
+    /**
+     * clean msoConfig cache
+     * 
+     * @param config mso_config item
+     * @param msoIdStr msoId
+     * @return
+     */
+    @RequestMapping(value = "configCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
+    public @ResponseBody String configCache(
+            @RequestParam(value = "config", required = false) String config,
+            @RequestParam(value = "mso", required = false) String msoIdStr) {
         
-        Mso mso = NNF.getMsoMngr().findByIdOrName(msoId);
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        if (config != null) {
+            CacheFactory.delete(CacheFactory.getMsoConfigKey(config));
+            if (mso != null)
+                CacheFactory.delete(CacheFactory.getMsoConfigKey(mso.getId(), config));;
+        }
+        return ApiGeneric.OK;
+    }
+    
+    /**
+     * Clean all mso related cache
+     * 
+     * @param msoIdStr msoId
+     * @return
+     */
+    @RequestMapping(value = "msoCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
+    public @ResponseBody String msoCache(
+            @RequestParam(value = "mso", required = true) String msoIdStr) {
+        
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         
         NNF.getMsoMngr().resetCache(mso);
         
-        return "OK";
+        return ApiGeneric.OK;
     }
     
-    @RequestMapping(value = "programCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "programCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String programCache(
-            @RequestParam(value  ="channel", required = true) long chId ) {
+            @RequestParam(value = "channel", required = true) long chId ) {
         
         NNF.getProgramMngr().resetCache(chId);
-        
-        return "OK";
+        return ApiGeneric.OK;
     }
     
     //delete brandInfo_reset
@@ -372,57 +401,58 @@ public class WatchDogController {
         return NnNetUtil.textReturn("cache delete:" + mso);
     }   
     
-    @RequestMapping(value="channelCache", produces = "text/plain; charset=utf-8")
-    public @ResponseBody String channelCache(@RequestParam(value="channel", required=false) long chId ) {            
+    @RequestMapping(value="channelCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
+    public @ResponseBody String channelCache(@RequestParam(value = "channel") String chId ) {
         
-        NNF.getChannelMngr().resetCache(chId); 
-        return "OK";                
+        NnChannelManager channelMngr = NNF.getChannelMngr();
+        channelMngr.resetCache(channelMngr.findById(chId));
+        return "OK";
     }
     
-    @RequestMapping(value = "daypartCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "daypartCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody
     String daypartCache(@RequestParam(value = "mso", required = false) String mso,
             @RequestParam(value = "lang", required = false) String lang) {
         
         Mso brand = NNF.getMsoMngr().findByName(mso);
         NNF.getSysTagMngr().resetDaypartingCache(brand.getId(), lang);
-        this.channelCache(32777);
+        this.channelCache("32777");
         return "OK";
     }
     
-    @RequestMapping(value="channelSubmit", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value="channelSubmit", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String channelCache(
             HttpServletRequest req,
             @RequestParam(value="url", required=false) String url, 
-            @RequestParam(value="name", required=false) String name) {            
+            @RequestParam(value="name", required=false) String name) {
         
         NnChannel c = NNF.getChannelMngr().create(url, name, "en", req);
         if ( c!= null)
             return c.getIdStr();
-        return "channel submission failed";                
+        return "channel submission failed";
     }
-
-    @RequestMapping(value="tag", produces = "text/plain; charset=utf-8")
+    
+    @RequestMapping(value="tag", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String tag(
             HttpServletRequest req, 
-            @RequestParam(value="name", required=false) String name) {            
+            @RequestParam(value="name", required=false) String name) {
         TagManager tagMngr = new TagManager();
         Tag t = tagMngr.findByName(name);
         if (t == null) {
             t = new Tag(name);
             tagMngr.save(t);
         }
-        return String.valueOf(t.getId());                
+        return String.valueOf(t.getId());
     }
-
+    
     @RequestMapping(value="tagMap", produces = "text/plain; charset=utf-8")
     public @ResponseBody String tagMap(
             HttpServletRequest req, 
-            @RequestParam(value="tagId", required=false) long tagId,            
+            @RequestParam(value="tagId", required=false) long tagId,
             @RequestParam(value="chId", required=false) long chId) {
         TagManager tagMngr = new TagManager();
         tagMngr.createTagMap(tagId, chId);
-        return "OK";                
+        return "OK";
     }    
     
     //delete cache with key
@@ -461,13 +491,13 @@ public class WatchDogController {
         if (user == null)
             return NnNetUtil.textReturn("user does not exist");
         user.setPassword(password);
-        NNF.getUserMngr().resetPassword(user);    
+        NNF.getUserMngr().resetPassword(user);
         return NnNetUtil.textReturn("OK");
     }
     
     @RequestMapping("json") 
     public @ResponseBody ChannelLineup json (
-    		@RequestParam(value="id") long id, HttpServletRequest req) {         
+            @RequestParam(value="id") long id, HttpServletRequest req) {
        NnChannelManager chMngr = NNF.getChannelMngr();
        NnChannel c = chMngr.findById(id);
        ChannelLineup json = (ChannelLineup)chMngr.composeEachChannelLineup(c, new ApiContext(req));
@@ -475,4 +505,51 @@ public class WatchDogController {
        return json;
     }        
     
+    /**
+     * flush cache server
+     */
+    @RequestMapping("flush")
+    public ResponseEntity<String> flush() {
+        
+        System.out.println("[cache] flushing cache");
+        CacheFactory.flush();
+        
+        return NnNetUtil.textReturn(ApiGeneric.OK);
+    }
+    
+    /**
+     * reconfig cache server
+     */
+    @RequestMapping("reconfig")
+    public ResponseEntity<String> reconfig() {
+        
+        CacheTask.checkingMemcacheServer();
+        
+        return NnNetUtil.textReturn(ApiGeneric.OK);
+    }
+    
+    /**
+     * Garbage Collection
+     * @return
+     */
+    @RequestMapping("gc")
+    public ResponseEntity<String> gc() {
+        
+        MemoryTask.triggerGC();
+        
+        return NnNetUtil.textReturn(MemoryTask.memoryUsageReport);
+    }
+    
+    /**
+     * Get the count number
+     * 
+     * @param counterName
+     * @return
+     */
+    @RequestMapping("getCount")
+    public ResponseEntity<String> getCount(@RequestParam(value = "counterName") String counterName) {
+        
+        log.info("counterName = " + counterName);
+        return NnNetUtil.textReturn(String.valueOf(CounterFactory.getCount(counterName)));
+    }
 }

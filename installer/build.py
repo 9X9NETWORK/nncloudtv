@@ -53,7 +53,7 @@ os.rename("..//src//main//java//com//nncloudtv//web//VersionController.java.tmp"
 #---- build ----
 os.chdir("..//")
 os.system("mvn clean")
-os.system("mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.0.3706 -Dpackaging=jar")
+os.system("mvn install:install-file -Dfile=./lib/CcxClientApi.jar -DgroupId=com.clearcommerce -DartifactId=clear-commerce -Dversion=5.10.550.5432 -Dpackaging=jar")
 os.system("mvn compile")
 os.system("mvn datanucleus:enhance")
 os.system("mvn war:war")
