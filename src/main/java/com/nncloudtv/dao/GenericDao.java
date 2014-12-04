@@ -22,7 +22,9 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
-        
+    
+    protected static PersistenceManager persistenceMngr = null;
+    
     public GenericDao(Class<T> daoClass) {
         this.daoClass = daoClass;
         this.daoClassName = daoClass.getSimpleName();
@@ -44,6 +46,12 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     protected PersistenceManager getPersistenceManager() {
         
+//        if (persistenceMngr == null) {
+//            persistenceMngr = PMF.get(daoClass).getPersistenceManager();
+//            System.out.println("[dao] create persistenceMngr");
+//        }
+//        
+//        return persistenceMngr;
         return PMF.get(daoClass).getPersistenceManager();
     }
     
@@ -298,7 +306,12 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getPersistenceManager(), false);
+        if (persistenceMngr == null) {
+            persistenceMngr = getPersistenceManager();
+            System.out.println("[dao] create persistenceMngr");
+        }
+        
+        return sql(queryStr, persistenceMngr, false);
     }
     
     public List<T> sql(String queryStr, PersistenceManager pm) {
@@ -322,21 +335,14 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (!fine)
             System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
-        try {
-            
-            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-            query.setClass(daoClass);
-            @SuppressWarnings("unchecked")
-            List<T> results = (List<T>) query.execute();
-            detached = (List<T>) pm.detachCopyAll(results);
-            query.closeAll();
-            if (!fine)
-                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
-            
-        } finally {
-            
-            pm.close();
-        }
+        Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+        query.setClass(daoClass);
+        @SuppressWarnings("unchecked")
+        List<T> results = (List<T>) query.execute();
+        detached = (List<T>) pm.detachCopyAll(results);
+        query.closeAll();
+        if (!fine)
+            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
         return detached;
     }
     
