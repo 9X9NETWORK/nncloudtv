@@ -271,7 +271,7 @@ public class GenericDao<T extends PersistentBaseModel> {
             pm.close();
         }
         if (dao != null && dao.isCachable())
-            CacheFactory.set(cacheKey, dao);
+            CacheFactory.set(cacheKey, dao, CacheFactory.EXP_ONE_DAY);
         return dao;
     }
     
