@@ -357,13 +357,12 @@ public class WatchDogController {
         return "OK";
     }
     
-    @RequestMapping(value = "programCache", produces = "text/plain; charset=utf-8")
+    @RequestMapping(value = "programCache", produces = ApiGeneric.PLAIN_TEXT_UTF8)
     public @ResponseBody String programCache(
-            @RequestParam(value  ="channel", required = true) long chId ) {
+            @RequestParam(value = "channel", required = true) long chId ) {
         
         NNF.getProgramMngr().resetCache(chId);
-        
-        return "OK";
+        return ApiGeneric.OK;
     }
     
     //delete brandInfo_reset

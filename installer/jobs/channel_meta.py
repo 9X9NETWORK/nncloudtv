@@ -166,7 +166,7 @@ for line in feed:
   userCursor.close ()
   contentCursor.close ()
 
-url = "http://localhost:8080/playerAPI/flush"
+url = "http://localhost:8080/wd/flush"
 urllib2.urlopen(url).read()
 
 print "record done:" + str(i)

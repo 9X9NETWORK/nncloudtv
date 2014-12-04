@@ -109,7 +109,7 @@ if server == "2":
 print "\n"                                                       
 answer = raw_input('Clean memcache? (1.yes 2.exit) : ')
 if answer == "1":
-   url = "http://www.9x9.tv/playerAPI/flush"                                                         
+   url = "http://www.9x9.tv/wd/flush"                                                         
    urllib2.urlopen(url).read()
    print "--- cache cleaned ---"
 
