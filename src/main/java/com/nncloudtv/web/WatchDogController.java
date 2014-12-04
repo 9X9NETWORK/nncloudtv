@@ -35,6 +35,7 @@ import com.nncloudtv.model.SysTag;
 import com.nncloudtv.model.SysTagDisplay;
 import com.nncloudtv.model.SysTagMap;
 import com.nncloudtv.model.Tag;
+import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.service.MsoManager;
 import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.PlayerApiService;
@@ -498,5 +499,17 @@ public class WatchDogController {
         CacheTask.checkingMemcacheServer();
         
         return NnNetUtil.textReturn(ApiGeneric.OK);
+    }
+    
+    /**
+     * Get the count number
+     * 
+     * @param counterName
+     * @return
+     */
+    @RequestMapping("getCount")
+    public ResponseEntity<String> getCount(@RequestParam(value = "counterName") String counterName) {
+        
+        return NnNetUtil.textReturn(String.valueOf(CounterFactory.getCount(counterName)));
     }
 }
