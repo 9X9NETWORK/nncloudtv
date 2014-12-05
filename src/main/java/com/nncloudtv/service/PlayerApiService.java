@@ -1874,17 +1874,17 @@ public class PlayerApiService {
         if (type != null && type.equals("youtube")) {
             searchContent = searchContent + ",youtube";
         }
-        
+        NnChannelManager channelMngr = NNF.getChannelMngr();
         List<NnChannel> channels = new ArrayList<NnChannel>();
         long numOfChannelTotal = 0;
         if (text.startsWith("@")) {
             String cid = text.substring(1);
-            NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(cid));
+            NnChannel c = channelMngr.findById(Long.parseLong(cid));
             numOfChannelTotal = 1;
             channels.add(c);
         } else {
         @SuppressWarnings("rawtypes")
-        Stack st = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);
+        Stack st = channelMngr.searchSolr(SearchLib.CORE_NNCLOUDTV, text, searchContent, null, false, startIndex, limit);
         channels = (List<NnChannel>) st.pop();
         System.out.println("solr search channel size:" + channels.size());
         numOfChannelTotal = (Long) st.pop();
@@ -1896,7 +1896,7 @@ public class PlayerApiService {
         //if none matched, return suggestion channels
         List<NnChannel> suggestion = new ArrayList<NnChannel>();
         if (channels.size() == 0 && users.size() == 0) {
-            suggestion = NNF.getChannelMngr().findBillboard(Tag.TRENDING, LocaleTable.LANG_EN);
+            suggestion = channelMngr.findBillboard(Tag.TRENDING, LocaleTable.LANG_EN);
         }
         int numOfChannelReturned = channels.size();
         int numOfCuratorReturned = users.size();
@@ -1909,11 +1909,11 @@ public class PlayerApiService {
             //matched curators && their channels [important, two sections]
             result[1] = (String) NNF.getUserMngr().composeCuratorInfo(ctx, users, true, false);
             //matched channels
-            result[2] = (String) NNF.getChannelMngr().composeChannelLineup(channels, ctx);
+            result[2] = (String) channelMngr.composeChannelLineup(channels, ctx);
             System.out.println("result 3:" + result[3]);
             //suggested channels
             if (channels.size() == 0 && users.size() == 0) {
-                result[3] = (String) NNF.getChannelMngr().composeChannelLineup(suggestion, ctx);
+                result[3] = (String) channelMngr.composeChannelLineup(suggestion, ctx);
             }
             //statistics
             result[0] = assembleKeyValue("curator", String.valueOf(numOfCuratorReturned) + "\t" + String.valueOf(numOfCuratorTotal));
@@ -1929,7 +1929,7 @@ public class PlayerApiService {
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);
         } else {
             Search search = new Search();
-            search.setChannelLineups((List<ChannelLineup>) NNF.getChannelMngr().composeChannelLineup(channels,  ctx));
+            search.setChannelLineups((List<ChannelLineup>) channelMngr.composeChannelLineup(channels,  ctx));
             search.setNumOfChannelReturned(numOfChannelReturned);
             search.setNumOfCuratorReturned(numOfCuratorReturned);
             search.setNumOfSuggestReturned(numOfSuggestReturned);

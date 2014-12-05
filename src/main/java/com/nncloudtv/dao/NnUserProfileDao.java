@@ -24,9 +24,12 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     
     public List<NnUserProfile> findByUserId(long userId, short shard) {
         
+        PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
         String query = "SELECT * FROM nnuser_profile WHERE userId = " + userId;
         
-        return sql(query, NnUserDao.getPersistenceManager(shard, null));
+        List<NnUserProfile> results = sql(query, pm);
+        pm.close();
+        return results;
     }
     
     public NnUserProfile findByUser(NnUser user) {
@@ -62,15 +65,14 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
     public Set<NnUserProfile> search(String keyword, int start, int limit, short shard) {
         
         Set<NnUserProfile> results = new HashSet<NnUserProfile>();
-        
+        PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
         keyword = StringEscapeUtils.escapeSql(keyword);
         String query = "SELECT * FROM nnuser_profile "
                      + "        WHERE LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")"
                      + "     ORDER BY updateDate DESC"
                      + "        LIMIT " + start + ", " + limit;
-        
-        results.addAll(sql(query, NnUserDao.getPersistenceManager(shard, null)));
-        
+        results.addAll(sql(query, pm));
+        pm.close();
         return results;
     }
     

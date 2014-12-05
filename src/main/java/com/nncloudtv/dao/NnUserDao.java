@@ -96,7 +96,9 @@ public class NnUserDao extends GenericDao<NnUser> {
             pm = PMF.getNnUser1().getPersistenceManager();
         }
         
-        return findById(id, pm);
+        NnUser result = findById(id, pm);
+        pm.close();
+        return result;
     }
     
     //use either shard or token to determine partition, default shard 1 if nothing
@@ -119,8 +121,10 @@ public class NnUserDao extends GenericDao<NnUser> {
     }
     
     public NnUser save(NnUser user) {
-        
-        return save(user, getPersistenceManager(user.getShard(), user.getToken()));
+        PersistenceManager pm = getPersistenceManager(user.getShard(), user.getToken());
+        user = save(user, pm);
+        pm.close();
+        return user;
     }
     
     public NnUser findAuthenticatedUser(String email, String password, short shard) {

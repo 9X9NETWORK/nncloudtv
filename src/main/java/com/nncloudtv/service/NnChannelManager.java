@@ -411,7 +411,7 @@ public class NnChannelManager {
             String chs[] = chStr.split(",");
             int i=1;
             for (String cId : chs) {
-                if (i > 9) break;                    
+                if (i > 9) break;
                 System.out.println("cid:" + cId);
                 NnChannel c = this.findById(Long.parseLong(cId.trim()));
                 if (c != null)
@@ -422,14 +422,14 @@ public class NnChannelManager {
         return channels;
     }
     
-    public static List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
+    public List<NnChannel> search(String keyword, String content, String extra, boolean all, int start, int limit) {
         
-        return NNF.getChannelDao().search(keyword, content, extra, all, start, limit);
+        return dao.search(keyword, content, extra, all, start, limit);
     }
     
     //stack => NnChannel, total number found
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
+    public Stack searchSolr(String core, String keyword, String content, String extra, boolean all, int start, int limit) {
         Stack st = SearchLib.search(core, keyword, content, extra, all, start, limit);
         List<Long> ids = (List<Long>) st.pop();
         List<NnChannel> channels = NNF.getChannelDao().findAllByIds(ids);
