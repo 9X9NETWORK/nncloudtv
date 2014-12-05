@@ -267,7 +267,10 @@ public class GenericDao<T extends PersistentBaseModel> {
             return dao;
         }
         CounterFactory.increment("MISS " + cacheKey);
-        dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
+        try {
+            dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
+        } catch (JDOObjectNotFoundException e) {
+        }
         if (dao != null && dao.isCachable())
             CacheFactory.set(cacheKey, dao, CacheFactory.EXP_ONE_DAY);
         return dao;
