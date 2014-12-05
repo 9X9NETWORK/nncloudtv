@@ -19,7 +19,7 @@ public class StoreListingManager {
     
     protected static final Logger log = Logger.getLogger(StoreListingManager.class.getName());
     
-    private StoreListingDao dao = new StoreListingDao();
+    private StoreListingDao dao = NNF.getStoreListingDao();
     
     public void addChannelsToBlackList(List<Long> channelIds, Long msoId) {
         

@@ -21,7 +21,7 @@ public class NnUserSubscribeManager {
 
     protected static final Logger log = Logger.getLogger(NnUserSubscribeManager.class.getName());
     
-    NnUserSubscribeDao subDao = new NnUserSubscribeDao(); 
+    NnUserSubscribeDao subDao = NNF.getSubscribeDao(); 
 
     public List<NnUserSubscribe> findAllByUser(NnUser user) {
         return subDao.findAllByUser(user);

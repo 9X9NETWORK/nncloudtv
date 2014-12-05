@@ -3,11 +3,12 @@ package com.nncloudtv.service;
 import java.util.List;
 
 import com.nncloudtv.dao.CaptchaDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.model.Captcha;
 
 public class CaptchaManager {
     
-    private CaptchaDao captchaDao = new CaptchaDao();    
+    private CaptchaDao captchaDao = NNF.getCaptchaDao();
 
     public void saveAll(List<Captcha> list) {
         captchaDao.saveAll(list);        

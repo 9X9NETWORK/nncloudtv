@@ -17,7 +17,7 @@ import com.nncloudtv.web.api.ApiContext;
 public class YtProgramManager {
     protected static final Logger log = Logger.getLogger(YtProgramManager.class.getName());
 
-    private YtProgramDao dao = new YtProgramDao();
+    private YtProgramDao dao = NNF.getYtProgramDao();
     
     
     /**

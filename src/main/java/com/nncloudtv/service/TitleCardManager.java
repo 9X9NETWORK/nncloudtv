@@ -19,7 +19,7 @@ public class TitleCardManager {
 
     protected static final Logger log = Logger.getLogger(TitleCardManager.class.getName());
     
-    private TitleCardDao dao = new TitleCardDao();
+    private TitleCardDao dao = NNF.getTitleCardDao();
     
     public TitleCard save(TitleCard card) {
         if (card==null) return null;

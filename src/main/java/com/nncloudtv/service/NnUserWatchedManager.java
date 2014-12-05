@@ -14,7 +14,7 @@ public class NnUserWatchedManager {
     
     protected static final Logger log = Logger.getLogger(NnUserWatchedManager.class.getName());
     
-    private NnUserWatchedDao dao= new NnUserWatchedDao();
+    private NnUserWatchedDao dao = NNF.getWatchedDao();
     
     public NnUserWatched save(NnUser user, NnUserWatched watched) {
         NnUserWatched existed = this.findByUserAndChannel(user, watched.getChannelId());

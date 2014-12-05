@@ -2446,7 +2446,7 @@ public class PlayerApiService {
         }
         //get programs
         List<String> result = new ArrayList<String>();
-        List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);
+        List<YtProgram> ytprograms = NNF.getYtProgramDao().findByChannels(channels);
         String programInfo = "";
         for (YtProgram p : ytprograms) {
             String[] ori = {
@@ -2582,7 +2582,7 @@ public class PlayerApiService {
             return ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS);
         }
         log.info("--- process virtual channels ---");
-        YtProgramDao dao = new YtProgramDao();
+        YtProgramDao dao = NNF.getYtProgramDao();
         String[] lines = payload.split("\n");
         log.info("lines:" + lines.length);
         List<YtProgram> ytprograms = new ArrayList<YtProgram>();
@@ -2829,7 +2829,7 @@ public class PlayerApiService {
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
         }
         String[] result = {""};
-        List<YtProgram> ytprograms = new YtProgramDao().findOneLatestByChannelStr(channel);
+        List<YtProgram> ytprograms = NNF.getYtProgramDao().findOneLatestByChannelStr(channel);
         for (YtProgram p : ytprograms) {
             String[] ori = {
                     String.valueOf(p.getChannelId()),

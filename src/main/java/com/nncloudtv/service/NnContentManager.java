@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnContentDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnContent;
 
@@ -14,7 +15,7 @@ public class NnContentManager {
 
     protected static final Logger log = Logger.getLogger(NnContentManager.class.getName());
     
-    private NnContentDao nnContentDao = new NnContentDao();
+    private NnContentDao nnContentDao = NNF.getContentDao();
     
     public NnContent create(NnContent content) {
         NnContent existed = this.findByItemAndLang(content.getItem(), content.getLang(), content.getMsoId());
