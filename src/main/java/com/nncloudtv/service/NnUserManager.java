@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.jdo.PersistenceManager;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -493,8 +494,10 @@ public class NnUserManager {
     }
     
     public List<NnUser> findAllByIds(Collection<Long> userIdSet, short shard) {
-        
-        return dao.findAllByIds(userIdSet, NnUserDao.getPersistenceManager(shard, null));
+        PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
+        List<NnUser> results = dao.findAllByIds(userIdSet, pm);
+        pm.close();
+        return results;
     }
     
     //UserInfo or String
