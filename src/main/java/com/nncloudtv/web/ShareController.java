@@ -100,7 +100,7 @@ public class ShareController {
             }
             if (q1.equals("y")) {
                 invite.setStatus(UserInvite.STATUS_ACCEPTED);
-                NnUserSubscribeDao subDao = new NnUserSubscribeDao();
+                NnUserSubscribeDao subDao = NNF.getSubscribeDao();
                 NnUserSubscribeManager subMngr = new NnUserSubscribeManager();
                 NnUser user = NNF.getUserMngr().findByEmail(invite.getInviteeEmail(), 1, req);
                 NnChannel c = NNF.getChannelMngr().findById(invite.getChannelId());

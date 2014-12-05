@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoIpgDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoIpg;
 
@@ -14,7 +15,7 @@ import com.nncloudtv.model.MsoIpg;
 public class MsoIpgManager {
     protected static final Logger log = Logger.getLogger(MsoIpgManager.class.getName());
     
-    private MsoIpgDao msoIpgDao = new MsoIpgDao();
+    private MsoIpgDao msoIpgDao = NNF.getMsoIpgDao();
     
     /**
      * @@@ IMPORTANT: 

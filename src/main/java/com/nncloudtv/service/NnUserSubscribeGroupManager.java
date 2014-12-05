@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnUserSubscribeGroupDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribeGroup;
@@ -16,7 +17,7 @@ public class NnUserSubscribeGroupManager {
     
     protected static final Logger log = Logger.getLogger(NnUserSubscribeGroupManager.class.getName());
     
-    private NnUserSubscribeGroupDao groupDao = new NnUserSubscribeGroupDao();
+    private NnUserSubscribeGroupDao groupDao = NNF.getSubscribeGroupDao();
     
     public void create(NnUser user, NnUserSubscribeGroup group) {
         Date now = NnDateUtil.now();

@@ -7,29 +7,45 @@ import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.BillingOrderDao;
 import com.nncloudtv.dao.BillingPackageDao;
 import com.nncloudtv.dao.BillingProfileDao;
+import com.nncloudtv.dao.CaptchaDao;
 import com.nncloudtv.dao.CounterDao;
 import com.nncloudtv.dao.CounterShardDao;
+import com.nncloudtv.dao.MsoConfigDao;
 import com.nncloudtv.dao.MsoDao;
+import com.nncloudtv.dao.MsoIpgDao;
+import com.nncloudtv.dao.MsoNotificationDao;
 import com.nncloudtv.dao.MsoPromotionDao;
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.NnChannelPrefDao;
+import com.nncloudtv.dao.NnContentDao;
 import com.nncloudtv.dao.NnDeviceDao;
+import com.nncloudtv.dao.NnDeviceNotificationDao;
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.dao.NnGuestDao;
 import com.nncloudtv.dao.NnItemDao;
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.NnPurchaseDao;
+import com.nncloudtv.dao.NnUserChannelSortingDao;
 import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.dao.MyLibraryDao;
 import com.nncloudtv.dao.NnUserPrefDao;
 import com.nncloudtv.dao.NnUserProfileDao;
+import com.nncloudtv.dao.NnUserReportDao;
+import com.nncloudtv.dao.NnUserShareDao;
+import com.nncloudtv.dao.NnUserSubscribeDao;
+import com.nncloudtv.dao.NnUserSubscribeGroupDao;
+import com.nncloudtv.dao.NnUserWatchedDao;
 import com.nncloudtv.dao.PoiCampaignDao;
 import com.nncloudtv.dao.PoiDao;
 import com.nncloudtv.dao.PoiEventDao;
 import com.nncloudtv.dao.PoiPointDao;
+import com.nncloudtv.dao.StoreListingDao;
 import com.nncloudtv.dao.SysTagDao;
 import com.nncloudtv.dao.SysTagDisplayDao;
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.dao.TagDao;
 import com.nncloudtv.dao.TitleCardDao;
+import com.nncloudtv.dao.YtChannelDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.service.AdPlacementManager;
 import com.nncloudtv.service.BillingOrderManager;
@@ -116,35 +132,51 @@ public class NNF {
     protected static PlayerApiService  playerApiService = null;
     protected static ContentWorkerService workerService = null;
     
-    protected static MsoDao            msoDao            = null;
-    protected static MsoPromotionDao   msoPromotionDao   = null;
-    protected static BillingOrderDao   orderDao          = null;
-    protected static BillingProfileDao billingProfileDao = null;
-    protected static BillingPackageDao packageDao        = null;
-    protected static NnEpisodeDao      episodeDao        = null;
-    protected static NnChannelDao      channelDao        = null;
-    protected static NnDeviceDao       deviceDao         = null;
-    protected static PoiDao            poiDao            = null;
-    protected static PoiPointDao       poiPointDao       = null;
-    protected static PoiEventDao       poiEventDao       = null;
-    protected static PoiCampaignDao    poiCampaignDao    = null;
-    protected static NnProgramDao      programDao        = null;
-    protected static YtProgramDao      ytProgramDao      = null;
-    protected static NnUserDao         userDao           = null;
-    protected static NnUserProfileDao  profileDao        = null;
-    protected static NnUserPrefDao     prefDao           = null;
-    protected static SysTagDao         sysTagDao         = null;
-    protected static SysTagDisplayDao  displayDao        = null;
-    protected static SysTagMapDao      sysTagMapDao      = null;
-    protected static AdPlacementDao    adDao             = null;
-    protected static MyLibraryDao      libraryDao        = null;
-    protected static NnPurchaseDao     purchaseDao       = null;
-    protected static NnItemDao         itemDao           = null;
-    protected static TitleCardDao      titleCardDao      = null;
-    protected static NnChannelPrefDao  chPrefDao         = null;
-    protected static AppDao            appDao            = null;
-    protected static CounterDao        counterDao        = null;
-    protected static CounterShardDao   shardDao          = null;
+    protected static MsoDao             msoDao             = null;
+    protected static MsoPromotionDao    msoPromotionDao    = null;
+    protected static BillingOrderDao    orderDao           = null;
+    protected static BillingProfileDao  billingProfileDao  = null;
+    protected static BillingPackageDao  packageDao         = null;
+    protected static NnEpisodeDao       episodeDao         = null;
+    protected static NnChannelDao       channelDao         = null;
+    protected static NnDeviceDao        deviceDao          = null;
+    protected static PoiDao             poiDao             = null;
+    protected static PoiPointDao        poiPointDao        = null;
+    protected static PoiEventDao        poiEventDao        = null;
+    protected static PoiCampaignDao     poiCampaignDao     = null;
+    protected static NnProgramDao       programDao         = null;
+    protected static YtProgramDao       ytProgramDao       = null;
+    protected static NnUserDao          userDao            = null;
+    protected static NnUserProfileDao   profileDao         = null;
+    protected static NnUserPrefDao      prefDao            = null;
+    protected static SysTagDao          sysTagDao          = null;
+    protected static SysTagDisplayDao   displayDao         = null;
+    protected static SysTagMapDao       sysTagMapDao       = null;
+    protected static AdPlacementDao     adDao              = null;
+    protected static MyLibraryDao       libraryDao         = null;
+    protected static NnPurchaseDao      purchaseDao        = null;
+    protected static NnItemDao          itemDao            = null;
+    protected static TitleCardDao       titleCardDao       = null;
+    protected static NnChannelPrefDao   chPrefDao          = null;
+    protected static AppDao             appDao             = null;
+    protected static CounterDao         counterDao         = null;
+    protected static CounterShardDao    shardDao           = null;
+    protected static CaptchaDao         captchaDao         = null;
+    protected static MsoConfigDao       configDao          = null;
+    protected static MsoIpgDao          msoIpgDao          = null;
+    protected static MsoNotificationDao msoNotiDao         = null;
+    protected static NnContentDao       contentDao         = null;
+    protected static NnDeviceNotificationDao deviceNotiDao = null;
+    protected static NnGuestDao         guestDao           = null;
+    protected static NnUserChannelSortingDao sortingDao    = null;
+    protected static NnUserReportDao    reportDao          = null;
+    protected static NnUserShareDao     shareDao           = null;
+    protected static NnUserSubscribeGroupDao subscribeGroupDao = null;
+    protected static NnUserSubscribeDao subscribeDao       = null;
+    protected static NnUserWatchedDao   watchedDao         = null;
+    protected static StoreListingDao    storeListingDao    = null;
+    protected static TagDao             tagDao             = null;
+    protected static YtChannelDao       ytChannelDao       = null;
     
     public static NnEpisodeDao getEpisodeDao() {
         
@@ -463,6 +495,182 @@ public class NNF {
         }
         
         return shardDao;
+    }
+    
+    public static CaptchaDao getCaptchaDao() {
+        
+        if (captchaDao == null) {
+            
+            log.info("create captchaDao");
+            captchaDao = new CaptchaDao();
+        }
+        
+        return captchaDao;
+    }
+    
+    public static MsoConfigDao getConfigDao() {
+        
+        if (configDao == null) {
+            
+            log.info("create configDao");
+            configDao = new MsoConfigDao();
+        }
+        
+        return configDao;
+    }
+    
+    public static MsoIpgDao getMsoIpgDao() {
+        
+        if (msoIpgDao == null) {
+            
+            log.info("create msoIpgDao");
+            msoIpgDao = new MsoIpgDao();
+        }
+        
+        return msoIpgDao;
+    }
+    
+    public static MsoNotificationDao getMsoNotiDao() {
+        
+        if (msoNotiDao == null) {
+            
+            log.info("create msoNotiDao");
+            msoNotiDao = new MsoNotificationDao();
+        }
+        
+        return msoNotiDao;
+    }
+    
+    public static NnContentDao getContentDao() {
+        
+        if (contentDao == null) {
+            
+            log.info("create contentDao");
+            contentDao = new NnContentDao();
+        }
+        
+        return contentDao;
+    }
+    
+    public static NnDeviceNotificationDao getDeviceNotiDao() {
+        
+        if (deviceNotiDao == null) {
+            
+            log.info("create deviceNotiDao");
+            deviceNotiDao = new NnDeviceNotificationDao();
+        }
+        
+        return deviceNotiDao;
+    }
+    
+    public static NnGuestDao getGuestDao() {
+        
+        if (guestDao == null) {
+            
+            log.info("create guestDao");
+            guestDao = new NnGuestDao();
+        }
+        
+        return guestDao;
+    }
+    
+    public static NnUserChannelSortingDao getSortingDao() {
+        
+        if (sortingDao == null) {
+            
+            log.info("create sortingDao");
+            sortingDao = new NnUserChannelSortingDao();
+        }
+        
+        return sortingDao;
+    }
+    
+    public static NnUserReportDao getReportDao() {
+        
+        if (reportDao == null) {
+            
+            log.info("create reportDao");
+            reportDao = new NnUserReportDao();
+        }
+        
+        return reportDao;
+    }
+    
+    public static NnUserShareDao getShareDao() {
+        
+        if (shareDao == null) {
+            
+            log.info("create shareDao");
+            shareDao = new NnUserShareDao();
+        }
+        
+        return shareDao;
+    }
+    
+    public static NnUserSubscribeGroupDao getSubscribeGroupDao() {
+        
+        if (subscribeGroupDao == null) {
+            
+            log.info("create subscribeGroup");
+            subscribeGroupDao = new NnUserSubscribeGroupDao();
+        }
+        
+        return subscribeGroupDao;
+    }
+    
+    public static NnUserSubscribeDao getSubscribeDao() {
+        
+        if (subscribeDao == null) {
+            
+            log.info("create subscribeDao");
+            subscribeDao = new NnUserSubscribeDao();
+        }
+        
+        return subscribeDao;
+    }
+    
+    public static NnUserWatchedDao getWatchedDao() {
+        
+        if (watchedDao == null) {
+            
+            log.info("create watchedDao");
+            watchedDao = new NnUserWatchedDao();
+        }
+        
+        return watchedDao;
+    }
+    
+    public static StoreListingDao getStoreListingDao() {
+        
+        if (storeListingDao == null) {
+            
+            log.info("create storeListingDao");
+            storeListingDao = new StoreListingDao();
+        }
+        
+        return storeListingDao;
+    }
+    
+    public static TagDao getTagDao() {
+        
+        if (tagDao == null) {
+            
+            log.info("create tagDao");
+            tagDao = new TagDao();
+        }
+        
+        return tagDao;
+    }
+    
+    public static YtChannelDao getYtChannelDao() {
+        
+        if (ytChannelDao == null) {
+            
+            log.info("create ytChannelDao");
+            ytChannelDao = new YtChannelDao();
+        }
+        
+        return ytChannelDao;
     }
     
     public static CategoryService getCategoryService() {

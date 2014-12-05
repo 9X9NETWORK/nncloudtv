@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnUserChannelSortingDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserChannelSorting;
@@ -13,7 +14,7 @@ public class NnUserChannelSortingManager {
     
     protected static final Logger log = Logger.getLogger(NnUserChannelSortingManager.class.getName());
     
-    private NnUserChannelSortingDao sortingDao = new NnUserChannelSortingDao();    
+    private NnUserChannelSortingDao sortingDao = NNF.getSortingDao();
         
     public NnUserChannelSorting save(NnUser user, NnUserChannelSorting sorting) {
         NnUserChannelSorting existed = this.findByUserAndChannel(user, sorting.getChannelId());

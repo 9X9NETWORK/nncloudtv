@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnUserReportDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.NnDevice;
 import com.nncloudtv.model.NnUser;
@@ -13,7 +14,7 @@ import com.nncloudtv.model.NnUserReport;
 public class NnUserReportManager {
     protected static final Logger log = Logger.getLogger(NnUserReportManager.class.getName());
     
-    private NnUserReportDao reportDao = new NnUserReportDao();
+    private NnUserReportDao reportDao = NNF.getReportDao();
     
     public NnUserReport save(NnUser user, NnDevice device, String session, String type, String item, String comment) {
         NnUserReport report = new NnUserReport(user, device, session, type, comment);

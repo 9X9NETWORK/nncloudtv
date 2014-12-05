@@ -12,7 +12,7 @@ import com.nncloudtv.web.json.player.UserInfo;
 
 public class NnGuestManager {
     
-    private NnGuestDao guestDao = new NnGuestDao();
+    private NnGuestDao guestDao = NNF.getGuestDao();
     
     public void save(NnGuest guest, HttpServletRequest req) {
         if (guest.getCreateDate() == null)

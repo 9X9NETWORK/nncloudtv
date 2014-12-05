@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.SysTagDisplayDao;
-import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -468,13 +467,11 @@ public class SysTagDisplayManager {
                         log.info("dayparting:" + dayparting.getName());
                         List<NnChannel> daypartingChannels = NNF.getSysTagMngr().findDaypartingChannelsById(
                                 dayparting.getSystagId(), display.getLang(), mso.getId(), time);
-                        //List<YtProgram> ytprograms = new YtProgramDao().findByChannels(daypartingChannels);           
-                        //programStr += (String) programMngr.composeYtProgramInfo(daypartingChannel, ytprograms, format);
                         programStr += (String) new YtProgramManager().findByDaypartingChannels(daypartingChannels,
                                 daypartingChannel, mso.getId(), time, display.getLang());
                     }
                     //find trending channels' programs
-                    List<YtProgram> ytprograms = new YtProgramDao().findByChannels(channels);
+                    List<YtProgram> ytprograms = NNF.getYtProgramDao().findByChannels(channels);
                     programStr += NNF.getProgramMngr().composeYtProgramInfo(null, ytprograms, ctx.getFmt());
                 }
             }

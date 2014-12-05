@@ -26,7 +26,7 @@ import com.nncloudtv.web.api.ApiContext;
 @Service
 public class MsoConfigManager {
     
-    static MsoConfigDao configDao = new MsoConfigDao();
+    static MsoConfigDao configDao = NNF.getConfigDao();
     protected static final Logger log = Logger.getLogger(MsoConfigManager.class.getName());
     
     protected static final String PROPERTIES_CLEARCOMMRCE = "clearcommerce.properties";

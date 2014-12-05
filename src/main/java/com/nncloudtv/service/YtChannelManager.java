@@ -17,7 +17,7 @@ import com.nncloudtv.web.json.player.ChannelLineup;
 public class YtChannelManager {
     protected static final Logger log = Logger.getLogger(YtChannelManager.class.getName());
     
-    private YtChannelDao dao = new YtChannelDao();
+    private YtChannelDao dao = NNF.getYtChannelDao();
     
 	public long getId(String id) {
 		id = id.replace("yt", "");
