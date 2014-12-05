@@ -8,13 +8,14 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoNotificationDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.model.MsoNotification;
 
 @Service
 public class MsoNotificationManager {
     
-    static MsoNotificationDao dao = new MsoNotificationDao();
+    static MsoNotificationDao dao = NNF.getMsoNotiDao();
     protected static final Logger log = Logger.getLogger(MsoNotificationManager.class.getName());
     
     public MsoNotification save(MsoNotification notification) {

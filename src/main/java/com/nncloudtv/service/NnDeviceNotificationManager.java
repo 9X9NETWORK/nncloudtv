@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.nncloudtv.dao.NnDeviceNotificationDao;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnDeviceNotification;
@@ -15,7 +16,7 @@ public class NnDeviceNotificationManager {
     
     protected static final Logger log = Logger.getLogger(NnDeviceNotificationManager.class.getName());
     
-    private NnDeviceNotificationDao dao = new NnDeviceNotificationDao();
+    private NnDeviceNotificationDao dao = NNF.getDeviceNotiDao();
     
     public void delete(NnDeviceNotification notification) {
         

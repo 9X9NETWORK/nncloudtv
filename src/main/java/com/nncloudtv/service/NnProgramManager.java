@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnProgramDao;
-import com.nncloudtv.dao.TitleCardDao;
 import com.nncloudtv.dao.YtProgramDao;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
@@ -121,7 +120,7 @@ public class NnProgramManager {
         if (program == null) return;
         
         // delete titleCards
-        TitleCardManager titleCardMngr = new TitleCardManager();
+        TitleCardManager titleCardMngr = NNF.getTitleCardMngr();
         titleCardMngr.deleteAll(titleCardMngr.findByProgramId(program.getId()));
         
         // delete poiPoints at program level
@@ -139,7 +138,7 @@ public class NnProgramManager {
         
         // delete titleCards, delete poiPoints at program level
         PoiPointManager pointMngr = NNF.getPoiPointMngr();
-        TitleCardManager titlecardMngr = new TitleCardManager();
+        TitleCardManager titlecardMngr = NNF.getTitleCardMngr();
         List<TitleCard> titleCards = new ArrayList<TitleCard>();
         List<PoiPoint> poiPoints = new ArrayList<PoiPoint>();
         for (NnProgram program : programs) {
@@ -163,7 +162,7 @@ public class NnProgramManager {
     
     @SuppressWarnings("unchecked")
     public Object findLatestProgramInfoByChannels(List<NnChannel> channels, short format) {
-        YtProgramDao ytDao = new YtProgramDao();
+        YtProgramDao ytDao = NNF.getYtProgramDao();
         String output = "";
         List<ProgramInfo> json = new ArrayList<ProgramInfo>();
         for (NnChannel channel : channels) {
@@ -522,7 +521,7 @@ public class NnProgramManager {
             
             List<NnChannel> channels = new ArrayList<NnChannel>();
             channels.add(channel);
-            List<YtProgram> ytprograms =  new YtProgramDao().findByChannels(channels);
+            List<YtProgram> ytprograms =  NNF.getYtProgramDao().findByChannels(channels);
             
             return composeYtProgramInfo(channel, ytprograms, format);
             
@@ -797,7 +796,7 @@ public class NnProgramManager {
             map.put(program.getEpisodeId(), list);
         }      
         //title card in map, nnprogram retrieves title card based on program id and type 
-        List<TitleCard> cards = new TitleCardDao().findByChannel(channel.getId()); //order by channel id and program id
+        List<TitleCard> cards = NNF.getTitleCardDao().findByChannel(channel.getId()); //order by channel id and program id
         HashMap<String, TitleCard> cardMap = new HashMap<String, TitleCard>();
         for (TitleCard card : cards) {
             String key = String.valueOf(card.getProgramId() + ";" + card.getType());

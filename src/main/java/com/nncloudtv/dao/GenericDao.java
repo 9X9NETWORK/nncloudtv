@@ -338,6 +338,9 @@ public class GenericDao<T extends PersistentBaseModel> {
     @Override
     protected void finalize() throws Throwable {
         
-        NnLogUtil.logFinalize(getClass().getName());
+        if (sharedPersistenceMngr != null && !sharedPersistenceMngr.isClosed())
+            sharedPersistenceMngr.close();
+        
+        NnLogUtil.logFinalize(daoClassName);
     }
 }

@@ -17,7 +17,7 @@ import com.nncloudtv.model.TagMap;
 public class TagManager {
     
     protected static final Logger log = Logger.getLogger(TagManager.class.getName());
-    private TagDao dao = new TagDao();    
+    private TagDao dao = NNF.getTagDao();
     
     //player=true returns only "good" channels
     public List<NnChannel> findChannelsByTag(String name, boolean player) {        
