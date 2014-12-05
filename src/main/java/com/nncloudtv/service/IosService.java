@@ -108,7 +108,7 @@ public class IosService {
     }    
     
     public String search(ApiContext ctx, String text) {
-        List<NnChannel> searchResults = NnChannelManager.search(text, null, null, false, 1, 9);
+        List<NnChannel> searchResults = NNF.getChannelMngr().search(text, null, null, false, 1, 9);
         String[] result = { "" };
         result[0] = this.composeChannelLineup(searchResults);
         return (String) ctx.assemblePlayerMsgs(NnStatusCode.SUCCESS, result);

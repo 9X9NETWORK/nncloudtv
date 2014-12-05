@@ -269,7 +269,7 @@ public class MsoConfigManager {
         return null;
     }
     
-    public Boolean getBooleanValueFromCache(String key, boolean reset) {
+    public Boolean getBooleanFromCache(String key, boolean reset) {
         String cacheKey = CacheFactory.getMsoConfigKey(key);
         if (reset) {
             log.info("reset");
@@ -281,7 +281,7 @@ public class MsoConfigManager {
         }
         String cached = (String) CacheFactory.get(cacheKey);
         if (cached != null){
-            log.info("boolean config from cache, key = " + cacheKey + ", value = " + cached);
+            log.fine("boolean config from cache, key = " + cacheKey + ", value = " + cached);
             return NnStringUtil.evalBool(cached);
         }
         MsoConfig config = configDao.findByItem(key);
@@ -296,13 +296,13 @@ public class MsoConfigManager {
     
     public boolean isInReadonlyMode(boolean reset) {
         
-        Boolean readonly = getBooleanValueFromCache(MsoConfig.RO, reset);
+        Boolean readonly = getBooleanFromCache(MsoConfig.RO, reset);
         return readonly == null ? false : readonly;
     }
     
     public boolean isQueueEnabled(boolean reset) {
         
-        Boolean enabled = getBooleanValueFromCache(MsoConfig.QUEUED, reset);
+        Boolean enabled = getBooleanFromCache(MsoConfig.QUEUED, reset);
         return enabled == null ? false : enabled;
     }
     

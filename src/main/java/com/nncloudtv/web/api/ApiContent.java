@@ -690,12 +690,12 @@ public class ApiContent extends ApiGeneric {
             List<NnChannel> channels = new ArrayList<NnChannel>();
             if (type != null && type.equalsIgnoreCase("solr")) {
                 log.info("search from Solr");
-                Stack<?> stack = NnChannelManager.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+                Stack<?> stack = channelMngr.searchSolr(SearchLib.CORE_NNCLOUDTV, keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
                 channels.addAll((List<NnChannel>) stack.pop());
                 long solrNum = (Long) stack.pop();
                 log.info("counts from solr = " + solrNum);
             } else {
-                channels = NnChannelManager.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
+                channels = channelMngr.search(keyword, (storeOnly ? SearchLib.STORE_ONLY : null), sphereFilter, false, 0, 150);
             }
             System.out.println(String.format("[channel_search] found %d channels", channels.size()));
             

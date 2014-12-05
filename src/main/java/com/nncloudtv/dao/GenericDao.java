@@ -22,7 +22,9 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
-        
+    
+    private PersistenceManager sharedPersistenceMngr = null; // shared, not closed
+    
     public GenericDao(Class<T> daoClass) {
         this.daoClass = daoClass;
         this.daoClassName = daoClass.getSimpleName();
@@ -40,6 +42,15 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (cache != null) {
             cache.evict(dao);
         }
+    }
+    
+    private PersistenceManager getSharedPersistenceMngr() {
+        
+        if (sharedPersistenceMngr == null) {
+            sharedPersistenceMngr = getPersistenceManager();
+            System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
+        }
+        return sharedPersistenceMngr;
     }
     
     protected PersistenceManager getPersistenceManager() {
@@ -64,17 +75,13 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     public T save(T dao) {
         
-        return save(dao, getPersistenceManager());
+        return save(dao, getSharedPersistenceMngr());
     }
     
-    public T save(T dao, PersistenceManager pm) {
+    protected T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        try {
-            dao = pm.detachCopy(pm.makePersistent(dao));
-        } finally {
-            pm.close();
-        }
+        dao = pm.detachCopy(pm.makePersistent(dao));
         System.out.println(String.format("[dao] %s.save(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
@@ -218,20 +225,16 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     public List<T> findAllByIds(Collection<Long> ids) {
         
-        return findAllByIds(ids, getPersistenceManager());
+        return findAllByIds(ids, getSharedPersistenceMngr());
     }
     
     @SuppressWarnings("unchecked")
     public List<T> findAllByIds(Collection<Long> ids, PersistenceManager pm) {
         
         List<T> results = new ArrayList<T>();
-        try {
-            Query query = pm.newQuery(daoClass, ":p.contains(id)");
-            results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
-            query.closeAll();
-        } finally {
-            pm.close();
-        }
+        Query query = pm.newQuery(daoClass, ":p.contains(id)");
+        results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
+        query.closeAll();
         return results;
     }
     
@@ -245,16 +248,16 @@ public class GenericDao<T extends PersistentBaseModel> {
         } catch(NumberFormatException e) {
             return null;
         }
-        return findById(id, getPersistenceManager());
+        return findById(id, getSharedPersistenceMngr());
     }
     
     public T findById(long id) {
         
-        return findById(id, getPersistenceManager());
+        return findById(id, getSharedPersistenceMngr());
     }
     
     @SuppressWarnings("unchecked")
-    public T findById(long id, PersistenceManager pm) {
+    protected T findById(long id, PersistenceManager pm) {
         
         T dao = null;
         String cacheKey = CacheFactory.getDaoFindByIdKey(daoClassName, id);
@@ -263,15 +266,14 @@ public class GenericDao<T extends PersistentBaseModel> {
             CounterFactory.increment("HIT " + cacheKey);
             return dao;
         }
-        CounterFactory.increment("MISS " + cacheKey);
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
-        } finally {
-            pm.close();
         }
-        if (dao != null && dao.isCachable())
+        if (dao != null && dao.isCachable()) {
+            CounterFactory.increment("MISS " + cacheKey);
             CacheFactory.set(cacheKey, dao, CacheFactory.EXP_ONE_DAY);
+        }
         return dao;
     }
     
@@ -291,22 +293,22 @@ public class GenericDao<T extends PersistentBaseModel> {
         return results;
     }
     
-    public List<T> sql(String queryStr, boolean fine) {
-        
-        return sql(queryStr, getPersistenceManager(), fine);
-    }
-    
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getPersistenceManager(), false);
+        return sql(queryStr, false);
     }
     
-    public List<T> sql(String queryStr, PersistenceManager pm) {
+    public List<T> sql(String queryStr, boolean fine) {
+        
+        return sql(queryStr, getSharedPersistenceMngr(), fine);
+    }
+    
+    protected List<T> sql(String queryStr, PersistenceManager pm) {
         
         return sql(queryStr, pm, false);
     }
     
-    public List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
+    private List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
         List<T> detached = new ArrayList<T>();
         
@@ -322,21 +324,14 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (!fine)
             System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
-        try {
-            
-            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-            query.setClass(daoClass);
-            @SuppressWarnings("unchecked")
-            List<T> results = (List<T>) query.execute();
-            detached = (List<T>) pm.detachCopyAll(results);
-            query.closeAll();
-            if (!fine)
-                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
-            
-        } finally {
-            
-            pm.close();
-        }
+        Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+        query.setClass(daoClass);
+        @SuppressWarnings("unchecked")
+        List<T> results = (List<T>) query.execute();
+        detached = (List<T>) pm.detachCopyAll(results);
+        query.closeAll();
+        if (!fine)
+            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
         return detached;
     }
     
