@@ -87,7 +87,6 @@ public class GenericDao<T extends PersistentBaseModel> {
         }
         CacheFactory.deleteAll(cacheKeys);
         evictAll();
-        getSharedPersistenceMngr().flush();
     }
     
     public T save(T dao) {
@@ -111,6 +110,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         System.out.println(String.format("[dao] %s.save(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
+        else
+            evict(dao);
         return dao;
     }
     
@@ -135,6 +136,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         
         if (list.iterator().next().isCachable())
             resetCacheAll(list);
+        else
+            evictAll();
         System.out.println(String.format("[dao] saving %d objects costs %d miliseconds", list.size(), NnDateUtil.timestamp() - before));
         return list;
     }
@@ -145,6 +148,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         System.out.println(String.format("[dao] %s.delete(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
+        else
+            evict(dao);
         PersistenceManager pm = getPersistenceManager();
         try {
             pm.deletePersistent(dao);
@@ -160,6 +165,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         System.out.println(String.format("[dao] %s.deleteAll()", daoClassName));
         if (list.iterator().next().isCachable())
             resetCacheAll(list);
+        else
+            evictAll();
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
         try {
