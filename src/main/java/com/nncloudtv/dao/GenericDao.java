@@ -75,8 +75,13 @@ public class GenericDao<T extends PersistentBaseModel> {
     }
     
     public T save(T dao) {
-        
-        return save(dao, getSharedPersistenceMngr());
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            dao = save(dao, pm);
+        } finally {
+            pm.close();
+        }
+        return dao;
     }
     
     protected T save(T dao, PersistenceManager pm) {

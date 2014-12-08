@@ -95,9 +95,12 @@ public class NnUserDao extends GenericDao<NnUser> {
         } else {
             pm = PMF.getNnUser1().getPersistenceManager();
         }
-        
-        NnUser result = findById(id, pm);
-        pm.close();
+        NnUser result = null;
+        try {
+            result = findById(id, pm);
+        } finally {
+            pm.close();
+        }
         return result;
     }
     
@@ -122,8 +125,11 @@ public class NnUserDao extends GenericDao<NnUser> {
     
     public NnUser save(NnUser user) {
         PersistenceManager pm = getPersistenceManager(user.getShard(), user.getToken());
-        user = save(user, pm);
-        pm.close();
+        try {
+            user = save(user, pm);
+        } finally {
+            pm.close();
+        }
         return user;
     }
     
