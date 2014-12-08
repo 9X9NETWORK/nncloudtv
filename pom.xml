@@ -144,7 +144,7 @@
                                     <pluginExecutionFilter>
                                         <groupId>org.datanucleus</groupId>
                                         <artifactId>maven-datanucleus-plugin</artifactId>
-                                        <versionRange>[3.0.0-m1,)</versionRange>
+                                        <versionRange>[3.0.1,)</versionRange>
                                         <goals>
                                             <goal>enhance</goal>
                                         </goals>
@@ -258,7 +258,7 @@
         <dependency>
             <groupId>javax.jdo</groupId>
             <artifactId>jdo-api</artifactId>
-            <version>3.0</version>
+            <version>${org.datanucleus.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
