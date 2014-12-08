@@ -265,9 +265,13 @@ public class GenericDao<T extends PersistentBaseModel> {
     public List<T> findAllByIds(Collection<Long> ids, PersistenceManager pm) {
         
         List<T> results = new ArrayList<T>();
-        Query query = pm.newQuery(daoClass, ":p.contains(id)");
-        results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
-        query.closeAll();
+        try {
+            Query query = pm.newQuery(daoClass, ":p.contains(id)");
+            results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
+            query.closeAll();
+        } finally {
+            pm.flush();
+        }
         return results;
     }
     
@@ -300,9 +304,10 @@ public class GenericDao<T extends PersistentBaseModel> {
             return dao;
         }
         try {
-            pm.flush();
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
+        } finally {
+            pm.flush();
         }
         if (dao != null && dao.isCachable()) {
             CounterFactory.increment("MISS " + cacheKey);
@@ -376,8 +381,7 @@ public class GenericDao<T extends PersistentBaseModel> {
     @Override
     protected void finalize() throws Throwable {
         
-        if (sharedPersistenceMngr != null && !sharedPersistenceMngr.isClosed())
-            sharedPersistenceMngr.close();
+        resetSharedPersistenceMngr();
         
         NnLogUtil.logFinalize(daoClassName);
     }
