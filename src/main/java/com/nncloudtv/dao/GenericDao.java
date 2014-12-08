@@ -48,6 +48,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         
         if (sharedPersistenceMngr == null) {
             sharedPersistenceMngr = getPersistenceManager();
+            sharedPersistenceMngr.setMultithreaded(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
         }
         return sharedPersistenceMngr;
