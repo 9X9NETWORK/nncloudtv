@@ -65,6 +65,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (dao == null) return;
         CacheFactory.delete(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
         evict(dao);
+        getSharedPersistenceMngr().flush();
     }
     
     public void resetCacheAll(Collection<T> list) {
@@ -75,6 +76,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         }
         CacheFactory.deleteAll(cacheKeys);
         evictAll();
+        getSharedPersistenceMngr().flush();
     }
     
     public T save(T dao) {
