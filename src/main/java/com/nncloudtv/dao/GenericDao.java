@@ -35,6 +35,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (cache != null) {
             cache.evictAll();
         }
+        resetSharedPersistenceMngr();
     }
     
     public void evict(T dao) {
@@ -42,6 +43,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (cache != null) {
             cache.evict(dao);
         }
+        resetSharedPersistenceMngr();
     }
     
     private PersistenceManager getSharedPersistenceMngr() {
@@ -60,12 +62,21 @@ public class GenericDao<T extends PersistentBaseModel> {
         return PMF.get(daoClass).getPersistenceManager();
     }
     
+    private void resetSharedPersistenceMngr() {
+        
+        if (sharedPersistenceMngr != null) {
+            if (!sharedPersistenceMngr.isClosed()) {
+                sharedPersistenceMngr.close();
+            }
+            sharedPersistenceMngr = null;
+        }
+    }
+    
     public void resetCache(T dao) {
         
         if (dao == null) return;
         CacheFactory.delete(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
         evict(dao);
-        getSharedPersistenceMngr().flush();
     }
     
     public void resetCacheAll(Collection<T> list) {
