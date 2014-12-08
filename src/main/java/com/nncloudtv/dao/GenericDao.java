@@ -280,6 +280,7 @@ public class GenericDao<T extends PersistentBaseModel> {
             return dao;
         }
         try {
+            pm.flush();
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
         }
