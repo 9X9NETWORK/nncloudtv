@@ -64,6 +64,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         
         if (dao == null) return;
         CacheFactory.delete(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
+        evict(dao);
     }
     
     public void resetCacheAll(Collection<T> list) {
@@ -73,6 +74,7 @@ public class GenericDao<T extends PersistentBaseModel> {
             cacheKeys.add(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
         }
         CacheFactory.deleteAll(cacheKeys);
+        evictAll();
     }
     
     public T save(T dao) {
@@ -88,7 +90,11 @@ public class GenericDao<T extends PersistentBaseModel> {
     protected T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        dao = pm.detachCopy(pm.makePersistent(dao));
+        try {
+            dao = pm.detachCopy(pm.makePersistent(dao));
+        } finally {
+            pm.flush();
+        }
         System.out.println(String.format("[dao] %s.save(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
@@ -331,13 +337,16 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (!fine)
             System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
-        Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-        query.setClass(daoClass);
-        @SuppressWarnings("unchecked")
-        List<T> results = (List<T>) query.execute();
-        detached = (List<T>) pm.detachCopyAll(results);
-        query.closeAll();
-        pm.flush();
+        try {
+            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+            query.setClass(daoClass);
+            @SuppressWarnings("unchecked")
+            List<T> results = (List<T>) query.execute();
+            detached = (List<T>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.flush();
+        }
         if (!fine)
             System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
         return detached;
