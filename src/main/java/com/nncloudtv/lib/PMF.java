@@ -12,6 +12,7 @@ import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.NnUserSubscribeGroup;
+import com.nncloudtv.model.NnUserWatched;
 import com.nncloudtv.model.Pdr;
 import com.nncloudtv.model.Shallow;
 import com.nncloudtv.model.YtChannel;
@@ -41,7 +42,8 @@ public final class PMF {
             
             return PMF.getBilling();
             
-        } else if (cls.equals(NnUser.class) || cls.equals(NnUserSubscribe.class) || cls.equals(NnUserSubscribeGroup.class)) {
+        } else if (cls.equals(NnUser.class) || cls.equals(NnUserSubscribe.class) || cls.equals(NnUserSubscribeGroup.class) ||
+                   cls.equals(NnUserWatched.class)) {
             
             throw new IllegalArgumentException("user related db are sharded.");
             
