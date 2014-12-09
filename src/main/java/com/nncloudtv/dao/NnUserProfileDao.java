@@ -1,5 +1,6 @@
 package com.nncloudtv.dao;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,8 +28,12 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
         PersistenceManager pm = NnUserDao.getPersistenceManager(shard, null);
         String query = "SELECT * FROM nnuser_profile WHERE userId = " + userId;
         
-        List<NnUserProfile> results = sql(query, pm);
-        pm.close();
+        List<NnUserProfile> results = new ArrayList<NnUserProfile>();
+        try {
+            results = sql(query, pm);
+        } finally {
+            pm.close();
+        }
         return results;
     }
     
@@ -71,8 +76,11 @@ public class NnUserProfileDao extends GenericDao<NnUserProfile> {
                      + "        WHERE LOWER(name) LIKE LOWER(" + NnStringUtil.escapedQuote("%" + keyword + "%") + ")"
                      + "     ORDER BY updateDate DESC"
                      + "        LIMIT " + start + ", " + limit;
-        results.addAll(sql(query, pm));
-        pm.close();
+        try {
+            results.addAll(sql(query, pm));
+        } finally {
+            pm.close();
+        }
         return results;
     }
     

@@ -35,6 +35,7 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (cache != null) {
             cache.evictAll();
         }
+        resetSharedPersistenceMngr();
     }
     
     public void evict(T dao) {
@@ -42,12 +43,15 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (cache != null) {
             cache.evict(dao);
         }
+        resetSharedPersistenceMngr();
     }
     
     private PersistenceManager getSharedPersistenceMngr() {
         
-        if (sharedPersistenceMngr == null) {
+        if (sharedPersistenceMngr == null || sharedPersistenceMngr.isClosed()) {
             sharedPersistenceMngr = getPersistenceManager();
+            sharedPersistenceMngr.setMultithreaded(true);
+            sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
         }
         return sharedPersistenceMngr;
@@ -58,10 +62,21 @@ public class GenericDao<T extends PersistentBaseModel> {
         return PMF.get(daoClass).getPersistenceManager();
     }
     
+    private void resetSharedPersistenceMngr() {
+        
+        if (sharedPersistenceMngr != null) {
+            if (!sharedPersistenceMngr.isClosed()) {
+                sharedPersistenceMngr.close();
+            }
+            sharedPersistenceMngr = null;
+        }
+    }
+    
     public void resetCache(T dao) {
         
         if (dao == null) return;
         CacheFactory.delete(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
+        evict(dao);
     }
     
     public void resetCacheAll(Collection<T> list) {
@@ -71,20 +86,32 @@ public class GenericDao<T extends PersistentBaseModel> {
             cacheKeys.add(CacheFactory.getDaoFindByIdKey(daoClassName, dao.getId()));
         }
         CacheFactory.deleteAll(cacheKeys);
+        evictAll();
     }
     
     public T save(T dao) {
-        
-        return save(dao, getSharedPersistenceMngr());
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            dao = save(dao, pm);
+        } finally {
+            pm.close();
+        }
+        return dao;
     }
     
     protected T save(T dao, PersistenceManager pm) {
         
         if (dao == null) return null;
-        dao = pm.detachCopy(pm.makePersistent(dao));
+        try {
+            dao = pm.detachCopy(pm.makePersistent(dao));
+        } finally {
+            pm.flush();
+        }
         System.out.println(String.format("[dao] %s.save(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
+        else
+            evict(dao);
         return dao;
     }
     
@@ -109,6 +136,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         
         if (list.iterator().next().isCachable())
             resetCacheAll(list);
+        else
+            evictAll();
         System.out.println(String.format("[dao] saving %d objects costs %d miliseconds", list.size(), NnDateUtil.timestamp() - before));
         return list;
     }
@@ -119,6 +148,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         System.out.println(String.format("[dao] %s.delete(%d)", daoClassName, dao.getId()));
         if (dao.isCachable())
             resetCache(dao);
+        else
+            evict(dao);
         PersistenceManager pm = getPersistenceManager();
         try {
             pm.deletePersistent(dao);
@@ -134,6 +165,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         System.out.println(String.format("[dao] %s.deleteAll()", daoClassName));
         if (list.iterator().next().isCachable())
             resetCacheAll(list);
+        else
+            evictAll();
         PersistenceManager pm = getPersistenceManager();
         Transaction tx = pm.currentTransaction();
         try {
@@ -232,9 +265,13 @@ public class GenericDao<T extends PersistentBaseModel> {
     public List<T> findAllByIds(Collection<Long> ids, PersistenceManager pm) {
         
         List<T> results = new ArrayList<T>();
-        Query query = pm.newQuery(daoClass, ":p.contains(id)");
-        results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
-        query.closeAll();
+        try {
+            Query query = pm.newQuery(daoClass, ":p.contains(id)");
+            results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
+            query.closeAll();
+        } finally {
+            pm.flush();
+        }
         return results;
     }
     
@@ -269,6 +306,8 @@ public class GenericDao<T extends PersistentBaseModel> {
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
+        } finally {
+            pm.flush();
         }
         if (dao != null && dao.isCachable()) {
             CounterFactory.increment("MISS " + cacheKey);
@@ -324,12 +363,16 @@ public class GenericDao<T extends PersistentBaseModel> {
         if (!fine)
             System.out.println(String.format("[sql] %s;", queryStr));
         long before = NnDateUtil.timestamp();
-        Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-        query.setClass(daoClass);
-        @SuppressWarnings("unchecked")
-        List<T> results = (List<T>) query.execute();
-        detached = (List<T>) pm.detachCopyAll(results);
-        query.closeAll();
+        try {
+            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+            query.setClass(daoClass);
+            @SuppressWarnings("unchecked")
+            List<T> results = (List<T>) query.execute();
+            detached = (List<T>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.flush();
+        }
         if (!fine)
             System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
         return detached;
@@ -338,8 +381,7 @@ public class GenericDao<T extends PersistentBaseModel> {
     @Override
     protected void finalize() throws Throwable {
         
-        if (sharedPersistenceMngr != null && !sharedPersistenceMngr.isClosed())
-            sharedPersistenceMngr.close();
+        resetSharedPersistenceMngr();
         
         NnLogUtil.logFinalize(daoClassName);
     }
