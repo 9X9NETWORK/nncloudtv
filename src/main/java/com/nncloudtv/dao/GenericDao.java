@@ -99,9 +99,8 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     
     private void resetSharedPersistenceMngr() {
         
-        synchronized (sharedPersistenceMngr) {
-            
-            if (sharedPersistenceMngr != null) {
+        if (sharedPersistenceMngr != null) {
+            synchronized (sharedPersistenceMngr) {
                 System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
                 if (!sharedPersistenceMngr.isClosed())
                     sharedPersistenceMngr.close();
@@ -373,18 +372,12 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     
     public List<T> sql(String queryStr) {
         
-        synchronized (sharedPersistenceMngr) {
-            
-            return sql(queryStr, getSharedPersistenceMngr(), false);
-        }
+        return sql(queryStr, getSharedPersistenceMngr(), false);
     }
     
     public List<T> sql(String queryStr, boolean fine) {
         
-        synchronized (sharedPersistenceMngr) {
-            
-            return sql(queryStr, getSharedPersistenceMngr(), fine);
-        }
+        return sql(queryStr, getSharedPersistenceMngr(), fine);
     }
     
     protected List<T> sql(String queryStr, PersistenceManager pm) {
@@ -394,33 +387,36 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     
     private List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
-        List<T> detached = new ArrayList<T>();
+        synchronized (pm) {
+            
+            List<T> detached = new ArrayList<T>();
+            if (queryStr == null || queryStr.isEmpty()) {
+                
+                return detached;
+            }
+            queryStr = queryStr.replaceAll(" +", " ").trim();
+            if (queryStr.isEmpty()) {
+                
+                return detached;
+            }
+            if (!fine)
+                System.out.println(String.format("[sql] %s;", queryStr));
+            long before = NnDateUtil.timestamp();
+            try {
+                Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+                query.setClass(daoClass);
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) query.execute();
+                detached = (List<T>) pm.detachCopyAll(results);
+                query.closeAll();
+            } finally {
+                pm.flush();
+            }
+            if (!fine)
+                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
+            return detached;
+        }
         
-        if (queryStr == null || queryStr.isEmpty()) {
-            
-            return detached;
-        }
-        queryStr = queryStr.replaceAll(" +", " ").trim();
-        if (queryStr.isEmpty()) {
-            
-            return detached;
-        }
-        if (!fine)
-            System.out.println(String.format("[sql] %s;", queryStr));
-        long before = NnDateUtil.timestamp();
-        try {
-            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-            query.setClass(daoClass);
-            @SuppressWarnings("unchecked")
-            List<T> results = (List<T>) query.execute();
-            detached = (List<T>) pm.detachCopyAll(results);
-            query.closeAll();
-        } finally {
-            pm.flush();
-        }
-        if (!fine)
-            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
-        return detached;
     }
     
     @Override
