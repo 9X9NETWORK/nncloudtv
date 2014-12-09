@@ -471,11 +471,12 @@ public class MsoManager {
         } catch (Exception e) {
             log.info("memcache error");
         }        
-        CounterFactory.increment("MISS " + cacheKey);
         log.info("NOT get mso object from cache: " + name);
         Mso mso = dao.findByName(name);
-        if (mso != null)
+        if (mso != null) {
+            CounterFactory.increment("MISS " + cacheKey);
             CacheFactory.set(cacheKey, mso);
+        }
         return mso;
     }
     

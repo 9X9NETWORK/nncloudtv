@@ -2,6 +2,7 @@ package com.nncloudtv.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -13,14 +14,16 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import com.nncloudtv.lib.CacheFactory;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
+import com.nncloudtv.task.ScheduledTask;
 
-public class GenericDao<T extends PersistentBaseModel> {
+public class GenericDao<T extends PersistentBaseModel> implements Runnable, ScheduledTask {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
@@ -61,14 +64,24 @@ public class GenericDao<T extends PersistentBaseModel> {
         resetSharedPersistenceMngr();
     }
     
+    @Override
+    public void run() {
+        
+        resetSharedPersistenceMngr();
+    }
+    
     private PersistenceManager getSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr == null || sharedPersistenceMngr.isClosed()) {
+            
             sharedPersistenceMngr = getPersistenceManager();
             sharedPersistenceMngr.setMultithreaded(true);
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
+            
+            NNF.getScheduler().schedule(this, new Date(NnDateUtil.timestamp() + DAO_INTERVAL));
         }
+        
         return sharedPersistenceMngr;
     }
     
@@ -80,10 +93,12 @@ public class GenericDao<T extends PersistentBaseModel> {
     private void resetSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr != null) {
-            if (!sharedPersistenceMngr.isClosed()) {
-                sharedPersistenceMngr.close();
+            synchronized (sharedPersistenceMngr) {
+                System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
+                if (!sharedPersistenceMngr.isClosed())
+                    sharedPersistenceMngr.close();
+                sharedPersistenceMngr = null;
             }
-            sharedPersistenceMngr = null;
         }
     }
     
@@ -365,33 +380,36 @@ public class GenericDao<T extends PersistentBaseModel> {
     
     private List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
         
-        List<T> detached = new ArrayList<T>();
+        synchronized (pm) {
+            
+            List<T> detached = new ArrayList<T>();
+            if (queryStr == null || queryStr.isEmpty()) {
+                
+                return detached;
+            }
+            queryStr = queryStr.replaceAll(" +", " ").trim();
+            if (queryStr.isEmpty()) {
+                
+                return detached;
+            }
+            if (!fine)
+                System.out.println(String.format("[sql] %s;", queryStr));
+            long before = NnDateUtil.timestamp();
+            try {
+                Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
+                query.setClass(daoClass);
+                @SuppressWarnings("unchecked")
+                List<T> results = (List<T>) query.execute();
+                detached = (List<T>) pm.detachCopyAll(results);
+                query.closeAll();
+            } finally {
+                pm.flush();
+            }
+            if (!fine)
+                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
+            return detached;
+        }
         
-        if (queryStr == null || queryStr.isEmpty()) {
-            
-            return detached;
-        }
-        queryStr = queryStr.replaceAll(" +", " ").trim();
-        if (queryStr.isEmpty()) {
-            
-            return detached;
-        }
-        if (!fine)
-            System.out.println(String.format("[sql] %s;", queryStr));
-        long before = NnDateUtil.timestamp();
-        try {
-            Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
-            query.setClass(daoClass);
-            @SuppressWarnings("unchecked")
-            List<T> results = (List<T>) query.execute();
-            detached = (List<T>) pm.detachCopyAll(results);
-            query.closeAll();
-        } finally {
-            pm.flush();
-        }
-        if (!fine)
-            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
-        return detached;
     }
     
     @Override

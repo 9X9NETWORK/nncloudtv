@@ -2,6 +2,8 @@ package com.nncloudtv.lib;
 
 import java.util.logging.Logger;
 
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+
 import com.nncloudtv.dao.AdPlacementDao;
 import com.nncloudtv.dao.AppDao;
 import com.nncloudtv.dao.BillingOrderDao;
@@ -177,6 +179,19 @@ public class NNF {
     protected static StoreListingDao    storeListingDao    = null;
     protected static TagDao             tagDao             = null;
     protected static YtChannelDao       ytChannelDao       = null;
+    
+    protected static ConcurrentTaskScheduler scheduler     = null;
+    
+    public static ConcurrentTaskScheduler getScheduler() {
+        
+        if (scheduler == null) {
+            
+            log.info("create scheduler");
+            scheduler = new ConcurrentTaskScheduler();
+        }
+        
+        return scheduler;
+    }
     
     public static NnEpisodeDao getEpisodeDao() {
         

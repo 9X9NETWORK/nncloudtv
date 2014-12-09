@@ -254,12 +254,12 @@ public class CacheFactory {
     
     public static String getMsoConfigKey(String item) {
         
-        return String.format("msoconfig(%s)", item);
+        return String.format("MsoConfig(%s)", item);
     }
     
     public static String getMsoConfigKey(long msoId, String item) {
         
-        return String.format("msoconfig(%d)(%s)", msoId, item);
+        return String.format("MsoConfig(%d,%s)", msoId, item);
     }
     
     // example: Mso.findByName(9x9)
