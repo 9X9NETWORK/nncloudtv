@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 
 import com.nncloudtv.lib.AuthLib;
@@ -87,21 +88,33 @@ public class NnUserDao extends GenericDao<NnUser> {
     
     public NnUser findById(long id, short shard) {
         
-        PersistenceManager pm = null;
+        PersistenceManagerFactory pmf = null;
         if (shard == 0) {
             return findById(id);
         } else if (shard > 1) {
-            pm = PMF.getNnUser2().getPersistenceManager();
+            pmf = PMF.getNnUser2();
         } else {
-            pm = PMF.getNnUser1().getPersistenceManager();
+            pmf = PMF.getNnUser1();
         }
-        NnUser result = null;
-        try {
-            result = findById(id, pm);
-        } finally {
-            pm.close();
+        return findById(id, pmf);
+    }
+    
+    public static PersistenceManagerFactory getPersistenceManagerFactory(short shard, String token) {
+        if (shard > 0) {
+            if (shard == NnUser.SHARD_DEFAULT) {
+                return PMF.getNnUser1();
+            } else {
+                return PMF.getNnUser2();
+            }
         }
-        return result;
+        if (token != null) {
+            if (token.contains("2-")) {
+                return PMF.getNnUser2();
+            } else {
+                return PMF.getNnUser1();
+            }
+        }        
+        return PMF.getNnUser1();
     }
     
     //use either shard or token to determine partition, default shard 1 if nothing
@@ -124,13 +137,8 @@ public class NnUserDao extends GenericDao<NnUser> {
     }
     
     public NnUser save(NnUser user) {
-        PersistenceManager pm = getPersistenceManager(user.getShard(), user.getToken());
-        try {
-            user = save(user, pm);
-        } finally {
-            pm.close();
-        }
-        return user;
+        
+        return save(user, getPersistenceManagerFactory(user.getShard(), user.getToken()));
     }
     
     public NnUser findAuthenticatedUser(String email, String password, short shard) {
