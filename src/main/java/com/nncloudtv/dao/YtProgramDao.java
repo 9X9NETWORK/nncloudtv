@@ -13,61 +13,41 @@ import com.nncloudtv.model.YtProgram;
 
 public class YtProgramDao extends GenericDao<YtProgram> {
     
-    protected static final Logger log = Logger.getLogger(YtProgramDao.class.getName());    
-        
+    protected static final Logger log = Logger.getLogger(YtProgramDao.class.getName());
+    
     public YtProgramDao() {
         super(YtProgram.class);
-    }    
-
+    }
+    
     public List<YtProgram> findOneLatestByChannelStr(String channelIdStr) {
-        List<YtProgram> detached = new ArrayList<YtProgram>();
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            String sql = "select * " +
-                         "  from ytprogram a " +
-                         "inner join " + 
-                         " (select channelId, max(updateDate) max_date " +
-                         "    from ytprogram " +
-                         "   where channelId in (" + channelIdStr + ") " +
-                         "   group by channelId) b " +
-                         "on a.channelId=b.channelId and a.updateDate = b.max_date";
-            log.info("sql:" + sql);
-            Query query = pm.newQuery("javax.jdo.query.SQL", sql);
-            query.setClass(YtProgram.class);
-            @SuppressWarnings("unchecked")
-            List<YtProgram> results = (List<YtProgram>) query.execute();
-            detached = (List<YtProgram>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        } 
-        return detached;                
-    }    
-
+        String query = "SELECT * FROM ytprogram a "
+                     + "   INNER JOIN (" 
+                     + "               SELECT channelId, max(updateDate) max_date "
+                     + "                 FROM ytprogram "
+                     + "                WHERE channelId IN (" + channelIdStr + ") "
+                     + "             GROUP BY channelId "
+                     + "              ) b "
+                     + "           ON a.channelId = b.channelId AND a.updateDate = b.max_date";
+        
+        return sql(query);
+    }
+    
     public YtProgram findLatestByChannel(long id) {
-        YtProgram detached = null;
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            String sql = "select * " +
-                         "  from ytprogram a " +
-                         "inner join " + 
-                         " (select channelId, max(updateDate) max_date " +
-                         "    from ytprogram " +
-                         "   where channelId = " + id + "" +
-                         "   group by channelId) b " +
-                         "on a.channelId=b.channelId and a.updateDate = b.max_date";
-            log.info("sql:" + sql);
-            Query query = pm.newQuery("javax.jdo.query.SQL", sql);
-            query.setClass(YtProgram.class);
-            @SuppressWarnings("unchecked")
-            List<YtProgram> results = (List<YtProgram>) query.execute();
-            if (results.size() > 0) {
-                detached = pm.detachCopy(results.get(0));
-            }            
-        } finally {
-            pm.close();
-        } 
-        return detached;                
-    }    
+        String query = "SELECT * FROM ytprogram a "
+                     + "   INNER JOIN (" 
+                     + "               SELECT channelId, max(updateDate) max_date "
+                     + "                 FROM ytprogram "
+                     + "                WHERE channelId = " + id
+                     + "             GROUP BY channelId "
+                     + "              ) b "
+                     + "           ON a.channelId = b.channelId AND a.updateDate = b.max_date";
+        
+        List<YtProgram> results = sql(query);
+        if (results.size() > 0)
+            return results.get(0);
+        else
+            return null;
+    }
     
     public List<YtProgram> findByChannels(List<NnChannel> channels) {
         List<YtProgram> detached = new ArrayList<YtProgram>();
@@ -78,24 +58,14 @@ public class YtProgramDao extends GenericDao<YtProgram> {
         if (ids.length() == 0) return detached;
         if (ids.length() > 0) ids = ids.replaceFirst(",", "");
         log.info("find in these channels:" + ids);
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
-        try {
-            String sql = "select * " +
-                           "from ytprogram " +
-                         " where channelId in (" + ids + ") " + 
-                         " order by updateDate desc limit 50";
-            log.info("sql:" + sql);
-            Query query = pm.newQuery("javax.jdo.query.SQL", sql);
-            query.setClass(YtProgram.class);
-            @SuppressWarnings("unchecked")
-            List<YtProgram> results = (List<YtProgram>) query.execute();
-            detached = (List<YtProgram>)pm.detachCopyAll(results);
-        } finally {
-            pm.close();
-        } 
-        return detached;        
+        String query = "SELECT * FROM ytprogram "
+                     + "        WHERE channelId in (" + ids + ") " 
+                     + "     ORDER BY updateDate DESC "
+                     + "        LIMIT 50";
+        
+        return sql(query);
     }
-
+    
     public YtProgram findByVideo(String video) { 
         PersistenceManager pm = PMF.getContent().getPersistenceManager();
         YtProgram detached = null; 
