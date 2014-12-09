@@ -22,14 +22,14 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
+import com.nncloudtv.task.ScheduledTask;
 
-public class GenericDao<T extends PersistentBaseModel> implements Runnable {
+public class GenericDao<T extends PersistentBaseModel> implements Runnable, ScheduledTask {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
     
     private PersistenceManager sharedPersistenceMngr = null; // shared, not closed
-    private PersistenceManager oldPersistenceMngr = null;
     protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
     
     public GenericDao(Class<T> daoClass) {
@@ -86,7 +86,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
                     NnLogUtil.logFinalize(getClass().getName());
                 }
             };
-            scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
+            scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // DAO_INTERVAL
         }
         
         return sharedPersistenceMngr;
@@ -97,14 +97,16 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
         return PMF.get(daoClass).getPersistenceManager();
     }
     
-    private synchronized void resetSharedPersistenceMngr() {
+    private void resetSharedPersistenceMngr() {
         
-        if (sharedPersistenceMngr != null) {
-            System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
-            if (oldPersistenceMngr != null && !oldPersistenceMngr.isClosed())
-                oldPersistenceMngr.close();
-            oldPersistenceMngr = sharedPersistenceMngr;
-            sharedPersistenceMngr = null;
+        synchronized (sharedPersistenceMngr) {
+            
+            if (sharedPersistenceMngr != null) {
+                System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
+                if (!sharedPersistenceMngr.isClosed())
+                    sharedPersistenceMngr.close();
+                sharedPersistenceMngr = null;
+            }
         }
     }
     
@@ -371,12 +373,18 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
     
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getSharedPersistenceMngr(), false);
+        synchronized (sharedPersistenceMngr) {
+            
+            return sql(queryStr, getSharedPersistenceMngr(), false);
+        }
     }
     
     public List<T> sql(String queryStr, boolean fine) {
         
-        return sql(queryStr, getSharedPersistenceMngr(), fine);
+        synchronized (sharedPersistenceMngr) {
+            
+            return sql(queryStr, getSharedPersistenceMngr(), fine);
+        }
     }
     
     protected List<T> sql(String queryStr, PersistenceManager pm) {
