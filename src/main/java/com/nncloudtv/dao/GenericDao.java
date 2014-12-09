@@ -14,6 +14,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -28,6 +29,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
     protected final String daoClassName;
     
     private PersistenceManager sharedPersistenceMngr = null; // shared, not closed
+    private PersistenceManager oldPersistenceMngr = null;
     protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
     
     public GenericDao(Class<T> daoClass) {
@@ -78,7 +80,12 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
+            ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler() {
+                @Override
+                protected void finalize() throws Throwable {
+                    NnLogUtil.logFinalize(getClass().getName());
+                }
+            };
             scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
         }
         
@@ -90,11 +97,13 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
         return PMF.get(daoClass).getPersistenceManager();
     }
     
-    private void resetSharedPersistenceMngr() {
+    private synchronized void resetSharedPersistenceMngr() {
+        
         if (sharedPersistenceMngr != null) {
             System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
-            if (!sharedPersistenceMngr.isClosed())
-                sharedPersistenceMngr.close();
+            if (oldPersistenceMngr != null && !oldPersistenceMngr.isClosed())
+                oldPersistenceMngr.close();
+            oldPersistenceMngr = sharedPersistenceMngr;
             sharedPersistenceMngr = null;
         }
     }
