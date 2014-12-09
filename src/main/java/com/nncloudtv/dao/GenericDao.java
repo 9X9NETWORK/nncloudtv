@@ -15,8 +15,6 @@ import javax.jdo.datastore.DataStoreCache;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -81,10 +79,8 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("/WEB-INF/nncloudtv-servlet.xml");
-            ThreadPoolTaskScheduler scheduler = (ThreadPoolTaskScheduler) appContext.getBean("scheduler");
+            ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
             scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
-            appContext.close();
         }
         
         return sharedPersistenceMngr;
