@@ -22,7 +22,6 @@
 
     <context:component-scan base-package=" com.nncloudtv.web.api
                                          , com.nncloudtv.web
-                                         , com.nncloudtv.dao
                                          , com.nncloudtv.task
                                          " />
 
@@ -42,6 +41,7 @@
 
     <bean id="nnEventListener" class="com.nncloudtv.task.ApplicationListenerTask" />
 
+    <task:executor id="executor" pool-size="8-25" queue-capacity="100" />
     <task:scheduler id="scheduler" pool-size="10" />
 
 </beans>

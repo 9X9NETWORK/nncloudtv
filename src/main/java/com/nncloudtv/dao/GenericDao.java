@@ -14,6 +14,8 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -25,14 +27,10 @@ import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
 
-@EnableScheduling
 public class GenericDao<T extends PersistentBaseModel> implements Runnable {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
-    
-    @Autowired
-    ThreadPoolTaskScheduler scheduler;
     
     private PersistenceManager sharedPersistenceMngr = null; // shared, not closed
     protected static final Logger log = Logger.getLogger(GenericDao.class.getName());
@@ -85,7 +83,10 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
+            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("/nncloudtv-context.xml");
+            ThreadPoolTaskScheduler scheduler = (ThreadPoolTaskScheduler) appContext.getBean("scheduler");
             scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
+            appContext.close();
         }
         
         return sharedPersistenceMngr;
