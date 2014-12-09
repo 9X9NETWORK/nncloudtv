@@ -84,11 +84,10 @@ public class GenericDao<T extends PersistentBaseModel> implements ScheduledTask 
     
     @Scheduled(fixedDelay = DAO_INTERVAL)
     private void resetSharedPersistenceMngr() {
-        log.info("reset sharedPersistenceMngr");
         if (sharedPersistenceMngr != null) {
-            if (!sharedPersistenceMngr.isClosed()) {
+            System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
+            if (!sharedPersistenceMngr.isClosed())
                 sharedPersistenceMngr.close();
-            }
             sharedPersistenceMngr = null;
         }
     }
