@@ -21,6 +21,7 @@ import com.nncloudtv.lib.FacebookLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnEpisode;
@@ -221,26 +222,27 @@ public class PlayerApiController {
      */    
     @RequestMapping(value="signup")
     public @ResponseBody Object signup(HttpServletRequest req, HttpServletResponse resp) {
-        String email = req.getParameter("email");
-        String password = req.getParameter("password");
-        String mso = req.getParameter("mso");
-        String name = req.getParameter("name");
-        String gender = req.getParameter("gender");
-        String userToken = req.getParameter("user");
-        String captcha = req.getParameter("captcha");
-        String text = req.getParameter("text");
-        String sphere = req.getParameter("sphere");
-        String year = req.getParameter("year");
-        String uiLang = req.getParameter("ui-lang");
-        String rx = req.getParameter("rx");
-        boolean isTemp = Boolean.parseBoolean(req.getParameter("temp"));
+        
+        ApiContext ctx = new ApiContext(req);
+        String email     = ctx.getParam("email");
+        String password  = ctx.getParam("password");
+        String mso       = ctx.getParam("mso");
+        String name      = ctx.getParam("name");
+        String gender    = ctx.getParam("gender");
+        String userToken = ctx.getParam("user");
+        String captcha   = ctx.getParam("captcha");
+        String text      = ctx.getParam("text");
+        String sphere    = ctx.getParam("sphere", LocaleTable.LANG_EN);
+        String year      = ctx.getParam("year");
+        String uiLang    = ctx.getParam("ui-lang", LocaleTable.LANG_EN);
+        String rx        = ctx.getParam("rx");
+        boolean isTemp   = Boolean.parseBoolean(ctx.getParam("temp"));
                 
         log.info("signup: email=" + email + ";name=" + name + ";mso:" + mso + 
                  ";userToken=" + userToken + ";sphere=" + sphere + 
                  ";year=" + year + ";ui-lang=" + uiLang + 
                  ";rx=" + rx);
         Object output = PLAYER_ERR_MSG;
-        ApiContext ctx = new ApiContext(req);
         try {
             int status = playerApiService.prepService(ctx);
             if (status != NnStatusCode.SUCCESS)
