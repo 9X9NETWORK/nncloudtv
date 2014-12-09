@@ -13,8 +13,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -79,7 +78,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+            ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
             scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
         }
         
