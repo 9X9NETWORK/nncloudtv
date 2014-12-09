@@ -12,6 +12,9 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
@@ -19,8 +22,10 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.PersistentBaseModel;
 import com.nncloudtv.service.CounterFactory;
+import com.nncloudtv.task.ScheduledTask;
 
-public class GenericDao<T extends PersistentBaseModel> {
+@EnableScheduling
+public class GenericDao<T extends PersistentBaseModel> implements ScheduledTask {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
@@ -77,8 +82,9 @@ public class GenericDao<T extends PersistentBaseModel> {
         return PMF.get(daoClass).getPersistenceManager();
     }
     
+    @Scheduled(fixedDelay = DAO_INTERVAL)
     private void resetSharedPersistenceMngr() {
-        
+        log.info("reset sharedPersistenceMngr");
         if (sharedPersistenceMngr != null) {
             if (!sharedPersistenceMngr.isClosed()) {
                 sharedPersistenceMngr.close();

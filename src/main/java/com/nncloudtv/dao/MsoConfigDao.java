@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
-import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
 
@@ -21,12 +20,12 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
     }
     
     public MsoConfig findByMsoAndItem(long msoId, String item) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         MsoConfig config = null;
         try {
             Query query = pm.newQuery(MsoConfig.class);
-            query.setFilter("msoId == msoIdParam && item == itemParam");        
-            query.declareParameters("long msoIdParam" + ", String itemParam");                
+            query.setFilter("msoId == msoIdParam && item == itemParam");
+            query.declareParameters("long msoIdParam" + ", String itemParam");
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(msoId, item);
             if (results.size() > 0) {
@@ -57,11 +56,11 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
     }
     
     public MsoConfig findByItem(String item) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         MsoConfig config = null;
         try {
             Query query = pm.newQuery(MsoConfig.class);
-            query.setFilter("item == itemParam");        
+            query.setFilter("item == itemParam");
             query.declareParameters("String itemParam");
             @SuppressWarnings("unchecked")
             List<MsoConfig> results = (List<MsoConfig>) query.execute(item);
@@ -75,7 +74,7 @@ public class MsoConfigDao extends GenericDao<MsoConfig> {
     }
     
     public List<MsoConfig> findByMso(Mso mso) {
-        PersistenceManager pm = PMF.getContent().getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         
         List<MsoConfig> detached = new ArrayList<MsoConfig>();
         try {
