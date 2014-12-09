@@ -83,7 +83,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable {
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("/nncloudtv-context.xml");
+            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("/nncloudtv-servlet.xml");
             ThreadPoolTaskScheduler scheduler = (ThreadPoolTaskScheduler) appContext.getBean("scheduler");
             scheduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
             appContext.close();
