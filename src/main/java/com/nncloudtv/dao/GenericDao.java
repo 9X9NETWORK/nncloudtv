@@ -2,6 +2,7 @@ package com.nncloudtv.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -14,6 +15,7 @@ import javax.jdo.datastore.DataStoreCache;
 
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NnDateUtil;
@@ -25,7 +27,7 @@ import com.nncloudtv.service.CounterFactory;
 import com.nncloudtv.task.ScheduledTask;
 
 @EnableScheduling
-public class GenericDao<T extends PersistentBaseModel> implements ScheduledTask {
+public class GenericDao<T extends PersistentBaseModel> implements Runnable {
     
     protected final Class<T> daoClass;
     protected final String daoClassName;
@@ -66,14 +68,34 @@ public class GenericDao<T extends PersistentBaseModel> implements ScheduledTask 
         resetSharedPersistenceMngr();
     }
     
+    @Override
+    public void run() {
+        
+        resetSharedPersistenceMngr();
+    }
+    
     private PersistenceManager getSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr == null || sharedPersistenceMngr.isClosed()) {
+            
             sharedPersistenceMngr = getPersistenceManager();
             sharedPersistenceMngr.setMultithreaded(true);
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
+            
+            ThreadPoolTaskScheduler schduler = new ThreadPoolTaskScheduler() {
+                
+                private static final long serialVersionUID = 8453520044560890132L;
+                
+                @Override
+                protected void finalize() throws Throwable {
+                    NnLogUtil.logFinalize(getClass().getName());
+                }
+            };
+            
+            schduler.schedule(this, new Date(NnDateUtil.timestamp() + 10000)); // 604171
         }
+        
         return sharedPersistenceMngr;
     }
     
@@ -82,7 +104,6 @@ public class GenericDao<T extends PersistentBaseModel> implements ScheduledTask 
         return PMF.get(daoClass).getPersistenceManager();
     }
     
-    @Scheduled(fixedDelay = DAO_INTERVAL)
     private void resetSharedPersistenceMngr() {
         if (sharedPersistenceMngr != null) {
             System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
