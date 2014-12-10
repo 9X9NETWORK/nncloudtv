@@ -15,14 +15,11 @@ public class ThreadPoolTask implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(ThreadPoolTask.class.getName());
     
-    public static String threadPoolReport = null;
-    
     @Scheduled(fixedRate = TP_INTERVAL)
     synchronized public static void reportthreadPool() {
         
         ScheduledThreadPoolExecutor scheduler = NNF.getScheduler();
-        threadPoolReport = String.format("[scheduler] pool size is %d, %d is queued, %d of them are active", scheduler.getPoolSize(), scheduler.getTaskCount(), scheduler.getActiveCount());
-        System.out.println(threadPoolReport);
+        System.out.println(String.format("[scheduler] %d task(s) queued in pool, pool size is %d", scheduler.getQueue().size(), scheduler.getPoolSize()));
     }
     
 }
