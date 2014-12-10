@@ -24,9 +24,9 @@ public class NnChannelDao extends GenericDao<NnChannel> {
         super(NnChannel.class);
     }    
     
-    public long findPlayerChannelsCountBySysTag(long id, String lang, long msoId) {
+    public long findPlayerChannelsCountBySysTag(long id, String lang, long msoId, boolean isPlayer) {
         
-        return findBySysTag(id, lang, false, 0, 0, SysTag.SORT_UNKNWON, msoId, true).size();
+        return findBySysTag(id, lang, false, 0, 0, SysTag.SORT_UNKNWON, msoId, isPlayer).size();
     }
     
     //player channels means status=true and isPublic=true
