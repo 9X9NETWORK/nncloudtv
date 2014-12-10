@@ -64,7 +64,11 @@ public class SysTagManager {
     
     public long findPlayerChannelsCountById(long systagId, String lang, long msoId) {
         
-        return NNF.getChannelDao().findPlayerChannelsCountBySysTag(systagId, lang, msoId);
+        boolean isPlayer = false;
+        if (CategoryService.isSystemCategory(systagId))
+            isPlayer = true;
+        
+        return NNF.getChannelDao().findPlayerChannelsCountBySysTag(systagId, lang, msoId, isPlayer);
     }
     
     // isPlayer: means status = true and isPublic = true
