@@ -20,8 +20,6 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(MessageQueueTask.class.getName());
     
-    public static String lastReceivedMessage = null;
-    
     @Scheduled(fixedRate = MQ_INTERVAL)
     synchronized public static void receiveMessage() {
         
@@ -36,11 +34,9 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             
             while(true) {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery(MQ_INTERVAL / 2);
-                if (delivery == null)
-                    break;
+                if (delivery == null) break;
                 String message = new String(delivery.getBody());
-                lastReceivedMessage = String.format("[mq] message received {%s}", message);
-                System.out.println(lastReceivedMessage);
+                System.out.println(String.format("[mq] received {%s}", message));
             }
             
         } catch (IOException e) {

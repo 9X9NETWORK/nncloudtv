@@ -416,4 +416,9 @@ public class CacheFactory {
         
         return String.format("NnChannel.getCntItem(%d)", channelId);
     }
+    
+    public static String getQueueServerPropertyKey() {
+        
+        return "MsoConfigManager.getQueueServer()";
+    }
 }

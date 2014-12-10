@@ -7,8 +7,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.nncloudtv.lib.QueueFactory;
-
 @Service
 @EnableScheduling
 public class MemoryTask implements ScheduledTask {
@@ -25,7 +23,7 @@ public class MemoryTask implements ScheduledTask {
         long max   = Runtime.getRuntime().maxMemory();
         long total = Runtime.getRuntime().totalMemory();
         long free  = Runtime.getRuntime().freeMemory();
-        memoryUsageReport = String.format("[memory] max = %s, total = %s, free = %s",
+        memoryUsageReport = String.format((char)27 + "[2;33m[memory]" + (char)27 + "[0m max = %s, total = %s, free = %s",
                                       FileUtils.byteCountToDisplaySize(max),
                                       FileUtils.byteCountToDisplaySize(total),
                                       FileUtils.byteCountToDisplaySize(free));
@@ -33,8 +31,6 @@ public class MemoryTask implements ScheduledTask {
         if (max == total && free < total / 100)
             log.severe("available memory is less than 1%");
         
-        // test
-        QueueFactory.publishMessage(memoryUsageReport);
     }
     
 }

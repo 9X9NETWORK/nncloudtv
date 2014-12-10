@@ -52,7 +52,15 @@ public class MsoConfigManager {
     }
     
     public static String getQueueServer() {
-        return getProperty(PROPERTIES_QUEUE, "server");
+        
+        String cacheKey = CacheFactory.getQueueServerPropertyKey();
+        String result = (String) CacheFactory.get(cacheKey);
+        if (result != null) return result;
+        result = getProperty(PROPERTIES_QUEUE, "server");
+        if (result == null) result = "";
+        CacheFactory.set(cacheKey, result, CacheFactory.EXP_ONE_HOUR);
+        
+        return result;
     }
     
     public static String getGooglePlayAccountEmail() {
