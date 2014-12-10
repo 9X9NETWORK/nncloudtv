@@ -73,7 +73,11 @@ public class SysTagManager {
     //    msoId: if msoId = 0, do store_listing black list
     public List<NnChannel> findPlayerChannelsById(long systagId, String lang, int start, int count, short sort, long msoId) {
         
-        return NNF.getChannelDao().findBySysTag(systagId, lang, false, start, count, sort, msoId, true);
+        boolean isPlayer = false;
+        if (CategoryService.isSystemCategory(systagId))
+            isPlayer = true;
+        
+        return NNF.getChannelDao().findBySysTag(systagId, lang, false, start, count, sort, msoId, isPlayer);
     }
     
     //TODO virtual? front-page? still using?
