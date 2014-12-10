@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.model.CounterShard;
 import com.nncloudtv.service.CounterFactory;
 
@@ -29,6 +30,7 @@ public class CounterTask extends CounterFactory implements ScheduledTask {
                 shardSet.add(increment(entry.getKey(), entry.getValue()));
             NNF.getShardDao().saveAll(shardSet);
             System.out.println(String.format("[counter] %d counters updated", shardSet.size()));
+            QueueFactory.publishMessage(String.format("%d counters updated", shardSet.size()));
             System.out.println(String.format("[counter] cleaning dirty counters costs %d milliseconds", NnDateUtil.timestamp() - before));
         }
     }

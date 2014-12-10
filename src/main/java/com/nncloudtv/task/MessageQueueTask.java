@@ -36,7 +36,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery(MQ_INTERVAL / 2);
                 if (delivery == null) break;
                 String message = new String(delivery.getBody());
-                System.out.println(String.format("[mq] received {%s}", message));
+                System.out.println(String.format((char)27 + "[2;36m[mq]" + (char)27 + "[0m received {%s}", message));
             }
             
         } catch (IOException e) {

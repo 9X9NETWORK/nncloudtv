@@ -43,6 +43,7 @@ import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnLogUtil;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.lib.QueueFactory;
 import com.nncloudtv.lib.stream.LiveStreamLib;
 import com.nncloudtv.lib.stream.UstreamLib;
 import com.nncloudtv.lib.stream.StreamFactory;
@@ -266,6 +267,7 @@ public class ApiMisc extends ApiGeneric {
             
             String value = names.get(name)[0];
             log.info(name + " = " + value);
+            QueueFactory.publishMessage(name + " = " + value);
             result.put(name, value);
         }
         
@@ -275,8 +277,7 @@ public class ApiMisc extends ApiGeneric {
             
             return null;
         }
-        
-        (new Thread() {
+        NNF.getScheduler().execute(new Runnable() {
             public void run() {
                 log.info("I am a thread.");
                 try {
@@ -287,7 +288,7 @@ public class ApiMisc extends ApiGeneric {
                 }
                 log.info("bye~");
             }
-        }).start();
+        });
         
         if (req.getMethod().equalsIgnoreCase("POST")) {
             resp.setStatus(HTTP_201);
