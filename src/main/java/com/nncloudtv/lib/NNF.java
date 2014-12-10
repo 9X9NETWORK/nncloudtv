@@ -92,7 +92,7 @@ import com.nncloudtv.service.YtProgramManager;
 public class NNF {
     
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
-    protected static final int SCHEDULED_THREAD_POOL_SIZE = 15;
+    protected static final int SCHEDULED_THREAD_POOL_SIZE = 30;
     
     protected static NnChannelManager      channelMngr      = null;
     protected static MsoConfigManager      configMngr       = null;

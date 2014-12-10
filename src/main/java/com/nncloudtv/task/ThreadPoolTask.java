@@ -21,7 +21,7 @@ public class ThreadPoolTask implements ScheduledTask {
     synchronized public static void reportthreadPool() {
         
         ScheduledThreadPoolExecutor scheduler = NNF.getScheduler();
-        threadPoolReport = String.format("[scheduler] pool size is %d, %d of them are active", scheduler.getPoolSize(), scheduler.getActiveCount());
+        threadPoolReport = String.format("[scheduler] pool size is %d, %d is queued, %d of them are active", scheduler.getPoolSize(), scheduler.getTaskCount(), scheduler.getActiveCount());
         System.out.println(threadPoolReport);
     }
     
