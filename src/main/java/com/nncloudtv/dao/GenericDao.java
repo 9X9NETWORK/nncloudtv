@@ -2,8 +2,8 @@ package com.nncloudtv.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -79,7 +79,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            NNF.getScheduler().schedule(this, new Date(NnDateUtil.timestamp() + DAO_INTERVAL));
+            NNF.getScheduler().schedule(this, DAO_INTERVAL, TimeUnit.MILLISECONDS);
         }
         
         return sharedPersistenceMngr;

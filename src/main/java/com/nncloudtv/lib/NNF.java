@@ -1,8 +1,8 @@
 package com.nncloudtv.lib;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
-
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
 import com.nncloudtv.dao.AdPlacementDao;
 import com.nncloudtv.dao.AppDao;
@@ -92,47 +92,48 @@ import com.nncloudtv.service.YtProgramManager;
 public class NNF {
     
     protected static final Logger log = Logger.getLogger(NNF.class.getName());
+    protected static final int SCHEDULED_THREAD_POOL_SIZE = 15;
     
-    protected static NnChannelManager       channelMngr         = null;
-    protected static MsoConfigManager       configMngr          = null;
-    protected static MsoManager             msoMngr             = null;
-    protected static MsoNotificationManager msoNotiMngr         = null;
-    protected static NnUserPrefManager      prefMngr            = null;
-    protected static NnUserManager          userMngr            = null;
-    protected static NnUserProfileManager   profileMngr         = null;
-    protected static NnChannelPrefManager   chPrefMngr          = null;
-    protected static BillingProfileManager  billingProfileMngr  = null;
-    protected static BillingOrderManager    orderMngr           = null;
-    protected static BillingPackageManager  packageMngr         = null;
-    protected static NnEpisodeManager       episodeMngr         = null;
-    protected static NnProgramManager       programMngr         = null;
-    protected static NnDeviceManager        deviceMngr          = null;
+    protected static NnChannelManager      channelMngr      = null;
+    protected static MsoConfigManager      configMngr       = null;
+    protected static MsoManager            msoMngr          = null;
+    protected static MsoNotificationManager msoNotiMngr     = null;
+    protected static NnUserPrefManager     prefMngr         = null;
+    protected static NnUserManager         userMngr         = null;
+    protected static NnUserProfileManager  profileMngr      = null;
+    protected static NnChannelPrefManager  chPrefMngr       = null;
+    protected static BillingProfileManager billingProfileMngr = null;
+    protected static BillingOrderManager   orderMngr        = null;
+    protected static BillingPackageManager packageMngr      = null;
+    protected static NnEpisodeManager      episodeMngr      = null;
+    protected static NnProgramManager      programMngr      = null;
+    protected static NnDeviceManager       deviceMngr       = null;
     protected static NnDeviceNotificationManager deviceNotiMngr = null;
-    protected static SysTagDisplayManager   displayMngr         = null;
-    protected static SysTagMapManager       sysTagMapMngr       = null;
-    protected static SysTagManager          sysTagMngr          = null;
-    protected static MsoPromotionManager    msoPromotionMngr    = null;
-    protected static PoiPointManager        poiPointMngr        = null;
-    protected static PoiEventManager        poiEventMngr        = null;
-    protected static PoiCampaignManager     poiCampaignMngr     = null;
-    protected static PoiManager             poiMngr             = null;
-    protected static AdPlacementManager     adMngr              = null;
-    protected static YtProgramManager       ytProgramMngr       = null;
-    protected static YtChannelManager       ytChannelMngr       = null;
-    protected static StoreListingManager    storeListingMngr    = null;
-    protected static MyLibraryManager       libraryMngr         = null;
-    protected static NnPurchaseManager      purchaseMngr        = null;
-    protected static NnItemManager          itemMngr            = null;
-    protected static TitleCardManager       titleCardMngr       = null;
+    protected static SysTagDisplayManager  displayMngr      = null;
+    protected static SysTagMapManager      sysTagMapMngr    = null;
+    protected static SysTagManager         sysTagMngr       = null;
+    protected static MsoPromotionManager   msoPromotionMngr = null;
+    protected static PoiPointManager       poiPointMngr     = null;
+    protected static PoiEventManager       poiEventMngr     = null;
+    protected static PoiCampaignManager    poiCampaignMngr  = null;
+    protected static PoiManager            poiMngr          = null;
+    protected static AdPlacementManager    adMngr           = null;
+    protected static YtProgramManager      ytProgramMngr    = null;
+    protected static YtChannelManager      ytChannelMngr    = null;
+    protected static StoreListingManager   storeListingMngr = null;
+    protected static MyLibraryManager      libraryMngr      = null;
+    protected static NnPurchaseManager     purchaseMngr     = null;
+    protected static NnItemManager         itemMngr         = null;
+    protected static TitleCardManager      titleCardMngr    = null;
     
-    protected static SetService        setService       = null;
-    protected static CategoryService   categoryService  = null;
-    protected static DepotService      depotService     = null;
-    protected static EmailService      emailService     = null;
-    protected static NotificationService notiService    = null;
-    protected static BillingService    billingService   = null;
-    protected static PlayerApiService  playerApiService = null;
-    protected static ContentWorkerService workerService = null;
+    protected static SetService           setService       = null;
+    protected static CategoryService      categoryService  = null;
+    protected static DepotService         depotService     = null;
+    protected static EmailService         emailService     = null;
+    protected static NotificationService  notiService      = null;
+    protected static BillingService       billingService   = null;
+    protected static PlayerApiService     playerApiService = null;
+    protected static ContentWorkerService workerService    = null;
     
     protected static MsoDao             msoDao             = null;
     protected static MsoPromotionDao    msoPromotionDao    = null;
@@ -180,16 +181,15 @@ public class NNF {
     protected static TagDao             tagDao             = null;
     protected static YtChannelDao       ytChannelDao       = null;
     
-    protected static ConcurrentTaskScheduler scheduler     = null;
+    protected static ScheduledThreadPoolExecutor scheduler = null;
     
-    public static ConcurrentTaskScheduler getScheduler() {
+    public static ScheduledThreadPoolExecutor getScheduler() {
         
         if (scheduler == null) {
             
             log.info("create scheduler");
-            scheduler = new ConcurrentTaskScheduler();
+            scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(SCHEDULED_THREAD_POOL_SIZE);
         }
-        
         return scheduler;
     }
     
