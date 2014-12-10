@@ -16,12 +16,40 @@ import com.rabbitmq.client.MessageProperties;
 public class QueueFactory {
 
     protected static final Logger log = Logger.getLogger(QueueFactory.class.getName());
-    public static final String METHOD_POST = "POST";
-    public static final String METHOD_GET = "GET";
+    
+    public static final String METHOD_POST      = "POST";
+    public static final String METHOD_GET       = "GET";
     public static final String CONTENTTYPE_JSON = "json";
     public static final String CONTENTTYPE_TEXT = "text";
     
-    public final static String QUEUE_NNCLOUDTV = "QUEUE_NNCLOUDTV";
+    public final static String QUEUE_NNCLOUDTV  = "QUEUE_NNCLOUDTV";
+    public final static String QUEUE_TASK       = "QUEUE_TASK";
+    public final static String MESSAGE_EXCHANGE = "MESSAGE_EXCHANGE";
+    
+    public final static String FANOUT = "fanout";
+    
+    protected static Connection getConnection() throws IOException {
+        
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost(MsoConfigManager.getQueueServer());
+        
+        return factory.newConnection();
+    }
+    
+    public static void publishMessage(String message) {
+        
+        try {
+            
+            Connection connection = getConnection();
+            Channel channel = connection.createChannel();
+            channel.exchangeDeclare(MESSAGE_EXCHANGE, FANOUT);
+            channel.basicPublish(MESSAGE_EXCHANGE, "", null, message.getBytes());
+            
+        } catch (IOException e) {
+            
+            log.warning("fail to publish message!");
+        }
+    }
     
     public static byte[] toByteArray (Object obj)
     {
@@ -67,11 +95,11 @@ public class QueueFactory {
                         MessageProperties.PERSISTENT_TEXT_PLAIN,
                         QueueFactory.toByteArray(obj));
             channel.close();
-            connection.close();        
+            connection.close();
             log.info(" [x] Sent '" + msgUrl.toString() + "'");
         } catch (IOException e) {
             e.printStackTrace();
-        }        
+        }
         
     }
     
@@ -106,11 +134,11 @@ public class QueueFactory {
             }
             obj[3] = json; 
             
-            channel.basicPublish( "", QueueFactory.QUEUE_NNCLOUDTV, 
+            channel.basicPublish( "", QueueFactory.QUEUE_NNCLOUDTV,
                         MessageProperties.PERSISTENT_TEXT_PLAIN,
-                        QueueFactory.toByteArray(obj));                        
+                        QueueFactory.toByteArray(obj));
             channel.close();
-            connection.close();        
+            connection.close();
             log.info(" [x] Sent '" + msg.toString() + "'");
         } catch (IOException e) {
             e.printStackTrace();

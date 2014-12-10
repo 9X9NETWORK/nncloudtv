@@ -79,7 +79,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            NNF.getScheduler().schedule(this, DAO_INTERVAL, TimeUnit.MILLISECONDS);
+            NNF.getScheduler().schedule(this, PM_INTERVAL, TimeUnit.MILLISECONDS);
         }
         
         return sharedPersistenceMngr;

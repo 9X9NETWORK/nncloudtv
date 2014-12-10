@@ -33,6 +33,7 @@ public class MsoConfigManager {
     protected static final String PROPERTIES_AWS          =           "aws.properties";
     protected static final String PROPERTIES_GOOGLEPLAY   =    "googleplay.properties";
     protected static final String PROPERTIES_APPSTORE     =      "appstore.properties";
+    protected static final String PROPERTIES_QUEUE        =         "queue.properties";
     
     protected static String serverDomain = null;
     
@@ -48,6 +49,10 @@ public class MsoConfigManager {
             NnLogUtil.logException(e);
         }
         return result;
+    }
+    
+    public static String getQueueServer() {
+        return getProperty(PROPERTIES_QUEUE, "server");
     }
     
     public static String getGooglePlayAccountEmail() {
