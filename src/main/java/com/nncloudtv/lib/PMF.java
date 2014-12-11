@@ -7,9 +7,11 @@ import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
 import com.nncloudtv.model.BillingProfile;
 import com.nncloudtv.model.Deep;
+import com.nncloudtv.model.NnGuest;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.model.NnUser;
+import com.nncloudtv.model.NnUserPref;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.NnUserSubscribeGroup;
 import com.nncloudtv.model.NnUserWatched;
@@ -37,22 +39,33 @@ public final class PMF {
             
             return PMF.getAnalytics();
             
-        } else if (cls.equals(BillingOrder.class) || cls.equals(BillingPackage.class) || cls.equals(BillingProfile.class) ||
-                   cls.equals(NnPurchase.class)   || cls.equals(NnItem.class)) {
+        } else if (cls.equals(BillingOrder.class)   ||
+                   cls.equals(BillingPackage.class) ||
+                   cls.equals(BillingProfile.class) ||
+                   cls.equals(NnPurchase.class)     ||
+                   cls.equals(NnItem.class)) {
             
             return PMF.getBilling();
             
-        } else if (cls.equals(NnUser.class) || cls.equals(NnUserSubscribe.class) || cls.equals(NnUserSubscribeGroup.class) ||
-                   cls.equals(NnUserWatched.class)) {
+        } else if (cls.equals(NnUser.class)          ||
+                   cls.equals(NnUserSubscribe.class) ||
+                   cls.equals(NnUserWatched.class)   ||
+                   cls.equals(NnUserPref.class)      ||
+                   cls.equals(NnGuest.class)         ||
+                   cls.equals(NnUserSubscribeGroup.class)) {
             
             throw new IllegalArgumentException("user related db are sharded.");
             
-        } else if (cls.equals(Deep.class) || cls.equals(Shallow.class) || cls.equals(YtChannel.class)) {
+        } else if (cls.equals(Deep.class)    ||
+                   cls.equals(Shallow.class) ||
+                   cls.equals(YtChannel.class)) {
             
             return PMF.getRecommend();
+            
+        } else {
+            
+            return PMF.getContent();
         }
-        
-        return PMF.getContent();
     }
     
     public static PersistenceManagerFactory getNnUser1() {

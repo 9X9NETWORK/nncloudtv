@@ -11,7 +11,7 @@ import javax.jdo.Query;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribeGroup;
 
-public class NnUserSubscribeGroupDao extends GenericDao<NnUserSubscribeGroup> {
+public class NnUserSubscribeGroupDao extends ShardedDao<NnUserSubscribeGroup> {
     
     protected static final Logger log = Logger.getLogger(NnUserSubscribeGroupDao.class.getName());
     

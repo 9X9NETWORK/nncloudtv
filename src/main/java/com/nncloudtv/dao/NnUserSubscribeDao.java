@@ -14,7 +14,7 @@ import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.Position;
 
-public class NnUserSubscribeDao extends GenericDao<NnUserSubscribe>{
+public class NnUserSubscribeDao extends ShardedDao<NnUserSubscribe>{
     
     protected static final Logger log = Logger.getLogger(NnUserSubscribeDao.class.getName());
     

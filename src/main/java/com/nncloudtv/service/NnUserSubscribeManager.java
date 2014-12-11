@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.springframework.stereotype.Service;
 
+import com.nncloudtv.dao.NnUserDao;
 import com.nncloudtv.dao.NnUserSubscribeDao;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
@@ -17,12 +18,12 @@ import com.nncloudtv.model.NnUserSubscribe;
 import com.nncloudtv.model.NnUserSubscribeGroup;
 
 @Service
-public class NnUserSubscribeManager {        
-
+public class NnUserSubscribeManager {
+    
     protected static final Logger log = Logger.getLogger(NnUserSubscribeManager.class.getName());
     
     NnUserSubscribeDao subDao = NNF.getSubscribeDao(); 
-
+    
     public List<NnUserSubscribe> findAllByUser(NnUser user) {
         return subDao.findAllByUser(user);
     }
@@ -37,7 +38,7 @@ public class NnUserSubscribeManager {
         subDao.save(user, s);
         return true;
     }
-
+    
     public short findFirstAvailableSpot(NnUser user) {
         return subDao.findFirstAvailableSpot(user);
     }
@@ -96,7 +97,7 @@ public class NnUserSubscribeManager {
     
     public List<NnChannel> findSubscribedChannels(NnUser user) {
         List<NnUserSubscribe> subs = subDao.findAllByUser(user);
-        log.info("subscription size:" + subs.size());        
+        log.info("subscription size:" + subs.size());
         List<NnChannel> channels = new ArrayList<NnChannel>();
         for (NnUserSubscribe s : subs) {
             NnChannel c = NNF.getChannelMngr().findById(s.getChannelId()); //!!!
@@ -106,12 +107,12 @@ public class NnUserSubscribeManager {
                 channels.add(c);
             }
         }
-        log.info("final subs size:" + channels.size());        
-        return channels;             
+        log.info("final subs size:" + channels.size());
+        return channels;
     }
     
     //move from seq1 to seq2
-    public boolean moveSeq(NnUser user, short seq1, short seq2) {                        
+    public boolean moveSeq(NnUser user, short seq1, short seq2) {
         NnUserSubscribe sub = subDao.findByUserAndSeq(user, seq1);
         if (sub == null) {return false;}
         sub.setSeq(seq2);
@@ -127,24 +128,9 @@ public class NnUserSubscribeManager {
         Date now = NnDateUtil.now();
         subscribe.setCreateDate(now);
         subscribe.setUpdateDate(now);
-        subDao.save(subscribe);
+        
+        subDao.save(subscribe, NnUserDao.getPersistenceManagerFactory(user));
         return true;
-    }
-    
-    public List<NnUserSubscribe> list(int page, int limit, String sort) {
-        return subDao.list(page, limit, sort);
-    }
-    
-    public List<NnUserSubscribe> list(int page, int limit, String sort, String filter) {
-        return subDao.list(page, limit, sort, filter);
-    }
-    
-    public int total() {
-        return subDao.total();
-    }
-    
-    public int total(String filter) {
-        return subDao.total(filter);
     }
     
 }
