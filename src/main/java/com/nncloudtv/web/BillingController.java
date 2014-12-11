@@ -93,7 +93,6 @@ public class BillingController {
             
             purchases = (req.getParameter("all") == null) ? NNF.getPurchaseMngr().findAllActive() : NNF.getPurchaseMngr().findAll();
         }
-        ApiContext ctx = new ApiContext(req);
         
         int cntVerified = 0;
         int cntTotal    = 0;
@@ -102,7 +101,7 @@ public class BillingController {
         
         for (NnPurchase purchase : purchases) {
             
-            NNF.getPurchaseMngr().verifyPurchase(purchase, ctx.isProductionSite());
+            NNF.getPurchaseMngr().verifyPurchase(purchase);
             if (purchase.isVerified()) {
                 
                 cntVerified ++;
