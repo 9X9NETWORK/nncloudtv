@@ -125,7 +125,6 @@ public class NnPurchaseManager {
                 
                 log.warning("AppStoreFailedVerifiedException");
                 purchase.setVerified(false);
-                purchase.setStatus(NnPurchase.INVALID);
                 
             } finally {
                 
