@@ -2,9 +2,7 @@ package com.nncloudtv.task;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -24,7 +22,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(MessageQueueTask.class.getName());
     static List<String> messages = new ArrayList<String>();
-    final static int MESSAGE_ARRAY_SIZE = 10;
+    final static int MESSAGE_ARRAY_SIZE = 50;
     
     static Channel rabbit = null;
     
@@ -52,6 +50,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
                     System.out.println(String.format((char)27 + "[2;36m[mq]" + (char)27 + "[0m received {%s}", message));
                 }
             }
+            rabbit.close();
             
         } catch (IOException e) {
             

@@ -41,9 +41,9 @@ public class QueueFactory {
         try {
             
             Connection connection = getConnection();
-            Channel channel = connection.createChannel();
-            channel.exchangeDeclare(MESSAGE_EXCHANGE, FANOUT);
-            channel.basicPublish(MESSAGE_EXCHANGE, "", null, message.getBytes());
+            Channel rabbit = connection.createChannel();
+            rabbit.exchangeDeclare(MESSAGE_EXCHANGE, FANOUT);
+            rabbit.basicPublish(MESSAGE_EXCHANGE, "", null, message.getBytes());
             
         } catch (IOException e) {
             
