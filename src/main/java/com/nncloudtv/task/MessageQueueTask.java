@@ -1,7 +1,9 @@
 package com.nncloudtv.task;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -21,7 +23,8 @@ import com.rabbitmq.client.ShutdownSignalException;
 public class MessageQueueTask extends QueueFactory implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(MessageQueueTask.class.getName());
-    static Set<String> messages = new HashSet<String>();
+    static List<String> messages = new ArrayList<String>();
+    final static int MESSAGE_ARRAY_SIZE = 10;
     
     static Channel rabbit = null;
     
@@ -73,7 +76,9 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
         } finally {
             
             System.out.println("[mq] finished");
-            messages.clear();
+            int fromIndex = messages.size() - MESSAGE_ARRAY_SIZE;
+            if (fromIndex < 0) fromIndex = 0;
+            messages = messages.subList(fromIndex, messages.size());
         }
     }
     
