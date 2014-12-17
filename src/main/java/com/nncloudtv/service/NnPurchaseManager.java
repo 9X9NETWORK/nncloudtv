@@ -35,7 +35,7 @@ public class NnPurchaseManager {
         return user == null ? null : dao.findByUserIdStr(user.getIdStr());
     }
     
-    public void verifyPurchase(NnPurchase purchase, boolean isProduction) {
+    public void verifyPurchase(NnPurchase purchase) {
         
         if (purchase == null) { return; }
         log.info("verify purchase, purchaseId = " + purchase.getId());
@@ -81,7 +81,7 @@ public class NnPurchaseManager {
             log.info("appstore");
             try {
                 
-                JSONObject receipt = AppStoreLib.getReceipt(purchase, isProduction);
+                JSONObject receipt = AppStoreLib.getReceipt(purchase);
                 if (receipt == null) {
                     
                     log.warning("fail to get receipt");
@@ -125,7 +125,6 @@ public class NnPurchaseManager {
                 
                 log.warning("AppStoreFailedVerifiedException");
                 purchase.setVerified(false);
-                purchase.setStatus(NnPurchase.INVALID);
                 
             } finally {
                 

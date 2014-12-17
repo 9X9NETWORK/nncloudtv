@@ -17,34 +17,52 @@ public class AppStoreLib {
     
     protected static final Logger log = Logger.getLogger(AppStoreLib.class.getName());
     
-    public static JSONObject getReceipt(NnPurchase purchase, boolean isProduction) throws AppStoreFailedVerifiedException {
+    public static String verifyReceipt(String receiptData, String sharedSecret, boolean sandbox) {
         
-        String requestUrl = "https://" + (isProduction ? "buy" : "sandbox") + ".itunes.apple.com/verifyReceipt";
+        String requestUrl = "https://buy.itunes.apple.com/verifyReceipt";
+        String sandboxUrl = "https://sandbox.itunes.apple.com/verifyReceipt";
+        
+        Map<String, String> requestObj = new HashMap<String, String>();
+        requestObj.put("receipt-data", receiptData);
+        requestObj.put("password", sharedSecret);
+        log.info("shared secret = " + sharedSecret);
+        if (sandbox)
+            requestUrl = sandboxUrl;
+        log.info("receipt validation url = " + requestUrl);
+        
+        return NnNetUtil.urlPostWithJson(requestUrl, requestObj);
+    }
+    
+    public static JSONObject getReceipt(NnPurchase purchase) throws AppStoreFailedVerifiedException {
+        
         NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
         Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
         
         try {
             
             // doc: https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html
-            Map<String, String> requestObj = new HashMap<String, String>();
             String sharedSecret = MsoConfigManager.getAppStoreSharedSecret(mso);
-            requestObj.put("receipt-data", purchase.getPurchaseToken());
-            requestObj.put("password", sharedSecret);
-            log.info("shared secret = " + sharedSecret);
-            log.info("receipt validation url = " + requestUrl);
-            
-            String jsonStr = NnNetUtil.urlPostWithJson(requestUrl, requestObj);
+            String jsonStr = verifyReceipt(purchase.getPurchaseToken(), sharedSecret, false);
             if (jsonStr == null) {
-                
-                log.warning("appstore returns empty");
+                log.warning("appstore return empty");
                 return null;
             }
-            
             JSONObject json = new JSONObject(jsonStr);
             int status = json.getInt("status");
             log.info("appstore resturn status = " + status);
+            if (status == 21007) {
+                log.info("try sandbox");
+                jsonStr = verifyReceipt(purchase.getPurchaseToken(), sharedSecret, true);
+                if (jsonStr == null) {
+                    log.warning("sanbox return empty");
+                    return null;
+                }
+                json = new JSONObject(jsonStr);
+                status = json.getInt("status");
+                log.info("sandbox resturn status = " + status);
+            }
             if (status != 0) {
-                
+                purchase.setStatus((short) status);
                 throw new AppStoreFailedVerifiedException();
             }
             JSONObject receipt = null;
