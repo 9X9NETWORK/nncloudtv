@@ -3217,7 +3217,7 @@ public class PlayerApiService {
         }
         purchase = NNF.getPurchaseMngr().save(purchase);
         
-        NNF.getPurchaseMngr().verifyPurchase(purchase, ctx.isProductionSite());
+        NNF.getPurchaseMngr().verifyPurchase(purchase);
         
         return getPurchases(ctx);
     }
