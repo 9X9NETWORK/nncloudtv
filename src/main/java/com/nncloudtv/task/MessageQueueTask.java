@@ -31,6 +31,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             Connection connection = getConnection();
             Channel channel = connection.createChannel();
             String queueName = channel.queueDeclare().getQueue();
+            System.out.println("[mq] queue name = " + queueName);
             channel.queueBind(queueName, MESSAGE_EXCHANGE, "");
             QueueingConsumer consumer = new QueueingConsumer(channel);
             channel.basicConsume(queueName, consumer);
@@ -73,6 +74,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             
         } finally {
             
+            System.out.println("[mq] finished");
             messages.clear();
         }
         
