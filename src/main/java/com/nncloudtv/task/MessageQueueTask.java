@@ -1,6 +1,8 @@
 package com.nncloudtv.task;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,6 +21,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 public class MessageQueueTask extends QueueFactory implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(MessageQueueTask.class.getName());
+    static Set<String> messages = new HashSet<String>();
     
     @Scheduled(fixedRate = MQ_INTERVAL)
     synchronized public static void receiveMessage() {
@@ -33,10 +36,19 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             channel.basicConsume(queueName, consumer);
             
             while(true) {
-                QueueingConsumer.Delivery delivery = consumer.nextDelivery(MQ_INTERVAL / 2);
+                
+                QueueingConsumer.Delivery delivery = consumer.nextDelivery(MQ_INTERVAL);
                 if (delivery == null) break;
                 String message = new String(delivery.getBody());
-                System.out.println(String.format((char)27 + "[2;36m[mq]" + (char)27 + "[0m received {%s}", message));
+                if (!messages.contains(message)) {
+                    
+                    messages.add(message);
+                    System.out.println(String.format((char)27 + "[2;36m[mq]" + (char)27 + "[0m received {%s}", message));
+                    
+                } else {
+                    
+                    System.out.println("[mq] cotained");
+                }
             }
             
         } catch (IOException e) {
@@ -58,6 +70,10 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
+            
+        } finally {
+            
+            messages.clear();
         }
         
     }
