@@ -267,7 +267,7 @@ public class ApiMisc extends ApiGeneric {
             
             String value = names.get(name)[0];
             log.info(name + " = " + value);
-            QueueFactory.publishMessage(name + " = " + value);
+            QueueFactory.publishMessage(name + "=" + value);
             result.put(name, value);
         }
         
