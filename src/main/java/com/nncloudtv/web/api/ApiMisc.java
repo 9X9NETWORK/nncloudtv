@@ -276,18 +276,19 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        (new Thread() {
+        
+        NNF.getScheduler().execute(new Runnable() {
             public void run() {
-                log.info("I am a thread.");
+                log.info("[1] I am a thread.");
                 try {
                     Thread.sleep(5000);
-                    log.info("I am still awake.");
+                    log.info("[2] I am still awake.");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
-                log.info("bye~");
+                log.info("[3] bye~");
             }
-        }).start();
+        });
         
         if (req.getMethod().equalsIgnoreCase("POST")) {
             resp.setStatus(HTTP_201);
