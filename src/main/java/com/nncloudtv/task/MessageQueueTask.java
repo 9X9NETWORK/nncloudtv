@@ -19,6 +19,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 public class MessageQueueTask extends QueueFactory implements ScheduledTask {
     
     protected static Logger log = Logger.getLogger(MessageQueueTask.class.getName());
+    static final String LOG_PREFIX = (char)27 + "[2;36m[mq]" + (char)27 + "[0m";
     
     @Scheduled(fixedRate = MQ_INTERVAL)
     synchronized public static void receiveMessage() {
@@ -27,7 +28,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             Connection connection = getConnection();
             Channel rabbit = connection.createChannel();
             String queueName = rabbit.queueDeclare().getQueue();
-            System.out.println("[mq] queueName = " + queueName);
+            System.out.println(LOG_PREFIX + " " + queueName);
             rabbit.queueBind(queueName, MESSAGE_EXCHANGE, "");
             QueueingConsumer consumer = new QueueingConsumer(rabbit);
             rabbit.basicConsume(queueName, consumer);
@@ -35,7 +36,7 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
                 QueueingConsumer.Delivery delivery = consumer.nextDelivery(MQ_INTERVAL);
                 if (delivery == null) break;
                 String message = new String(delivery.getBody());
-                System.out.println(String.format((char)27 + "[2;36m[mq]" + (char)27 + "[0m received {%s}", message));
+                System.out.println(String.format("%s received {%s}", LOG_PREFIX, message));
             }
             rabbit.close();
             connection.close();
@@ -59,11 +60,6 @@ public class MessageQueueTask extends QueueFactory implements ScheduledTask {
             
             log.warning(e.getClass().getName());
             log.warning(e.getMessage());
-            
-        } finally {
-            
-            System.out.println("[mq] finished");
         }
     }
-    
 }
