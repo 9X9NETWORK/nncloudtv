@@ -70,6 +70,15 @@ public class NnNetUtil {
         
         log.info("proxyTo " + urlStr);
         HttpURLConnection conn = getConn(urlStr);
+        int code = conn.getResponseCode();
+        log.info("http status code = " + code);
+        if (code == 301 || code == 302) {
+            String location = conn.getHeaderField("Location");
+            if (location != null) {
+                log.info("follow redirection " + location);
+                conn = getConn(location);
+            }
+        }
         InputStream in = conn.getInputStream();
         
         Map<String, List<String>> headers = conn.getHeaderFields();
