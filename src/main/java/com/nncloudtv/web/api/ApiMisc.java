@@ -276,7 +276,6 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        
         NNF.getScheduler().execute(new Runnable() {
             public void run() {
                 log.info("[1] I am a thread.");

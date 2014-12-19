@@ -70,6 +70,7 @@ public class NnNetUtil {
         
         log.info("proxyTo " + urlStr);
         HttpURLConnection conn = getConn(urlStr);
+        conn.connect();
         InputStream in = conn.getInputStream();
         
         Map<String, List<String>> headers = conn.getHeaderFields();
