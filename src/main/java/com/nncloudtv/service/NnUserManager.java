@@ -365,22 +365,6 @@ public class NnUserManager {
         return user;
     }
     
-    public List<NnUser> list(int page, int limit, String sort) {
-        return dao.list(page, limit, sort);
-    }
-    
-    public List<NnUser> list(int page, int limit, String sort, String filter) {
-        return dao.list(page, limit, sort, filter);
-    }
-    
-    public int total() {
-        return dao.total();
-    }
-    
-    public int total(String filter) {
-        return dao.total(filter);
-    }
-    
     //specify email or name is used in flipr, otherwise use generic to match email/name/intro
     public List<NnUser> search(String email, String name, String generic, long msoId) {
         List<NnUser> users = dao.search(email, name, generic, msoId);

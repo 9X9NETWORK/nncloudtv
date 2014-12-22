@@ -15,7 +15,7 @@ import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserProfile;
 
-public class NnUserProfileDao extends GenericDao<NnUserProfile> {
+public class NnUserProfileDao extends ShardedDao<NnUserProfile> {
 
     protected static final Logger log = Logger.getLogger(NnUserProfileDao.class.getName());
     

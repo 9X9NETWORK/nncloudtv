@@ -11,7 +11,7 @@ import javax.jdo.Query;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserWatched;
 
-public class NnUserWatchedDao extends GenericDao<NnUserWatched>{
+public class NnUserWatchedDao extends ShardedDao<NnUserWatched>{
 
     protected static final Logger log = Logger.getLogger(NnUserWatchedDao.class.getName());
     
