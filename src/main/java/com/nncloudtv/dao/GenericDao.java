@@ -338,7 +338,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         return sql(queryStr, false);
     }
     
-    public List<T> sql(String queryStr, boolean fine) {
+    public synchronized List<T> sql(String queryStr, boolean fine) {
         
         PersistenceManager pm = getSharedPersistenceMngr();
         
