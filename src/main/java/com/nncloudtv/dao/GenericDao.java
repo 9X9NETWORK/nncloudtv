@@ -90,15 +90,13 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         return PMF.get(daoClass).getPersistenceManager();
     }
     
-    private void resetSharedPersistenceMngr() {
+    private synchronized void resetSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr != null) {
-            synchronized (sharedPersistenceMngr) {
-                System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
-                if (!sharedPersistenceMngr.isClosed())
-                    sharedPersistenceMngr.close();
-                sharedPersistenceMngr = null;
-            }
+            System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
+            if (!sharedPersistenceMngr.isClosed())
+                sharedPersistenceMngr.close();
+            sharedPersistenceMngr = null;
         }
     }
     
