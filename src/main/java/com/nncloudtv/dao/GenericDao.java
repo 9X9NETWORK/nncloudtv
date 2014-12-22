@@ -57,7 +57,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         resetSharedPersistenceMngr();
     }
     
-    private PersistenceManager getSharedPersistenceMngr() {
+    private synchronized PersistenceManager getSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr == null || sharedPersistenceMngr.isClosed()) {
             
@@ -80,10 +80,12 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     private synchronized void resetSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr != null) {
-            System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
-            if (!sharedPersistenceMngr.isClosed())
-                sharedPersistenceMngr.close();
-            sharedPersistenceMngr = null;
+            synchronized(sharedPersistenceMngr) {
+                System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
+                if (!sharedPersistenceMngr.isClosed())
+                    sharedPersistenceMngr.close();
+                sharedPersistenceMngr = null;
+            }
         }
     }
     
