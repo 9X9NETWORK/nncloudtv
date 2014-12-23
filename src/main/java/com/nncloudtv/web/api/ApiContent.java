@@ -986,12 +986,12 @@ public class ApiContent extends ApiGeneric {
         
         if (response != null && response.trim().equalsIgnoreCase("Ack")) {
             
-            channel.setReadonly(false);
-            NNF.getChannelMngr().save(channel);
-            
             msgResponse(resp, OK);
             
         } else {
+            
+            channel.setReadonly(false);
+            NNF.getChannelMngr().save(channel);
             
             msgResponse(resp, "NOT_OK");
         }
