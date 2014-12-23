@@ -52,10 +52,13 @@ public class NnItemManager {
     
     public Object composeEachItem(NnItem item) {
         
+        Date terminateDate = item.getTerminateDate();
+        
         String[] obj = {
                 String.valueOf(item.getChannelId()),
                 item.getProductIdRef(),
                 String.valueOf(item.getBillingPlatform()),
+                terminateDate == null ? "" : String.valueOf(terminateDate.getTime()),
         };
         
         return NnStringUtil.getDelimitedStr(obj);
