@@ -117,12 +117,12 @@ public class StreamFactory {
             
             if (videoIn != null) {
                 feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 0);
-                feedingAvconvTask.start();
+                NNF.getScheduler().execute(feedingAvconvTask);
             }
             
             pipingTask.join();
-            if (pipingTask.total == 0) {
-                log.info("zero length");
+            if (feedingAvconvTask.total == 0) {
+                log.info("zero feeded length");
                 throw new ZeroLengthException();
             }
             log.info("streaming done");
