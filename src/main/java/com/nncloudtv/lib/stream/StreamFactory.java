@@ -113,11 +113,11 @@ public class StreamFactory {
             Process process = Runtime.getRuntime().exec(cmd);
             
             pipingTask = new PipingTask(process.getInputStream(), videoOut, 0);
-            NNF.getScheduler().execute(pipingTask);
+            pipingTask.start();
             
             if (videoIn != null) {
                 feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 0);
-                NNF.getScheduler().execute(feedingAvconvTask);
+                feedingAvconvTask.start();
             }
             
             pipingTask.join();
