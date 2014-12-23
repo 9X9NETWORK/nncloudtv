@@ -2,6 +2,7 @@ package com.nncloudtv.service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -198,5 +199,12 @@ public class NnPurchaseManager {
     public NnPurchase findById(String idStr) {
         
         return dao.findById(idStr);
+    }
+    
+    public List<NnPurchase> findByItem(NnItem item) {
+        
+        if (item == null) return new ArrayList<NnPurchase>();
+        
+        return dao.findByItemId(item.getId());
     }
 }

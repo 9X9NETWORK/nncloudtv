@@ -13,6 +13,7 @@ import com.google.api.services.androidpublisher.AndroidPublisher;
 import com.google.api.services.androidpublisher.AndroidPublisher.Builder;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions;
+import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions.Cancel;
 import com.google.api.services.androidpublisher.AndroidPublisher.Purchases.Subscriptions.Get;
 import com.google.api.services.androidpublisher.model.SubscriptionPurchase;
 import com.nncloudtv.model.Mso;
@@ -76,5 +77,25 @@ public class GooglePlayLib {
         Get request = subscriptions.get(packageName, item.getProductIdRef(), purchaseToken);
         
         return request.execute();
+    }
+    
+    public static void cancelSubscriptionPurchase(NnPurchase purchase) throws IOException, GeneralSecurityException {
+        
+        if (purchase == null) { return; }
+        NnItem item = NNF.getItemMngr().findById(purchase.getItemId());
+        Mso mso = NNF.getMsoMngr().findById(item.getMsoId());
+        String purchaseToken = purchase.getPurchaseToken();
+        String packageName = MsoConfigManager.getGooglePlayPackageName(mso);
+        
+        log.info("packageName = " + packageName);
+        log.info("productId = " + item.getProductIdRef());
+        log.info("purchaseToken = " + purchaseToken);
+        
+        AndroidPublisher publisher = getAndroidPublisher(mso);
+        Purchases purchases = publisher.purchases();
+        Subscriptions subscriptions = purchases.subscriptions();
+        Cancel cancel = subscriptions.cancel(packageName, item.getProductIdRef(), purchaseToken);
+        
+        cancel.execute();
     }
 }

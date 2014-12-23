@@ -116,4 +116,9 @@ public class NnItemDao extends GenericDao<NnItem> {
         return detached;
     }
     
+    public List<NnItem> findTerminateItems() {
+        
+        return sql("SELECT * FROM NnItem WHERE status = 0 AND terminateDate IS NOT NULL");
+    }
+    
 }
