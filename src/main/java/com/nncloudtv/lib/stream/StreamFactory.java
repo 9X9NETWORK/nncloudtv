@@ -121,7 +121,9 @@ public class StreamFactory {
             }
             
             pipingTask.join();
-            if (feedingAvconvTask.total == 0) {
+            if ((feedingAvconvTask != null && feedingAvconvTask.total == 0) ||
+                (feedingAvconvTask == null && pipingTask.total == 0)) {
+                
                 log.info("zero feeded length");
                 throw new ZeroLengthException();
             }
