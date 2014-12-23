@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import com.nncloudtv.exception.ZeroLengthException;
-import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.FeedingAvconvTask;
