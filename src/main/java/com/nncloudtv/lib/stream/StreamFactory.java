@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.nncloudtv.exception.ZeroLengthException;
+import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.FeedingAvconvTask;
@@ -73,7 +75,7 @@ public class StreamFactory {
         return NnNetUtil.proxyTo(videoUrl, resp);
     }
     
-    public static void streaming(String videoUrl, OutputStream videoOut) {
+    public static void streaming(String videoUrl, OutputStream videoOut) throws ZeroLengthException {
         
         log.info("streamming " + videoUrl);
         if (videoUrl == null || videoOut == null) { return; }
@@ -111,7 +113,7 @@ public class StreamFactory {
             Process process = Runtime.getRuntime().exec(cmd);
             
             pipingTask = new PipingTask(process.getInputStream(), videoOut, 0);
-            pipingTask.start();
+            NNF.getScheduler().execute(pipingTask);
             
             if (videoIn != null) {
                 feedingAvconvTask = new FeedingAvconvTask(videoIn, process, 0);
@@ -119,6 +121,10 @@ public class StreamFactory {
             }
             
             pipingTask.join();
+            if (pipingTask.total == 0) {
+                log.info("zero length");
+                throw new ZeroLengthException();
+            }
             log.info("streaming done");
             
         } catch (InterruptedException e) {

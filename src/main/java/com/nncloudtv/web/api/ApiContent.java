@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.exception.ZeroLengthException;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
@@ -249,7 +250,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("video/mp2t");;
+        resp.setContentType("video/mp2t");
         if (!req.getMethod().equalsIgnoreCase("HEAD")) {
             try {
                 
@@ -260,6 +261,10 @@ public class ApiContent extends ApiGeneric {
                 log.info(e.getClass().getName());
                 log.info(e.getMessage());
                 internalError(resp);
+                
+            } catch (ZeroLengthException e) {
+                
+                notFound(resp);
             }
         }
     }

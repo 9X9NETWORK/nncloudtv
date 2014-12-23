@@ -20,13 +20,15 @@ public class PipingTask extends Thread {
     
     protected static Logger log = Logger.getLogger(PipingTask.class.getName());
     
-    protected InputStream     in = null;
-    protected OutputStream   out = null;
-    protected boolean  keepGoing = true;
-    protected final int  BUFSIZE = 294001;
-    protected byte[]         buf = null;
-    protected long     startTime = 0;
-    protected int    timeoutMili = 0;
+    protected InputStream     in = null;    // input stream
+    protected OutputStream   out = null;    // output stream
+    protected boolean  keepGoing = true;    // the keepGoing flag
+    protected final int  BUFSIZE = 294001;  // buffer size
+    protected byte[]         buf = null;    // the buffer
+    protected long     startTime = 0;       // start time
+    protected int    timeoutMili = 0;       // timeout
+    
+    public long            total = 0;       // total bytes transfered
     
     public PipingTask(InputStream in, OutputStream out, int timeout) {
         
@@ -57,7 +59,6 @@ public class PipingTask extends Thread {
         
         
         int  len       = 0;
-        long total     = 0;
         long lastTotal = 0;
         long lastTime  = startTime;
         try {

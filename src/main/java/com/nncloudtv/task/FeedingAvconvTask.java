@@ -35,7 +35,7 @@ public class FeedingAvconvTask extends PipingTask {
             log.warning("null output stream, abort.");
         }
         
-        int total = 0, len = 0;
+        int len = 0;
         try {
             do {
                 

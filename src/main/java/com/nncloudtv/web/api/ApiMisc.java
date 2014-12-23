@@ -35,6 +35,7 @@ import com.google.api.client.util.ArrayMap;
 import com.google.gdata.data.youtube.PlaylistEntry;
 import com.google.gdata.data.youtube.PlaylistFeed;
 import com.google.gdata.util.ServiceException;
+import com.nncloudtv.exception.ZeroLengthException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -644,6 +645,10 @@ public class ApiMisc extends ApiGeneric {
             
             log.info(e.getClass().getName());
             log.info(e.getMessage());
+            
+        } catch (ZeroLengthException e) {
+            
+            notFound(resp);
         }
     }
     
