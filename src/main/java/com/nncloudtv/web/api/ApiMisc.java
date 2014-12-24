@@ -607,6 +607,7 @@ public class ApiMisc extends ApiGeneric {
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
                 IOUtils.copy(bais, System.out);
                 IOUtils.copy(bais, resp.getOutputStream());
+                resp.flushBuffer();
                 
             } catch (IOException e) {
                 
