@@ -604,10 +604,8 @@ public class ApiMisc extends ApiGeneric {
                 
                 resp.setContentType(VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
-                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                IOUtils.copy(bais, System.out);
-                IOUtils.copy(bais, resp.getOutputStream());
-                resp.flushBuffer();
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), System.out);
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
                 
             } catch (IOException e) {
                 
