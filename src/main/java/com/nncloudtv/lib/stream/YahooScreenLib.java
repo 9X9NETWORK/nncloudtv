@@ -7,7 +7,7 @@ public class YahooScreenLib implements StreamLib {
     
     protected static final Logger log = Logger.getLogger(YahooScreenLib.class.getName());
     
-    public static final String REGEX_YAHOO_SCREEN_URL = "^https?:\\/\\/(ww\\.)?screen\\.yahoo\\.com\\/(.+)$";
+    public static final String REGEX_YAHOO_SCREEN_URL = "^https?:\\/\\/(tw\\.)?screen\\.yahoo\\.com\\/(.+)\\.html$";
     
     @Override
     public boolean isUrlMatched(String urlStr) {
