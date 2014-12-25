@@ -596,7 +596,7 @@ public class ApiMisc extends ApiGeneric {
                     
                     String href = entry.getHtmlLink().getHref();
                     
-                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle().getPlainText());
                     writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
                 }
                 writer.println("#EXT-X-ENDLIST");
