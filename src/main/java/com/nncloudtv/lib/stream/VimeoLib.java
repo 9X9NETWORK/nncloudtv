@@ -103,6 +103,6 @@ public class VimeoLib implements StreamLib {
     
     public InputStream getDirectVideoStream(String urlStr) {
         
-        return YouTubeLib.youtubeDL(urlStr);
+        return YouTubeLib.getYouTubeDLStream(urlStr);
     }
 }
