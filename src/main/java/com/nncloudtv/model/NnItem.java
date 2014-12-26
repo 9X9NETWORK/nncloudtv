@@ -38,6 +38,9 @@ public class NnItem implements PersistentModel {
     private Date updateDate;
     
     @Persistent
+    private Date terminateDate;
+    
+    @Persistent
     private long msoId;
     
     @Persistent
@@ -123,5 +126,13 @@ public class NnItem implements PersistentModel {
     
     public void setStatus(short status) {
         this.status = status;
+    }
+    
+    public Date getTerminateDate() {
+        return terminateDate;
+    }
+    
+    public void setTerminateDate(Date terminateDate) {
+        this.terminateDate = terminateDate;
     }
 }

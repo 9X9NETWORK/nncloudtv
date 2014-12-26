@@ -15,7 +15,7 @@ public class EndPointDao {
 
     public EndPoint save(EndPoint endpoint) {
         if (endpoint == null) {return null;}
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager(); // FIXME
         try {
             pm.makePersistent(endpoint);
             endpoint = pm.detachCopy(endpoint);
@@ -27,7 +27,7 @@ public class EndPointDao {
     
     public void delete(EndPoint endpoint) {
         if (endpoint == null) return;
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager(); // FIXME
         try {
             pm.deletePersistent(endpoint);
         } finally {
@@ -36,7 +36,7 @@ public class EndPointDao {
     }
     
     public EndPoint findByEndPoint(long userId, long msoId, short vendor) {
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager(); // FIXME
         EndPoint detached = null;
         try {
             String sql = "select * from endpoint " + 
@@ -55,8 +55,8 @@ public class EndPointDao {
         } finally {
             pm.close();
         }
-
-        return detached;     
+        
+        return detached;
         
     }
 }

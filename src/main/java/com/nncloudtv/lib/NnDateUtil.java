@@ -19,7 +19,7 @@ public class NnDateUtil {
             
             @Override
             protected void finalize() throws Throwable {
-                NnLogUtil.logFinalize(getClass().getName());
+                NnLogUtil.logFinalize(Date.class.getName());
             }
         };
     }

@@ -1,6 +1,7 @@
 package com.nncloudtv.web;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,8 +28,10 @@ import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.model.BillingOrder;
 import com.nncloudtv.model.BillingPackage;
+import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
 import com.nncloudtv.service.BillingService;
+import com.nncloudtv.service.NnItemManager;
 import com.nncloudtv.web.api.ApiContext;
 import com.nncloudtv.web.api.NnStatusCode;
 import com.nncloudtv.web.json.cms.CreditCard;
@@ -75,6 +78,41 @@ public class BillingController {
         }
         
         return NnNetUtil.textReturn(NnStatusCode.SUCCESS + "\n\n--\n\n" + result);
+    }
+    
+    @RequestMapping("verifyItems")
+    public ResponseEntity<String> verifyItems(HttpServletRequest req) {
+        
+        NnItemManager itemMngr = NNF.getItemMngr();
+        List<NnItem> items = new ArrayList<NnItem>();
+        String itemIdStr = req.getParameter("itemId");
+        if (itemIdStr != null) {
+            
+            NnItem item = itemMngr.findById(itemIdStr);
+            if (item != null)
+                items.add(item);
+            
+        } else {
+            
+            items = itemMngr.findTerminateItems();
+        }
+        
+        int cntTotal      = 0;
+        int cntTerminated = 0;
+        for (NnItem item : items) {
+            
+            Date terminateDate = item.getTerminateDate();
+            if (terminateDate != null && terminateDate.before(NnDateUtil.now())) {
+                
+                if (item.getBillingPlatform() == NnItem.GOOGLEPLAY) {
+                    
+                    itemMngr.terminate(item);
+                    cntTerminated += 1;
+                }
+            }
+        }
+        
+        return NnNetUtil.textReturn(String.format("OK\n--\ntotal\t%d\nterminated\t%d", cntTotal, cntTerminated));
     }
     
     @RequestMapping("verifyPurchases")

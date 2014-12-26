@@ -14,20 +14,20 @@ import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnUser;
 
-public class NnUserDao extends GenericDao<NnUser> {
+public class NnUserDao extends ShardedDao<NnUser> {
 
     protected static final Logger log = Logger.getLogger(NnUserDao.class.getName());
     
     public NnUserDao() {
         super(NnUser.class);
     }
-
+    
     //generic = true is for regular search
     //generic = false means for experimental ios feature
     @SuppressWarnings("unchecked")
     public List<NnUser> search(String email, String name, String generic, long msoId) {
         List<NnUser> detached = new ArrayList<NnUser>();        
-        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
+        PersistenceManager pm = PMF.getNnUser1().getPersistenceManager(); // FIXME
         try {
             String sql = "";
             if (generic != null) {
@@ -70,11 +70,11 @@ public class NnUserDao extends GenericDao<NnUser> {
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
-        }        
+        }
         return detached;
     }
     
-    @Override // looks both two shard DB
+    // looks both two shard DB
     public NnUser findById(long id) {
         
         NnUser user = null;
@@ -88,15 +88,7 @@ public class NnUserDao extends GenericDao<NnUser> {
     
     public NnUser findById(long id, short shard) {
         
-        PersistenceManagerFactory pmf = null;
-        if (shard == 0) {
-            return findById(id);
-        } else if (shard > 1) {
-            pmf = PMF.getNnUser2();
-        } else {
-            pmf = PMF.getNnUser1();
-        }
-        return findById(id, pmf);
+        return findById(id, getPersistenceManagerFactory(shard, null));
     }
     
     public static PersistenceManagerFactory getPersistenceManagerFactory(short shard, String token) {
@@ -117,28 +109,25 @@ public class NnUserDao extends GenericDao<NnUser> {
         return PMF.getNnUser1();
     }
     
+    public static PersistenceManagerFactory getPersistenceManagerFactory(NnUser user) {
+        
+        return getPersistenceManagerFactory(user.getShard(), user.getToken());
+    }
+    
     //use either shard or token to determine partition, default shard 1 if nothing
     public static PersistenceManager getPersistenceManager(short shard, String token) {
-        if (shard > 0) {
-            if (shard == NnUser.SHARD_DEFAULT) {
-                return PMF.getNnUser1().getPersistenceManager();
-            } else {
-                return PMF.getNnUser2().getPersistenceManager();
-            }
-        }
-        if (token != null) {
-            if (token.contains("2-")) {
-                return PMF.getNnUser2().getPersistenceManager();
-            } else {
-                return PMF.getNnUser1().getPersistenceManager();
-            }
-        }        
-        return PMF.getNnUser1().getPersistenceManager();
+        
+        return getPersistenceManagerFactory(shard, token).getPersistenceManager();
+    }
+    
+    public static PersistenceManager getPersistenceManager(NnUser user) {
+        
+        return getPersistenceManagerFactory(user).getPersistenceManager();
     }
     
     public NnUser save(NnUser user) {
         
-        return save(user, getPersistenceManagerFactory(user.getShard(), user.getToken()));
+        return save(user, getPersistenceManagerFactory(user));
     }
     
     public NnUser findAuthenticatedUser(String email, String password, short shard) {

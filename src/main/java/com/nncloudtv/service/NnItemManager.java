@@ -1,5 +1,7 @@
 package com.nncloudtv.service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -7,6 +9,7 @@ import java.util.logging.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnItemDao;
+import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -52,10 +55,13 @@ public class NnItemManager {
     
     public Object composeEachItem(NnItem item) {
         
+        Date terminateDate = item.getTerminateDate();
+        
         String[] obj = {
                 String.valueOf(item.getChannelId()),
                 item.getProductIdRef(),
                 String.valueOf(item.getBillingPlatform()),
+                terminateDate == null ? "" : String.valueOf(terminateDate.getTime()),
         };
         
         return NnStringUtil.getDelimitedStr(obj);
@@ -98,5 +104,46 @@ public class NnItemManager {
         if (mso == null || channel == null || os == null) { return null; }
         
         return dao.findOne(mso.getId(), os2Platform(os), channel.getId());
+    }
+    
+    public List<NnItem> findTerminateItems() {
+        
+        return dao.findTerminateItems();
+    }
+    
+    public NnItem terminate(NnItem item) {
+        
+        if (item == null || item.getBillingPlatform() != NnItem.GOOGLEPLAY) return null;
+        
+        List<NnPurchase> purchases = NNF.getPurchaseMngr().findByItem(item);
+        
+        for (NnPurchase purchase : purchases) {
+            
+            if (purchase.isVerified() && purchase.getStatus() == NnPurchase.ACTIVE) {
+                
+                try {
+                    
+                    GooglePlayLib.cancelSubscriptionPurchase(purchase);
+                    log.info("cancel purchase = " + purchase.getId());
+                    
+                } catch (IOException e) {
+                    
+                    log.warning("IOException skip");
+                    
+                } catch (GeneralSecurityException e) {
+                    
+                    log.warning("SecurityException skip");
+                }
+            }
+            
+        }
+        
+        item.setStatus(NnItem.TERMINATED);
+        return save(item);
+    }
+    
+    public NnItem findById(String itemIdStr) {
+        
+        return dao.findById(itemIdStr);
     }
 }

@@ -953,7 +953,7 @@ public class NnChannelManager {
         if (user == null) return;
         
         // due to time consuming, always run it in background
-        (new Thread() {
+        NNF.getScheduler().execute(new Runnable() {
             public void run() {
                 long before = NnDateUtil.timestamp();
                 System.out.println("[reorder_channels] start");
@@ -969,8 +969,7 @@ public class NnChannelManager {
                 save(channels, false);
                 System.out.println(String.format("[reorder_channels] ended (%d ms)", NnDateUtil.timestamp() - before));
             }
-        }).start();
-        
+        });
     }
     
     public void renewUpdateDateOnly(NnChannel channel) {

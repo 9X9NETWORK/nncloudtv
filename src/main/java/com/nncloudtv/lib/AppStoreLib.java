@@ -49,6 +49,7 @@ public class AppStoreLib {
             }
             JSONObject json = new JSONObject(jsonStr);
             int status = json.getInt("status");
+            purchase.setStatus((short) status);
             log.info("appstore resturn status = " + status);
             if (status == 21007) {
                 log.info("try sandbox");

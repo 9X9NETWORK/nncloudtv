@@ -12,25 +12,17 @@ import com.nncloudtv.lib.PMF;
 import com.nncloudtv.model.NnUser;
 import com.nncloudtv.model.NnUserPref;
 
-public class NnUserPrefDao extends GenericDao<NnUserPref> {
+public class NnUserPrefDao extends ShardedDao<NnUserPref> {
 
     protected static final Logger log = Logger.getLogger(NnUserPref.class.getName());
     
     public NnUserPrefDao() {
         super(NnUserPref.class);
-    }    
-        
-    private PersistenceManager getPersistenceManager(NnUser user) {
-        if (user.getShard() == 1) {
-            return PMF.getNnUser1().getPersistenceManager();
-        } else {
-            return PMF.getNnUser2().getPersistenceManager();
-        }
     }
     
     public NnUserPref save(NnUser user, NnUserPref pref) {
         if (pref == null) {return null;}
-        PersistenceManager pm = this.getPersistenceManager(user);
+        PersistenceManager pm = NnUserDao.getPersistenceManager(user);
         try {
             pm.makePersistent(pref);
             pref = pm.detachCopy(pref);
@@ -39,14 +31,14 @@ public class NnUserPrefDao extends GenericDao<NnUserPref> {
         }
         return pref;
     }
-
+    
     public List<NnUserPref> findByUser(NnUser user) {
         List<NnUserPref> pref = new ArrayList<NnUserPref>();
-        PersistenceManager pm = this.getPersistenceManager(user);
+        PersistenceManager pm = NnUserDao.getPersistenceManager(user);
         try {
             Query query = pm.newQuery(NnUserPref.class);
             query.setFilter("userId == userIdParam && msoId == msoIdParam");
-            query.declareParameters("long userIdParam, long msoIdParam");        
+            query.declareParameters("long userIdParam, long msoIdParam");
             @SuppressWarnings("unchecked")
             List<NnUserPref> results = (List<NnUserPref>) query.execute(user.getId(), user.getMsoId());
             pref = (List<NnUserPref>) pm.detachCopyAll(results);
@@ -54,9 +46,9 @@ public class NnUserPrefDao extends GenericDao<NnUserPref> {
         } finally {
             pm.close();
         }
-        return pref;        
-    }    
-
+        return pref;
+    }
+    
     public NnUserPref findByUserAndItem(NnUser user, String item) {
         NnUserPref pref = null;
         PersistenceManager pm = PMF.getNnUser1().getPersistenceManager();
@@ -75,11 +67,11 @@ public class NnUserPrefDao extends GenericDao<NnUserPref> {
         }
         return pref;
     }
-
-    public void delete(NnUser user, NnUserPref pref) {        
-        if (pref == null) return;                    
+    
+    public void delete(NnUser user, NnUserPref pref) {
+        if (pref == null) return;
         
-        PersistenceManager pm = this.getPersistenceManager(user);        
+        PersistenceManager pm = NnUserDao.getPersistenceManager(user);
         try {
             pm.deletePersistent(pref);
         } finally {

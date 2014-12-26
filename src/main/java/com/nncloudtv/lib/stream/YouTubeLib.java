@@ -410,6 +410,7 @@ public class YouTubeLib  implements StreamLib {
         try {
             Process process = Runtime.getRuntime().exec(cmd);
             // piping error message to stdout
+            
             PipingTask pipingTask = new PipingTask(process.getErrorStream(), System.out, 0);
             pipingTask.start();
             

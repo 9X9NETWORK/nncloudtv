@@ -2,13 +2,12 @@ package com.nncloudtv.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
@@ -37,30 +36,18 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     }
     
     public void evictAll() {
-        try {
-            DataStoreCache cache = PMF.get(daoClass).getDataStoreCache();
-            if (cache != null)
-                cache.evictAll();
-        } catch (IllegalArgumentException e) {
-            log.warning("db is sharded");
-        }
+        
+        DataStoreCache cache = PMF.get(daoClass).getDataStoreCache();
+        if (cache != null)
+            cache.evictAll();
         resetSharedPersistenceMngr();
     }
     
     public void evict(T dao) {
         
-        evict(dao, PMF.get(daoClass));
-    }
-    
-    public void evict(T dao, PersistenceManagerFactory pmf) {
-        
-        try {
-            DataStoreCache cache = pmf.getDataStoreCache();
-            if (cache != null)
-                cache.evict(dao);
-        } catch (IllegalArgumentException e) {
-            log.warning("db is sharded");
-        }
+        DataStoreCache cache = PMF.get(daoClass).getDataStoreCache();
+        if (cache != null)
+            cache.evict(dao);
         resetSharedPersistenceMngr();
     }
     
@@ -70,7 +57,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         resetSharedPersistenceMngr();
     }
     
-    private PersistenceManager getSharedPersistenceMngr() {
+    private synchronized PersistenceManager getSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr == null || sharedPersistenceMngr.isClosed()) {
             
@@ -79,7 +66,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
             sharedPersistenceMngr.setIgnoreCache(true);
             System.out.println(String.format("[dao] create sharedPersistenceMngr (%s)", daoClassName));
             
-            NNF.getScheduler().schedule(this, new Date(NnDateUtil.timestamp() + DAO_INTERVAL));
+            NNF.getScheduler().schedule(this, DAO_INTERVAL, TimeUnit.MILLISECONDS);
         }
         
         return sharedPersistenceMngr;
@@ -90,10 +77,10 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         return PMF.get(daoClass).getPersistenceManager();
     }
     
-    private void resetSharedPersistenceMngr() {
+    private synchronized void resetSharedPersistenceMngr() {
         
         if (sharedPersistenceMngr != null) {
-            synchronized (sharedPersistenceMngr) {
+            synchronized(sharedPersistenceMngr) {
                 System.out.println(String.format("[dao] reset sharedPersistenceMngr (%s)", daoClassName));
                 if (!sharedPersistenceMngr.isClosed())
                     sharedPersistenceMngr.close();
@@ -120,13 +107,8 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     
     public T save(T dao) {
         
-        return save(dao, PMF.get(daoClass));
-    }
-    
-    protected T save(T dao, PersistenceManagerFactory pmf) {
-        
         if (dao == null) return null;
-        PersistenceManager pm = pmf.getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             dao = pm.detachCopy(pm.makePersistent(dao));
         } finally {
@@ -136,7 +118,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         if (dao.isCachable())
             resetCache(dao);
         else
-            evict(dao, pmf);
+            evict(dao);
         return dao;
     }
     
@@ -281,16 +263,11 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         return results;
     }
     
+    @SuppressWarnings("unchecked")
     public List<T> findAllByIds(Collection<Long> ids) {
         
-        return findAllByIds(ids, PMF.get(daoClass));
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<T> findAllByIds(Collection<Long> ids, PersistenceManagerFactory pmf) {
-        
         List<T> results = new ArrayList<T>();
-        PersistenceManager pm = pmf.getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             Query query = pm.newQuery(daoClass, ":p.contains(id)");
             results = (List<T>) pm.detachCopyAll((List<T>) query.execute(ids));
@@ -324,26 +301,19 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
             return dao;
         }
         
-        dao = findById(id, PMF.get(daoClass));
-        
-        if (dao != null && dao.isCachable()) {
-            CounterFactory.increment("MISS " + cacheKey);
-            CacheFactory.set(cacheKey, dao, CacheFactory.EXP_ONE_DAY);
-        }
-        
-        return dao;
-    }
-    
-    protected T findById(long id, PersistenceManagerFactory pmf) {
-        
-        T dao = null;
-        PersistenceManager pm = pmf.getPersistenceManager();
+        PersistenceManager pm = getPersistenceManager();
         try {
             dao = (T) pm.detachCopy((T) pm.getObjectById(daoClass, id));
         } catch (JDOObjectNotFoundException e) {
         } finally {
             pm.close();
         }
+        
+        if (dao != null && dao.isCachable()) {
+            CounterFactory.increment("MISS " + cacheKey);
+            CacheFactory.set(cacheKey, dao, CacheFactory.EXP_ONE_DAY);
+        }
+        
         return dao;
     }
     
@@ -365,20 +335,12 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
     
     public List<T> sql(String queryStr) {
         
-        return sql(queryStr, getSharedPersistenceMngr(), false);
+        return sql(queryStr, false);
     }
     
-    public List<T> sql(String queryStr, boolean fine) {
+    public synchronized List<T> sql(String queryStr, boolean fine) {
         
-        return sql(queryStr, getSharedPersistenceMngr(), fine);
-    }
-    
-    protected List<T> sql(String queryStr, PersistenceManager pm) {
-        
-        return sql(queryStr, pm, false);
-    }
-    
-    private List<T> sql(String queryStr, PersistenceManager pm, boolean fine) {
+        PersistenceManager pm = getSharedPersistenceMngr();
         
         synchronized (pm) {
             

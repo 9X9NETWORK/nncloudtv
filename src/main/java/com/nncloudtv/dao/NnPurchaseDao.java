@@ -76,4 +76,22 @@ public class NnPurchaseDao extends GenericDao<NnPurchase> {
         }
         return detached;
     }
+    
+    public List<NnPurchase> findByItemId(long itemId) {
+        
+        List<NnPurchase> detached = new ArrayList<NnPurchase>();
+        PersistenceManager pm = getPersistenceManager();
+        try {
+            Query query = pm.newQuery(NnPurchase.class);
+            query.setFilter("itemId == itemIdParam");
+            query.declareParameters("String itemIdParam");
+            @SuppressWarnings("unchecked")
+            List<NnPurchase> results = (List<NnPurchase>) query.execute(itemId);
+            detached = (List<NnPurchase>) pm.detachCopyAll(results);
+            query.closeAll();
+        } finally {
+            pm.close();
+        }
+        return detached;
+    }
 }

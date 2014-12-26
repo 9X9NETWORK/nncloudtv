@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnEpisodeDao;
+import com.nncloudtv.exception.ZeroLengthException;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnNetUtil;
@@ -58,6 +59,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -249,7 +251,7 @@ public class ApiContent extends ApiGeneric {
             return;
         }
         
-        resp.setContentType("video/mp2t");;
+        resp.setContentType("video/mp2t");
         if (!req.getMethod().equalsIgnoreCase("HEAD")) {
             try {
                 
@@ -260,6 +262,10 @@ public class ApiContent extends ApiGeneric {
                 log.info(e.getClass().getName());
                 log.info(e.getMessage());
                 internalError(resp);
+                
+            } catch (ZeroLengthException e) {
+                
+                notFound(resp);
             }
         }
     }
@@ -981,12 +987,12 @@ public class ApiContent extends ApiGeneric {
         
         if (response != null && response.trim().equalsIgnoreCase("Ack")) {
             
-            channel.setReadonly(false);
-            NNF.getChannelMngr().save(channel);
-            
             msgResponse(resp, OK);
             
         } else {
+            
+            channel.setReadonly(false);
+            NNF.getChannelMngr().save(channel);
             
             msgResponse(resp, "NOT_OK");
         }
@@ -1099,8 +1105,8 @@ public class ApiContent extends ApiGeneric {
         } else {
             Collections.sort(episodes, NnEpisodeManager.getComparator("seq"));
         }
-        if (episodes.size() > 150)
-            episodes = episodes.subList(0, 150); // trim
+        if (episodes.size() > PlayerApiService.PAGING_ROWS)
+            episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS); // trim
         
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

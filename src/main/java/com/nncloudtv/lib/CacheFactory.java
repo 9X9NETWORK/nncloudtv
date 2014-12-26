@@ -45,7 +45,7 @@ public class CacheFactory {
             cache = new MemcachedClient(addr) {
                 @Override
                 protected void finalize() throws Throwable {
-                    NnLogUtil.logFinalize(getClass().getName());
+                    NnLogUtil.logFinalize(MemcachedClient.class.getName());
                 }
             };
             cache.set(key, EXP_SHORT, addr);
@@ -96,7 +96,7 @@ public class CacheFactory {
             newCache = isRunning ? new MemcachedClient(memcacheServers) {
                 @Override
                 protected void finalize() throws Throwable {
-                    NnLogUtil.logFinalize(getClass().getName());
+                    NnLogUtil.logFinalize(MemcachedClient.class.getName());
                 }
             } : null;
         } catch (IOException e) {
@@ -249,7 +249,7 @@ public class CacheFactory {
     
     public static String getNnChannelPrefKey(long channelId, String item) {
         
-        return String.format("nnchannelpref(%d)(%s)", channelId, item);
+        return String.format("NnChannelPref(%d,%s)", channelId, item);
     }
     
     public static String getMsoConfigKey(String item) {

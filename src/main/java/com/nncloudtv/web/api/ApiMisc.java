@@ -35,6 +35,7 @@ import com.google.api.client.util.ArrayMap;
 import com.google.gdata.data.youtube.PlaylistEntry;
 import com.google.gdata.data.youtube.PlaylistFeed;
 import com.google.gdata.util.ServiceException;
+import com.nncloudtv.exception.ZeroLengthException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
 import com.nncloudtv.lib.CookieHelper;
@@ -276,18 +277,18 @@ public class ApiMisc extends ApiGeneric {
             return null;
         }
         
-        (new Thread() {
+        NNF.getScheduler().execute(new Runnable() {
             public void run() {
-                log.info("I am a thread.");
+                log.info("[1] I am a thread.");
                 try {
                     Thread.sleep(5000);
-                    log.info("I am still awake.");
+                    log.info("[2] I am still awake.");
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
                 }
-                log.info("bye~");
+                log.info("[3] bye~");
             }
-        }).start();
+        });
         
         if (req.getMethod().equalsIgnoreCase("POST")) {
             resp.setStatus(HTTP_201);
@@ -583,8 +584,10 @@ public class ApiMisc extends ApiGeneric {
                     
                     duration = (long) 0;
                     for (PlaylistEntry entry : entries) {
-                        
-                        duration += entry.getMediaGroup().getDuration();
+                        try {
+                            duration += entry.getMediaGroup().getDuration();
+                        } catch(NullPointerException e) {
+                        }
                     }
                 }
                 log.info("playlist duration = " + duration);
@@ -592,10 +595,11 @@ public class ApiMisc extends ApiGeneric {
                 writer.println("#EXT-X-TARGETDURATION:" + duration);
                 writer.println("#EXT-X-MEDIA-SEQUENCE:1");
                 for (PlaylistEntry entry : entries) {
-                    
+                    String title = entry.getTitle().getPlainText();
+                    if (title == null || title.isEmpty() || title.equalsIgnoreCase("Deleted video"))
+                        continue;
                     String href = entry.getHtmlLink().getHref();
-                    
-                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle());
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + title);
                     writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
                 }
                 writer.println("#EXT-X-ENDLIST");
@@ -603,9 +607,8 @@ public class ApiMisc extends ApiGeneric {
                 
                 resp.setContentType(VND_APPLE_MPEGURL);
                 resp.setContentLength(baos.size());
-                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                IOUtils.copy(bais, System.out);
-                IOUtils.copy(bais, resp.getOutputStream());
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), System.out);
+                IOUtils.copy(new ByteArrayInputStream(baos.toByteArray()), resp.getOutputStream());
                 
             } catch (IOException e) {
                 
@@ -644,6 +647,10 @@ public class ApiMisc extends ApiGeneric {
             
             log.info(e.getClass().getName());
             log.info(e.getMessage());
+            
+        } catch (ZeroLengthException e) {
+            
+            notFound(resp);
         }
     }
     
