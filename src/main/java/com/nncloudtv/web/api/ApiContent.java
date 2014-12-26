@@ -20,6 +20,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -1081,7 +1082,7 @@ public class ApiContent extends ApiGeneric {
     
     // TODO cache
     @RequestMapping(value = "channels/{channelId}.m3u8", method = RequestMethod.GET)
-    public void channelStream(HttpServletResponse resp, HttpServletRequest req,
+    public void channelM3U8(HttpServletResponse resp, HttpServletRequest req,
             @PathVariable("channelId") String channelIdStr) {
         
         Long channelId = NnStringUtil.evalLong(channelIdStr);
@@ -1382,8 +1383,51 @@ public class ApiContent extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
-    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
+    @RequestMapping(value = "episodes/{episodeId}.ts", method = RequestMethod.GET)
     public void episodeStream(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
+        
+        Long episodeId = null;
+        try {
+            episodeId = Long.valueOf(episodeIdStr);
+        } catch (NumberFormatException e) {
+        }
+        if (episodeId == null) {
+            notFound(resp, INVALID_PATH_PARAM);
+            return;
+        }
+        NnEpisode episode = NNF.getEpisodeMngr().findById(episodeId);
+        if (episode == null) {
+            
+            notFound(resp, EPISODE_NOT_FOUND);
+            return;
+        }
+        List<NnProgram> programs = NNF.getProgramMngr().findByEpisodeId(episodeId);
+        
+        resp.setContentType("video/mp2t");
+        if (!req.getMethod().equalsIgnoreCase("HEAD")) {
+            try {
+                
+                ServletOutputStream out = resp.getOutputStream();
+                
+                for (NnProgram program : programs) {
+                    
+                    try {
+                        StreamFactory.streaming(program.getFileUrl(), out);
+                    } catch (ZeroLengthException e) {
+                    }
+                }
+            } catch (IOException e) {
+                
+                log.info(e.getClass().getName());
+                log.info(e.getMessage());
+                internalError(resp);
+                return;
+            }
+        }
+    }
+    
+    @RequestMapping(value = "episodes/{episodeId}.m3u8", method = RequestMethod.GET)
+    public void episodeM3U8(HttpServletRequest req, HttpServletResponse resp, @PathVariable("episodeId") String episodeIdStr) {
         
         ApiContext ctx = new ApiContext(req);
         Long episodeId = null;
