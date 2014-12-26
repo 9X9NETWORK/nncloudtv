@@ -584,8 +584,10 @@ public class ApiMisc extends ApiGeneric {
                     
                     duration = (long) 0;
                     for (PlaylistEntry entry : entries) {
-                        
-                        duration += entry.getMediaGroup().getDuration();
+                        try {
+                            duration += entry.getMediaGroup().getDuration();
+                        } catch(NullPointerException e) {
+                        }
                     }
                 }
                 log.info("playlist duration = " + duration);
@@ -593,10 +595,11 @@ public class ApiMisc extends ApiGeneric {
                 writer.println("#EXT-X-TARGETDURATION:" + duration);
                 writer.println("#EXT-X-MEDIA-SEQUENCE:1");
                 for (PlaylistEntry entry : entries) {
-                    
+                    String title = entry.getTitle().getPlainText();
+                    if (title == null || title.isEmpty() || title.equalsIgnoreCase("Deleted video"))
+                        continue;
                     String href = entry.getHtmlLink().getHref();
-                    
-                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + entry.getTitle().getPlainText());
+                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + title);
                     writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
                 }
                 writer.println("#EXT-X-ENDLIST");
