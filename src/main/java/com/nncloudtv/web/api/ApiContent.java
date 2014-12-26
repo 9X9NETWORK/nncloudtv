@@ -59,6 +59,7 @@ import com.nncloudtv.service.NnChannelManager;
 import com.nncloudtv.service.NnChannelPrefManager;
 import com.nncloudtv.service.NnEpisodeManager;
 import com.nncloudtv.service.NnUserProfileManager;
+import com.nncloudtv.service.PlayerApiService;
 import com.nncloudtv.service.TitleCardManager;
 import com.nncloudtv.web.json.cms.Category;
 
@@ -1104,8 +1105,8 @@ public class ApiContent extends ApiGeneric {
         } else {
             Collections.sort(episodes, NnEpisodeManager.getComparator("seq"));
         }
-        if (episodes.size() > 150)
-            episodes = episodes.subList(0, 150); // trim
+        if (episodes.size() > PlayerApiService.PAGING_ROWS)
+            episodes = episodes.subList(0, PlayerApiService.PAGING_ROWS); // trim
         
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
