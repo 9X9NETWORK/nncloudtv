@@ -1124,7 +1124,7 @@ public class ApiContent extends ApiGeneric {
             for (NnEpisode episode : episodes) {
                 
                 writer.println("#EXTINF:" + episode.getDuration() + "," + episode.getName());
-                writer.println(ctx.getRoot() + "/api/episodes/" + episode.getId() + ".m3u8");
+                writer.println(ctx.getRoot() + "/api/episodes/" + episode.getId() + ".ts");
             }
             writer.println("#EXT-X-ENDLIST");
             writer.flush();
