@@ -1023,7 +1023,7 @@ public class ApiContent extends ApiGeneric {
         SysTag sysTag = NNF.getSysTagMngr().findById(categoryId);
         if (sysTag == null) {
             
-            badRequest(resp, "Category Not Found");
+            badRequest(resp, CATEGORY_NOT_FOUND);
             return null;
         }
         
@@ -1406,7 +1406,7 @@ public class ApiContent extends ApiGeneric {
         resp.setContentType("video/mp2t");
         if (!req.getMethod().equalsIgnoreCase("HEAD")) {
             try {
-                
+                int zeroLengthCnt = 0;
                 ServletOutputStream out = resp.getOutputStream();
                 
                 for (NnProgram program : programs) {
@@ -1414,8 +1414,15 @@ public class ApiContent extends ApiGeneric {
                     try {
                         StreamFactory.streaming(program.getFileUrl(), out);
                     } catch (ZeroLengthException e) {
+                        zeroLengthCnt += 1;
                     }
                 }
+                
+                if (zeroLengthCnt > 0 && zeroLengthCnt == programs.size()) {
+                    notFound(resp);
+                    return;
+                }
+                
             } catch (IOException e) {
                 
                 log.info(e.getClass().getName());
