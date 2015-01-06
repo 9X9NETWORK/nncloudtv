@@ -243,7 +243,10 @@ public class MsoManager {
         
         String ad = configMngr.getAdConfig(mso, os);
         if (ad != null) {
-            result += PlayerApiService.assembleKeyValue("ad", ad);
+            result += PlayerApiService.assembleKeyValue("ad-combo", ad);
+    		String[] split = ad.split("-");
+    		if (split.length > 0)
+                result += PlayerApiService.assembleKeyValue("ad", split[0]);    			
             if (os.equals(ApiContext.OS_IOS) && adIosType != null)
             	result += PlayerApiService.assembleKeyValue("ad-type", adIosType);
         }
