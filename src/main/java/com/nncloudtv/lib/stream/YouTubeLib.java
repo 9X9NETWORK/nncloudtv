@@ -358,10 +358,17 @@ public class YouTubeLib  implements StreamLib {
     
     public String getHtml5DirectVideoUrl(String urlStr) {
         
-        return getDirectVideoUrl(urlStr);
+        return getYouTubeDLUrl(urlStr);
     }
     
     public String getDirectVideoUrl(String urlStr) {
+        
+        if (urlStr == null) return null;
+        
+        return getYouTubeDLUrl(urlStr);
+    }
+    
+    public static String getYouTubeDLUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
         
@@ -399,7 +406,7 @@ public class YouTubeLib  implements StreamLib {
         return null;
     }
     
-    public static InputStream youtubeDL(String urlStr) {
+    public static InputStream getYouTubeDLStream(String urlStr) {
         
         if (urlStr == null) { return null; }
         
@@ -425,7 +432,7 @@ public class YouTubeLib  implements StreamLib {
     
     public InputStream getDirectVideoStream(String urlStr) {
         
-        return youtubeDL(urlStr);
+        return getYouTubeDLStream(urlStr);
     }
     
     //https://gdata.youtube.com/feeds/api/playlists/nSXHekhWES_OhBZcFPWQ1f5q-BKHXx-O?v=2&alt=json

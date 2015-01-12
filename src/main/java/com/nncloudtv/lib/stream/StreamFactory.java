@@ -34,6 +34,7 @@ public class StreamFactory {
                 new UstreamLib(),
                 new LiveStreamLib(),
                 new DailyMotionLib(),
+                new YahooScreenLib(),
                 new S3Helper(),
                 new HttpsHelper(),
         };
