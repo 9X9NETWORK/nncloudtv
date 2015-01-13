@@ -974,8 +974,7 @@ public class NnProgramManager {
     private String getNotPipedProgramInfoData(String str) {
         
         if (str == null) return null;
-        str = str.replaceAll("\\|", "\\\\|");
-        return str;
+        return str.replaceAll("\\|", " ");
     }
     
     public Object composeEachEpisodeInfo(

@@ -335,13 +335,13 @@ public class ApiContent extends ApiGeneric {
         // name
         String name = ctx.getParam("name");
         if (name != null) {
-            program.setName(NnStringUtil.htmlSafeAndTruncated(name));
+            program.setName(NnStringUtil.truncateUTF8(name));
         }
         
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null) {
-            program.setIntro(NnStringUtil.htmlSafeAndTruncated(intro));
+            program.setIntro(NnStringUtil.truncateUTF8(intro));
         }
         
         // imageUrl
@@ -842,13 +842,13 @@ public class ApiContent extends ApiGeneric {
         // name
         String name = ctx.getParam("name");
         if (name != null) {
-            channel.setName(NnStringUtil.htmlSafeAndTruncated(name));
+            channel.setName(NnStringUtil.truncateUTF8(name));
         }
         
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null) {
-            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
+            channel.setIntro(NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // lang
@@ -1547,13 +1547,13 @@ public class ApiContent extends ApiGeneric {
         // name
         String name = ctx.getParam("name");
         if (name != null) {
-            episode.setName(NnStringUtil.htmlSafeAndTruncated(name));
+            episode.setName(NnStringUtil.truncateUTF8(name));
         }
         
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null) {
-            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
+            episode.setIntro(NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // contentType
@@ -1729,12 +1729,12 @@ public class ApiContent extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
-        name = NnStringUtil.htmlSafeAndTruncated(name);
+        name = NnStringUtil.truncateUTF8(name);
         
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null && intro.length() > 0) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
+            intro = NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // contentType

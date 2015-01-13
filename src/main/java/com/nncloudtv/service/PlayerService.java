@@ -99,24 +99,24 @@ public class PlayerService {
     }
     
     private String prepareFb(String text, int type) {
-        //0 = name, 1 = description, 2 = image
+        //0 = name, 1 = description, 2 = image url, 3 = share url
         if (type == 1) {
-        	 if (text == null || text.length() == 0) {
-        		 log.info("make fb description empty space with &nbsp;");
-        		 return "&nbsp;";
-        	 }
-            return PlayerService.revertHtml(text);
+            if (text == null || text.length() == 0) {
+                log.info("make fb description empty space with &nbsp;");
+                return "&nbsp;";
+            }
+            return NnStringUtil.htmlSafeChars(text);
         }
         if (type == 2) {
             if (text == null || text.length() == 0) {
-                return PlayerService.revertHtml(" ");
+                return " ";
             }
-            return PlayerService.revertHtml(text);
+            return NnStringUtil.htmlSafeChars(text);
         }
         if (type == 3) {
             return NnStringUtil.htmlSafeChars(text);
         }
-        return PlayerService.revertHtml(text); 
+        return NnStringUtil.htmlSafeChars(text); 
     }
     
     public Model prepareEpisode(Model model, String pid,
@@ -127,35 +127,29 @@ public class PlayerService {
             NnProgram program = NNF.getProgramMngr().findById(Long.valueOf(pid));
             if (program != null) {
                 log.info("nnprogram found = " + pid);
-                model.addAttribute(META_EPISODE_TITLE, program.getName());
-                model.addAttribute("crawlEpThumb1", program.getImageUrl());
-                model.addAttribute(META_TITLE, this.prepareFb(program.getName(), 0));
-                model.addAttribute(META_DESCRIPTION, this.prepareFb(program.getIntro(), 1));
-                model.addAttribute(META_THUMBNAIL, this.prepareFb(program.getImageUrl(), 2));
-                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, null, "" + program.getChannelId(), pid), 3));
+                model.addAttribute(META_EPISODE_TITLE, prepareFb(program.getName(),     0));
+                model.addAttribute("crawlEpThumb1",    prepareFb(program.getImageUrl(), 2));
+                model.addAttribute(META_TITLE,         prepareFb(program.getName(),     0));
+                model.addAttribute(META_DESCRIPTION,   prepareFb(program.getIntro(),    1));
+                model.addAttribute(META_THUMBNAIL,     prepareFb(program.getImageUrl(), 2));
+                model.addAttribute(META_URL,           prepareFb(NnStringUtil.getSharingUrl(false, null, "" + program.getChannelId(), pid), 3));
             }
         } else if (pid.matches("e[0-9]+")){
             String eid = pid.replace("e", "");
             NnEpisode episode = NNF.getEpisodeMngr().findById(Long.valueOf(eid));
             if (episode != null) {
                 log.info("nnepisode found = " + eid);
-                model.addAttribute(META_EPISODE_TITLE, episode.getName());
-                model.addAttribute("crawlEpThumb1", episode.getImageUrl());
-                model.addAttribute(META_TITLE, this.prepareFb(episode.getName(), 0));
-                model.addAttribute(META_DESCRIPTION, this.prepareFb(episode.getIntro(), 1));
-                model.addAttribute(META_THUMBNAIL, this.prepareFb(episode.getImageUrl(), 2));
-                model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, mso, episode.getChannelId(), episode.getId()), 3));
+                model.addAttribute(META_EPISODE_TITLE, prepareFb(episode.getName(),     0));
+                model.addAttribute("crawlEpThumb1",    prepareFb(episode.getImageUrl(), 2));
+                model.addAttribute(META_TITLE,         prepareFb(episode.getName(),     0));
+                model.addAttribute(META_DESCRIPTION,   prepareFb(episode.getIntro(),    1));
+                model.addAttribute(META_THUMBNAIL,     prepareFb(episode.getImageUrl(), 2));
+                model.addAttribute(META_URL,           prepareFb(NnStringUtil.getSharingUrl(false, mso, episode.getChannelId(), episode.getId()), 3));
             }
-            /*
-            Map<String, String> entry = YouTubeLib.getYouTubeVideoEntry(pid);
-            model.addAttribute(META_NAME, NnStringUtil.htmlSafeChars(entry.get("title")));
-            model.addAttribute(META_DESCRIPTION, NnStringUtil.htmlSafeChars(entry.get("description")));
-            model.addAttribute(META_IMAGE, NnStringUtil.htmlSafeChars(entry.get("thumbnail")));
-            */
         }
         return model;
     }
-
+    
     public Model prepareChannel(Model model, String cid,
             String mso, HttpServletResponse resp) {
         
@@ -165,16 +159,16 @@ public class PlayerService {
         NnChannel channel = NNF.getChannelMngr().findById(Long.valueOf(cid));
         if (channel != null) {
             log.info("found channel = " + cid);
-            model.addAttribute(META_CHANNEL_TITLE, channel.getName());
-            model.addAttribute(META_VIDEO_THUMBNAIL, channel.getOneImageUrl());
-            model.addAttribute(META_TITLE, this.prepareFb(channel.getName(), 0));
-            model.addAttribute(META_DESCRIPTION, this.prepareFb(channel.getIntro(), 1));
-            model.addAttribute(META_THUMBNAIL, this.prepareFb(channel.getOneImageUrl(), 2));
-            model.addAttribute(META_URL, this.prepareFb(NnStringUtil.getSharingUrl(false, mso, channel.getId(), null), 3));
+            model.addAttribute(META_CHANNEL_TITLE,   prepareFb(channel.getName(),        0));
+            model.addAttribute(META_VIDEO_THUMBNAIL, prepareFb(channel.getOneImageUrl(), 2));
+            model.addAttribute(META_TITLE,           prepareFb(channel.getName(),        0));
+            model.addAttribute(META_DESCRIPTION,     prepareFb(channel.getIntro(),       1));
+            model.addAttribute(META_THUMBNAIL,       prepareFb(channel.getOneImageUrl(), 2));
+            model.addAttribute(META_URL,             prepareFb(NnStringUtil.getSharingUrl(false, mso, channel.getId(), null), 3));
         }
         return model;
     }
-
+    
     public Model preparePlayer(Model model, String js, String jsp, HttpServletRequest req) {
         model.addAttribute("js", "");
         if (js != null && js.length() > 0) {
@@ -290,15 +284,15 @@ public class PlayerService {
             NnChannel c = NNF.getChannelMngr().findById(Long.parseLong(ch));
             if (c != null) {
                 String sharingUrl = NnStringUtil.getSharingUrl(false, context, ch, (ep == null ? youtubeEp : ep));
-                model.addAttribute(META_URL, this.prepareFb(sharingUrl, 3));
-                model.addAttribute(META_CHANNEL_TITLE, c.getName());
-                //in case not enough episode data, use channel for default  
-                model.addAttribute(META_EPISODE_TITLE, c.getName());
+                model.addAttribute(META_URL,             prepareFb(sharingUrl, 3));
+                model.addAttribute(META_CHANNEL_TITLE,   c.getName());
+                //in case not enough episode data, use channel for default
+                model.addAttribute(META_EPISODE_TITLE,   c.getName());
                 model.addAttribute(META_VIDEO_THUMBNAIL, c.getOneImageUrl());
-                model.addAttribute("crawlEpThumb1", c.getOneImageUrl());                
-                model.addAttribute(META_TITLE, this.prepareFb(c.getName(), 0));
-                model.addAttribute(META_DESCRIPTION, this.prepareFb(c.getIntro(), 1));                
-                model.addAttribute(META_THUMBNAIL, this.prepareFb(c.getOneImageUrl(), 2));  
+                model.addAttribute("crawlEpThumb1",      c.getOneImageUrl());
+                model.addAttribute(META_TITLE,           prepareFb(c.getName(), 0));
+                model.addAttribute(META_DESCRIPTION,     prepareFb(c.getIntro(), 1));
+                model.addAttribute(META_THUMBNAIL,       prepareFb(c.getOneImageUrl(), 2));
                 
                 if (ep != null && ep.startsWith("e")) {
                     ep = ep.replaceFirst("e", "");
@@ -306,18 +300,18 @@ public class PlayerService {
                     int i = 1;                    
                     for (NnEpisode e : episodes) {
                         if (i > 1 && i < 4) {
-                            model.addAttribute("crawlEpThumb" + i, e.getImageUrl());
+                            model.addAttribute("crawlEpThumb" + i, prepareFb(e.getImageUrl(), 2));
                             System.out.println("crawlEpThumb" + i + ":" + e.getImageUrl());
                             i++;
                         }
                         if (e.getId() == Long.parseLong(ep)) {
-                            model.addAttribute(META_VIDEO_THUMBNAIL, e.getImageUrl());
-                            model.addAttribute(META_EPISODE_TITLE, e.getName());
-                            model.addAttribute("crawlEpThumb" + i, e.getImageUrl());
+                            model.addAttribute(META_VIDEO_THUMBNAIL, prepareFb(e.getImageUrl(), 2));
+                            model.addAttribute(META_EPISODE_TITLE,   prepareFb(e.getName(),     0));
+                            model.addAttribute("crawlEpThumb" + i,   prepareFb(e.getImageUrl(), 2));
                             if (episodeShare) {
-                               model.addAttribute(META_TITLE, this.prepareFb(e.getName(), 0));   
-                               model.addAttribute(META_DESCRIPTION, this.prepareFb(e.getIntro(), 1));
-                               model.addAttribute(META_THUMBNAIL, this.prepareFb(e.getImageUrl(), 2));
+                               model.addAttribute(META_TITLE,       prepareFb(e.getName(),     0));
+                               model.addAttribute(META_DESCRIPTION, prepareFb(e.getIntro(),    1));
+                               model.addAttribute(META_THUMBNAIL,   prepareFb(e.getImageUrl(), 2));
                             }
                             i++;
                         }
@@ -333,18 +327,18 @@ public class PlayerService {
                             ep = String.valueOf(programs.get(0).getId());
                         for (NnProgram p : programs) {
                             if (i > 1 && i < 4) {
-                                model.addAttribute("crawlEpThumb" + i, p.getImageUrl());
+                                model.addAttribute("crawlEpThumb" + i, prepareFb(p.getImageUrl(), 2));
                                 System.out.println("crawlEpThumb" + i + ":" + p.getImageUrl());
                                 i++;
                             }
                             if (p.getId() == Long.parseLong(ep)) {
-                                model.addAttribute(META_VIDEO_THUMBNAIL, p.getImageUrl());
-                                model.addAttribute(META_EPISODE_TITLE, p.getName());
-                                model.addAttribute("crawlEpThumb" + i, p.getImageUrl());
+                                model.addAttribute(META_VIDEO_THUMBNAIL, prepareFb(p.getImageUrl(), 2));
+                                model.addAttribute(META_EPISODE_TITLE,   prepareFb(p.getName(),     0));
+                                model.addAttribute("crawlEpThumb" + i,   prepareFb(p.getImageUrl(), 2));
                                 if (episodeShare) {
-                                   model.addAttribute(META_TITLE, this.prepareFb(p.getName(), 0));
-                                   model.addAttribute(META_DESCRIPTION, this.prepareFb(p.getIntro(), 1));
-                                   model.addAttribute(META_THUMBNAIL, this.prepareFb(p.getImageUrl(), 2));
+                                   model.addAttribute(META_TITLE,       prepareFb(p.getName(),     0));
+                                   model.addAttribute(META_DESCRIPTION, prepareFb(p.getIntro(),    1));
+                                   model.addAttribute(META_THUMBNAIL,   prepareFb(p.getImageUrl(), 2));
                                 }
                                 i++;
                             }
@@ -372,12 +366,4 @@ public class PlayerService {
         
         return model;
     }
-    
-    public static String revertHtml(String str) {
-        if (str == null) return null;
-        return str.replace("&gt;", ">")
-                  .replace("&lt;", "<")
-                  .replace("&amp;", "&");
-    }
-    
 }
