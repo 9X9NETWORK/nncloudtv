@@ -389,7 +389,7 @@ public class MsoManager {
             brandInfo += PlayerApiService.assembleKeyValue("acceptLang", acceptLang);
             
             String ad = NNF.getConfigMngr().getAdConfig(mso, os);
-            if (ad != null && ad.equals(MsoConfig.AD_DIRECT_VIDEO)) {
+            if (ad != null && ad.contains(MsoConfig.AD_DIRECT_VIDEO)) {
                 
                 String adKey = CacheFactory.getAdInfoKey(mso, format);
                 String adInfo = null;
