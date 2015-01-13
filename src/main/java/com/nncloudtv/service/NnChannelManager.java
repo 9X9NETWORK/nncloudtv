@@ -357,10 +357,6 @@ public class NnChannelManager {
         if (channel.getUpdateDate() == null) {
             channel.setUpdateDate(now);
         }
-        if (channel.getIntro() != null) {
-            channel.setIntro(channel.getIntro().replaceAll("\n", ""));
-            channel.setIntro(channel.getIntro().replaceAll("\t", " "));
-        }
         if (channel.getName() != null) {
             channel.setName(channel.getName().replaceAll("\n", ""));
             channel.setName(channel.getName().replaceAll("\t", " "));

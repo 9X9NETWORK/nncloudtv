@@ -327,7 +327,7 @@ public class ApiUser extends ApiGeneric {
             badRequest(resp, MISSING_PARAMETER);
             return null;
         }
-        name = NnStringUtil.htmlSafeAndTruncated(name);
+        name = NnStringUtil.truncateUTF8(name);
         
         // intro
         String intro = ctx.getParam("intro");
@@ -376,7 +376,7 @@ public class ApiUser extends ApiGeneric {
         channel.setSeq((short) 0);
         
         if (intro != null) {
-            channel.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
+            channel.setIntro(NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         if (imageUrl != null) {
             channel.setImageUrl(imageUrl);

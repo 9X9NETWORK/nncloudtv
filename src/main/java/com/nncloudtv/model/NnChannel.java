@@ -298,17 +298,17 @@ public class NnChannel implements PersistentModel {
     
     public String getPlayerIntro() {
         String pintro = this.getIntro(); 
-        if (pintro != null)
+        if (pintro != null) {
             pintro = pintro.replaceAll("\\s", " ");
+            pintro = pintro.replaceAll("\\|", " ");
+        }
         return pintro;
     }
     
     public void setIntro(String intro) {
         if (intro != null) {
-            intro = intro.replaceAll("\n", " ");
+            intro = intro.replaceAll("\n", "{BR}");
             intro = intro.replaceAll("\t", " ");
-            //int introLenth = (intro.length() > 256 ? 256 : intro.length()); 
-            //intro = intro.substring(0, introLenth);
         }
         this.intro = intro;
     }

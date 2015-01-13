@@ -111,6 +111,11 @@ public class NnStringUtil {
         return str;
     }
     
+    public static String truncateUTF8(String str) {
+        
+        return truncateUTF8(str, NORMAL_STRING_LENGTH);
+    }
+    
     public static String getDateString(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d, yyyy hh:mm a");
         String result = dateFormat.format(date);
