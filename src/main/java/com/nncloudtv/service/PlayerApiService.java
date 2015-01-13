@@ -1090,7 +1090,7 @@ public class PlayerApiService {
         if (episodeIdStr != null && !episodeIdStr.isEmpty()) {
             
             NnEpisodeManager epMngr = NNF.getEpisodeMngr();
-            NnEpisode episode = epMngr.findById(Long.valueOf(episodeIdStr));
+            NnEpisode episode = epMngr.findById(episodeIdStr.replaceAll("^e", ""));
             
             if (episode != null && episode.getSeq() > 0) {
                 
