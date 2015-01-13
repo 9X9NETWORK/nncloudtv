@@ -1553,7 +1553,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null) {
-            episode.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
+            episode.setIntro(NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH));
         }
         
         // contentType
@@ -1734,7 +1734,7 @@ public class ApiContent extends ApiGeneric {
         // intro
         String intro = ctx.getParam("intro");
         if (intro != null && intro.length() > 0) {
-            intro = NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
+            intro = NnStringUtil.truncateUTF8(intro, NnStringUtil.VERY_LONG_STRING_LENGTH);
         }
         
         // contentType
