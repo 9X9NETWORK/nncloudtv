@@ -12,6 +12,15 @@ public class AppDao extends GenericDao<App> {
     public AppDao() {
         super(App.class);
     }
+
+    public List<App> findByMso(long msoId) {
+        String query = " SELECT * FROM app"
+                + "       WHERE sphere is null "
+                + "           AND msoId = " + msoId
+                + "      ORDER BY position1 ASC";
+   
+        return sql(query);    	
+    }
     
     public List<App> findAllBySphere(String sphere, long msoId) {
         
