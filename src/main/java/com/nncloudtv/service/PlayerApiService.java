@@ -167,11 +167,23 @@ public class PlayerApiService {
         short type = App.TYPE_IOS;
         if (ApiContext.OS_ANDROID.equalsIgnoreCase(ctx.getOs()))
             type = App.TYPE_ANDROID;
-        
-        List<App> featuredApps = NNF.getAppDao().findFeaturedBySphere(sphere, ctx.getMsoId());
+        List<App> featuredApps = new ArrayList<App>();
         List<App> apps = new ArrayList<App>();
-        apps.addAll(featuredApps);
-        apps.addAll(NNF.getAppDao().findAllBySphere(sphere, ctx.getMsoId()));
+        //if mso sphere is null, meaning suggested app does not go by region but mso
+        List<App> msoApps = NNF.getAppDao().findByMso(ctx.getMsoId());
+        log.info("mso app size:" + msoApps.size());
+        if (msoApps.size() > 0) {
+            featuredApps.addAll(msoApps);        	
+            apps.addAll(msoApps);
+        } else {
+            featuredApps = NNF.getAppDao().findFeaturedBySphere(sphere, ctx.getMsoId());
+            apps.addAll(featuredApps);
+            List<App> test = NNF.getAppDao().findAllBySphere(sphere, ctx.getMsoId());
+            log.info("test size:" + test.size());
+            apps.addAll(NNF.getAppDao().findAllBySphere(sphere, ctx.getMsoId()));
+        }
+
+        
         /*
           if (stack != null && stack.equals("featured")) {
               apps.addAll(dao.findFeaturedByOsAndSphere(type, sphere));
