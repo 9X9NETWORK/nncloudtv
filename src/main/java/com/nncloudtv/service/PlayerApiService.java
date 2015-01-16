@@ -171,15 +171,12 @@ public class PlayerApiService {
         List<App> apps = new ArrayList<App>();
         //if mso sphere is null, meaning suggested app does not go by region but mso
         List<App> msoApps = NNF.getAppDao().findByMso(ctx.getMsoId());
-        log.info("mso app size:" + msoApps.size());
         if (msoApps.size() > 0) {
             featuredApps.addAll(msoApps);        	
             apps.addAll(msoApps);
         } else {
             featuredApps = NNF.getAppDao().findFeaturedBySphere(sphere, ctx.getMsoId());
             apps.addAll(featuredApps);
-            List<App> test = NNF.getAppDao().findAllBySphere(sphere, ctx.getMsoId());
-            log.info("test size:" + test.size());
             apps.addAll(NNF.getAppDao().findAllBySphere(sphere, ctx.getMsoId()));
         }
 
