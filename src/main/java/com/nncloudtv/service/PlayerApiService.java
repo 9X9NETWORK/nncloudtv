@@ -1088,6 +1088,8 @@ public class PlayerApiService {
             startI = startI / PAGING_ROWS;
             startI = startI * PAGING_ROWS;
             end = startI + countI;
+        } else {
+            pagination = false;
         }
         
         Short shortTime = 24;
