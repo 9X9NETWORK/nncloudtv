@@ -73,7 +73,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
         
         if (start < 1000000000000L) {
             
-            limit = " LIIMIT " + start + ", " + (end - start);
+            limit = " LIMIT " + start + ", " + (end - start);
             
         } else {
             
