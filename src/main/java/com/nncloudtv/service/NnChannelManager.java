@@ -972,6 +972,7 @@ public class NnChannelManager {
         
         if (channel == null) return;
         channel.setUpdateDate(NnDateUtil.now());
+        channel.setCntEpisode(calcuateEpisodeCount(channel));
         resetCache(channel);
         dao.save(channel);
     }

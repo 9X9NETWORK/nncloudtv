@@ -1680,13 +1680,14 @@ public class ApiContent extends ApiGeneric {
         
         episode = episodeMngr.save(episode);
         
+        channelMngr.renewUpdateDateOnly(channel);
+        
         episode.setName(NnStringUtil.revertHtml(episode.getName()));
         episode.setIntro(NnStringUtil.revertHtml(episode.getIntro()));
         
         // mark as hook position
         if (autoShare == true) {
             episodeMngr.autoShareToFacebook(episode);
-            channelMngr.renewUpdateDateOnly(NNF.getChannelMngr().findById(episode.getChannelId()));
         }
         
         if (dirty) {
