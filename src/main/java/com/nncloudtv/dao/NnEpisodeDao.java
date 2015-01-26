@@ -77,11 +77,11 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             
         } else {
             
-            SimpleDateFormat from = new SimpleDateFormat("yyyyMMdd 00:00:00");
-            SimpleDateFormat to = new SimpleDateFormat("yyyyMMdd 23:59:59");
+            SimpleDateFormat from = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
+            SimpleDateFormat to = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
             
             filtering += " AND scheduleDate >= " + NnStringUtil.escapedQuote(from.format(new Date(start)));
-            filtering += " AND scheduleDate < "  + NnStringUtil.escapedQuote(to.format(new Date(start)));
+            filtering += " AND scheduleDate <= " + NnStringUtil.escapedQuote(to.format(new Date(start)));
         }
         
         String query = "SELECT * FROM nnepisode WHERE " + filtering
