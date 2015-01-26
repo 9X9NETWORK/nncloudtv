@@ -479,7 +479,7 @@ public class NnChannelManager {
             
         } else {
             
-            List<NnEpisode> episodes = NNF.getEpisodeMngr().findByChannelId(channel.getId());
+            List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), (short) 0, 0L, 1000000000000L);
             
             return episodes.size();
         }
