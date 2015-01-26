@@ -1060,7 +1060,7 @@ public class PlayerApiService {
         
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null))
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
-        if (start != null && Integer.valueOf(start) > 200)
+        if (start != null && Long.valueOf(start) > 200 && Long.valueOf(start) < 1000000000000L)
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
         PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();
         String[] chArr = channelIds.split(",");
