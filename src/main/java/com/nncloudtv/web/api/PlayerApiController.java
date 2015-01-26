@@ -1057,18 +1057,18 @@ public class PlayerApiController {
      */        
     @RequestMapping(value="programInfo")
     public @ResponseBody Object programInfo(
-            @RequestParam(value="v",        required = false) String v,
-            @RequestParam(value="channel",  required = false) String channelIds,
-            @RequestParam(value="episode",  required = false) String episodeIdStr,
-            @RequestParam(value="user",     required = false) String userToken,
-            @RequestParam(value="userInfo", required = false) String userInfo,
-            @RequestParam(value="ipg",      required = false) String ipgId,
-            @RequestParam(value="sidx",     required = false) String sidx,
-            @RequestParam(value="limit",    required = false) String limit,
-            @RequestParam(value="start",    required = false) String start,
-            @RequestParam(value="count",    required = false) String count,
-            @RequestParam(value="time",     required = false) String time,
-            @RequestParam(value="rx",       required = false) String rx,
+            @RequestParam(value = "v",        required = false) String v,
+            @RequestParam(value = "channel",  required = false) String channelIds,
+            @RequestParam(value = "episode",  required = false) String episodeIdStr,
+            @RequestParam(value = "user",     required = false) String userToken,
+            @RequestParam(value = "userInfo", required = false) String userInfo,
+            @RequestParam(value = "ipg",      required = false) String ipgId,
+            @RequestParam(value = "sidx",     required = false) String sidx,
+            @RequestParam(value = "limit",    required = false) String limit,
+            @RequestParam(value = "start",    required = false) String start,
+            @RequestParam(value = "count",    required = false) String count,
+            @RequestParam(value = "time",     required = false) String time,
+            @RequestParam(value = "rx",       required = false) String rx,
             HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);

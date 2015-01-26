@@ -411,7 +411,7 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(NnChannel channel, int start, int end, short time, ApiContext ctx) {
+    public Object findPlayerProgramInfoByChannel(NnChannel channel, long start, long end, short time, ApiContext ctx) {
         
         //don't cache dayparting for now
         log.info("time:" + time);
@@ -419,7 +419,9 @@ public class NnProgramManager {
         if (channel.getContentType() != NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             
             cacheKey = CacheFactory.getProgramInfoKey(channel.getId(), start, ctx.getVer(), ctx.getFmt());
-            if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less then 200
+            
+            // cache only if the start is less then 200 or it's a timestamp
+            if (start < PlayerApiService.MAX_EPISODES || start >= 1000000000000L) {
                 try {
                     String result = (String) CacheFactory.get(cacheKey);
                     if (result != null) {
@@ -431,8 +433,9 @@ public class NnProgramManager {
                 }
             }
         }
-        Object output = this.assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso());
-        if (start < PlayerApiService.MAX_EPISODES) { // cache only if the start is less than 200
+        Object output = assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso());
+        // cache only if the start is less than 200 or it's a timestamp
+        if (start < PlayerApiService.MAX_EPISODES || start >= 1000000000000L) {
             if (cacheKey != null) {
                 log.info("store programInfo, key = " + cacheKey);
                 CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
@@ -489,7 +492,7 @@ public class NnProgramManager {
     }
     
     //based on channel type, assemble programInfo string
-    public Object assembleProgramInfo(NnChannel channel, short format, int start, int end, short time, Mso mso) {
+    public Object assembleProgramInfo(NnChannel channel, short format, long start, long end, short time, Mso mso) {
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED || channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_LIVE ) {
             

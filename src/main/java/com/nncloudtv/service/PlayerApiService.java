@@ -1053,17 +1053,15 @@ public class PlayerApiService {
     
     @SuppressWarnings("unchecked")
     public Object programInfo(ApiContext ctx, String channelIds,
-                                  String episodeIdStr, String userToken,
-                                  String ipgId, boolean userInfo, String sidx,
-                                  String limit, String start,
-                                  String count, String time) throws NotPurchasedException {
+                              String episodeIdStr, String userToken,
+                              String ipgId, boolean userInfo, String sidx,
+                              String limit, String start,
+                              String count, String time) throws NotPurchasedException {
         
-        if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null)) {
+        if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null))
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
-        }
-        if (start != null && Integer.valueOf(start) > 200) {
+        if (start != null && Integer.valueOf(start) > 200)
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_BAD);
-        }
         PlayerProgramInfo playerProgramInfo = new PlayerProgramInfo();
         String[] chArr = channelIds.split(",");
         NnUser user = null;
@@ -1076,17 +1074,21 @@ public class PlayerApiService {
             start = sidx;
             count = limit;
         }
-        int startI = 1;
+        long startI = 1;
         int countI = PAGING_ROWS;
-        if (start != null) { startI = Integer.parseInt(start); }
+        if (start != null) { startI = Long.parseLong(start); }
         if (count != null) { countI = Integer.parseInt(count); }
         
-        int end = PAGING_ROWS;
-        countI = PAGING_ROWS; //overwrite the input value
-        startI = startI - 1;
-        startI = startI / PAGING_ROWS;
-        startI = startI * PAGING_ROWS;
-        end = startI + countI;
+        long end = PAGING_ROWS;
+        
+        if (startI < 1000000000000L) { // startI can be timestamp
+            
+            countI = PAGING_ROWS; //overwrite the input value
+            startI = startI - 1;
+            startI = startI / PAGING_ROWS;
+            startI = startI * PAGING_ROWS;
+            end = startI + countI;
+        }
         
         Short shortTime = 24;
         if (time != null)

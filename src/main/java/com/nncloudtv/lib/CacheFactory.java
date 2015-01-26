@@ -3,7 +3,9 @@ package com.nncloudtv.lib;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -286,17 +288,30 @@ public class CacheFactory {
      * examples: nnprogram-v31-1-0-text
      *           nnprogram-v40-2-50-json
      */
-    public static String getProgramInfoKey(long channelId, int start, int version, short format) {
+    public static String getProgramInfoKey(long channelId, long start, int version, short format) {
         if (version <= 32) {
-            return "nnprogram-" + version + "-" + channelId + "-0-" + "text";
+            return "nnprogram-" + version + "-" + channelId + "-0-text";
         }
-        String str = "nnprogram-v40-" + channelId + "-" + start + "-";
-        if (format == ApiContext.FORMAT_JSON) {
-            str += "json";
+        
+        String str = "nnprogram-v40-" + channelId + "-";
+        if (start < 1000000000000L) {
+            
+            str += start;
+            
         } else {
-            str += "text";
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            str += sdf.format(new Date(start));
         }
-        log.fine("programInfo cache key:" + str);
+        
+        if (format == ApiContext.FORMAT_JSON) {
+            str += "-json";
+        } else {
+            str += "-text";
+        }
+        
+        log.fine("programInfo cache key = " + str);
+        
         return str;
     }
     
