@@ -1180,7 +1180,7 @@ public class ApiContent extends ApiGeneric {
         String rowsStr = req.getParameter("rows");
         Long rows = NnStringUtil.evalLong(rowsStr);
         if (rows == null) {
-            rows = (long) 0;
+            rows = (long) PlayerApiService.PAGING_ROWS;
         }
         NnEpisodeManager episodeMngr = NNF.getEpisodeMngr();
         List<NnEpisode> results = new ArrayList<NnEpisode>();
