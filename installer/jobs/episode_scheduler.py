@@ -36,10 +36,12 @@ dbcontent = MySQLdb.connect (host = "localhost",
                              db = "nncloudtv_content")
 cursor = dbcontent.cursor()
 cursor.execute("""                             
-   select id, channelId, scheduleDate, isPublic 
-     from  nnepisode 
+    select ep.id, ep.channelId, ep.scheduleDate, ep.isPublic 
+      from nnepisode as ep 
+inner join nnchannel as ch on ep.channelId = ch.id
      where scheduleDate > now()              
-       and scheduleDate < date_add(now(), interval 10 minute);   
+       and scheduleDate < date_add(now(), interval 10 minute)
+       and ch.sorting != 6;
    """)                                                                                                                      
 rows = cursor.fetchall()
 i=0 #episode published                                      
