@@ -249,7 +249,7 @@ public class NnEpisodeManager {
     
     public List<NnEpisode> listV2(long page, long rows, String sort, String filter) {
         
-        return dao.listV2(page > 0 ? (page - 1) * rows : 0, rows, sort, filter);
+        return dao.listV2(page * rows, rows, sort, filter);
     }
     
     public List<NnEpisode> findPlayerEpisodes(long channelId, short sort, long start, long end) {
