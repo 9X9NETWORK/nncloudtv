@@ -17,7 +17,7 @@ import com.nncloudtv.model.NnEpisode;
 public class NnEpisodeDao extends GenericDao<NnEpisode> {
     protected static final Logger log = Logger.getLogger(NnEpisodeDao.class.getName());
     
-    public static final String V2_LINEAR_SORTING = "isPublic ASC, CASE WHEN isPublic = TRUE THEN publishDate ELSE scheduleDate END DESC";
+    public static final String V2_LINEAR_SORTING = "CASE WHEN publishDate IS NULL AND scheduleDate IS NULL THEN '2038-01-19 03:14:07' ELSE '1970-01-01 00:00:00' END DESC, scheduleDate DESC, publishDate DESC, updateDate DESC";
     
     public NnEpisodeDao() {
         super(NnEpisode.class);
@@ -34,7 +34,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
             query.declareParameters("long channelIdParam");
             query.setOrdering("seq asc");
             @SuppressWarnings("unchecked")
-            List<NnEpisode> episodes = (List<NnEpisode>)query.execute(channelId);
+            List<NnEpisode> episodes = (List<NnEpisode>) query.execute(channelId);
             if (episodes.size() > 0) {
                 detached = (List<NnEpisode>) pm.detachCopyAll(episodes);
             }

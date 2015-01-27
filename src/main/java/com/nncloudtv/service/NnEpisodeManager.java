@@ -100,36 +100,57 @@ public class NnEpisodeManager {
                 
                 public int compare(NnEpisode ep1, NnEpisode ep2) {
                     
-                    if (ep1.isPublic() == false && ep2.isPublic() == true) {
-                        return -1;
-                    } else if (ep1.isPublic() == true && ep2.isPublic() == false) {
-                        return 1;
-                    } else if (ep1.isPublic() == true && ep2.isPublic() == true) {
+                    Date scheduleDate1 = ep1.getScheduleDate();
+                    Date scheduleDate2 = ep2.getScheduleDate();
+                    Date publishDate1 = ep1.getPublishDate();
+                    Date publishDate2 = ep2.getPublishDate();
+                    Date updateDate1 = ep1.getUpdateDate();
+                    Date updateDate2 = ep2.getUpdateDate();
+                    
+                    if (scheduleDate1 == null && scheduleDate2 == null) {
                         
-                        Date pubDate1 = ep1.getPublishDate();
-                        Date pubDate2 = ep2.getPublishDate();
-                        if (pubDate1 == null && pubDate2 == null) {
-                            return 0;
-                        } else if (pubDate1 == null) {
+                        if (publishDate1 == null && publishDate2 == null) {
+                            
+                            return updateDate2.compareTo(updateDate1);
+                            
+                        } else if (publishDate1 == null) {
+                            
                             return -1;
-                        } else if (pubDate2 == null) {
+                            
+                        } else if (publishDate2 == null) {
+                            
                             return 1;
+                            
                         } else {
-                            return pubDate2.compareTo(pubDate1);
+                            
+                            return publishDate2.compareTo(publishDate1);
                         }
+                        
+                    } else if (scheduleDate1 == null) {
+                        
+                        if (publishDate1 == null) {
+                            
+                            return -1;
+                            
+                        } else {
+                            
+                            return 1;
+                        }
+                        
+                    } else if (scheduleDate2 == null) {
+                        
+                        if (publishDate2 == null) {
+                            
+                            return 1;
+                            
+                        } else {
+                            
+                            return -1;
+                        }
+                        
                     } else {
                         
-                        Date schedule1 = ep1.getScheduleDate();
-                        Date schedule2 = ep2.getScheduleDate();
-                        if (schedule1 == null && schedule2 == null) {
-                            return ep1.getSeq() - ep2.getSeq();
-                        } else if (schedule1 == null) {
-                            return 1;
-                        } else if (schedule2 == null) {
-                            return -1;
-                        } else {
-                            return schedule2.compareTo(schedule1);
-                        }
+                        return scheduleDate2.compareTo(scheduleDate1);
                     }
                 }
             };
