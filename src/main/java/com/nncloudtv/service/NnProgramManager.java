@@ -292,7 +292,7 @@ public class NnProgramManager {
         keys.add(CacheFactory.getNnChannelMoreImageUrlKey(channelId));
         
         //programInfo version 40, format json
-        keys.addAll(CacheFactory.getV40ProgramInfoKeys(channelId, ApiContext.FORMAT_JSON));
+        //keys.addAll(CacheFactory.getV40ProgramInfoKeys(channelId, ApiContext.FORMAT_JSON));
         //programInfo, version 40, format text
         keys.addAll(CacheFactory.getV40ProgramInfoKeys(channelId, ApiContext.FORMAT_PLAIN));
         
@@ -300,7 +300,7 @@ public class NnProgramManager {
         keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 31, ApiContext.FORMAT_PLAIN));
         keys.add(CacheFactory.getProgramInfoKey(channelId, 0, 32, ApiContext.FORMAT_PLAIN));
         //latestProgramInfo
-        keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
+        //keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_JSON));
         keys.add(CacheFactory.getLatestProgramInfoKey(channelId, ApiContext.FORMAT_PLAIN));
         
         //channelLineup
