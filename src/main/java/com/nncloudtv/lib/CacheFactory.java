@@ -315,18 +315,24 @@ public class CacheFactory {
         return str;
     }
     
-    public static List<String> getAllprogramInfoKeys(long channelId, short format) {
+    public static List<String> getV40ProgramInfoKeys(long channelId, short format) {
         
         List<String> keys = new ArrayList<String>();
         
         log.fine("get all programInfo keys from ch" + channelId + " in format " + format);
         
+        String fmt = format == ApiContext.FORMAT_JSON ? "json" : "text";
+        
         for (int i = 0; i < PlayerApiService.MAX_EPISODES; i += PlayerApiService.PAGING_ROWS) {
             
-            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + ((format == ApiContext.FORMAT_JSON) ? "json" : "text"); 
+            String str = "nnprogram-v40-" + channelId + "-" + i + "-" + fmt; 
             
             keys.add(str);
         }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        keys.add("nnprogram-v40-" + channelId + "-" + sdf.format(NnDateUtil.now()) + "-" + fmt);
+        keys.add("nnprogram-v40-" + channelId + "-" + sdf.format(NnDateUtil.tomorrow()) + "-" + fmt);
         
         return keys;
     }
