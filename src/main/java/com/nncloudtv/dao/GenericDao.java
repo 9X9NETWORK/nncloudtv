@@ -333,12 +333,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         return results;
     }
     
-    public List<T> sql(String queryStr) {
-        
-        return sql(queryStr, false);
-    }
-    
-    public synchronized List<T> sql(String queryStr, boolean fine) {
+    public synchronized List<T> sql(String queryStr) {
         
         PersistenceManager pm = getSharedPersistenceMngr();
         
@@ -354,8 +349,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
                 
                 return detached;
             }
-            if (!fine)
-                System.out.println(String.format("[sql] %s;", queryStr));
+            System.out.println(String.format("[sql] %s;", queryStr));
             long before = NnDateUtil.timestamp();
             try {
                 Query query = pm.newQuery("javax.jdo.query.SQL", queryStr);
@@ -367,8 +361,7 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
             } finally {
                 pm.flush();
             }
-            if (!fine)
-                System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
+            System.out.println(String.format("[sql] %d items returned, costs %d milliseconds", detached.size(), NnDateUtil.timestamp() - before));
             return detached;
         }
         

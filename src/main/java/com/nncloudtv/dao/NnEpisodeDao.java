@@ -52,7 +52,7 @@ public class NnEpisodeDao extends GenericDao<NnEpisode> {
                      + "     ORDER BY " + sorting
                      + "        LIMIT " + start + ", " + limit;
         
-        return sql(query, false);
+        return sql(query);
     }
     
     public List<NnEpisode> findPlayerEpisode(long channelId, short sort, long start, long end) {
