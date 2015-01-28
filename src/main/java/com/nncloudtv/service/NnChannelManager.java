@@ -920,9 +920,10 @@ public class NnChannelManager {
         
         String filter = String.format("channelId = %d AND isPublic = TRUE AND imageUrl IS NOT NULL", channel.getId());
         String sort = channel.getSorting() == NnChannel.SORT_POSITION_REVERSE ? "seq DESC" : "seq ASC";
-        if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR)
+        if (channel.getSorting() == NnChannel.SORT_TIMED_LINEAR) {
+            filter = "imageUrl IS NOT NULL AND scheduleDate IS NOT NULL && channelId = " + channel.getId();
             sort = NnEpisodeDao.V2_LINEAR_SORTING;
-        
+        }
         List<NnEpisode> episodes = NNF.getEpisodeMngr().listV2(0, 3, sort, filter);
         
         for (NnEpisode episode : episodes) {
