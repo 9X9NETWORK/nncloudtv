@@ -929,7 +929,7 @@ public class NnChannelManager {
         for (NnEpisode episode : episodes) {
             if (imgs.size() < 3) {
                 String imageUrl = episode.getImageUrl();
-                if (episode.isPublic() && imageUrl != null && imageUrl.length() > 0)
+                if (imageUrl != null && imageUrl.length() > 0)
                     imgs.add(episode.getImageUrl());
             } else {
                 break;
