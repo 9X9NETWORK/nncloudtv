@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.nncloudtv.dao.NnChannelDao;
 import com.nncloudtv.dao.SysTagMapDao;
+import com.nncloudtv.exception.NnNotModifiedException;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnNetUtil;
@@ -209,7 +210,7 @@ public class WatchDogController {
     public @ResponseBody String programInfo(
             @RequestParam(value="channel", required=false) String channelIdStr,
             @RequestParam(value="user", required=false) String userToken,
-            HttpServletRequest req) {
+            HttpServletRequest req) throws NnNotModifiedException {
         
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null)
@@ -226,7 +227,7 @@ public class WatchDogController {
                 for (int i=0; i < data.length; i++) {
                     if (i == 0)  output += "channel id:";
                     if (i == 1)  output += "program id:"; 
-                    if (i == 2 ) output += "name:";
+                    if (i == 2)  output += "name:";
                     if (i == 3)  output += "description:";
                     if (i == 4)  output += "content type:";
                     if (i == 5)  output += "duration:";
