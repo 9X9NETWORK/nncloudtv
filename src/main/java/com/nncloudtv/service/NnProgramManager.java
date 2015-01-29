@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.NnProgramDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.exception.NnNotModifiedException;
 import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
@@ -411,7 +412,7 @@ public class NnProgramManager {
     
     //player programInfo entry
     //don't cache dayparting for now. dayparting means content type = CONTENTTYPE_DAYPARTING_MASK
-    public Object findPlayerProgramInfoByChannel(NnChannel channel, long start, long end, short time, ApiContext ctx) {
+    public Object findPlayerProgramInfoByChannel(NnChannel channel, long start, long end, short time, ApiContext ctx, Date lastModifyDate) throws NnNotModifiedException {
         
         //don't cache dayparting for now
         log.info("time:" + time);
@@ -422,24 +423,28 @@ public class NnProgramManager {
             
             // cache only if the start is less then 200 or it's a timestamp
             if (start < PlayerApiService.MAX_EPISODES || start >= 1000000000000L) {
-                try {
-                    String result = (String) CacheFactory.get(cacheKey);
-                    if (result != null) {
+                String result = (String) CacheFactory.get(cacheKey);
+                if (result != null) {
+                    if (lastModifyDate == null) {
                         log.info("cached programInfo, cacheKey = " + cacheKey);
                         return result;
                     }
-                } catch (Exception e) {
-                    log.info("memcache error");
+                    List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
+                    for (NnEpisode episode : episodes) {
+                        if (lastModifyDate.before(episode.getUpdateDate())) {
+                            log.info("cached programInfo (modified), cacheKey = " + cacheKey);
+                            return result;
+                        }
+                    }
+                    throw new NnNotModifiedException();
                 }
             }
         }
-        Object output = assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso());
+        Object output = assembleProgramInfo(channel, ctx.getFmt(), start, end, time, ctx.getMso(), lastModifyDate);
         // cache only if the start is less than 200 or it's a timestamp
-        if (start < PlayerApiService.MAX_EPISODES || start >= 1000000000000L) {
-            if (cacheKey != null) {
-                log.info("store programInfo, key = " + cacheKey);
-                CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
-            }
+        if (cacheKey != null && (start < PlayerApiService.MAX_EPISODES || start >= 1000000000000L)) {
+            log.info("store programInfo, key = " + cacheKey);
+            CacheFactory.set(cacheKey, (Serializable) /** FIXME **/ output);
         }
         return output;
     }
@@ -492,15 +497,22 @@ public class NnProgramManager {
     }
     
     //based on channel type, assemble programInfo string
-    public Object assembleProgramInfo(NnChannel channel, short format, long start, long end, short time, Mso mso) {
+    public Object assembleProgramInfo(NnChannel channel, short format, long start, long end, short time, Mso mso, Date lastModifyDate) throws NnNotModifiedException {
         
         if (channel.getContentType() == NnChannel.CONTENTTYPE_MIXED || channel.getContentType() == NnChannel.CONTENTTYPE_YOUTUBE_LIVE ) {
             
             List<NnEpisode> episodes = NNF.getEpisodeMngr().findPlayerEpisodes(channel.getId(), channel.getSorting(), start, end);
+            List<NnProgram> programs = findPlayerNnProgramsByChannel(channel.getId());
             
-            List<NnProgram> programs = this.findPlayerNnProgramsByChannel(channel.getId());
+            if (lastModifyDate == null)
+                return composeNnProgramInfo(channel, episodes, programs, format);
             
-            return composeNnProgramInfo(channel, episodes, programs, format);
+            for (NnEpisode episode : episodes) {
+                if (lastModifyDate.before(episode.getUpdateDate()))
+                    return composeNnProgramInfo(channel, episodes, programs, format);
+            }
+            
+            throw new NnNotModifiedException();
             
         } else if (channel.getContentType() == NnChannel.CONTENTTYPE_DAYPARTING_MASK) {
             

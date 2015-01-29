@@ -101,4 +101,7 @@ public class NnStatusCode {
     
     //1000 in-app-purchase error
     public static final int IAP_NOT_PURCHASED = 1000;
+    
+    //2000 to indicate client that doesn't need to update local content
+    public static final int NOT_MODIFIED = 2000;
 }

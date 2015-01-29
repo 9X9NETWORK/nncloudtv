@@ -214,7 +214,7 @@ public class WatchDogController {
         NnChannel channel = NNF.getChannelMngr().findById(channelIdStr);
         if (channel == null)
             return "channel not found";
-        String result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, 1, 50, (short) 0, new ApiContext(req));
+        String result = (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, 1, 50, (short) 0, new ApiContext(req), null);
         if (result == null)
             return "null, error";
         String output = "";

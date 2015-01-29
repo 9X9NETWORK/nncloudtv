@@ -105,6 +105,7 @@ public class NnStatusMsg {
             case NnStatusCode.DATABASE_READONLY: return "DATABASE_READONLY";
             
             case NnStatusCode.IAP_NOT_PURCHASED: return "NOT_PURCHASED";
+            case NnStatusCode.NOT_MODIFIED: return "NOT_MODIFIED";
             
             default: return "MESSAGE_UNDEFINED";
         }

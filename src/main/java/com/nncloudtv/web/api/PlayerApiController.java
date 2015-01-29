@@ -4,6 +4,7 @@ import java.io.OutputStreamWriter;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.exception.NnNotModifiedException;
 import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.CookieHelper;
 import com.nncloudtv.lib.FacebookLib;
@@ -1025,6 +1027,7 @@ public class PlayerApiController {
      * @param  start the start index for pagination. If "start" param is presented, the pagination info will be shown in the return data in the 2nd block.
      * @param  count the count of records. Currently server always sets it 50.
      * @param  time   0-23, required for dayparting channels (channel type 14). 
+     * @param  tx   last modify timestamp, if content is older than this date, only NOT_MODIFIED will be returned
      * @return <p>If "start" is presented, data returns in two blocks. First block is pagination information. Second block is program information.
      *         <p>First block (if pagination enabled): channelId, number of return records, total number of records. Example:<br/>
      *            25096    50    121 <br/> 
@@ -1057,7 +1060,6 @@ public class PlayerApiController {
      */        
     @RequestMapping(value="programInfo")
     public @ResponseBody Object programInfo(
-            @RequestParam(value = "v",        required = false) String v,
             @RequestParam(value = "channel",  required = false) String channelIds,
             @RequestParam(value = "episode",  required = false) String episodeIdStr,
             @RequestParam(value = "user",     required = false) String userToken,
@@ -1069,6 +1071,7 @@ public class PlayerApiController {
             @RequestParam(value = "count",    required = false) String count,
             @RequestParam(value = "time",     required = false) String time,
             @RequestParam(value = "rx",       required = false) String rx,
+            @RequestParam(value = "tx",       required = false) Long   tx,
             HttpServletRequest req, HttpServletResponse resp) {
         
         log.info("params: channel:" + channelIds + ";episode:" + episodeIdStr + ";user:" + userToken + ";ipg:" + ipgId);
@@ -1079,9 +1082,12 @@ public class PlayerApiController {
             if (status != NnStatusCode.SUCCESS)
                 return ctx.playerResponse(resp, ctx.assemblePlayerMsgs(status));
             boolean isUserInfo = Boolean.parseBoolean(userInfo);
-            output = playerApiService.programInfo(ctx, channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time);
+            Date lastModifyDate = (tx == null) ? null : new Date(tx);
+            output = playerApiService.programInfo(ctx, channelIds, episodeIdStr, userToken, ipgId, isUserInfo, sidx, limit, start, count, time, lastModifyDate);
         } catch (NotPurchasedException e){
             output = ctx.assemblePlayerMsgs(NnStatusCode.IAP_NOT_PURCHASED);
+        } catch (NnNotModifiedException e){
+            output = ctx.assemblePlayerMsgs(NnStatusCode.NOT_MODIFIED);
         } catch (Exception e){
             output = ctx.handlePlayerException(e);
         } catch (Throwable t) {

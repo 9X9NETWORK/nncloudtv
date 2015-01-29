@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.UserInviteDao;
 import com.nncloudtv.dao.YtProgramDao;
+import com.nncloudtv.exception.NnNotModifiedException;
 import com.nncloudtv.exception.NotPurchasedException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
@@ -1056,7 +1057,8 @@ public class PlayerApiService {
                               String episodeIdStr, String userToken,
                               String ipgId, boolean userInfo, String sidx,
                               String limit, String start,
-                              String count, String time) throws NotPurchasedException {
+                              String count, String time,
+                              Date lastModifyDate) throws NotPurchasedException, NnNotModifiedException {
         
         if (channelIds == null || (channelIds.equals("*") && userToken == null && ipgId == null))
             return ctx.assemblePlayerMsgs(NnStatusCode.INPUT_MISSING);
@@ -1171,11 +1173,11 @@ public class PlayerApiService {
                         programInfoStr += new IosService().findPlayerProgramInfoByChannel(channel.getId(), startI, end);
                     } else {
                         if (ctx.isPlainFmt()) {
-                            programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx);
+                            programInfoStr += (String) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx, lastModifyDate);
                             if (pagination)
                                 paginationStr += assembleKeyValue(channel.getIdStr(), String.valueOf(countI) + "\t" + String.valueOf(channel.getCntEpisode()));
                         } else {
-                            playerProgramInfo.addProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx));
+                            playerProgramInfo.addProgramInfo((List<ProgramInfo>) NNF.getProgramMngr().findPlayerProgramInfoByChannel(channel, startI, end, shortTime, ctx, lastModifyDate));
                         }
                     }
                 }
