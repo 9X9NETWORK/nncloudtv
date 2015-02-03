@@ -3,8 +3,10 @@ package com.nncloudtv.web.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -238,9 +240,11 @@ public class ApiMso extends ApiGeneric {
             MsoConfig.ANDROID_URL_LANDING_SUGGESTED,
             MsoConfig.ANDROID_URL_MARKET_DIRECT,
             MsoConfig.ANDROID_URL_MARKET_SUGGESTED,
+            MsoConfig.ANDROID_URL_OFFICESITE,
             MsoConfig.IOS_URL_ORIGIN,
             MsoConfig.IOS_URL_LANDING_DIRECT,
-            MsoConfig.IOS_URL_LANDING_SUGGESTED
+            MsoConfig.IOS_URL_LANDING_SUGGESTED,
+            MsoConfig.IOS_URL_OFFICESITE
         };
         
         for (String property : properties) {
@@ -889,15 +893,110 @@ public class ApiMso extends ApiGeneric {
         msgResponse(resp, OK);
     }
     
+    @RequestMapping(value = "mso/{msoId}.json", method = RequestMethod.GET)
+    public @ResponseBody Map<String, Object> msoJson(
+            HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
+        
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
+        if (mso == null) {
+            notFound(resp, MSO_NOT_FOUND);
+            return null;
+        }
+        
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // app info
+        Map<String, Object> appInfo = new HashMap<String, Object>();
+        appInfo.put("mso", mso.getName());
+        appInfo.put("name", mso.getTitle());
+        appInfo.put("icon", mso.getLogoUrl());
+        appInfo.put("description", mso.getIntro());
+        appInfo.put("calltoaction", mso.getSlogan());
+        Map<String, Object> iosInfo = new HashMap<String, Object>();
+        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_ORIGIN);
+        if (config != null)
+            iosInfo.put("oringin", config.getValue());
+        List<String> landing = new ArrayList<String>();
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_LANDING_DIRECT);
+        if (config != null)
+            landing.add(config.getValue());
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_LANDING_SUGGESTED);
+        if (config != null)
+            landing.add(config.getValue());
+        if (!landing.isEmpty())
+            iosInfo.put("landing", landing);
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_OFFICESITE);
+        if (config != null)
+            iosInfo.put("officesite", config.getValue());
+        if (!iosInfo.isEmpty())
+            appInfo.put("ios", iosInfo);
+        Map<String, Object> androidInfo = new HashMap<String, Object>();
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_ORIGIN);
+        if (config != null)
+            androidInfo.put("oringin", config.getValue());
+        landing = new ArrayList<String>();
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_LANDING_DIRECT);
+        if (config != null)
+            landing.add(config.getValue());
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_LANDING_SUGGESTED);
+        if (config != null)
+            landing.add(config.getValue());
+        if (!landing.isEmpty())
+            androidInfo.put("landing", landing);
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_OFFICESITE);
+        if (config != null)
+            androidInfo.put("officesite", config.getValue());
+        List<String> market = new ArrayList<String>();
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_MARKET_DIRECT);
+        if (config != null)
+            market.add(config.getValue());
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_MARKET_SUGGESTED);
+        if (config != null)
+            market.add(config.getValue());
+        if (market != null)
+            androidInfo.put("market", market);
+        appInfo.put("playeronly", false);
+        result.put("app", appInfo);
+        
+        // social info
+        List<Map<String,String>> socialInfo = new ArrayList<Map<String,String>>();
+        List<MsoPromotion> promotions = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.SNS);
+        for (MsoPromotion promotion : promotions) {
+            Map<String,String> entity = new HashMap<String,String>();
+            entity.put("icon", promotion.getLogoUrl());
+            entity.put("url", promotion.getLink());
+            socialInfo.add(entity);
+        }
+        if (!socialInfo.isEmpty())
+            appInfo.put("social", socialInfo);
+        
+        // promote info
+        List<Map<String,String>> promoteInfo = new ArrayList<Map<String,String>>();
+        promotions = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.PROGRAM);
+        for (MsoPromotion promotion : promotions) {
+            Map<String,String> entity = new HashMap<String,String>();
+            entity.put("name", promotion.getTitle());
+            entity.put("image", promotion.getLogoUrl());
+            entity.put("link", promotion.getLink());
+            promoteInfo.add(entity);
+        }
+        if (!promoteInfo.isEmpty())
+            appInfo.put("social", promoteInfo);
+        
+        return result;
+    }
+    
     @RequestMapping(value = "mso/{msoId}", method = RequestMethod.GET)
     public @ResponseBody
     Mso mso(HttpServletRequest req,
             HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
         
-        ApiContext context = new ApiContext(req);
-        
+        ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
+            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         
@@ -928,7 +1027,7 @@ public class ApiMso extends ApiGeneric {
         boolean apnsEnabled = true;
         boolean gcmEnabled = true;
         MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
-        File p12 = new File(MsoConfigManager.getP12FilePath(mso, context.isProductionSite()));
+        File p12 = new File(MsoConfigManager.getP12FilePath(mso, ctx.isProductionSite()));
         if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
             gcmEnabled = false;
         }
