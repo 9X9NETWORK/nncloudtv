@@ -986,14 +986,14 @@ public class ApiMso extends ApiGeneric {
         ArrayList<Map<String,String>> promoteInfo = new ArrayList<Map<String,String>>();
         promotions = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.PROGRAM);
         for (MsoPromotion promotion : promotions) {
-            Map<String,String> entity = new HashMap<String,String>();
+            HashMap<String,String> entity = new HashMap<String,String>();
             entity.put("name", promotion.getTitle());
             entity.put("image", promotion.getLogoUrl());
             entity.put("link", promotion.getLink());
             promoteInfo.add(entity);
         }
         if (!promoteInfo.isEmpty())
-            appInfo.put("social", promoteInfo);
+            result.put("promote", promoteInfo);
         
         CacheFactory.set(cacheKey, result);
         
