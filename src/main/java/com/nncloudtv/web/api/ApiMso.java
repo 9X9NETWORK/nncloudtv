@@ -968,7 +968,9 @@ public class ApiMso extends ApiGeneric {
         if (!androidInfo.isEmpty())
             appInfo.put("android", androidInfo);
         appInfo.put("playeronly", false);
-        result.put("app", (new ArrayList<Serializable>()).add(appInfo));
+        ArrayList<Serializable> appArr = new ArrayList<Serializable>();
+        appArr.add(appInfo);
+        result.put("app", appArr);
         
         // social info
         ArrayList<HashMap<String,String>> socialInfo = new ArrayList<HashMap<String,String>>();
