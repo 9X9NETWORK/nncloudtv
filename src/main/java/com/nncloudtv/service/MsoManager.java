@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import com.nncloudtv.dao.MsoDao;
@@ -16,6 +17,7 @@ import com.nncloudtv.model.AdPlacement;
 import com.nncloudtv.model.LocaleTable;
 import com.nncloudtv.model.Mso;
 import com.nncloudtv.model.MsoConfig;
+import com.nncloudtv.model.MsoPromotion;
 import com.nncloudtv.model.NnChannel;
 import com.nncloudtv.model.NnItem;
 import com.nncloudtv.model.NnPurchase;
@@ -130,6 +132,10 @@ public class MsoManager {
         result += PlayerApiService.assembleKeyValue("preferredLangCode", mso.getLang());
         result += PlayerApiService.assembleKeyValue("jingleUrl", mso.getJingleUrl());
         List<MsoConfig> list = configMngr.findByMso(mso);
+        //social-networks
+        List<MsoPromotion> socialNetworks = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.SNS);
+        if (!socialNetworks.isEmpty())
+            result += PlayerApiService.assembleKeyValue("social-networks", StringUtils.join(socialNetworks, "|"));
         //config
         boolean regionSet = false;
         boolean chromecastId = false;
