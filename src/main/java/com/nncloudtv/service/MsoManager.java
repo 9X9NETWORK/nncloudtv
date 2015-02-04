@@ -134,8 +134,13 @@ public class MsoManager {
         List<MsoConfig> list = configMngr.findByMso(mso);
         //social-networks
         List<MsoPromotion> socialNetworks = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.SNS);
-        if (!socialNetworks.isEmpty())
-            result += PlayerApiService.assembleKeyValue("social-networks", StringUtils.join(socialNetworks, "|"));
+        if (!socialNetworks.isEmpty()) {
+            List<String> li = new ArrayList<String>();
+            for (MsoPromotion socialNetwork : socialNetworks) {
+                li.add(socialNetwork.getTitle() + " " + socialNetwork.getLink());
+            }
+            result += PlayerApiService.assembleKeyValue("social-networks", StringUtils.join(li, ";"));
+        }
         //config
         boolean regionSet = false;
         boolean chromecastId = false;
