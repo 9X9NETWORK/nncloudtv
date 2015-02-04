@@ -64,6 +64,7 @@ public class MsoManager {
         
         if (mso == null) { return; }
         
+        String keyMsoJson       = CacheFactory.getMsoJsonKey(mso);
         String keyMsoObjectName = CacheFactory.getMsoObjectKey(mso.getName());
         String keyMsoObjectId   = CacheFactory.getMsoObjectKey(String.valueOf(mso.getId()));
         
@@ -79,6 +80,7 @@ public class MsoManager {
         String appConfig        = CacheFactory.getMsoConfigKey(mso.getId(), MsoConfig.APP_EXPIRE);
         String appVersionConfig = CacheFactory.getMsoConfigKey(mso.getId(), MsoConfig.APP_VERSION_EXPIRE);
         
+        CacheFactory.delete(keyMsoJson);
         CacheFactory.delete(keyMsoObjectName);
         CacheFactory.delete(keyMsoObjectId);
         CacheFactory.delete(keyAdInfoPlain);

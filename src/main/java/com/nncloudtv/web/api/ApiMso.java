@@ -1,6 +1,7 @@
 package com.nncloudtv.web.api;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.nncloudtv.lib.CacheFactory;
 import com.nncloudtv.lib.NNF;
 import com.nncloudtv.lib.NnDateUtil;
 import com.nncloudtv.lib.NnStringUtil;
@@ -894,7 +896,7 @@ public class ApiMso extends ApiGeneric {
     }
     
     @RequestMapping(value = "mso/{msoId}.json", method = RequestMethod.GET)
-    public @ResponseBody Map<String, Object> msoJson(
+    public @ResponseBody Map<String, Serializable> msoJson(
             HttpServletRequest req, HttpServletResponse resp,
             @PathVariable("msoId") String msoIdStr) {
         
@@ -905,20 +907,26 @@ public class ApiMso extends ApiGeneric {
             return null;
         }
         
-        Map<String, Object> result = new HashMap<String, Object>();
+        String cacheKey = CacheFactory.getMsoJsonKey(mso);
+        @SuppressWarnings("unchecked")
+        HashMap<String, Serializable> result = (HashMap<String, Serializable>) CacheFactory.get(cacheKey); 
+        if (result != null)
+            return result;
+        
+        result = new HashMap<String, Serializable>();
         
         // app info
-        Map<String, Object> appInfo = new HashMap<String, Object>();
+        HashMap<String, Serializable> appInfo = new HashMap<String, Serializable>();
         appInfo.put("mso", mso.getName());
         appInfo.put("name", mso.getTitle());
         appInfo.put("icon", mso.getLogoUrl());
         appInfo.put("description", mso.getIntro());
         appInfo.put("calltoaction", mso.getSlogan());
-        Map<String, Object> iosInfo = new HashMap<String, Object>();
+        HashMap<String, Serializable> iosInfo = new HashMap<String, Serializable>();
         MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_ORIGIN);
         if (config != null)
             iosInfo.put("oringin", config.getValue());
-        List<String> landing = new ArrayList<String>();
+        ArrayList<String> landing = new ArrayList<String>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_LANDING_DIRECT);
         if (config != null)
             landing.add(config.getValue());
@@ -932,7 +940,7 @@ public class ApiMso extends ApiGeneric {
             iosInfo.put("officesite", config.getValue());
         if (!iosInfo.isEmpty())
             appInfo.put("ios", iosInfo);
-        Map<String, Object> androidInfo = new HashMap<String, Object>();
+        HashMap<String, Serializable> androidInfo = new HashMap<String, Serializable>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_ORIGIN);
         if (config != null)
             androidInfo.put("oringin", config.getValue());
@@ -948,7 +956,7 @@ public class ApiMso extends ApiGeneric {
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_OFFICESITE);
         if (config != null)
             androidInfo.put("officesite", config.getValue());
-        List<String> market = new ArrayList<String>();
+        ArrayList<String> market = new ArrayList<String>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_MARKET_DIRECT);
         if (config != null)
             market.add(config.getValue());
@@ -957,14 +965,16 @@ public class ApiMso extends ApiGeneric {
             market.add(config.getValue());
         if (market != null)
             androidInfo.put("market", market);
+        if (!androidInfo.isEmpty())
+            appInfo.put("android", androidInfo);
         appInfo.put("playeronly", false);
         result.put("app", appInfo);
         
         // social info
-        List<Map<String,String>> socialInfo = new ArrayList<Map<String,String>>();
+        ArrayList<HashMap<String,String>> socialInfo = new ArrayList<HashMap<String,String>>();
         List<MsoPromotion> promotions = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.SNS);
         for (MsoPromotion promotion : promotions) {
-            Map<String,String> entity = new HashMap<String,String>();
+            HashMap<String,String> entity = new HashMap<String,String>();
             entity.put("icon", promotion.getLogoUrl());
             entity.put("url", promotion.getLink());
             socialInfo.add(entity);
@@ -973,7 +983,7 @@ public class ApiMso extends ApiGeneric {
             appInfo.put("social", socialInfo);
         
         // promote info
-        List<Map<String,String>> promoteInfo = new ArrayList<Map<String,String>>();
+        ArrayList<Map<String,String>> promoteInfo = new ArrayList<Map<String,String>>();
         promotions = NNF.getMsoPromotionMngr().findByMsoAndType(mso.getId(), MsoPromotion.PROGRAM);
         for (MsoPromotion promotion : promotions) {
             Map<String,String> entity = new HashMap<String,String>();
@@ -985,13 +995,15 @@ public class ApiMso extends ApiGeneric {
         if (!promoteInfo.isEmpty())
             appInfo.put("social", promoteInfo);
         
+        CacheFactory.set(cacheKey, result);
+        
         return result;
     }
     
     @RequestMapping(value = "mso/{msoId}", method = RequestMethod.GET)
     public @ResponseBody
-    Mso mso(HttpServletRequest req,
-            HttpServletResponse resp, @PathVariable("msoId") String msoIdStr) {
+    Mso mso(HttpServletRequest req, HttpServletResponse resp,
+            @PathVariable("msoId") String msoIdStr) {
         
         ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
@@ -999,9 +1011,10 @@ public class ApiMso extends ApiGeneric {
             notFound(resp, MSO_NOT_FOUND);
             return null;
         }
+        MsoConfigManager configMngr = NNF.getConfigMngr();
         
         mso.setMaxSets(MsoConfig.MAXSETS_DEFAULT);
-        MsoConfig maxSets = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.MAX_SETS);
+        MsoConfig maxSets = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_SETS);
         if (maxSets != null && maxSets.getValue() != null && maxSets.getValue().isEmpty() == false) {
             try {
                 mso.setMaxSets(Short.valueOf(maxSets.getValue()));
@@ -1010,7 +1023,7 @@ public class ApiMso extends ApiGeneric {
         }
         
         mso.setMaxChPerSet(MsoConfig.MAXCHPERSET_DEFAULT);
-        MsoConfig maxChPerSet = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
+        MsoConfig maxChPerSet = configMngr.findByMsoAndItem(mso, MsoConfig.MAX_CH_PER_SET);
         if (maxChPerSet != null && maxChPerSet.getValue() != null && maxChPerSet.getValue().isEmpty() == false) {
             try {
                 mso.setMaxChPerSet(Short.valueOf(maxChPerSet.getValue()));
@@ -1026,7 +1039,7 @@ public class ApiMso extends ApiGeneric {
         // check if push notification was enabled
         boolean apnsEnabled = true;
         boolean gcmEnabled = true;
-        MsoConfig gcmApiKey = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
+        MsoConfig gcmApiKey = configMngr.findByMsoAndItem(mso, MsoConfig.GCM_API_KEY);
         File p12 = new File(MsoConfigManager.getP12FilePath(mso, ctx.isProductionSite()));
         if (gcmApiKey == null || gcmApiKey.getValue() == null || gcmApiKey.getValue().isEmpty()) {
             gcmEnabled = false;
@@ -1038,16 +1051,27 @@ public class ApiMso extends ApiGeneric {
         mso.setApnsEnabled(apnsEnabled);
         
         // favicon
-        MsoConfig config = NNF.getConfigMngr().findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
+        MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.FAVICON_URL);
         if (config != null) {
             mso.setJingleUrl(config.getValue());
         }
         
+        // androidUrl
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_ORIGIN);
+        if (config != null)
+            mso.setAndroidUrl(config.getValue());
+        
+        // iosUrl
+        config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_ORIGIN);
+        if (config != null)
+            mso.setIosUrl(config.getValue());
+        
         // cms logo
-        config = NNF.getConfigMngr().getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
+        config = configMngr.getByMsoAndItem(mso, MsoConfig.CMS_LOGO);
         if (config != null) {
             mso.setCmsLogo(config.getValue());
         }
+        
         return mso;
     }
     
@@ -1094,6 +1118,26 @@ public class ApiMso extends ApiGeneric {
         String slogan = ctx.getParam("slogan");
         if (slogan != null) {
             mso.setSlogan(NnStringUtil.htmlSafeAndTruncated(slogan));
+        }
+        MsoConfigManager configMngr = NNF.getConfigMngr();
+        String androidUrl = ctx.getParam("androidUrl");
+        if (androidUrl != null) {
+            MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_ORIGIN);
+            if (config == null)
+                config = new MsoConfig(mso.getId(), MsoConfig.ANDROID_URL_ORIGIN, androidUrl);
+            else
+                config.setValue(androidUrl);
+            configMngr.save(mso, config);
+        }
+        
+        String iosUrl = ctx.getParam("iosUrl");
+        if (iosUrl != null) {
+            MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_ORIGIN);
+            if (config == null)
+                config = new MsoConfig(mso.getId(), MsoConfig.IOS_URL_ORIGIN, iosUrl);
+            else
+                config.setValue(iosUrl);
+            configMngr.save(mso, config);
         }
         
         return NNF.getMsoMngr().save(mso);
