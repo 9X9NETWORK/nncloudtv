@@ -963,12 +963,12 @@ public class ApiMso extends ApiGeneric {
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_MARKET_SUGGESTED);
         if (config != null)
             market.add(config.getValue());
-        if (market != null)
+        if (!market.isEmpty())
             androidInfo.put("market", market);
         if (!androidInfo.isEmpty())
             appInfo.put("android", androidInfo);
         appInfo.put("playeronly", false);
-        result.put("app", appInfo);
+        result.put("app", (new ArrayList<Serializable>()).add(appInfo));
         
         // social info
         ArrayList<HashMap<String,String>> socialInfo = new ArrayList<HashMap<String,String>>();
@@ -980,7 +980,7 @@ public class ApiMso extends ApiGeneric {
             socialInfo.add(entity);
         }
         if (!socialInfo.isEmpty())
-            appInfo.put("social", socialInfo);
+            result.put("social", socialInfo);
         
         // promote info
         ArrayList<Map<String,String>> promoteInfo = new ArrayList<Map<String,String>>();
