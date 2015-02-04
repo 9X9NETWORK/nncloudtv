@@ -135,4 +135,9 @@ public class MsoPromotion implements PersistentModel {
         this.updateDate = updateDate;
     }
     
+    @Override
+    public String toString() {
+        return getLink();
+    }
+    
 }
