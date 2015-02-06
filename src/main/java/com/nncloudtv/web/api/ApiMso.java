@@ -1010,7 +1010,6 @@ public class ApiMso extends ApiGeneric {
         ApiContext ctx = new ApiContext(req);
         Mso mso = NNF.getMsoMngr().findByIdOrName(msoIdStr);
         if (mso == null) {
-            notFound(resp, MSO_NOT_FOUND);
             return null;
         }
         MsoConfigManager configMngr = NNF.getConfigMngr();
