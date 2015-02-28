@@ -1108,7 +1108,7 @@ public class ApiMso extends ApiGeneric {
         if (logoUrl != null) {
             mso.setLogoUrl(logoUrl);
         }
-        String intro = ctx.getParam("into");
+        String intro = ctx.getParam("intro");
         if (intro != null) {
             mso.setIntro(NnStringUtil.htmlSafeAndTruncated(intro, NnStringUtil.EXTENDED_STRING_LENGTH));
         }
