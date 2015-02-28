@@ -90,20 +90,22 @@ public class MsoConfig implements PersistentModel {
     public static String CHAT                  = "chat"; //chat. values: server:irc.flipr.tv 6699;type:irc;method:none 
     public static String BEAR                  = "bear"; //theme, ui touch up configuration. current values: grizzly, blackbear. blackbear is default
     
-    public static String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
-    public static String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
-    public static String GOOGLE_ANALYTICS_WEB     = "google-analytics-web";
-    public static String FLURRY_ANALYTICS_ANDROID = "flurry-analytics-android";
-    public static String FLURRY_ANALYTICS_IOS     = "flurry-analytics-ios";
+    public static final String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
+    public static final String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
+    public static final String GOOGLE_ANALYTICS_WEB     = "google-analytics-web";
+    public static final String FLURRY_ANALYTICS_ANDROID = "flurry-analytics-android";
+    public static final String FLURRY_ANALYTICS_IOS     = "flurry-analytics-ios";
     
-    public static String ANDROID_URL_ORIGIN            = "android-url-origin";
-    public static String ANDROID_URL_LANDING_DIRECT    = "android-url-landing-direct";
-    public static String ANDROID_URL_LANDING_SUGGESTED = "android-url-landing-suggested";
-    public static String ANDROID_URL_MARKET_DIRECT     = "android-url-market-direct";
-    public static String ANDROID_URL_MARKET_SUGGESTED  = "android-url-market-suggested";
-    public static String IOS_URL_ORIGIN                = "ios-url-origin";
-    public static String IOS_URL_LANDING_DIRECT        = "ios-url-landing-direct";
-    public static String IOS_URL_LANDING_SUGGESTED     = "ios-url-landing-suggested";
+    public static final String ANDROID_URL_ORIGIN            = "android-url-origin";
+    public static final String ANDROID_URL_LANDING_DIRECT    = "android-url-landing-direct";
+    public static final String ANDROID_URL_LANDING_SUGGESTED = "android-url-landing-suggested";
+    public static final String ANDROID_URL_MARKET_DIRECT     = "android-url-market-direct";
+    public static final String ANDROID_URL_MARKET_SUGGESTED  = "android-url-market-suggested";
+    public static final String ANDROID_URL_OFFICESITE        = "android-url-officesite";
+    public static final String IOS_URL_ORIGIN                = "ios-url-origin";
+    public static final String IOS_URL_LANDING_DIRECT        = "ios-url-landing-direct";
+    public static final String IOS_URL_LANDING_SUGGESTED     = "ios-url-landing-suggested";
+    public static final String IOS_URL_OFFICESITE            = "ios-url-officesite";
     
     // S3 related configurations
     public static final String AWS_KEY          = "aws-key";

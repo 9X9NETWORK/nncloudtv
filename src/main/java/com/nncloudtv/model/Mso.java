@@ -110,6 +110,12 @@ public class Mso implements PersistentModel {
     @NotPersistent
     private boolean gcmEnabled;
     
+    @NotPersistent
+    private String androidUrl;
+    
+    @NotPersistent
+    private String iosUrl;
+    
     public Mso(String name, String intro, String contactEmail, short type) {
         this.name = name;
         this.intro = intro;
@@ -259,5 +265,21 @@ public class Mso implements PersistentModel {
     
     public void setCmsLogo(String cmsLogo) {
         this.cmsLogo = cmsLogo;
+    }
+    
+    public String getAndroidUrl() {
+        return androidUrl;
+    }
+    
+    public void setAndroidUrl(String androidUrl) {
+        this.androidUrl = androidUrl;
+    }
+    
+    public String getIosUrl() {
+        return iosUrl;
+    }
+    
+    public void setIosUrl(String iosUrl) {
+        this.iosUrl = iosUrl;
     }
 }
