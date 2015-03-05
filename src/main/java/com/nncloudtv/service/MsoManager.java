@@ -169,6 +169,9 @@ public class MsoManager {
             if (c.getItem().equals(MsoConfig.VIDEO)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.VIDEO, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.EMBEDDED_WEBPAGE)) {
+                result += PlayerApiService.assembleKeyValue(MsoConfig.EMBEDDED_WEBPAGE, c.getValue());
+            }
             if (c.getItem().equals(MsoConfig.FACEBOOK_CLIENTID)) {
                 facebookId = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.FACEBOOK_CLIENTID, c.getValue());

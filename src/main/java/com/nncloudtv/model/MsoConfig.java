@@ -81,6 +81,7 @@ public class MsoConfig implements PersistentModel {
     public static String AD_IOS_TYPE           = "ad-ios-type"; //interstitials, banner, video 
     public static String AD_ANDROID            = "ad-android"; //"admob" or "direct-video"
     public static String AUDIO_BACKGROUND      = "audio-background";
+    public static String EMBEDDED_WEBPAGE      = "embedded-webpage"; //a social web page
     public static String SOCIAL_FEEDS          = "social-feeds"; //twitter NBA;facebook ETtoday
     public static String SOCIAL_FEEDS_SERVER   = "social-feeds-server"; //soc1.flipr.tv 7708
     public static String NOTIFICATION_SOUND_VIBRATION  = "notification-sound-vibration"; //sound off;vibration off
