@@ -89,7 +89,8 @@ public class MsoConfig implements PersistentModel {
     public static String STORE                 = "store"; //on, off
     public static String CMS_LOGO              = "cms-logo"; // private label cms logo
     public static String CHAT                  = "chat"; //chat. values: server:irc.flipr.tv 6699;type:irc;method:none 
-    public static String BEAR                  = "bear"; //theme, ui touch up configuration. current values: grizzly, blackbear. blackbear is default
+    public static String BEAR                  = "bear"; //theme, or feature set, ui touch up configuration. current values: grizzly, blackbear. blackbear is default
+    public static String STYLE                 = "style"; //ui-style. orpington is the latest, rir is before orpington
     
     public static final String GOOGLE_ANALYTICS_IOS     = "google-analytics-ios";
     public static final String GOOGLE_ANALYTICS_ANDROID = "google-analytics-android";
