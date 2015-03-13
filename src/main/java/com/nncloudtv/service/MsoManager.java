@@ -147,7 +147,9 @@ public class MsoManager {
         boolean searchSet = false;
         boolean audioSet = false;
         boolean bearSet = false;
-        String adIosType = null;        
+        boolean styleSet = false;
+        String adIosType = null; 
+        
         for (MsoConfig c : list) {
             if (c.getItem().equals(MsoConfig.DEBUG))
                 result += PlayerApiService.assembleKeyValue(MsoConfig.DEBUG, c.getValue());
@@ -210,6 +212,10 @@ public class MsoManager {
             	bearSet = true;
                 result += PlayerApiService.assembleKeyValue(MsoConfig.BEAR, c.getValue());
             }
+            if (c.getItem().equals(MsoConfig.STYLE)) {
+            	styleSet = true;
+                result += PlayerApiService.assembleKeyValue(MsoConfig.STYLE, c.getValue());
+            }
             if (c.getItem().equals(MsoConfig.STORE)) {
                 result += PlayerApiService.assembleKeyValue(MsoConfig.STORE, c.getValue());
             }
@@ -225,6 +231,8 @@ public class MsoManager {
         */
         if (bearSet == false)
         	result += PlayerApiService.assembleKeyValue(MsoConfig.BEAR, "blackbear");
+        if (styleSet == false)
+        	result += PlayerApiService.assembleKeyValue(MsoConfig.STYLE, "rir");
         if (regionSet == false)
         	result += PlayerApiService.assembleKeyValue(MsoConfig.SUPPORTED_REGION, "en US;zh 台灣");
         if (chromecastId == false)

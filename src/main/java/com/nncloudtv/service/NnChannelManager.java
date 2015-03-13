@@ -895,7 +895,12 @@ public class NnChannelManager {
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
             if (ctx.isPlainFmt())  {
-                output += this.composeEachChannelLineup(c, ctx) + "\n";
+            	if (ctx.getDevice().equals(ApiContext.DEVICE_TV)) {
+            		if (!(c.getNote() != null && c.getNote().equals("!" + ApiContext.DEVICE_TV)))
+                        output += this.composeEachChannelLineup(c, ctx) + "\n";            			
+            	} else {
+                    output += this.composeEachChannelLineup(c, ctx) + "\n";            			            		
+            	}
             } else { 
                 lineups.add((ChannelLineup)this.composeEachChannelLineup(c, ctx));
             }
@@ -1193,8 +1198,10 @@ public class NnChannelManager {
                 ori.add(" ");
             else
                 ori.add(lastEpisodeTitle); //lastEpisodeTitle
-            if (ctx.getVer() > 32)
+            if (ctx.getVer() > 32) {
                 ori.add(poiStr);
+            }
+            
             String size[] = new String[ori.size()];    
             String output = NnStringUtil.getDelimitedStr(ori.toArray(size));
             output = output.replaceAll("null", "");
