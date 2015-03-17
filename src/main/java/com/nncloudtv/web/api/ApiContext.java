@@ -46,9 +46,9 @@ public class ApiContext {
     public final static String OS_IOS            = "ios";
     public final static String OS_WEB            = "web";
 
-    public final static String DEVICE_PHONE      = "phone";
-    public final static String DEVICE_PAD        = "pad";
-    public final static String DEVICE_TV         = "tv";
+    public final static String DISPLAY_PHONE      = "phone";
+    public final static String DISPLAY_PAD        = "pad";
+    public final static String DISPLAY_TV         = "tv";
     
     public final static int    DEFAULT_VERSION   = 31;
     public final static String DEFAULT_OS        = OS_WEB;
@@ -58,7 +58,7 @@ public class ApiContext {
     
     public final static String PARAM_APP_VERSION = "appver";
     public final static String PARAM_OS          = "os";
-    public final static String PARAM_DEVICE      = "device";   
+    public final static String PARAM_DISPLAY     = "display";   
     public final static String PARAM_MSO         = "mso";
     public final static String PARAM_LANG        = "lang";
     public final static String PARAM_SPHERE      = "sphere";
@@ -71,7 +71,7 @@ public class ApiContext {
     Integer version;
     String appVersion;
     String os;
-    String device;
+    String display;
     String root;
     Mso mso;
     Boolean productionSite = null;
@@ -93,8 +93,8 @@ public class ApiContext {
         return version;
     }
 
-    public String getDevice() {
-        return device;
+    public String getDisplay() {
+        return display;
     }
     
     public String getAppVersion() {
@@ -181,9 +181,9 @@ public class ApiContext {
             }
         }
 
-        device = getParam(PARAM_DEVICE);
-        if (device == null) {
-        	device = DEVICE_PHONE;
+        display = getParam(PARAM_DISPLAY);
+        if (display == null) {
+        	display = DISPLAY_PHONE;
         }
         
         appVersion = getParam(PARAM_APP_VERSION);
