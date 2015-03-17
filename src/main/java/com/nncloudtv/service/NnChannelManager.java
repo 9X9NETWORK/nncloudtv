@@ -895,8 +895,8 @@ public class NnChannelManager {
         List<ChannelLineup> lineups = new ArrayList<ChannelLineup>();
         for (NnChannel c : channels) {
             if (ctx.isPlainFmt())  {
-            	if (ctx.getDevice().equals(ApiContext.DEVICE_TV)) {
-            		if (!(c.getNote() != null && c.getNote().equals("!" + ApiContext.DEVICE_TV)))
+            	if (ctx.getDisplay().equals(ApiContext.DISPLAY_TV)) {
+            		if (!(c.getNote() != null && c.getNote().equals("!" + ApiContext.DISPLAY_TV)))
                         output += this.composeEachChannelLineup(c, ctx) + "\n";            			
             	} else {
                     output += this.composeEachChannelLineup(c, ctx) + "\n";            			            		
