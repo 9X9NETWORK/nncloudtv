@@ -614,7 +614,7 @@ public class ApiMisc extends ApiGeneric {
                     }
                     
                     writer.println("#EXTINF:" + duration + "," + title);
-                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : "")));
                 }
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
