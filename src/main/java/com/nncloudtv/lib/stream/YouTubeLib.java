@@ -16,25 +16,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelContentDetails;
+import com.google.api.services.youtube.model.ChannelListResponse;
+import com.google.api.services.youtube.model.Playlist;
+import com.google.api.services.youtube.model.PlaylistContentDetails;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.PlaylistListResponse;
+import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.IOUtils;
-import com.google.api.client.util.Key;
-import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.task.PipingTask;
@@ -146,52 +144,6 @@ public class YouTubeLib  implements StreamLib {
         return url;
     }
     
-     public static class YouTubeUrl extends GenericUrl {
-        @Key public final String alt = "jsonc";
-        @Key public String author;
-        @Key public String q;
-        @Key("max-results") public Integer maxResults;
-        public YouTubeUrl(String url) {
-          super(url);
-        }
-    }
-     
-    public static class VideoFeed {
-       @Key public String title;
-       @Key public String subtitle;
-       @Key public String logo;
-       @Key public String description;
-       @Key public String author;
-       @Key public int totalItems;
-       @Key public List<Video> items;
-    }
-    
-    public static class Author {
-        @Key public String name;
-    }
-    
-    public static class MyFeed {
-       @Key public List<Video> items;
-    }
-    
-    public static class Thumbnail {
-        @Key public String sqDefault;
-    }
-    
-    public static class ProfileFeed {
-        @Key public List<String> items;
-    }
-        
-    public static class Player {
-        @Key("default") public String defaultUrl;
-    }
-    
-    public static HttpRequestFactory getFactory() {
-        HttpTransport transport = new NetHttpTransport();
-        HttpRequestFactory factory = transport.createRequestFactory();
-        return factory;
-    }
-    
     public static Map<String, String> getYouTubeVideo(String videoId) {
         
         Map<String, String> results = new HashMap<String, String>();
@@ -220,49 +172,59 @@ public class YouTubeLib  implements StreamLib {
     
     //return key "status", "title", "thumbnail", "description"
     //TODO boolean channel removed, can easily tell by format
-    public static Map<String, String> getYouTubeEntry(String userIdStr, boolean channel) {        
+    public static Map<String, String> getYouTubeEntry(String userIdStr, boolean isChannel) {
         Map<String, String> results = new HashMap<String, String>();
         results.put("status", String.valueOf(NnStatusCode.SUCCESS));
-        String url = "";
-        //https://gdata.youtube.com/feeds/api/playlists/nSXHekhWES_OhBZcFPWQ1f5q-BKHXx-O?v=2&alt=json
-        //http://gdata.youtube.com/feeds/api/users/crashcourse?alt=json&v=2    
-        if (channel)
-           url = "http://gdata.youtube.com/feeds/api/users/" + userIdStr;
-        else
-           url = "https://gdata.youtube.com/feeds/api/playlists/" + userIdStr;
         
-        url = url + "?v=2&alt=json";
-        log.info("url:" + url);
-        String jsonStr = NnNetUtil.urlGet(url);
-        if (jsonStr == null) {
-           results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
-           return results;
-        }
-        JSONObject json = new JSONObject(jsonStr);
-        String title, description, thumbnail, author, total;
-        title = description = thumbnail = author = total = "";
         try {
-           if (channel) {
-               title = json.getJSONObject("entry").getJSONObject("title").get("$t").toString();
-               description = json.getJSONObject("entry").getJSONObject("summary").get("$t").toString();
-               thumbnail = json.getJSONObject("entry").getJSONObject("media$thumbnail").get("url").toString();
-               author = json.getJSONObject("entry").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-           } else {
-               title = json.getJSONObject("feed").getJSONObject("title").get("$t").toString();
-               description = json.getJSONObject("feed").getJSONObject("media$group").getJSONObject("media$description").get("$t").toString();
-               thumbnail = json.getJSONObject("feed").getJSONObject("media$group").getJSONArray("media$thumbnail").getJSONObject(0).get("url").toString();
-               author = json.getJSONObject("feed").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-               total = json.getJSONObject("feed").getJSONObject("openSearch$totalResults").get("$t").toString();
-               results.put("totalItems", total);
-           }
-           results.put("title", title);
-           results.put("description", description);
-           results.put("thumbnail", thumbnail);
-           results.put("author", author);
-           results.put("total", total);
-        } catch (JSONException e){
-           e.printStackTrace();
+            YouTube youtube = getYouTubeService();
+            String playlistId = userIdStr;
+            if (isChannel) {
+                
+                YouTube.Channels.List channelRequest = youtube.channels().list("contentDetails");
+                if (userIdStr.startsWith("UC"))
+                    channelRequest.setId(userIdStr);
+                else
+                    channelRequest.setForUsername(userIdStr);
+                ChannelListResponse channelResponse = channelRequest.execute();
+                List<Channel> items = channelResponse.getItems();
+                if (items == null || items.isEmpty()) {
+                    log.warning("no channel exists");
+                    results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
+                    return results;
+                }
+                ChannelContentDetails contentDetails = items.get(0).getContentDetails();
+                playlistId = contentDetails.getRelatedPlaylists().getUploads();
+            }
+            
+            YouTube.Playlists.List request = youtube.playlists().list("contentDetails,snippet");
+            log.info("playlistId = " + playlistId);
+            PlaylistListResponse response = request.setId(playlistId).execute();
+            List<Playlist> items = response.getItems();
+            if (items == null || items.isEmpty()) {
+                log.warning("no playlist exists");
+                results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
+                return results;
+            }
+            PlaylistSnippet snippet = items.get(0).getSnippet();
+            PlaylistContentDetails contentDetails = items.get(0).getContentDetails();
+            results.put("title", snippet.getTitle());
+            results.put("description", snippet.getDescription());
+            results.put("thumbnail", snippet.getThumbnails().getStandard().getUrl());
+            results.put("author", snippet.getChannelTitle());
+            results.put("total", String.valueOf(contentDetails.getItemCount()));
+            
+        } catch (GeneralSecurityException e) {
+            
+            log.warning(e.getMessage());
+            results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
+            
+        } catch (IOException e) {
+            
+            log.warning(e.getMessage());
+            results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
         }
+        
         return results;
     }
     
@@ -443,67 +405,6 @@ public class YouTubeLib  implements StreamLib {
     public InputStream getDirectVideoStream(String urlStr) {
         
         return getYouTubeDLStream(urlStr);
-    }
-    
-    //https://gdata.youtube.com/feeds/api/playlists/nSXHekhWES_OhBZcFPWQ1f5q-BKHXx-O?v=2&alt=json
-    //http://gdata.youtube.com/feeds/api/users/crashcourse?alt=json&v=2
-    public static Map<String, String> test(String userIdStr, boolean channel) {
-        Map<String, String> results = new HashMap<String, String>();
-        results.put("status", String.valueOf(NnStatusCode.SUCCESS));
-        String url = "";
-        if (channel)
-           url = "http://gdata.youtube.com/feeds/api/users/" + userIdStr;
-        else
-           url = "https://gdata.youtube.com/feeds/api/playlists/" + userIdStr;
-        
-        url = url + "?v=2&alt=json";
-        log.info("url:" + url);
-        String jsonStr = NnNetUtil.urlGet(url);
-        if (jsonStr == null) {
-           results.put("status", String.valueOf(NnStatusCode.SERVER_ERROR));
-           return results;
-        }
-        JSONObject json = new JSONObject(jsonStr);
-        String title, description, thumbnail, author, total;
-        title = description = thumbnail = author = total = "";
-        if (channel) {
-            try {
-               title = json.getJSONObject("entry").getJSONObject("title").get("$t").toString();
-            } catch (JSONException e) {}
-            try {
-               description = json.getJSONObject("entry").getJSONObject("summary").get("$t").toString();
-            } catch (JSONException e) {}
-            try {
-               thumbnail = json.getJSONObject("entry").getJSONObject("media$thumbnail").get("url").toString();
-            } catch (JSONException e) {}
-            try {
-               author = json.getJSONObject("entry").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-            } catch (JSONException e) {}
-        } else {
-            try {
-               title = json.getJSONObject("feed").getJSONObject("title").get("$t").toString();
-            } catch (JSONException e) {}
-            try {
-                description = json.getJSONObject("feed").getJSONObject("media$group").getJSONObject("media$description").get("$t").toString();
-            } catch (JSONException e) {}
-            try {
-                thumbnail = json.getJSONObject("feed").getJSONObject("media$group").getJSONArray("media$thumbnail").getJSONObject(0).get("url").toString();
-            } catch (JSONException e) {}
-            try {
-                author = json.getJSONObject("feed").getJSONArray("author").getJSONObject(0).getJSONObject("name").get("$t").toString();
-            } catch (JSONException e) {}
-            try {
-                total = json.getJSONObject("feed").getJSONObject("openSearch$totalResults").get("$t").toString();
-            } catch (JSONException e) {}
-            results.put("totalItems", total);
-        }
-        results.put("title", title);
-        results.put("description", description);
-        results.put("thumbnail", thumbnail);
-        results.put("author", author);
-        results.put("total", total);
-
-        return results;
     }
     
 }
