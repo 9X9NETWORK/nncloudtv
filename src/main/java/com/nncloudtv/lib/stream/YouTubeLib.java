@@ -210,7 +210,7 @@ public class YouTubeLib  implements StreamLib {
             PlaylistContentDetails contentDetails = items.get(0).getContentDetails();
             results.put("title", snippet.getTitle());
             results.put("description", snippet.getDescription());
-            results.put("thumbnail", snippet.getThumbnails().getStandard().getUrl());
+            results.put("thumbnail", snippet.getThumbnails().getDefault().getUrl());
             results.put("author", snippet.getChannelTitle());
             results.put("totalItems", String.valueOf(contentDetails.getItemCount()));
             
