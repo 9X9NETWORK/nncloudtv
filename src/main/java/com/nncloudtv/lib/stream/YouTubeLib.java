@@ -34,7 +34,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.IOUtils;
 import com.google.api.client.util.Key;
-import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.service.MsoConfigManager;
@@ -347,7 +346,7 @@ public class YouTubeLib  implements StreamLib {
         List<String> videoIdList = new ArrayList<String>();
         YouTube youtube = getYouTubeService();
         YouTube.PlaylistItems.List playlistRequest = youtube.playlistItems().list("contentDetails");
-        PlaylistItemListResponse playlistResponse = playlistRequest.setMaxResults(50L).execute();
+        PlaylistItemListResponse playlistResponse = playlistRequest.setPlaylistId(playlistId).setMaxResults(50L).execute();
         List<PlaylistItem> PlaylistItems = playlistResponse.getItems();
         for (PlaylistItem item : PlaylistItems)
             videoIdList.add(item.getContentDetails().getVideoId());
@@ -362,7 +361,7 @@ public class YouTubeLib  implements StreamLib {
         
         YouTube youtube = getYouTubeService();
         YouTube.PlaylistItems.List request = youtube.playlistItems().list("snippet");
-        PlaylistItemListResponse response = request.setMaxResults(50L).execute();
+        PlaylistItemListResponse response = request.setPlaylistId(playlistId).setMaxResults(50L).execute();
         
         return response.getItems();
     }
