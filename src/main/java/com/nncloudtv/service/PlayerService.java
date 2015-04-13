@@ -346,7 +346,7 @@ public class PlayerService {
                                 break;
                             }
                         }
-                    } else {                    
+                    } else {
                         if (youtubeEp != null) {
                             Map<String, String> result = YouTubeLib.getYouTubeVideo(youtubeEp);
                             model.addAttribute(META_EPISODE_TITLE, result.get("title"));

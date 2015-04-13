@@ -3,9 +3,9 @@ package com.nncloudtv.lib.stream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,20 +14,25 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.VideoListResponse;
+import com.google.api.services.youtube.model.Video;
+import com.google.api.services.youtube.model.VideoSnippet;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.IOUtils;
 import com.google.api.client.util.Key;
-import com.google.gdata.client.youtube.YouTubeService;
-import com.google.gdata.data.youtube.PlaylistFeed;
-import com.google.gdata.util.ServiceException;
-import com.nncloudtv.lib.NnLogUtil;
+import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
 import com.nncloudtv.task.PipingTask;
@@ -42,6 +47,8 @@ public class YouTubeLib  implements StreamLib {
     public static final String REGEX_VIDEO_ID_STR      = "v=([^&]+)";
     public static final String YOUTUBE_CHANNEL_PREFIX  = "http://www.youtube.com/user/";
     public static final String YOUTUBE_PLAYLIST_PREFIX = "http://www.youtube.com/view_play_list?p=";
+    
+    public static final String SCOPE_READONLY = "https://www.googleapis.com/auth/youtube.readonly";
     
     /** 
      * 1. remove those invalid keywords we already know.
@@ -134,8 +141,7 @@ public class YouTubeLib  implements StreamLib {
             }
         }
         log.info("original url:" + urlStr + ";result=" + url);        
-        //if (!youTubeCheck(result)) {return null;} //till the function is fixed        
-        return url;        
+        return url;
     }
     
      public static class YouTubeUrl extends GenericUrl {
@@ -166,15 +172,6 @@ public class YouTubeLib  implements StreamLib {
        @Key public List<Video> items;
     }
     
-    public static class Video {
-        @Key public String id;
-        @Key public String title;
-        @Key public String description;
-        @Key public Thumbnail thumbnail;
-        @Key public Player player;
-        @Key public Video video;
-    }
-    
     public static class Thumbnail {
         @Key public String sqDefault;
     }
@@ -194,26 +191,28 @@ public class YouTubeLib  implements StreamLib {
     }
     
     public static Map<String, String> getYouTubeVideo(String videoId) {
+        
         Map<String, String> results = new HashMap<String, String>();
-        HttpRequestFactory factory = YouTubeLib.getFactory();
-        HttpRequest request;
-        MyFeed feed;
+        
+        YouTube youtube;
         try {
-            //https://gdata.youtube.com/feeds/api/videos/nIbzpk8FjbU?v=2&alt=jsonc
-            YouTubeUrl videoUrl = new YouTubeUrl("https://gdata.youtube.com/feeds/api/videos");
-            videoUrl.q = videoId;
-            videoUrl.maxResults = 1;
-            request = factory.buildGetRequest(videoUrl);
-            feed = request.execute().parseAs(MyFeed.class);
-            if (feed.items != null) {
-                Video video = feed.items.get(0);
-                results.put("title", video.title);
-                results.put("description", video.description);
-                results.put("imageUrl", video.thumbnail.sqDefault);
+            youtube = getYouTubeService();
+            YouTube.Videos.List request = youtube.videos().list("snippet");
+            VideoListResponse response = request.setId(videoId).execute();
+            List<Video> items = response.getItems();
+            if (items.size() > 0) {
+                
+                VideoSnippet snippet = items.get(0).getSnippet();
+                results.put("title",       snippet.getTitle());
+                results.put("description", snippet.getDescription());
+                results.put("imageUrl",    snippet.getThumbnails().getStandard().getUrl());
             }
-        } catch (Exception e) {
-            NnLogUtil.logException(e);
+        } catch (GeneralSecurityException e) {
+            log.warning(e.getMessage());
+        } catch (IOException e) {
+            log.warning(e.getMessage());
         }
+        
         return results;
     }
     
@@ -275,34 +274,6 @@ public class YouTubeLib  implements StreamLib {
         return name;
     }
     
-    /**
-     * YouTube API request format, http://gdata.youtube.com/feeds/api/users/androidcentral
-     * This function currently checks only if the query status is not 200.
-     * 
-     * @@@ IMPORTANT: This code will be blocked by YouTube, need to add user's IP, indicating you are on behalf of the user.
-     * 
-     * @param urlStr support only format of http://www.youtube.com/user/android  
-     */
-    public static boolean youTubeCheck(String urlStr) {        
-        String[] splits = urlStr.split("/");
-        String apiReq = "http://gdata.youtube.com/feeds/api/users/" + splits[splits.length-1];
-        URL url;
-        try {
-            //HTTP GET
-            url = new URL(apiReq);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            int statusCode = connection.getResponseCode();
-            if (statusCode != HttpURLConnection.HTTP_OK) {
-                log.info("yutube GET response not ok with url:" + urlStr + "; status code = " + connection.getResponseCode());
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-    
     public String normalizeUrl(String urlStr) {
         
         if (urlStr == null) { return null; }
@@ -343,17 +314,36 @@ public class YouTubeLib  implements StreamLib {
         return null;
     }
     
-    static YouTubeService getYTService() {
+    static YouTube getYouTubeService() throws GeneralSecurityException, IOException {
         
-        return new YouTubeService("FLIPr.tv");
+        return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(),
+                                   JacksonFactory.getDefaultInstance(),
+                                   GooglePlayLib.getGoogleCredential(Collections.singleton(SCOPE_READONLY))).setApplicationName("FLIPr.tv").build();
     }
     
-    public static PlaylistFeed getPlaylistFeed(String playlistId) throws MalformedURLException, IOException, ServiceException {
+    public static List<Video> getPlaylistVideos(String playlistId) throws GeneralSecurityException, IOException {
         
-        if (playlistId == null) { return null; }
-        YouTubeService service = getYTService();
+        List<String> videoIdList = new ArrayList<String>();
+        YouTube youtube = getYouTubeService();
+        YouTube.PlaylistItems.List playlistRequest = youtube.playlistItems().list("contentDetails");
+        PlaylistItemListResponse playlistResponse = playlistRequest.setMaxResults(50L).execute();
+        List<PlaylistItem> PlaylistItems = playlistResponse.getItems();
+        for (PlaylistItem item : PlaylistItems)
+            videoIdList.add(item.getContentDetails().getVideoId());
         
-        return service.getFeed(new URL("https://gdata.youtube.com/feeds/api/playlists/" + playlistId), PlaylistFeed.class);
+        YouTube.Videos.List videoRequest = youtube.videos().list("contentDetails,snippet");
+        VideoListResponse videoResponse = videoRequest.setId(StringUtils.join(videoIdList, ",")).execute();
+        
+        return videoResponse.getItems();
+    }
+    
+    public static List<PlaylistItem> getPlaylistItems(String playlistId) throws GeneralSecurityException, IOException {
+        
+        YouTube youtube = getYouTubeService();
+        YouTube.PlaylistItems.List request = youtube.playlistItems().list("snippet");
+        PlaylistItemListResponse response = request.setMaxResults(50L).execute();
+        
+        return response.getItems();
     }
     
     public String getHtml5DirectVideoUrl(String urlStr) {

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -27,7 +28,7 @@ public class GooglePlayLib {
     
     static final String SERVICE_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
     
-    private static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
+    public static GoogleCredential getGoogleCredential(Set<String> scopes) throws GeneralSecurityException, IOException {
         
         GoogleCredential.Builder builder = new GoogleCredential.Builder();
         
@@ -45,7 +46,10 @@ public class GooglePlayLib {
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
         builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
         builder = builder.setServiceAccountId(accountEmail);
-        builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
+        if (scopes == null || scopes.isEmpty())
+            builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
+        else
+            builder = builder.setServiceAccountScopes(scopes);
         
         return builder.build();
     }
@@ -54,7 +58,7 @@ public class GooglePlayLib {
         
         return new Builder(GoogleNetHttpTransport.newTrustedTransport(),
                            JacksonFactory.getDefaultInstance(),
-                           getGoogleCredential())
+                           getGoogleCredential(Collections.singleton(SERVICE_SCOPE)))
                        .setApplicationName(MsoConfigManager.getGooglePlayAppName(mso))
                        .build();
     }

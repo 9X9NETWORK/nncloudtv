@@ -33,6 +33,7 @@ public class MsoConfigManager {
     protected static final String PROPERTIES_AWS          =           "aws.properties";
     protected static final String PROPERTIES_GOOGLEPLAY   =    "googleplay.properties";
     protected static final String PROPERTIES_APPSTORE     =      "appstore.properties";
+    protected static final String PROPERTIES_YOUTUBE      =       "youtube.properties";
     
     protected static String serverDomain = null;
     
@@ -170,12 +171,18 @@ public class MsoConfigManager {
     }
     
     static public String getFacebookClientId() {
+        
         return getProperty("facebook.properties", "facebook_clientid");
     }
     
     static public String getFacebookClientSecret() {
         
         return getProperty("facebook.properties", "facebook_client_secret");
+    }
+    
+    static public String getYouTubeAPIKey() {
+        
+        return getProperty(PROPERTIES_YOUTUBE, "api_key");
     }
     
     static public String getExternalRootPath() {
