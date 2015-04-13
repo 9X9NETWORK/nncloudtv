@@ -339,7 +339,7 @@ public class YouTubeLib  implements StreamLib {
         
         return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(),
                                    JacksonFactory.getDefaultInstance(),
-                                   builder.build()).build();
+                                   builder.build()).setApplicationName("YouTube Data API Service").build();
     }
     
     public static List<Video> getPlaylistVideos(String playlistId) throws GeneralSecurityException, IOException {
