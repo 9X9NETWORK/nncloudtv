@@ -331,10 +331,11 @@ public class YouTubeLib  implements StreamLib {
         String accountEmail = MsoConfigManager.getYouTubeAccountEmail();
         log.info("youtube account email = " + accountEmail);
         
-        builder = builder.setServiceAccountPrivateKeyFromP12File(p12);
+        //builder = builder.setServiceAccountPrivateKeyFromP12File(p12);
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
         builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
-        builder = builder.setServiceAccountId(accountEmail);
+        //builder = builder.setServiceAccountId(accountEmail);
+        builder.setServiceAccountPrivateKeyId("AIzaSyBWTbnENN8StmCSjgRwJ5AfGhEvXewgAJk");
         builder = builder.setServiceAccountScopes(Collections.singleton(SCOPE_READONLY));
         
         return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(),
