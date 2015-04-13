@@ -1,6 +1,7 @@
 package com.nncloudtv.lib.stream;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -24,6 +25,7 @@ import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequestFactory;
@@ -35,6 +37,7 @@ import com.google.api.client.util.Key;
 import com.nncloudtv.lib.GooglePlayLib;
 import com.nncloudtv.lib.NnNetUtil;
 import com.nncloudtv.lib.NnStringUtil;
+import com.nncloudtv.service.MsoConfigManager;
 import com.nncloudtv.task.PipingTask;
 import com.nncloudtv.web.api.NnStatusCode;
 
@@ -316,9 +319,27 @@ public class YouTubeLib  implements StreamLib {
     
     static YouTube getYouTubeService() throws GeneralSecurityException, IOException {
         
+        GoogleCredential.Builder builder = new GoogleCredential.Builder();
+        
+        String path = MsoConfigManager.getYouTubeP12FilePath();
+        log.info("read p12 file from " + path);
+        File p12 = new File(path);
+        if (!p12.canRead()) {
+            log.severe("can not read p12 file from " + path);
+            return null;
+        }
+        String accountEmail = MsoConfigManager.getYouTubeAccountEmail();
+        log.info("youtube account email = " + accountEmail);
+        
+        builder = builder.setServiceAccountPrivateKeyFromP12File(p12);
+        builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
+        builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
+        builder = builder.setServiceAccountId(accountEmail);
+        builder = builder.setServiceAccountScopes(Collections.singleton(SCOPE_READONLY));
+        
         return new YouTube.Builder(GoogleNetHttpTransport.newTrustedTransport(),
                                    JacksonFactory.getDefaultInstance(),
-                                   GooglePlayLib.getGoogleCredential(Collections.singleton(SCOPE_READONLY))).setApplicationName("FLIPr.tv").build();
+                                   builder.build()).build();
     }
     
     public static List<Video> getPlaylistVideos(String playlistId) throws GeneralSecurityException, IOException {

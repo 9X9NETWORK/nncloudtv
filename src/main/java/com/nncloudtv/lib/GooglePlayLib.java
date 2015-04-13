@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -28,12 +27,12 @@ public class GooglePlayLib {
     
     static final String SERVICE_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
     
-    public static GoogleCredential getGoogleCredential(Set<String> scopes) throws GeneralSecurityException, IOException {
+    public static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
         
         GoogleCredential.Builder builder = new GoogleCredential.Builder();
         
-        String path = MsoConfigManager.getGooglePlayPemFilePath();
-        log.info("read pem file from " + path);
+        String path = MsoConfigManager.getGooglePlayP12FilePath();
+        log.info("read p12 file from " + path);
         File p12 = new File(path);
         if (!p12.canRead()) {
             log.severe("can not read p12 file from " + path);
@@ -46,10 +45,7 @@ public class GooglePlayLib {
         builder = builder.setTransport(GoogleNetHttpTransport.newTrustedTransport());
         builder = builder.setJsonFactory(JacksonFactory.getDefaultInstance());
         builder = builder.setServiceAccountId(accountEmail);
-        if (scopes == null || scopes.isEmpty())
-            builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
-        else
-            builder = builder.setServiceAccountScopes(scopes);
+        builder = builder.setServiceAccountScopes(Collections.singleton(SERVICE_SCOPE));
         
         return builder.build();
     }
@@ -58,7 +54,7 @@ public class GooglePlayLib {
         
         return new Builder(GoogleNetHttpTransport.newTrustedTransport(),
                            JacksonFactory.getDefaultInstance(),
-                           getGoogleCredential(Collections.singleton(SERVICE_SCOPE)))
+                           getGoogleCredential())
                        .setApplicationName(MsoConfigManager.getGooglePlayAppName(mso))
                        .build();
     }

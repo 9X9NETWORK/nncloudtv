@@ -55,8 +55,16 @@ public class MsoConfigManager {
         return getProperty(PROPERTIES_GOOGLEPLAY, "account_email");
     }
     
-    public static String getGooglePlayPemFilePath() {
-        return getProperty(PROPERTIES_GOOGLEPLAY, "pem_file_path");
+    public static String getGooglePlayP12FilePath() {
+        return getProperty(PROPERTIES_GOOGLEPLAY, "p12_file_path");
+    }
+    
+    public static String getYouTubeAccountEmail() {
+        return getProperty(PROPERTIES_YOUTUBE, "account_email");
+    }
+    
+    public static String getYouTubeP12FilePath() {
+        return getProperty(PROPERTIES_YOUTUBE, "p12_file_path");
     }
     
     public static String getAppStoreSharedSecret(Mso mso) {
