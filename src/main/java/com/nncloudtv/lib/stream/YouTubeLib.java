@@ -212,7 +212,7 @@ public class YouTubeLib  implements StreamLib {
             results.put("description", snippet.getDescription());
             results.put("thumbnail", snippet.getThumbnails().getStandard().getUrl());
             results.put("author", snippet.getChannelTitle());
-            results.put("total", String.valueOf(contentDetails.getItemCount()));
+            results.put("totalItems", String.valueOf(contentDetails.getItemCount()));
             
         } catch (GeneralSecurityException e) {
             
