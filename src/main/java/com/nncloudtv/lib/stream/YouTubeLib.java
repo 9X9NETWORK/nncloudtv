@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelContentDetails;
@@ -26,6 +27,8 @@ import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.api.services.youtube.model.PlaylistListResponse;
 import com.google.api.services.youtube.model.PlaylistSnippet;
+import com.google.api.services.youtube.model.Thumbnail;
+import com.google.api.services.youtube.model.ThumbnailDetails;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
@@ -157,9 +160,13 @@ public class YouTubeLib  implements StreamLib {
             if (items.size() > 0) {
                 
                 VideoSnippet snippet = items.get(0).getSnippet();
+                ThumbnailDetails thumbnails = snippet.getThumbnails();
+                Thumbnail thumbnail = thumbnails.getStandard();
+                if (thumbnail == null)
+                    thumbnail = thumbnails.getDefault();
                 results.put("title",       snippet.getTitle());
                 results.put("description", snippet.getDescription());
-                results.put("imageUrl",    snippet.getThumbnails().getStandard().getUrl());
+                results.put("imageUrl",    thumbnail.getUrl());
             }
         } catch (GeneralSecurityException e) {
             log.warning(e.getMessage());
@@ -208,11 +215,15 @@ public class YouTubeLib  implements StreamLib {
             }
             PlaylistSnippet snippet = items.get(0).getSnippet();
             PlaylistContentDetails contentDetails = items.get(0).getContentDetails();
-            results.put("title", snippet.getTitle());
+            ThumbnailDetails thumbnails = snippet.getThumbnails();
+            Thumbnail thumbnail = thumbnails.getStandard();
+            if (thumbnail == null)
+                thumbnail = thumbnails.getDefault();
+            results.put("title",       snippet.getTitle());
             results.put("description", snippet.getDescription());
-            results.put("thumbnail", snippet.getThumbnails().getDefault().getUrl());
-            results.put("author", snippet.getChannelTitle());
-            results.put("totalItems", String.valueOf(contentDetails.getItemCount()));
+            results.put("thumbnail",   thumbnail.getUrl());
+            results.put("author",      snippet.getChannelTitle());
+            results.put("totalItems",  String.valueOf(contentDetails.getItemCount()));
             
         } catch (GeneralSecurityException e) {
             
