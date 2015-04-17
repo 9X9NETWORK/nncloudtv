@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +24,6 @@ public class GCMLib {
     
     protected static final Logger log = Logger.getLogger(GCMLib.class.getName());
     
-    private static final Executor threadPool = Executors.newFixedThreadPool(5);
     private static final int MULTICAST_SIZE  = 1000;
     
     public static void doPost(MsoNotification msoNotification, String apiKey) {
@@ -89,7 +86,7 @@ public class GCMLib {
             final MsoNotification msoNotification, final NnDeviceNotification msg,
             final Map<String, NnDevice> deviceMap) {
         
-        threadPool.execute(new Runnable() {
+        NNF.getScheduler().execute(new Runnable() {
             public void run() {
                 Message message = new Message.Builder()
                     .addData("content", msg.getContent())    // content

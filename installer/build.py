@@ -10,7 +10,7 @@ if choice == "1":
 list=['datanucleus_analytics.properties', 'datanucleus_content.properties', 'datanucleus_billing.properties', 'clearcommerce.properties',
       'datanucleus_nnuser1.properties', 'datanucleus_nnuser2.properties', 'datanucleus_recommend.properties', 'aws.properties',
       'memcache.properties', 'queue.properties', 'facebook.properties', 'crawler.properties', 'services.properties', 'googleplay.properties',
-      'appstore.properties']
+      'appstore.properties', 'youtube.properties']
 
 for l in list:
    src = server + "/" + l
