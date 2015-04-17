@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.security.GeneralSecurityException;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,9 +33,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.api.client.util.ArrayMap;
-import com.google.gdata.data.youtube.PlaylistEntry;
-import com.google.gdata.data.youtube.PlaylistFeed;
-import com.google.gdata.util.ServiceException;
+import com.google.api.services.youtube.model.Video;
+import com.google.api.services.youtube.model.VideoSnippet;
 import com.nncloudtv.exception.ZeroLengthException;
 import com.nncloudtv.lib.AmazonLib;
 import com.nncloudtv.lib.AuthLib;
@@ -565,42 +565,56 @@ public class ApiMisc extends ApiGeneric {
         
         if (ytPlaylistMatcher.find()) {
             
+            Pattern pattern = Pattern.compile("^PT(\\d+)M(\\d+)S$");
             log.info("youtube playlist format");
             String playlistId = ytPlaylistMatcher.group(1);
             log.info("playlistId = " + playlistId);
             ApiContext ctx = new ApiContext(req);
             
             try {
-                PlaylistFeed feed = YouTubeLib.getPlaylistFeed(playlistId);
-                if (feed == null) {
+                List<Video> items = YouTubeLib.getPlaylistVideos(playlistId);
+                if (items == null) {
                     log.info("failed to get feed");
                     return;
                 }
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintWriter writer = new PrintWriter(new OutputStreamWriter(baos, NnStringUtil.UTF8));
-                List<PlaylistEntry> entries = feed.getEntries();
-                Long duration = feed.getMediaGroup().getDuration();
-                if (duration == null) {
+                
+                Long duration = 0L;
+                for (Video item : items) {
                     
-                    duration = (long) 0;
-                    for (PlaylistEntry entry : entries) {
-                        try {
-                            duration += entry.getMediaGroup().getDuration();
-                        } catch(NullPointerException e) {
-                        }
+                    Matcher matcher = pattern.matcher(item.getContentDetails().getDuration());
+                    if (matcher.find()) {
+                        
+                        Long minute = Long.valueOf(matcher.group(1));
+                        Long second = Long.valueOf(matcher.group(2));
+                        duration += minute * 60 + second;
                     }
                 }
+                
                 log.info("playlist duration = " + duration);
                 writer.println("#EXTM3U");
                 writer.println("#EXT-X-TARGETDURATION:" + duration);
                 writer.println("#EXT-X-MEDIA-SEQUENCE:1");
-                for (PlaylistEntry entry : entries) {
-                    String title = entry.getTitle().getPlainText();
+                for (Video item : items) {
+                    
+                    VideoSnippet snippet = item.getSnippet();
+                    
+                    String title = snippet.getTitle();
                     if (title == null || title.isEmpty() || title.equalsIgnoreCase("Deleted video"))
                         continue;
-                    String href = entry.getHtmlLink().getHref();
-                    writer.println("#EXTINF:" + entry.getMediaGroup().getDuration() + "," + title);
-                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : null)));
+                    String href = "http://www.youtube.com/watch?v=" + item.getId();
+                    duration = 0L;
+                    Matcher matcher = pattern.matcher(item.getContentDetails().getDuration());
+                    if (matcher.find()) {
+                        
+                        Long minute = Long.valueOf(matcher.group(1));
+                        Long second = Long.valueOf(matcher.group(2));
+                        duration = minute * 60 + second;
+                    }
+                    
+                    writer.println("#EXTINF:" + duration + "," + title);
+                    writer.println(ctx.getRoot() + "/api/stream?url=" + NnStringUtil.urlencode(href) + ((transcoding ? "&transcoding=true" : "")));
                 }
                 writer.println("#EXT-X-ENDLIST");
                 writer.flush();
@@ -615,9 +629,9 @@ public class ApiMisc extends ApiGeneric {
                 log.warning(e.getMessage());
                 return;
                 
-            } catch (ServiceException e) {
+            } catch (GeneralSecurityException e) {
                 
-                log.warning("ServiceException");
+                log.warning("GeneralSecurityException");
                 log.warning(e.getMessage());
                 return;
             }

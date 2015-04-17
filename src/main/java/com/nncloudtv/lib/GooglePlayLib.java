@@ -27,12 +27,12 @@ public class GooglePlayLib {
     
     static final String SERVICE_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
     
-    private static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
+    public static GoogleCredential getGoogleCredential() throws GeneralSecurityException, IOException {
         
         GoogleCredential.Builder builder = new GoogleCredential.Builder();
         
-        String path = MsoConfigManager.getGooglePlayPemFilePath();
-        log.info("read pem file from " + path);
+        String path = MsoConfigManager.getGooglePlayP12FilePath();
+        log.info("read p12 file from " + path);
         File p12 = new File(path);
         if (!p12.canRead()) {
             log.severe("can not read p12 file from " + path);
