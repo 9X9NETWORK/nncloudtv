@@ -925,7 +925,7 @@ public class ApiMso extends ApiGeneric {
         HashMap<String, Serializable> iosInfo = new HashMap<String, Serializable>();
         MsoConfig config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_ORIGIN);
         if (config != null)
-            iosInfo.put("oringin", config.getValue());
+            iosInfo.put("origin", config.getValue());
         ArrayList<String> landing = new ArrayList<String>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.IOS_URL_LANDING_DIRECT);
         if (config != null)
@@ -943,7 +943,7 @@ public class ApiMso extends ApiGeneric {
         HashMap<String, Serializable> androidInfo = new HashMap<String, Serializable>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_ORIGIN);
         if (config != null)
-            androidInfo.put("oringin", config.getValue());
+            androidInfo.put("origin", config.getValue());
         landing = new ArrayList<String>();
         config = configMngr.findByMsoAndItem(mso, MsoConfig.ANDROID_URL_LANDING_DIRECT);
         if (config != null)
