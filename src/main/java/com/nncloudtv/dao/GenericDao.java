@@ -51,7 +51,6 @@ public class GenericDao<T extends PersistentBaseModel> implements Runnable, Sche
         resetSharedPersistenceMngr();
     }
     
-    @Override
     public void run() {
         
         resetSharedPersistenceMngr();

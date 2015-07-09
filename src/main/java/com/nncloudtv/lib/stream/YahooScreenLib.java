@@ -9,31 +9,26 @@ public class YahooScreenLib implements StreamLib {
     
     public static final String REGEX_YAHOO_SCREEN_URL = "^https?:\\/\\/(tw\\.)?screen\\.yahoo\\.com\\/(.+)\\.html$";
     
-    @Override
     public boolean isUrlMatched(String urlStr) {
         
         return (urlStr == null) ? false : urlStr.matches(REGEX_YAHOO_SCREEN_URL);
     }
     
-    @Override
     public String normalizeUrl(String urlStr) {
         
         return urlStr;
     }
     
-    @Override
     public String getDirectVideoUrl(String urlStr) {
         
         return YouTubeLib.getYouTubeDLUrl(urlStr);
     }
     
-    @Override
     public String getHtml5DirectVideoUrl(String urlStr) {
         
         return YouTubeLib.getYouTubeDLUrl(urlStr);
     }
     
-    @Override
     public InputStream getDirectVideoStream(String urlStr) {
         
         return YouTubeLib.getYouTubeDLStream(urlStr);

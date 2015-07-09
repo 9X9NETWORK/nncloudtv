@@ -98,15 +98,11 @@ public class NnUserWatched implements PersistentModel {
         this.msoId = msoId;
     }
     
-    @Override
     public void setCreateDate(Date date) {
-        // TODO Auto-generated method stub
         
     }
     
-    @Override
     public Date getCreateDate() {
-        // TODO Auto-generated method stub
         return null;
     }
     
