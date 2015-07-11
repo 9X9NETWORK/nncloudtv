@@ -68,7 +68,6 @@ public class NnUserManager {
         dao.save(user);
         profile.setUserId(user.getId());
         NNF.getProfileMngr().save(user, profile);
-        resetChannelCache(user);
         return NnStatusCode.SUCCESS;
     }
     
