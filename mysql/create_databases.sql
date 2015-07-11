@@ -106,3 +106,54 @@ CREATE TABLE `nnepisode` (
   KEY `nnepisode_channelId` (`channelId`)
 )
 
+--
+
+CREATE TABLE `poi_point` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `active` bit(1) NOT NULL,
+  `targetId` bigint(20) DEFAULT '0',
+  `type` smallint(6) NOT NULL,
+  `startTime` varchar(255) DEFAULT '0',
+  `endTime` varchar(255) DEFAULT '0',
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updateDate` datetime DEFAULT NULL,
+  `tag` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1499 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `poi` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `programId` bigint(20) DEFAULT '0',
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `intro` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `startTime` varchar(255) DEFAULT '0',
+  `endTime` varchar(255) DEFAULT '0',
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateDate` datetime DEFAULT NULL,
+  `tag` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `campaignId` bigint(20) DEFAULT '0',
+  `eventId` bigint(20) DEFAULT '0',
+  `pointId` bigint(20) DEFAULT '0',
+  `startDate` datetime DEFAULT NULL,
+  `endDate` datetime DEFAULT NULL,
+  `hoursOfWeek` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `nnprogram_program_id` (`programId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1488 DEFAULT CHARSET=utf8;
+
+CREATE TABLE `poi_event` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `type` smallint(6) DEFAULT '0',
+  `message` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `context` varchar(2000) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updateDate` datetime DEFAULT NULL,
+  `userId` bigint(20) DEFAULT '1',
+  `msoId` bigint(20) DEFAULT '1',
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `notifyMsg` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  `notifyScheduler` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1493 DEFAULT CHARSET=utf8;
+
